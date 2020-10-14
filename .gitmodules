@@ -1,3 +1,6 @@
 [submodule "cub"]
 	path = cub
 	url = https://github.com/NVIDIA/cub
+[submodule "src/googletest"]
+	path = src/googletest
+	url = https://github.com/google/googletest
