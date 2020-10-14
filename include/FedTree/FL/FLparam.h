@@ -6,7 +6,7 @@
 #define FEDTREE_FLPARAM_H
 
 #include "FedTree/Tree/GBDTparams.h"
-
+// Todo: FLParams structure
 class FLParams {
 public:
     int n_parties; // number of parties

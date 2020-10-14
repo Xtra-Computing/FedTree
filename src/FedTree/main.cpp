@@ -17,7 +17,11 @@ int main(int argc, char** argv){
     Parser parser;
     parser.parse_param(fl_param, argc, argv);
 
-    //initialize parties and server
+    //load dataset from file/files
+    Dataset dataset;
+    dataset.load_from_file(fl_param.dataset_path);
+
+    //initialize parties and server *with the dataset*
     vector<Party> parties;
     for(i = 0; i < fl_param.n_parties; i++){
         Party party;
@@ -25,14 +29,11 @@ int main(int argc, char** argv){
     }
     Server server;
 
-    //load dataset from file/files
-    Dataset dataset;
-    dataset.load_from_file(fl_param.dataset_path);
-
     //train
     FLtrainer trainer;
-    model = trainer.train(dataset, parties, server, fl_param);
+    model = trainer.train(parties, server, fl_param);
 
+    //test
     Dataset test_dataset;
     test_dataset.load_from_file(fl_param.test_dataset_path);
     acc = model.predict(test_dataset);

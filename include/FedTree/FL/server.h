@@ -5,9 +5,10 @@
 #ifndef FEDTREE_SERVER_H
 #define FEDTREE_SERVER_H
 
+// Todo: the server structure.
 
 class Server {
-    AdditivelyHE
+
 };
 
 #endif //FEDTREE_SERVER_H

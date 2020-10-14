@@ -5,7 +5,7 @@
 #ifndef FEDTREE_PARTY_H
 #define FEDTREE_PARTY_H
 
-// Todo:
+// Todo: the party structure
 class Party {
 public:
     void init(int pid, const DataSet &dataSet) {
