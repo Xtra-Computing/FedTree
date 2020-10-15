@@ -1,6 +1,8 @@
 //
 // Created by liqinbin on 10/13/20.
 //
+#include "FedTree/common.h"
+#include "FedTree/dataset.h"
 
 #ifndef FEDTREE_PARTITION_H
 #define FEDTREE_PARTITION_H
@@ -8,5 +10,7 @@
 
 class Partition {
 
+    public:
+    std::map<int, vector<int>> homo_partition(const DataSet& dataset, const int n_parties);
 };
 #endif //FEDTREE_PARTITION_H

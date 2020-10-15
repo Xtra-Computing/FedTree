@@ -2,7 +2,7 @@
 // Created by liqinbin on 10/13/20.
 //
 
-#include "FedTree/FL/FLParams.h"
+#include "FedTree/FL/FLparam.h"
 #include "FedTree/FL/FLtrainer.h"
 #include "FedTree/parser.h"
 #include "FedTree/dataset.h"
@@ -18,7 +18,7 @@ int main(int argc, char** argv){
     parser.parse_param(fl_param, argc, argv);
 
     //load dataset from file/files
-    Dataset dataset;
+    DataSet dataset;
     dataset.load_from_file(fl_param.dataset_path);
 
     //initialize parties and server *with the dataset*
