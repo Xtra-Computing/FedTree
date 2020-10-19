@@ -5,7 +5,8 @@
 #ifndef FEDTREE_FLPARAM_H
 #define FEDTREE_FLPARAM_H
 
-#include "FedTree/Tree/GBDTparams.h"
+#include "FedTree/Tree/GBDTparam.h"
+#include "FedTree/common.h"
 // Todo: FLParams structure
 class FLParams {
 public:
