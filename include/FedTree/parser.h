@@ -5,6 +5,7 @@
 
 #ifndef FEDTREE_PARSER_H
 #define FEDTREE_PARSER_H
+#include "FedTree/common.h"
 
 #include <FedTree/FL/FLparam.h>
 #include "dataset.h"

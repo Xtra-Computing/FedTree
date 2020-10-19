@@ -2,5 +2,5 @@
 	path = cub
 	url = https://github.com/NVIDIA/cub
 [submodule "src/googletest"]
-	path = src/googletest
+	path = src/test/googletest
 	url = https://github.com/google/googletest

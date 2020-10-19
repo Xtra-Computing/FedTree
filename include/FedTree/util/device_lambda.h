@@ -8,6 +8,8 @@
 #ifndef FEDTREE_DEVICE_LAMBDA_H
 #define FEDTREE_DEVICE_LAMBDA_H
 
+#ifdef USE_CUDA
+
 #include "FedTree/common.h"
 
 template<typename L>
@@ -61,5 +63,6 @@ void device_loop_2d(int len1, const int *len2, L lambda, unsigned int NUM_BLOCK 
         CUDA_CHECK(cudaPeekAtLastError());
     }
 }
+#endif
 
 #endif //FEDTREE_DEVICE_LAMBDA_H
