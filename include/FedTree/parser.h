@@ -4,6 +4,7 @@
 
 #ifndef FEDTREE_PARSER_H
 #define FEDTREE_PARSER_H
+#include "FedTree/common.h"
 
 // Todo: parse the parameters to FLparam. refer to ThunderGBM parser.h https://github.com/Xtra-Computing/thundergbm/blob/master/include/thundergbm/parser.h
 class Parser {
