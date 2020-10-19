@@ -4,7 +4,7 @@
 #include "omp.h"
 #include "FedTree/dataset.h"
 
-void DataSet::load_from_file(const string& file_name, FLParams &param) {
+void DataSet::load_from_file(const string &file_name, FLParams &param) {
     LOG(INFO) << "loading LIBSVM dataset from file \"" << file_name << "\"";
     y.clear();
     csr_row_ptr.resize(1, 0);
@@ -16,7 +16,7 @@ void DataSet::load_from_file(const string& file_name, FLParams &param) {
     CHECK(ifs.is_open()) << "file " << file_name << " not found";
 
     int buffer_size = 4 << 20;
-    char *buffer = (char *)malloc(buffer_size);
+    char *buffer = (char *) malloc(buffer_size);
     //array may cause stack overflow in windows
     //std::array<char, 4> buffer{};
     const int nthread = omp_get_max_threads();
@@ -85,7 +85,7 @@ void DataSet::load_from_file(const string& file_name, FLParams &param) {
                             << "read error, using [index]:[value] format";
 //TODO one-based and zero-based
                         col_idx_[tid].push_back(i - 1);//one based
-                        if(i - 1 == -1){
+                        if (i - 1 == -1) {
                             is_zeor_base = true;
                         }
                         CHECK_GE(i - 1, -1) << "dataset format error";
@@ -107,7 +107,7 @@ void DataSet::load_from_file(const string& file_name, FLParams &param) {
         }
         for (int tid = 0; tid < nthread; tid++) {
             csr_val.insert(csr_val.end(), val_[tid].begin(), val_[tid].end());
-            if(is_zeor_base){
+            if (is_zeor_base) {
                 for (int i = 0; i < col_idx_[tid].size(); ++i) {
                     col_idx_[tid][i]++;
                 }
@@ -125,6 +125,43 @@ void DataSet::load_from_file(const string& file_name, FLParams &param) {
     ifs.close();
     free(buffer);
     LOG(INFO) << "#instances = " << this->n_instances() << ", #features = " << this->n_features();
+}
+
+void DataSet::csr_to_csc() {
+    const int nnz = csr_row_ptr[n_instances()];
+
+    //compute number of non-zero entries per column of A
+    std::fill(csc_col_ptr.begin(), csc_col_ptr.begin() + n_features(), 0);
+
+    for (int n = 0; n < nnz; n++) {
+        csc_col_ptr[csr_col_idx[n]]++;
+    }
+
+    //cumsum the nnz per column to get csc_col_ptr[]
+    for (int col = 0, cumsum = 0; col < n_features(); col++) {
+        int temp = csc_col_ptr[col];
+        csc_col_ptr[col] = cumsum;
+        cumsum += temp;
+    }
+    csc_col_ptr[n_features()] = nnz;
+
+    for (int row = 0; row < n_features(); row++) {
+        for (int jj = csr_row_ptr[row]; jj < csr_row_ptr[row + 1]; jj++) {
+            int col = csr_col_idx[jj];
+            int dest = csc_col_ptr[col];
+
+            csc_row_idx[dest] = row;
+            csc_val[dest] = csr_val[jj];
+
+            csc_col_ptr[col]++;
+        }
+    }
+
+    for (int col = 0, last = 0; col <= n_features(); col++) {
+        int temp = csc_col_ptr[col];
+        csc_col_ptr[col] = last;
+        last = temp;
+    }
 }
 
 size_t DataSet::n_features() const {

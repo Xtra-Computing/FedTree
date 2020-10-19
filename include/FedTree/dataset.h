@@ -14,6 +14,7 @@ class DataSet{
     public:
     ///load dataset from file
     void load_from_file(const string& file_name, FLParams &param);
+    void csr_to_csc();
 
     size_t n_features() const;
 
