@@ -5,8 +5,6 @@
 #ifndef FEDTREE_NOISES_H
 #define FEDTREE_NOISES_H
 
-// Todo: Guassian noise and Laplacian noise
-
 #include <random>
 
 template <typename T>
