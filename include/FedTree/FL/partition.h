@@ -11,6 +11,6 @@
 class Partition {
 
     public:
-    std::map<int, vector<int>> homo_partition(const DataSet& dataset, const int n_parties);
+    std::map<int, vector<int>> homo_partition(const DataSet& dataset, const int n_parties, const bool is_horizontal);
 };
 #endif //FEDTREE_PARTITION_H
