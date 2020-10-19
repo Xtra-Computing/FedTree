@@ -54,11 +54,11 @@ if (USE_CUDA)
 endif ()
 include_directories(${COMMON_INCLUDES})
 
-#add_subdirectory(src/FedTree)
+add_subdirectory(src/FedTree)
 
 if (BUILD_TESTS)
     message("Building tests")
-    add_subdirectory(${PROJECT_SOURCE_DIR}/src/test)
+    add_subdirectory(src/test)
 endif ()
 
 # configuration file
