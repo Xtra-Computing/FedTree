@@ -1,0 +1,67 @@
+if(MSVC)
+    cmake_minimum_required(VERSION 3.4)
+else()
+    cmake_minimum_required(VERSION 2.8)
+endif()
+project(FedTree)
+
+if(MSVC)
+    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/bin)
+    set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/bin)
+endif()
+
+option(USE_CUDA "Compile with CUDA" ON)
+option(BUILD_TESTS "Build Tests" OFF)
+
+
+find_package(OpenMP REQUIRED QUIET)
+
+if (NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE Release)
+endif ()
+if (MSVC AND BUILD_SHARED_LIBS)
+    set (CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
+endif ()
+
+if (USE_CUDA)
+    message("Compile with CUDA")
+    find_package(CUDA REQUIRED QUIET)
+    set(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} -std=c++11 -lineinfo --expt-extended-lambda --default-stream per-thread")
+else ()
+    message("Complie without CUDA")
+endif ()
+
+if (CMAKE_VERSION VERSION_LESS "3.1")
+    add_compile_options("-std=c++11")
+else ()
+    set(CMAKE_CXX_STANDARD 11)
+endif ()
+
+if (OPENMP_FOUND)
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+endif ()
+
+# for easylogging++ configuration
+add_definitions("-DELPP_FEATURE_PERFORMANCE_TRACKING")
+add_definitions("-DELPP_THREAD_SAFE")
+add_definitions("-DELPP_STL_LOGGING")
+add_definitions("-DELPP_NO_LOG_TO_FILE")
+# includes
+set(COMMON_INCLUDES ${PROJECT_SOURCE_DIR}/include ${CMAKE_CURRENT_BINARY_DIR})
+if (USE_CUDA)
+    set(COMMON_INCLUDES "${COMMON_INCLUDES}  ${PROJECT_SOURCE_DIR}/cub")
+endif ()
+include_directories(${COMMON_INCLUDES})
+
+#add_subdirectory(src/FedTree)
+
+if (BUILD_TESTS)
+    message("Building tests")
+    add_subdirectory(${PROJECT_SOURCE_DIR}/src/test)
+endif ()
+
+# configuration file
+set(DATASET_DIR ${PROJECT_SOURCE_DIR}/datasets/)
+configure_file(include/FedTree/config.h.in config.h)
+
