@@ -8,6 +8,7 @@
 #ifndef FEDTREE_MULTI_DEVICE_H
 #define FEDTREE_MULTI_DEVICE_H
 
+#ifdef USE_CUDA
 #include "FedTree/common.h"
 
 //switch to specific device and do something, then switch back to the original device
@@ -44,5 +45,7 @@ void DO_ON_MULTI_DEVICES(int n_devices, L do_something) {
     CUDA_CHECK(cudaSetDevice(org_device_id));
 
 }
+
+#endif
 
 #endif //FEDTREE_MULTI_DEVICE_H

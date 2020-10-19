@@ -9,7 +9,6 @@
 #define FEDTREE_COMMON_H
 
 #include "FedTree/util/log.h"
-#include "cuda_runtime_api.h"
 #include "cstdlib"
 #include "config.h"
 #include "thrust/tuple.h"
@@ -18,15 +17,23 @@ using std::vector;
 using std::string;
 
 //CUDA macro
-#define USE_CUDA
-#define NO_GPU \
-LOG(FATAL)<<"Cannot use GPU when compiling without GPU"
+#ifdef USE_CUDA
+
+#include "cuda_runtime_api.h"
+
 #define CUDA_CHECK(condition) \
   /* Code block avoids redefinition of cudaError_t error */ \
   do { \
     cudaError_t error = condition; \
     CHECK_EQ(error, cudaSuccess) << " " << cudaGetErrorString(error); \
   } while (false)
+
+#define HOST_DEVICE __host__ __device__
+
+#endif
+
+#define NO_GPU \
+LOG(FATAL)<<"Cannot use GPU when compiling without GPU"
 
 //https://stackoverflow.com/questions/2342162/stdstring-formatting-like-sprintf
 template<typename ... Args>
@@ -39,8 +46,6 @@ std::string string_format(const std::string &format, Args ... args) {
 
 //data types
 typedef float float_type;
-
-#define HOST_DEVICE __host__ __device__
 
 struct GHPair {
     float_type g;

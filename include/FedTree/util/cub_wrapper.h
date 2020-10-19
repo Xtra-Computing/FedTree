@@ -8,6 +8,7 @@
 #ifndef FEDTREE_CUB_WRAPPER_H
 #define FEDTREE_CUB_WRAPPER_H
 
+#ifdef USE_CUDA
 #include <FedTree/syncarray.h>
 #include "cub/cub.cuh"
 
@@ -102,6 +103,6 @@ void cub_seg_sort_by_key(SyncArray<T1> &keys, SyncArray<T2> &values, const SyncA
                           cudaMemcpyDeviceToDevice));
 };
 
-
+#endif
 
 #endif //FEDTREE_CUB_WRAPPER_H
