@@ -29,6 +29,8 @@ if (USE_CUDA)
     set(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} -std=c++11 -lineinfo --expt-extended-lambda --default-stream per-thread")
 else ()
     message("Complie without CUDA")
+    include_directories(${PROJECT_SOURCE_DIR}/thrust/)
+    #    find_package(Thrust REQUIRED QUIET)
 endif ()
 
 if (CMAKE_VERSION VERSION_LESS "3.1")

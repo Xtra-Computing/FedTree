@@ -8,6 +8,8 @@
 #ifndef FEDTREE_COMMON_H
 #define FEDTREE_COMMON_H
 
+#define THRUST_IGNORE_DEPRECATED_CPP_DIALECT
+
 #include "FedTree/util/log.h"
 #include "cstdlib"
 #include "config.h"
@@ -15,22 +17,6 @@
 
 using std::vector;
 using std::string;
-
-//CUDA macro
-#ifdef USE_CUDA
-
-#include "cuda_runtime_api.h"
-#define CUB_IGNORE_DEPRECATED_CPP_DIALECT
-#define CUDA_CHECK(condition) \
-  /* Code block avoids redefinition of cudaError_t error */ \
-  do { \
-    cudaError_t error = condition; \
-    CHECK_EQ(error, cudaSuccess) << " " << cudaGetErrorString(error); \
-  } while (false)
-
-#define HOST_DEVICE __host__ __device__
-
-#endif
 
 #define NO_GPU \
 LOG(FATAL)<<"Cannot use GPU when compiling without GPU"
@@ -46,6 +32,22 @@ std::string string_format(const std::string &format, Args ... args) {
 
 //data types
 typedef float float_type;
+
+//CUDA macro
+#ifdef USE_CUDA
+
+#include "cuda_runtime_api.h"
+#define CUB_IGNORE_DEPRECATED_CPP_DIALECT
+#define CUDA_CHECK(condition) \
+  /* Code block avoids redefinition of cudaError_t error */ \
+  do { \
+    cudaError_t error = condition; \
+    CHECK_EQ(error, cudaSuccess) << " " << cudaGetErrorString(error); \
+  } while (false)
+
+#endif
+
+#define HOST_DEVICE __host__ __device__
 
 struct GHPair {
     float_type g;
@@ -89,6 +91,7 @@ struct GHPair {
 typedef thrust::tuple<int, float_type> int_float;
 
 std::ostream &operator<<(std::ostream &os, const int_float &rhs);
+
 
 
 
