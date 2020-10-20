@@ -4,3 +4,6 @@
 [submodule "cub"]
 	path = cub
 	url = https://github.com/NVlabs/cub.git
+[submodule "thrust"]
+	path = thrust
+	url = https://github.com/NVIDIA/thrust.git
