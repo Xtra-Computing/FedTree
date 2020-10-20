@@ -11,7 +11,7 @@ if(MSVC)
 endif()
 
 option(USE_CUDA "Compile with CUDA" ON)
-option(BUILD_TESTS "Build Tests" OFF)
+set(BUILD_TESTS ON CACHE BOOL "Build Tests")
 
 
 find_package(OpenMP REQUIRED QUIET)
@@ -49,11 +49,14 @@ add_definitions("-DELPP_STL_LOGGING")
 add_definitions("-DELPP_NO_LOG_TO_FILE")
 # includes
 set(COMMON_INCLUDES ${PROJECT_SOURCE_DIR}/include ${CMAKE_CURRENT_BINARY_DIR})
-if (USE_CUDA)
-    set(COMMON_INCLUDES "${COMMON_INCLUDES}  ${PROJECT_SOURCE_DIR}/cub")
-endif ()
-include_directories(${COMMON_INCLUDES})
 
+set(DATASET_DIR ${PROJECT_SOURCE_DIR}/datasets/)
+configure_file(include/FedTree/config.h.in config.h)
+
+include_directories(${COMMON_INCLUDES})
+if (USE_CUDA)
+    include_directories(${PROJECT_SOURCE_DIR}/cub)
+endif ()
 add_subdirectory(src/FedTree)
 
 if (BUILD_TESTS)
@@ -62,6 +65,4 @@ if (BUILD_TESTS)
 endif ()
 
 # configuration file
-set(DATASET_DIR ${PROJECT_SOURCE_DIR}/datasets/)
-configure_file(include/FedTree/config.h.in config.h)
 
