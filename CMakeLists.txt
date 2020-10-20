@@ -50,7 +50,7 @@ add_definitions("-DELPP_NO_LOG_TO_FILE")
 # includes
 set(COMMON_INCLUDES ${PROJECT_SOURCE_DIR}/include ${CMAKE_CURRENT_BINARY_DIR})
 
-set(DATASET_DIR ${PROJECT_SOURCE_DIR}/datasets/)
+set(DATASET_DIR ${PROJECT_SOURCE_DIR}/dataset/)
 configure_file(include/FedTree/config.h.in config.h)
 
 include_directories(${COMMON_INCLUDES})

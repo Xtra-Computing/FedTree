@@ -4,7 +4,7 @@
 #include "omp.h"
 #include "FedTree/dataset.h"
 
-void DataSet::load_from_file(const string &file_name, FLParams &param) {
+void DataSet::load_from_file(const string &file_name, FLParam &param) {
     LOG(INFO) << "loading LIBSVM dataset from file \"" << file_name << "\"";
     y.clear();
     csr_row_ptr.resize(1, 0);

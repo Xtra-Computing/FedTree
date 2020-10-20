@@ -3,21 +3,19 @@
 //
 #include "gtest/gtest.h"
 #include "FedTree/dataset.h"
-#include "FedTree/config.h"
 
 class DatasetTest : public ::testing::Test {
 public:
-    FLParams fl_param;
+    FLParam fl_param;
     DataSet dataset;
 protected:
     void SetUp() override {
-        dataset.load_from_file(DATASET_DIR "test_dataset.txt", param)
+        dataset.load_from_file(DATASET_DIR "test_dataset.txt", fl_param);
     }
 };
 
 TEST_F(DatasetTest, load_from_file){
-    printf("### Dataset: %s, num_instances: %d, num_features: %d, get_cut_points finished. ###\n",
-        param.path.c_str(),
+    printf("### Dataset: test_dataset.txt, num_instances: %d, num_features: %d, get_cut_points finished. ###\n",
         dataset.n_instances(),
         dataset.n_features());
     EXPECT_EQ(dataset.n_instances(), 1605);

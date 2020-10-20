@@ -14,7 +14,7 @@ public:
     int n_parties; // number of parties
     string mode; // "horizontal" or "vertical"
     string privacy_tech; //"none" or "he" or "dp"
-    GBDTParam GBDTParam; // parameters for the gbdt training
+    GBDTParam gbdt_param; // parameters for the gbdt training
 };
 
 

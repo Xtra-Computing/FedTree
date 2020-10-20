@@ -7,8 +7,8 @@
 
 #include <FedTree/FL/FLparam.h>
 #include <FedTree/parser.h>
-#include "dataset.h"
-#include "tree.h"
+#include <FedTree/dataset.h>
+#include <FedTree/Tree/tree.h>
 using namespace std;
 
 //TODO: code clean on compare() and atoi()
@@ -18,7 +18,7 @@ void Parser::parse_param(FLParam &fl_param, int argc, char **argv) {
     fl_param.mode = "horizontal";
     fl_param.privacy_tech = "he";
 
-    GBDTParam *gbdt_param = &fl_param.GBDTParam;
+    GBDTParam *gbdt_param = &fl_param.gbdt_param;
 
     gbdt_param->depth = 6;
     gbdt_param->n_trees = 40;
@@ -120,7 +120,7 @@ void Parser::parse_param(FLParam &fl_param, int argc, char **argv) {
         parse_value(argv[i]);
     }//end parsing parameters
 }
-
+/*
 // TODO: implement Tree and DataSet; check data structure compatibility
 void Parser::load_model(string model_path, GBDTParam &model_param, vector<vector<Tree>> &boosted_model, DataSet & dataset) {
     ifstream ifs(model_path, ios::binary);
@@ -165,7 +165,9 @@ void Parser::load_model(string model_path, GBDTParam &model_param, vector<vector
     }
     ifs.close();
 }
+*/
 
+/*
 void Parser::save_model(string model_path, GBDTParam &model_param, vector<vector<Tree>> &boosted_model, DataSet &dataset) {
     ofstream out_model_file(model_path, ios::binary);
     CHECK_EQ(out_model_file.is_open(), true);
@@ -191,3 +193,4 @@ void Parser::save_model(string model_path, GBDTParam &model_param, vector<vector
     }
     out_model_file.close();
 }
+*/

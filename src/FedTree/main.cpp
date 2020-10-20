@@ -2,7 +2,7 @@
 // Created by liqinbin on 10/13/20.
 //
 
-#include "FedTree/FL/FLParam.h"
+#include "FedTree/FL/FLparam.h"
 #include "FedTree/FL/FLtrainer.h"
 #include "FedTree/parser.h"
 #include "FedTree/dataset.h"
@@ -11,7 +11,7 @@ int main(int argc, char** argv){
     el::Loggers::reconfigureAllLoggers(el::ConfigurationType::Format, "%datetime %level %fbase:%line : %msg");
     el::Loggers::addFlag(el::LoggingFlag::ColoredTerminalOutput);
     el::Loggers::addFlag(el::LoggingFlag::FixedTimeFormat);
-
+/*
     //initialize parameters
     FLParam fl_param;
     Parser parser;
@@ -37,5 +37,6 @@ int main(int argc, char** argv){
     Dataset test_dataset;
     test_dataset.load_from_file(fl_param.test_dataset_path);
     acc = model.predict(test_dataset);
+*/
     return 0;
 }
