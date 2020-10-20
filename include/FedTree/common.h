@@ -20,7 +20,7 @@ using std::string;
 #ifdef USE_CUDA
 
 #include "cuda_runtime_api.h"
-
+#define CUB_IGNORE_DEPRECATED_CPP_DIALECT
 #define CUDA_CHECK(condition) \
   /* Code block avoids redefinition of cudaError_t error */ \
   do { \
