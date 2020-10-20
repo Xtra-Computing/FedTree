@@ -2,7 +2,7 @@
 // Created by liqinbin on 10/13/20.
 //
 
-#include "FedTree/FL/FLparam.h"
+#include "FedTree/FL/FLParam.h"
 #include "FedTree/FL/FLtrainer.h"
 #include "FedTree/parser.h"
 #include "FedTree/dataset.h"
@@ -13,7 +13,7 @@ int main(int argc, char** argv){
     el::Loggers::addFlag(el::LoggingFlag::FixedTimeFormat);
 
     //initialize parameters
-    FLParams fl_param;
+    FLParam fl_param;
     Parser parser;
     parser.parse_param(fl_param, argc, argv);
 

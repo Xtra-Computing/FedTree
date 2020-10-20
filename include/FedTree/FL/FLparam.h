@@ -7,8 +7,9 @@
 
 #include "FedTree/Tree/GBDTparam.h"
 #include "FedTree/common.h"
+
 // Todo: FLParams structure
-class FLParams {
+class FLParam {
 public:
     int n_parties; // number of parties
     string mode; // "horizontal" or "vertical"

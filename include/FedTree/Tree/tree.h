@@ -6,7 +6,7 @@
 #define FEDTREE_TREE_H
 
 // Todo: the tree structure. Refer to ThunderGBM https://github.com/Xtra-Computing/thundergbm/blob/master/include/thundergbm/tree.h
-class tree{
+class Tree{
 
 };
 
