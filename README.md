@@ -41,7 +41,8 @@ make -j
 
 # Build on MacOS
 
-##Build with gcc
+## Build with gcc
+
 Install gcc:
 ```
 brew install gcc
@@ -53,7 +54,8 @@ cd build
 cmake -DUSE_CUDA=OFF -DCMAKE_CXX_COMPILER=g++-7 -DCMAKE_C_COMPILER=gcc-7 .. # replace "7" with version of gcc installed
 make -j
 ```
-##Build with Apple Clang
+## Build with Apple Clang
+
 You need to install ```libomp``` for MacOS.
 ```
 brew install libomp
