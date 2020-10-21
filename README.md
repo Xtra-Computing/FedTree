@@ -2,7 +2,7 @@
 A tree-based federated learning system.
 
 # Prerequisites
-* ```cmake``` 2.8 or above
+* ```cmake``` 3.15 or above
 * ```gcc``` 4.8 or above for Linux and MacOS
 
 # Install submodules
