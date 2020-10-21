@@ -3,6 +3,8 @@ if(MSVC)
 else()
     cmake_minimum_required(VERSION 2.8)
 endif()
+#cmake_policy(SET CMP0048 NEW)
+cmake_policy(SET CMP0042 NEW)
 project(FedTree)
 
 if(MSVC)
@@ -10,11 +12,12 @@ if(MSVC)
     set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/bin)
 endif()
 
+#option(BUILD_SHARED_LIBS "Build as a shared library" ON)
 option(USE_CUDA "Compile with CUDA" ON)
 set(BUILD_TESTS ON CACHE BOOL "Build Tests")
 
-
-find_package(OpenMP REQUIRED QUIET)
+#find_package(Threads)
+find_package(OpenMP REQUIRED)
 
 if (NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Release)
@@ -30,7 +33,6 @@ if (USE_CUDA)
 else ()
     message("Complie without CUDA")
     include_directories(${PROJECT_SOURCE_DIR}/thrust/)
-    #    find_package(Thrust REQUIRED QUIET)
 endif ()
 
 if (CMAKE_VERSION VERSION_LESS "3.1")
