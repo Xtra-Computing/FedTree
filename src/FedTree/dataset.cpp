@@ -445,3 +445,19 @@ size_t DataSet::n_features() const {
 size_t DataSet::n_instances() const {
     return this->y.size();
 }
+
+void DataSet::load_from_files(vector<string> file_names, FLParam &param) {
+    int prev_csr_row_ptr = 0;
+    for(auto name: file_names) {
+        DataSet next;
+        next.load_from_file(name, param);
+        csr_val.insert(csr_val.end(), next.csr_val.begin(), next.csr_val.end());
+        csr_col_idx.insert(csr_col_idx.end(), next.csr_col_idx.begin(), next.csr_col_idx.end());
+        label.insert(label.end(), next.label.begin(), next.label.end());
+        y.insert(y.end(), next.y.begin(), next.y.end());
+        for (int row_len: next.csr_row_ptr) {
+            csr_row_ptr.push_back(prev_csr_row_ptr + row_len);
+        }
+        prev_csr_row_ptr += next.n_instances();
+    }
+}
