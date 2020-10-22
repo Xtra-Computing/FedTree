@@ -47,9 +47,13 @@ add_definitions("-DELPP_FEATURE_PERFORMANCE_TRACKING")
 add_definitions("-DELPP_THREAD_SAFE")
 add_definitions("-DELPP_STL_LOGGING")
 add_definitions("-DELPP_NO_LOG_TO_FILE")
+
+# includes Python
+include_directories("C:/Users/kellyyung/Anaconda3/include")
+link_directories("C:/Users/kellyyung/Anaconda3/lib")
+
 # includes
 set(COMMON_INCLUDES ${PROJECT_SOURCE_DIR}/include ${CMAKE_CURRENT_BINARY_DIR})
-
 set(DATASET_DIR ${PROJECT_SOURCE_DIR}/dataset/)
 configure_file(include/FedTree/config.h.in config.h)
 
