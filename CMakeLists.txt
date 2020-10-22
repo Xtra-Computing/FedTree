@@ -1,7 +1,12 @@
 cmake_minimum_required(VERSION 3.15)
 #cmake_policy(SET CMP0048 NEW)
 cmake_policy(SET CMP0042 NEW)
-project(FedTree)
+project(FedTree CXX)
+
+# includes pybind11
+add_subdirectory(${PROJECT_SOURCE_DIR}/pybind11)
+pybind11_add_module(pybind11 ${CMAKE_SOURCE_DIR}/include/FedTree/Encryption/HomomorphicEncrpytion.h)
+set_target_properties(pybind11 PROPERTIES LINKER_LANGUAGE CXX)
 
 if(MSVC)
     set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/bin)
@@ -51,9 +56,7 @@ add_definitions("-DELPP_THREAD_SAFE")
 add_definitions("-DELPP_STL_LOGGING")
 add_definitions("-DELPP_NO_LOG_TO_FILE")
 
-# includes Python
-include_directories("C:/Users/kellyyung/Anaconda3/include")
-link_directories("C:/Users/kellyyung/Anaconda3/lib")
+
 
 # includes
 set(COMMON_INCLUDES ${PROJECT_SOURCE_DIR}/include ${CMAKE_CURRENT_BINARY_DIR})
