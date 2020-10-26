@@ -2,3 +2,6 @@
 /cmake-build-debug/
 /build
 .DS_Store
+.vscode/c_cpp_properties.json
+build.sh
+.vscode/settings.json
