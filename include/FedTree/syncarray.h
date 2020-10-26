@@ -153,11 +153,11 @@ public:
             ostream << ", ...(" << size() - el::base::consts::kMaxLogPerContainer << " more)";
         }
     };
-
+#ifdef USE_CUDA
     int get_owner_id() const {
         return mem->get_owner_id();
     }
-
+#endif
     //move constructor
     SyncArray(SyncArray<T> &&rhs) noexcept  : mem(rhs.mem), size_(rhs.size_) {
         rhs.mem = nullptr;
