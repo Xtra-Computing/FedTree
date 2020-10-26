@@ -7,7 +7,7 @@
 #define FEDTREE_TREE_H
 
 #include "sstream"
-#include "syncarray.h"
+#include "FedTree/syncarray.h"
 #include "GBDTparam.h"
 
 class Tree{
@@ -55,7 +55,10 @@ public:
         return *this;
     }
 
-    void init2(const SyncArray<GHPair> &gradients, const GBDTParam &param);
+    void init_CPU(const SyncArray<GHPair> &gradients, const GBDTParam &param);
+
+    // TODO: GPU initialization 
+    // void init2(const SyncArray<GHPair> &gradients, const GBDTParam &param);
 
     string dump(int depth) const;
 
