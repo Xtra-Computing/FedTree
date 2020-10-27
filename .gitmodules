@@ -10,6 +10,3 @@
 [submodule "pybind11"]
 	path = pybind11
 	url = https://github.com/pybind/pybind11.git
-[submodule "python-paillier"]
-	path = python-paillier
-	url = https://github.com/data61/python-paillier.git

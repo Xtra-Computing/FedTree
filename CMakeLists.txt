@@ -3,11 +3,6 @@ cmake_minimum_required(VERSION 3.15)
 cmake_policy(SET CMP0042 NEW)
 project(FedTree CXX)
 
-# includes pybind11
-add_subdirectory(${PROJECT_SOURCE_DIR}/pybind11)
-pybind11_add_module(pybind11 ${CMAKE_SOURCE_DIR}/include/FedTree/Encryption/HomomorphicEncrpytion.h)
-set_target_properties(pybind11 PROPERTIES LINKER_LANGUAGE CXX)
-
 if(MSVC)
     set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/bin)
     set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/bin)
@@ -19,7 +14,8 @@ set(BUILD_TESTS ON CACHE BOOL "Build Tests")
 
 #find_package(Threads)
 find_package(OpenMP REQUIRED)
-
+#find_package(Python COMPONENTS Interpreter Development REQUIRED)
+#find_package(pybind11 CONFIG REQUIRED)
 if (NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Release)
 endif ()
@@ -38,7 +34,8 @@ else ()
     find_package(Thrust REQUIRED)
     thrust_create_target(ThrustOMP HOST CPP DEVICE OMP)
 endif ()
-
+add_subdirectory(${PROJECT_SOURCE_DIR}/pybind11)
+#find_package(pybind11 REQUIRED)
 if (CMAKE_VERSION VERSION_LESS "3.1")
     add_compile_options("-std=c++11")
 else ()

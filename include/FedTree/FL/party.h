@@ -5,6 +5,11 @@
 #ifndef FEDTREE_PARTY_H
 #define FEDTREE_PARTY_H
 
+#include "FedTree/dataset.h"
+#include "FedTree/Tree/tree_builder.h"
+#include "FedTree/Encryption/HE.h"
+#include "FedTree/DP/noises.h"
+
 // Todo: the party structure
 class Party {
 public:
@@ -12,9 +17,16 @@ public:
         this->pid = pid;
         this->dataset = dataset;
     };
+    void update_gradients();
+    void compute_histograms();
+    void homo_encrytion();
     int pid;
 private:
-    DataSet dataSet;
+    DataSet dataset;
+    TreeBuilder fbuilder;
+    AdditivelyHE HE;
+    DPnoises<double> DP;
+
 };
 
 #endif //FEDTREE_PARTY_H

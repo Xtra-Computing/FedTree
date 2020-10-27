@@ -8,6 +8,7 @@ A tree-based federated learning system.
 # Install submodules
 ```
 git submodule init src/test/googletest
+git submodule init pybind11
 ```
 For CPUs:
 ```
@@ -31,7 +32,7 @@ With CUDA supports:
 # under the directory of FedTree
 mkdir build && cd build && cmake .. && make -j
 ```
-Without CUDA supports (e.g., on CPUs):
+Without CUDA supports (i.e., on CPUs):
 ```bash
 # under the directory of FedTree
 mkdir build && cd build 

@@ -1,18 +1,10 @@
 //
-// Created by kellyyung on 19/10/2020.
+// Created by Kelly Yung on 2020/10/27.
 //
 
-#ifndef FEDERATEDLEARNINH_HOMOMORPHICENCRPYTION_H
-#define FEDERATEDLEARNINH_HOMOMORPHICENCRPYTION_H
+#include "FedTree/Encryption/HE.h"
 
-#include <pybind11/embed.h>
-#include <tuple>
-
-
-namespace py = pybind11;
-using namespace py::literals;
-
-class HomomorphicEncrpytion {
+class HE {
 public:
     py::module paillier;
 
@@ -30,7 +22,7 @@ public:
         int exponent
     };
 
-    HomomorphicEncrpytion() {
+    HE() {
         // import the python phe library
         py::module paillier = py::module_::import("phe");
     }
@@ -66,7 +58,3 @@ public:
         EncryptedNumber wrapped = EncryptedNumber aggregate {encrypted_number1.publicKey, aggregation.attr("ciphertext").cast<int>(), aggregation.attr("exponent").cast<int>()};
         return wrapped
     }
-
-};
-
-#endif //FEDERATEDLEARNINH_HOMOMORPHICENCRPYTION_H
