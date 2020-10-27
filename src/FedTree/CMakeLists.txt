@@ -12,10 +12,11 @@ else ()
     add_library(${PROJECT_NAME} SHARED ${SRC})
     #pybind11_add_module(${PROJECT_NAME} SHARED ${SRC})
     add_executable(${PROJECT_NAME}-train main.cpp)
-    target_link_libraries(${PROJECT_NAME} pybind11::embed ThrustOMP)
+    target_link_libraries(${PROJECT_NAME} ThrustOMP)
 endif ()
 if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     target_link_libraries(${PROJECT_NAME} OpenMP::OpenMP_CXX)
 endif()
-target_link_libraries(${PROJECT_NAME}-train ${PROJECT_NAME})
+target_link_libraries(${PROJECT_NAME}-train ${PROJECT_NAME} pybind11::embed)
+
 
