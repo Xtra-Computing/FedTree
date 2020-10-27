@@ -9,7 +9,7 @@
 #include "tree.h"
 
 class GBDT {
-    vector<vector<tree>> trees;
+    vector<vector<Tree>> gbdts;
 };
 
 

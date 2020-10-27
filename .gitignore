@@ -5,3 +5,4 @@
 .vscode/c_cpp_properties.json
 build.sh
 .vscode/settings.json
+test.sh
