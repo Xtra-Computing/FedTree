@@ -24,7 +24,7 @@ public:
 
     HE() {
         // import the python phe library
-        py::module paillier = py::module_::import("phe");
+        paillier = py::module_::import("phe");
     }
 
     // generate key pairs
