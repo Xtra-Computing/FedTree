@@ -2,19 +2,31 @@
 // Created by kellyyung on 22/10/2020.
 //
 
-#include "FedTree/Encryption/HomomorphicEncrpytion.h"
+#include "FedTree/Encryption/HE.h"
 #include "gtest/gtest.h"
 
 class HETest : public ::testing::Test {
+public:
+    AdditivelyHE he;
+//    AdditivelyHE::PaillierPublicKey publicKey;
+//    AdditivelyHE::PaillierPrivateKey privateKey;
+
+protected:
+    void SetUp() override {
+//        std::tuple<AdditivelyHE::PaillierPublicKey, AdditivelyHE::PaillierPrivateKey> keyPairs = he.generate_key_pairs();
+//        publicKey = std::get<0>(keyPairs);
+//        privateKey = std::get<1>(keyPairs);
+    }
 
 };
 
-TEST_F(HETest, generate_key_pairs){
-printf("### Dataset: test_dataset.txt, num_instances: %d, num_features: %d, get_cut_points finished. ###\n",
-dataset.n_instances(),
-        dataset.n_features());
-EXPECT_EQ(dataset.n_instances(), 1605);
-EXPECT_EQ(dataset.n_features_, 119);
-EXPECT_EQ(dataset.label[0], -1);
-EXPECT_EQ(dataset.csr_val[1], 1);
+TEST_F(HETest, encryption){
+    he.test();
 }
+
+//TEST_F(HETest, encryption){
+//    float data = 0.01;
+//    AdditivelyHE::EncryptedNumber encrypted = he.encrypt(publicKey, data);
+//    float decrypt = he.decrypt(privateKey, encrypted);
+//    EXPECT_EQ(data, decrypt);
+//}

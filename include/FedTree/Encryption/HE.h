@@ -12,9 +12,9 @@
 namespace py = pybind11;
 using namespace py::literals;
 
-class HE {
+class AdditivelyHE {
 public:
-    py::module paillier = py::module_::import("phe");
+    py::module paillier;
 
     struct PaillierPublicKey {
         py::object publickey;
@@ -25,9 +25,9 @@ public:
     };
 
     struct EncryptedNumber {
-        PaillierPublicKey publicKey,
-        int ciphertext,
-        int exponent
+        PaillierPublicKey publicKey;
+        int ciphertext;
+        int exponent;
     };
 
     // generate key pairs
@@ -38,6 +38,7 @@ public:
     float decrypt(PaillierPrivateKey privateKey, EncryptedNumber encrypted_value);
     // aggregate encrypted numbers
     EncryptedNumber aggregate(EncryptedNumber encrypted_number1, EncryptedNumber encrypted_number2);
+    void test();
 
 
 };

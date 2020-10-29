@@ -2,7 +2,7 @@
 // Created by liqinbin on 10/19/20.
 //
 
-#include "FedTree/FL/"
+#include "FedTree/parser.h"
 #include "gtest/gtest.h"
 
 int main(int argc, char **argv) {
