@@ -10,12 +10,11 @@
 INITIALIZE_EASYLOGGINGPP
 #endif
 int main(int argc, char** argv){
+    py::scoped_interpreter guard{};
     el::Loggers::reconfigureAllLoggers(el::ConfigurationType::Format, "%datetime %level %fbase:%line : %msg");
     el::Loggers::addFlag(el::LoggingFlag::ColoredTerminalOutput);
     el::Loggers::addFlag(el::LoggingFlag::FixedTimeFormat);
 
-    py::scoped_interpreter guard{};
-    py::print("Hello World!");
 /*
 
     //initialize parameters
