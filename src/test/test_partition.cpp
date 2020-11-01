@@ -19,6 +19,23 @@ protected:
     }
 };
 
+TEST_F(PartitionTest, homo_partition) {
+    printf("### Dataset: test_dataset.txt, num_instances: %d, num_features: %d, get_cut_points finished. ###\n",
+           dataset.n_instances(),
+           dataset.n_features());
+    EXPECT_EQ(dataset.n_instances(), 1605);
+    EXPECT_EQ(dataset.n_features_, 119);
+    EXPECT_EQ(dataset.label[0], -1);
+    EXPECT_EQ(dataset.csr_val[1], 1);
+
+    printf("### Test Partition ###\n");
+    Partition partition;
+    std::map<int, vector<int>> batch_idxs = partition.homo_partition(dataset, 5, true);
+    EXPECT_EQ(batch_idxs.size(), 5);
+    int count = 0;
+    for (auto const &x : batch_idxs) EXPECT_EQ(x.second.size(), 1605/5);
+}
+
 TEST_F(PartitionTest, hetero_partition) {
     printf("### Dataset: test_dataset.txt, num_instances: %d, num_features: %d, get_cut_points finished. ###\n",
            dataset.n_instances(),
