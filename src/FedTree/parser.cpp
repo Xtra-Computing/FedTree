@@ -120,7 +120,7 @@ void Parser::parse_param(FLParam &fl_param, int argc, char **argv) {
         parse_value(argv[i]);
     }//end parsing parameters
 }
-/*
+
 // TODO: implement Tree and DataSet; check data structure compatibility
 void Parser::load_model(string model_path, GBDTParam &model_param, vector<vector<Tree>> &boosted_model, DataSet & dataset) {
     ifstream ifs(model_path, ios::binary);
@@ -165,9 +165,9 @@ void Parser::load_model(string model_path, GBDTParam &model_param, vector<vector
     }
     ifs.close();
 }
-*/
 
-/*
+
+
 void Parser::save_model(string model_path, GBDTParam &model_param, vector<vector<Tree>> &boosted_model, DataSet &dataset) {
     ofstream out_model_file(model_path, ios::binary);
     CHECK_EQ(out_model_file.is_open(), true);
@@ -193,4 +193,4 @@ void Parser::save_model(string model_path, GBDTParam &model_param, vector<vector
     }
     out_model_file.close();
 }
-*/
+

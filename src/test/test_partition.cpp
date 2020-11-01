@@ -52,5 +52,4 @@ TEST_F(PartitionTest, hetero_partition) {
     int count = 0;
     for (auto const &x : batch_idxs) count += x.second.size();
     EXPECT_EQ(count, dataset.n_features_);
-
 }

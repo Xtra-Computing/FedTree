@@ -1,6 +1,7 @@
 /CMakeLists.txt
 /cmake-build-debug/
-
+/build
 .DS_Store
-
-.idea/
+.vscode
+build.sh
+test.sh
