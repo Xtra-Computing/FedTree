@@ -35,7 +35,7 @@ protected:
         param.learning_rate = 1;
         param.objective = "reg:linear";
         param.num_class = 1;
-        param.path = "dataset/test_dataset.txt";
+        param.path = DATASET_DIR "test_dataset.txt";
         param.tree_method = "auto";
         if (!param.verbose) {
             el::Loggers::reconfigureAllLoggers(el::Level::Debug, el::ConfigurationType::Enabled, "false");
