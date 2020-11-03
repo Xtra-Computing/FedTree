@@ -13,8 +13,11 @@ class HistCut {
 public:
 //split_point[i] stores the split points of feature i
 
+    // The vales of cut points
     SyncArray<float_type> cut_points_val;
+    // The number of accumulated cut points for current feature
     SyncArray<int> cut_row_ptr;
+    // The feature id for current cut point
     SyncArray<int> cut_fid;
 
     HistCut() = default;
