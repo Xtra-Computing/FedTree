@@ -8,19 +8,19 @@
 class HETest : public ::testing::Test {
 public:
     AdditivelyHE he;
-//    AdditivelyHE::PaillierPublicKey publicKey;
-//    AdditivelyHE::PaillierPrivateKey privateKey;
+    AdditivelyHE::PaillierPublicKey publicKey;
+    AdditivelyHE::PaillierPrivateKey privateKey;
 
 protected:
     void SetUp() override {
-//        std::tuple<AdditivelyHE::PaillierPublicKey, AdditivelyHE::PaillierPrivateKey> keyPairs = he.generate_key_pairs();
-//        publicKey = std::get<0>(keyPairs);
-//        privateKey = std::get<1>(keyPairs);
+        std::tuple <AdditivelyHE::PaillierPublicKey, AdditivelyHE::PaillierPrivateKey> keyPairs = he.generate_key_pairs();
+        publicKey = std::get<0>(keyPairs);
+        privateKey = std::get<1>(keyPairs);
     }
 
 };
 
-TEST_F(HETest, encryption){
+TEST_F(HETest, test_pybind11){
     he.test();
 }
 

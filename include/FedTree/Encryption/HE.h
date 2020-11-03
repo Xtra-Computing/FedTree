@@ -16,6 +16,8 @@ class AdditivelyHE {
 public:
     py::module paillier;
 
+    AdditivelyHE();
+
     struct PaillierPublicKey {
         py::object publickey;
     };
@@ -39,7 +41,6 @@ public:
     // aggregate encrypted numbers
     EncryptedNumber aggregate(EncryptedNumber encrypted_number1, EncryptedNumber encrypted_number2);
     void test();
-
 
 };
 
