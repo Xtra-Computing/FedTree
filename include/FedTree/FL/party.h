@@ -23,7 +23,7 @@ public:
     int pid;
 private:
     DataSet dataset;
-    TreeBuilder fbuilder;
+    std::unique_ptr<TreeBuilder> fbuilder;
     AdditivelyHE HE;
     DPnoises<double> DP;
 

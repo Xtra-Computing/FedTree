@@ -1,21 +1,40 @@
 //
-// Created by hanyuxuan on 28/10/20.
+// Created by liqinbin on 11/3/20.
 //
 
-#include <algorithm>
-#include <numeric>
-#include <cassert>
 #include "FedTree/Tree/tree_builder.h"
+#include "FedTree/Tree/hist_tree_builder.h"
 
-vector<float> TreeBuilder::compute_histogram(vector<float> gradients, vector<int> splits) {
-    std::sort(splits.begin(), splits.end());
-    assert(splits.front() > 0);
-    assert(splits.back() < gradients.size());
-    vector<float> histogram;
-    histogram.push_back(std::accumulate(gradients.begin(), gradients.begin() + splits[0], 0.0));
-    for (int i = 0; i < splits.size() - 1; i++) {
-        histogram.push_back(std::accumulate(gradients.begin() + splits[i], gradients.begin() + splits[i + 1], 0.0));
+TreeBuilder *TreeBuilder::create(std::string name) {
+    if (name == "hist") return new HistTreeBuilder;
+    LOG(FATAL) << "unknown builder " << name;
+    return nullptr;
+}
+
+SyncArray<GHPair>
+HistTreeBuilder::compute_histogram(int n_instances, int n_columns, SyncArray<GHPair> &gradients, HistCut &cut,
+                                   SyncArray<unsigned char> &dense_bin_id) {
+    auto gh_data = gradients.host_data();
+    auto cut_row_ptr_data = cut.cut_row_ptr.host_data();
+    int n_bins = n_columns + cut_row_ptr_data[n_columns];
+    auto dense_bin_id_data = dense_bin_id.host_data();
+
+    SyncArray<GHPair> hist(n_bins);
+    auto hist_data = hist.host_data();
+
+    for (int i = 0; i < n_instances * n_columns; i++) {
+        int iid = i / n_columns;
+        int fid = i % n_columns;
+        unsigned char bid = dense_bin_id_data[iid * n_columns + fid];
+
+        int feature_offset = cut_row_ptr_data[fid] + fid;
+        const GHPair src = gh_data[iid];
+        GHPair &dest = hist_data[feature_offset + bid];
+        if (src.h != 0)
+            dest.h += src.h;
+        if (src.g != 0)
+            dest.g += src.g;
     }
-    histogram.push_back(std::accumulate(gradients.begin() + splits.back(), gradients.end(), 0.0));
-    return histogram;
+
+    return hist;
 }
