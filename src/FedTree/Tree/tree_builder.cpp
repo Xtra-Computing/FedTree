@@ -1,10 +1,24 @@
 //
+<<<<<<< HEAD
 // Created by Kelly Yung on 2020/11/3.
 // Referenced from thundergbm/src/thundergbm/builder/tree_builder.cu
 //
 
 #include "FedTree/Tree/tree_builder.h"
 #include "FedTree/Tree/tree.h"
+
+// Created by liqinbin on 11/3/20.
+//
+
+#include "FedTree/Tree/tree_builder.h"
+#include "FedTree/Tree/hist_tree_builder.h"
+
+TreeBuilder *TreeBuilder::create(std::string name) {
+    if (name == "hist") return new HistTreeBuilder;
+    LOG(FATAL) << "unknown builder " << name;
+    return nullptr;
+}
+
 //
 //void TreeBuilder::update_tree(auto split_data, Tree& tree, float rt_eps, float lambda) {
 //    int n_nodes_in_level = split_data.size();
