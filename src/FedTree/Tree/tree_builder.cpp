@@ -1,12 +1,3 @@
-//
-<<<<<<< HEAD
-// Created by Kelly Yung on 2020/11/3.
-// Referenced from thundergbm/src/thundergbm/builder/tree_builder.cu
-//
-
-#include "FedTree/Tree/tree_builder.h"
-#include "FedTree/Tree/tree.h"
-
 // Created by liqinbin on 11/3/20.
 //
 
