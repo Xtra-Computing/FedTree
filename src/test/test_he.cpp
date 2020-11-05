@@ -36,3 +36,13 @@ TEST_F(HETest, aggregation){
     float decrypt = he.decrypt(privateKey, aggregate);
     EXPECT_EQ(data1+data2, decrypt);
 }
+
+TEST_F(HETest, negative_and_different_precision){
+    float data1 = -0.001;
+    float data2 = -0.03;
+    AdditivelyHE::EncryptedNumber encrypted1 = he.encrypt(publicKey, data1);
+    AdditivelyHE::EncryptedNumber encrypted2 = he.encrypt(publicKey, data2);
+    AdditivelyHE::EncryptedNumber aggregate = he.aggregate(encrypted1, encrypted2);
+    float decrypt = he.decrypt(privateKey, aggregate);
+    EXPECT_EQ(data1+data2, decrypt);
+}
