@@ -6,6 +6,7 @@
 #define FEDERATEDLEARNINH_HE_H
 
 #include "pybind11/embed.h"
+#include "pybind11/cast.h"
 #include <tuple>
 
 
@@ -27,9 +28,7 @@ public:
     };
 
     struct EncryptedNumber {
-        PaillierPublicKey publicKey;
-        int ciphertext;
-        int exponent;
+        py::object encrypted;
     };
 
     // generate key pairs
@@ -40,8 +39,6 @@ public:
     float decrypt(PaillierPrivateKey privateKey, EncryptedNumber encrypted_value);
     // aggregate encrypted numbers
     EncryptedNumber aggregate(EncryptedNumber encrypted_number1, EncryptedNumber encrypted_number2);
-    void test();
-
 };
 
 #endif //FEDERATEDLEARNINH_HE_H
