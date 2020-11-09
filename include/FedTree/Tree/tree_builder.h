@@ -13,7 +13,9 @@ class TreeBuilder {
 public:
     // Refer to ThunderGBM hist_tree_builder.cu find_split
     void compute_histogram();
+
     float_type compute_gain(GHPair father, GHPair lch, GHPair rch, float_type lambda);
+
     void get_split();
     void update_tree();
 

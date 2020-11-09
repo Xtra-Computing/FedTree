@@ -14,5 +14,4 @@ TreeBuilder *TreeBuilder::create(std::string name) {
     if (name == "hist") return new HistTreeBuilder;
     LOG(FATAL) << "unknown builder " << name;
     return nullptr;
-
 }
