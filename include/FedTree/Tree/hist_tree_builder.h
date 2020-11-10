@@ -27,6 +27,9 @@ public:
 //support equal division or weighted division
     void propose_split_candidates();
 
+    SyncArray<GHPair> merge_historgrams(MSyncArray<GHPair> &histograms, int n_bins);
+
+
 private:
     vector<HistCut> cut;
     // MSyncArray<unsigned char> char_dense_bin_id;

@@ -16,9 +16,6 @@ public:
     void get_split();
     void update_tree();
 
-    void merge_historgrams();
-
-
 //    virtual void find_split(int level, int device_id) = 0;
 
 //    virtual void update_ins2node_id() = 0;

@@ -38,3 +38,24 @@ HistTreeBuilder::compute_histogram(int n_instances, int n_columns, SyncArray<GHP
 
     return hist;
 }
+
+SyncArray<GHPair>
+HistTreeBuilder::merge_historgrams(MSyncArray<GHPair> &histograms, int n_bins) {
+
+    SyncArray<GHPair> merged_hist(n_bins);
+    auto merged_hist_data = merged_hist.host_data();
+
+    for (int i = 0; i < histograms.size(); i++) {
+        auto hist_data = histograms[i].host_data();
+        for (int j = 0; j < n_bins; j++) {
+            GHPair &src = hist_data[j];
+            GHPair &dest = merged_hist_data[j];
+            if (src.h != 0)
+                dest.h += src.h;
+            if (src.g != 0)
+                dest.g += src.g;
+        }
+    }
+
+    return merged_hist;
+}
