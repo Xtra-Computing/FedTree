@@ -18,5 +18,5 @@ protected:
 
 TEST_F(TreeBuilderTest, compute_gain) {
 
-EXPECT_FLOAT_EQ(treeBuilder.compute_gain(father, lch, rch, 0.1), 26.791);
+EXPECT_FLOAT_EQ(treeBuilder.compute_gain(father, lch, rch, -5, 0.1), 26.791);
 }
