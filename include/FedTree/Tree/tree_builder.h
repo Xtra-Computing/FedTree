@@ -1,3 +1,4 @@
+
 //
 // Created by liqinbin on 10/27/20.
 //
@@ -12,9 +13,24 @@ class TreeBuilder {
 public:
     // Refer to ThunderGBM hist_tree_builder.cu find_split
     void compute_histogram();
-    void compute_gain();
-    void get_split();
+
+    float_type compute_gain(GHPair father, GHPair lch, GHPair rch, float_type min_child_weight, float_type lambda);
+
+    SyncArray<float_type> gain(Tree tree, int n_split, int n_parititon, int n_max_splits);
+
+    int get_nid(int index);
+
+    int get_pid(int index);
+
+    void get_split(int level, int device_id);
+
+    SyncArray<int_float> best_idx_gain(SyncArray<float_type> gain, int n_nodes_in_level, int n_split);
+
     void update_tree();
+
+
+    void merge_histograms();
+
 
 //    virtual void find_split(int level, int device_id) = 0;
 
@@ -43,7 +59,7 @@ protected:
     GBDTParam param;
 //    vector<Shard> shards;
 //    int n_instances;
-//    vector<Tree> trees;
+    vector<Tree> trees;
 //    SyncArray<int> ins2node_id;
 //    SyncArray<SplitPoint> sp;
 //    SyncArray<GHPair> gradients;
