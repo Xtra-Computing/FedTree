@@ -13,7 +13,9 @@ int main(int argc, char** argv){
     el::Loggers::reconfigureAllLoggers(el::ConfigurationType::Format, "%datetime %level %fbase:%line : %msg");
     el::Loggers::addFlag(el::LoggingFlag::ColoredTerminalOutput);
     el::Loggers::addFlag(el::LoggingFlag::FixedTimeFormat);
+
 /*
+
     //initialize parameters
     FLParam fl_param;
     Parser parser;
