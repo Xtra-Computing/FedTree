@@ -28,6 +28,7 @@ public:
 
     void update_tree();
 
+
     void merge_histograms();
 
 

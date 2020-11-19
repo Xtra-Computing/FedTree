@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.15)
 #cmake_policy(SET CMP0048 NEW)
 cmake_policy(SET CMP0042 NEW)
-project(FedTree)
+project(FedTree CXX)
 
 if(MSVC)
     set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/bin)
@@ -52,9 +52,11 @@ add_definitions("-DELPP_FEATURE_PERFORMANCE_TRACKING")
 add_definitions("-DELPP_THREAD_SAFE")
 add_definitions("-DELPP_STL_LOGGING")
 add_definitions("-DELPP_NO_LOG_TO_FILE")
+
+
+
 # includes
 set(COMMON_INCLUDES ${PROJECT_SOURCE_DIR}/include ${CMAKE_CURRENT_BINARY_DIR})
-
 set(DATASET_DIR ${PROJECT_SOURCE_DIR}/dataset/)
 configure_file(include/FedTree/config.h.in config.h)
 

@@ -25,6 +25,11 @@ Then
 git submodule update
 ```
 
+#Install python modules
+```
+pip install phe
+```
+Make sure that you install the library to the correct Python version so that the embedded python interpreter can find the module. You can verify your python version by running `pip --version`.
 
 # Build on Linux
 With CUDA supports:

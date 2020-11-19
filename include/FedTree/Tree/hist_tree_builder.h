@@ -15,14 +15,20 @@ public:
 
     void get_bin_ids();
 
+    SyncArray<GHPair> compute_histogram(int n_instances, int n_columns, SyncArray<GHPair> &gradients, HistCut &cut,
+                                        SyncArray<unsigned char> &dense_bin_id);
+
 //    void find_split(int level, int device_id) override;
 
-    virtual ~HistTreeBuilder(){};
+    virtual ~HistTreeBuilder() {};
 
 //    void update_ins2node_id() override;
 
 //support equal division or weighted division
     void propose_split_candidates();
+
+    SyncArray<GHPair> merge_historgrams(MSyncArray<GHPair> &histograms, int n_bins);
+
 
 private:
     vector<HistCut> cut;
@@ -30,13 +36,11 @@ private:
     SyncArray<unsigned char> dense_bin_id;
     SyncArray<GHPair> last_hist;
 
-    double build_hist_used_time=0;
+    double build_hist_used_time = 0;
     int build_n_hist = 0;
     int total_hist_num = 0;
     double total_dp_time = 0;
     double total_copy_time = 0;
 };
-
-
 
 #endif //FEDTREE_HIST_TREE_BUILDER_H
