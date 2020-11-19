@@ -9,6 +9,7 @@
 #include <string>
 
 class TreeBuilderTest : public ::testing::Test {
+public:
     GHPair father;
     GHPair lch;
     GHPair rch;

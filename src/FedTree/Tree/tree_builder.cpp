@@ -94,6 +94,7 @@ TreeBuilder *TreeBuilder::create(std::string name) {
     return nullptr;
 }
 
+/*
 // need to know the split format in order to proceed
 void TreeBuilder::update_tree(SyncArray<float> &gain, SyncArray<> &split, Tree &tree, float rt_eps, float lambda) {
     int n_nodes_in_level = split.size();
@@ -135,6 +136,7 @@ void TreeBuilder::update_tree(SyncArray<float> &gain, SyncArray<> &split, Tree &
         }
     }
 }
+*/
 
 SyncArray<GHPair>
 HistTreeBuilder::compute_histogram(int n_instances, int n_columns, SyncArray<GHPair> &gradients, HistCut &cut,
