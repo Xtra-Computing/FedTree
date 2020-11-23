@@ -8,6 +8,8 @@
 
 #include "FedTree/dataset.h"
 #include "tree.h"
+#include "splitpoint.h"
+#include "hist_cut.h"
 
 class TreeBuilder {
 public:
@@ -26,8 +28,9 @@ public:
 
     SyncArray<int_float> best_idx_gain(SyncArray<float_type> gain, int n_nodes_in_level, int n_split);
 
-    void update_tree();
+    SyncArray<SplitPoint> get_split_point (SyncArray<SplitPoint> sp, int n_nodes_in_level, Tree tree, SyncArray<int_float> best_idx_gain, int nid_offset, HistCut cut, SyncArray<GHPair> hist, SyncArray<GHPair> missing_gh, int n_bins, int n_column);
 
+    Tree update_tree(SyncArray<SplitPoint> sp, Tree tree, float_type lambda, float_type rt_eps);
 
     void merge_histograms();
 
@@ -61,7 +64,7 @@ protected:
 //    int n_instances;
     vector<Tree> trees;
 //    SyncArray<int> ins2node_id;
-//    SyncArray<SplitPoint> sp;
+    SyncArray<SplitPoint> sp;
 //    SyncArray<GHPair> gradients;
 //    vector<bool> has_split;
 };
