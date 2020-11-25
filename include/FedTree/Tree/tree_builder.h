@@ -16,15 +16,15 @@ public:
 
     float_type compute_gain(GHPair father, GHPair lch, GHPair rch, float_type min_child_weight, float_type lambda);
 
-    SyncArray<float_type> gain(Tree tree, int n_split, int n_parititon, int n_max_splits);
+    SyncArray<float_type> gain(Tree tree, int level, int n_split, int n_parititon, int n_max_splits);
 
-    int get_nid(int index);
+    int get_nid(int index, int level);
 
     int get_pid(int index);
 
     void get_split(int level, int device_id);
 
-    SyncArray<int_float> best_idx_gain(SyncArray<float_type> gain, int n_nodes_in_level, int n_split);
+    SyncArray<int_float> best_idx_gain(SyncArray<float_type> gain, int level, int n_nodes_in_level, int n_split);
 
     void update_tree();
 
