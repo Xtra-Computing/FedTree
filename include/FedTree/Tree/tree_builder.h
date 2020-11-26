@@ -16,7 +16,7 @@ public:
 
     float_type compute_gain(GHPair father, GHPair lch, GHPair rch, float_type min_child_weight, float_type lambda);
 
-    SyncArray<float_type> gain(Tree tree, int level, int n_split, int n_parititon, int n_max_splits);
+    SyncArray<float_type> gain(Tree tree, SyncArray<GHPair> hist, int level, int n_split);
 
     int get_nid(int index, int level);
 
