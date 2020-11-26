@@ -56,6 +56,7 @@ public:
 
 protected:
     SyncArray<float_type> y_predict;
+    SyncArray<GHPair> gradients;
     GBDTParam param;
 //    vector<Shard> shards;
 //    int n_instances;
