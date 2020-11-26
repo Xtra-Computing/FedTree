@@ -8,7 +8,7 @@ void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FL
 //    server.HE.generate_key();
 //    server.send_info(xx);
 //    for (int i = 0; i < params.gbdt_param.n_trees; i++){
-//        for (i = 0; i < parties.size(); i++){
+//        for (j = 0; j < parties.size(); j++){
 //            parties[j].update_gradients();
 //        }
 //        for (int j = 0; j < params.gbdt_param.depth; j++){
@@ -22,6 +22,7 @@ void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FL
 //            if (j != params.gbdt_param.depth - 1) {
 //                server.fbuilder.compute_gain();
 //                server.fbuilder.get_best_split(); // or using exponential mechanism
+//                server.fbuilder.update_tree();
 //                server.send_info(); // send split points
 //            }
 //            else{

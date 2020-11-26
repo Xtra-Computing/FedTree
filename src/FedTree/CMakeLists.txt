@@ -2,7 +2,7 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
-file(GLOB SRC util/*.c* FL/*.c* Tree/*.c* Encryption/.c* *.c*)
+file(GLOB SRC util/*.c* FL/*.c* Tree/*.c* Encryption/*.c* *.c*)
 list(REMOVE_ITEM SRC "${CMAKE_CURRENT_LIST_DIR}/main.cpp")
 if (USE_CUDA)
     cuda_add_library(${PROJECT_NAME} SHARED ${SRC})
