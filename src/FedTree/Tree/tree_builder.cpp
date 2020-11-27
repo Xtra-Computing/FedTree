@@ -94,11 +94,12 @@ TreeBuilder *TreeBuilder::create(std::string name) {
     return nullptr;
 }
 
-SyncArray<SplitPoint> TreeBuilder::find_split (int n_nodes_in_level, Tree tree, SyncArray<int_float> best_idx_gain, int nid_offset, HistCut cut, SyncArray<GHPair> hist, SyncArray<GHPair> missing_gh, int n_bins, int n_column) {
+// Remove SyncArray<GHPair> hist
+SyncArray<SplitPoint> TreeBuilder::find_split (int n_nodes_in_level, Tree tree, SyncArray<int_float> best_idx_gain, int nid_offset, HistCut cut, int n_bins, int n_column) {
     SyncArray<SplitPoint> sp(n_nodes_in_level);
     const int_float *best_idx_gain_data = best_idx_gain.host_data();
     auto hist_data = hist.host_data();
-    const auto missing_gh_data = missing_gh.host_data();
+//    const auto missing_gh_data = missing_gh.host_data();
     auto cut_val_data = cut.cut_points_val.host_data();
     auto sp_data = sp.host_data();
     auto nodes_data = tree.nodes.host_data();
@@ -125,7 +126,7 @@ SyncArray<SplitPoint> TreeBuilder::find_split (int n_nodes_in_level, Tree tree, 
         sp_data[i].gain = fabsf(best_split_gain);
         sp_data[i].fval = cut_val_data[split_index % n_bins];
         sp_data[i].split_bid = (unsigned char) (split_index % n_bins - cut_row_ptr_data[fid]);
-        sp_data[i].fea_missing_gh = missing_gh_data[i * n_column + hist_fid[split_index]];
+//        sp_data[i].fea_missing_gh = missing_gh_data[i * n_column + hist_fid[split_index]];
         sp_data[i].default_right = best_split_gain < 0;
         sp_data[i].rch_sum_gh = hist_data[split_index];
     }
@@ -151,14 +152,14 @@ Tree TreeBuilder::update_tree(SyncArray<SplitPoint> sp, Tree tree, float_type rt
             lch.is_valid = true;
             rch.is_valid = true;
             node.split_feature_id = sp_data[i].split_fea_id;
-            GHPair p_missing_gh = sp_data[i].fea_missing_gh;
+//            GHPair p_missing_gh = sp_data[i].fea_missing_gh;
             node.split_value = sp_data[i].fval;
             node.split_bid = sp_data[i].split_bid;
             rch.sum_gh_pair = sp_data[i].rch_sum_gh;
-            if (sp_data[i].default_right) {
-                rch.sum_gh_pair = rch.sum_gh_pair + p_missing_gh;
-                node.default_right = true;
-            }
+//            if (sp_data[i].default_right) {
+//                rch.sum_gh_pair = rch.sum_gh_pair + p_missing_gh;
+//                node.default_right = true;
+//            }
             lch.sum_gh_pair = node.sum_gh_pair - rch.sum_gh_pair;
             lch.calc_weight(lambda);
             rch.calc_weight(lambda);
