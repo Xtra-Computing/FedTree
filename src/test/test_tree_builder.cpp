@@ -22,45 +22,8 @@ protected:
         father = GHPair(5.1, 5);
         lch = GHPair(-2.1, 2);
         rch = GHPair(9.61, 3);
+    }
 };
-
-TEST_F(TreeBuilderTest, get_split_point) {
-    // Getting split point at root level
-    int n_column = 2;
-    int n_bins = 3;
-    int n_nodes_in_level = static_cast<int>(pow(2, 0));
-    int nid_offset = static_cast<int>(pow(2, 0) - 1);
-
-    SyncArray<int_float> best_idx_gain(n_nodes_in_level);
-    const vector<int_float> gain = {int_float(0, 0.8)};
-    best_idx_gain.copy_from(&gain[0], gain.size());
-
-    Tree tree;
-    SyncArray<Tree::TreeNode> nodes(1);
-    auto node_data = nodes.host_data();
-    node_data[0].final_id = i;
-    node_data[0].split_feature_id = -1;
-    node_data[0].is_valid = false;
-    node_data[0].parent_index = -1;
-    node_data[0].lch_index = 1;
-    node_data[0].rch_index = 2;
-    tree.nodes.copy_from(&nodes[0], nodes.size());
-
-    HistCut cut;
-
-    SyncArray<GHPair> hist;
-    SyncArray<GHPair> missing_gh;
-}
-
-        (int n_nodes_in_level, Tree tree, SyncArray<int_float> best_idx_gain, int nid_offset, HistCut cut, SyncArray<GHPair> hist, SyncArray<GHPair> missing_gh, int n_bins, int n_column)
-
-
-TEST_F(TreeBuilderTest, update_tree) {
-
-}
-        update_tree(SyncArray<SplitPoint> sp, Tree tree, float_type rt_eps, float_type lambda)
-
-
 
 TEST_F(TreeBuilderTest, compute_gain) {
     EXPECT_FLOAT_EQ(treeBuilder.compute_gain(father, lch, rch, -5, 0.1), 26.791);

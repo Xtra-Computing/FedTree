@@ -94,8 +94,8 @@ TreeBuilder *TreeBuilder::create(std::string name) {
     return nullptr;
 }
 
-// Remove SyncArray<GHPair> hist
-SyncArray<SplitPoint> TreeBuilder::find_split (int n_nodes_in_level, Tree tree, SyncArray<int_float> best_idx_gain, int nid_offset, HistCut cut, int n_bins, int n_column) {
+// Remove SyncArray<GHPair> missing_gh
+SyncArray<SplitPoint> TreeBuilder::find_split (int n_nodes_in_level, Tree tree, SyncArray<int_float> best_idx_gain, int nid_offset, HistCut cut, SyncArray<GHPair> hist, int n_bins, int n_column) {
     SyncArray<SplitPoint> sp(n_nodes_in_level);
     const int_float *best_idx_gain_data = best_idx_gain.host_data();
     auto hist_data = hist.host_data();
