@@ -29,14 +29,14 @@ int TreeBuilder:: get_pid(int index) {
 
 SyncArray<float_type> TreeBuilder::gain(Tree tree, int n_split, int n_partition, int n_max_splits) {
     SyncArray<float_type> gain(n_max_splits);
-    const Tree::TreeNode *nodes_data = tree.nodes.device_data();
+    const Tree::TreeNode *nodes_data = tree.nodes.host_data();
     float_type mcw = this->param.min_child_weight;
     float_type l = this->param.lambda;
     SyncArray<GHPair> missing_gh(n_partition);
-    const auto missing_gh_data = missing_gh.device_data();
+    const auto missing_gh_data = missing_gh.host_data();
     SyncArray<GHPair> hist(n_max_splits);
-    GHPair *gh_prefix_sum_data = hist.device_data();
-    float_type *gain_data = gain.device_data();
+    GHPair *gh_prefix_sum_data = hist.host_data();
+    float_type *gain_data = gain.host_data();
     for (int i = 0; i < n_split; i++) {
         int nid = get_nid(i);
         int pid = get_pid(i);
@@ -77,9 +77,9 @@ SyncArray<int_float> TreeBuilder::best_idx_gain(SyncArray<float_type> gain, int 
     reduce_by_key(
             thrust::host,
             nid_iterator, nid_iterator + n_split,
-            make_zip_iterator(make_tuple(thrust::counting_iterator<int>(0), gain.device_data())),
+            make_zip_iterator(make_tuple(thrust::counting_iterator<int>(0), gain.host_data())),
             thrust::make_discard_iterator(),
-            best_idx_gain.device_data(),
+            best_idx_gain.host_data(),
             thrust::equal_to<int>(),
             arg_abs_max
     );
@@ -94,17 +94,17 @@ TreeBuilder *TreeBuilder::create(std::string name) {
     return nullptr;
 }
 
-SyncArray<SplitPoint> TreeBuilder::get_split_point (SyncArray<SplitPoint> sp, int n_nodes_in_level, Tree tree, SyncArray<int_float> best_idx_gain, int nid_offset, HistCut cut, SyncArray<GHPair> hist, SyncArray<GHPair> missing_gh, int n_bins, int n_column) {
-    const int_float *best_idx_gain_data = best_idx_gain.device_data();
-    auto hist_data = hist.device_data();
-    const auto missing_gh_data = missing_gh.device_data();
-    auto cut_val_data = cut.cut_points_val.device_data();
-    sp.resize(n_nodes_in_level);
-    auto sp_data = sp.device_data();
-    auto nodes_data = tree.nodes.device_data();
+SyncArray<SplitPoint> TreeBuilder::find_split (int n_nodes_in_level, Tree tree, SyncArray<int_float> best_idx_gain, int nid_offset, HistCut cut, SyncArray<GHPair> hist, SyncArray<GHPair> missing_gh, int n_bins, int n_column) {
+    SyncArray<SplitPoint> sp(n_nodes_in_level);
+    const int_float *best_idx_gain_data = best_idx_gain.host_data();
+    auto hist_data = hist.host_data();
+    const auto missing_gh_data = missing_gh.host_data();
+    auto cut_val_data = cut.cut_points_val.host_data();
+    auto sp_data = sp.host_data();
+    auto nodes_data = tree.nodes.host_data();
     int column_offset = 0;
-    auto cut_fid_data = cut.cut_fid.device_data();
-    auto cut_row_ptr_data = cut.cut_row_ptr.device_data();
+    auto cut_fid_data = cut.cut_fid.host_data();
+    auto cut_row_ptr_data = cut.cut_row_ptr.host_data();
     auto i2fid = [=](int i) {return cut_fid_data[i % n_bins];};
     auto hist_fid = thrust::make_transform_iterator(thrust::counting_iterator<int>(0), i2fid);
 
@@ -134,8 +134,8 @@ SyncArray<SplitPoint> TreeBuilder::get_split_point (SyncArray<SplitPoint> sp, in
 
 Tree TreeBuilder::update_tree(SyncArray<SplitPoint> sp, Tree tree, float_type rt_eps, float_type lambda) {
     int n_nodes_in_level = sp.size();
-    auto sp_data = sp.device_data();
-    Tree::TreeNode *nodes_data = tree.nodes.device_data();
+    auto sp_data = sp.host_data();
+    Tree::TreeNode *nodes_data = tree.nodes.host_data();
 
     for (int i = 0; i < n_nodes_in_level; i++) {
         float_type best_split_gain = sp_data[i].gain;
