@@ -28,11 +28,13 @@ public:
 
     SyncArray<int_float> best_idx_gain(SyncArray<float_type> gain, int n_nodes_in_level, int n_split);
 
-    SyncArray<SplitPoint> find_split (int n_nodes_in_level, Tree tree, SyncArray<int_float> best_idx_gain, int nid_offset, HistCut cut, SyncArray<GHPair> hist, int n_bins, int n_column);
+    void find_split (SyncArray<SplitPoint> &sp, int n_nodes_in_level, Tree tree, SyncArray<int_float> best_idx_gain, int nid_offset, HistCut cut, SyncArray<GHPair> hist, int n_bins, int n_column);
 
-    Tree update_tree(SyncArray<SplitPoint> sp, Tree tree, float_type lambda, float_type rt_eps);
+    void update_tree(SyncArray<SplitPoint> sp, Tree &tree, float_type lambda, float_type rt_eps);
 
     void merge_histograms();
+
+    void update_gradients(SyncArray<GHPair> &gradients, SyncArray<float_type> &y, SyncArray<float_type> &y_p);
 
 //    virtual void update_ins2node_id() = 0;
 
@@ -62,7 +64,7 @@ protected:
     vector<Tree> trees;
 //    SyncArray<int> ins2node_id;
     SyncArray<SplitPoint> sp;
-//    SyncArray<GHPair> gradients;
+    SyncArray<GHPair> gradients;
 //    vector<bool> has_split;
 };
 
