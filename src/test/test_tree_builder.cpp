@@ -10,10 +10,22 @@
 
 class TreeBuilderTest : public ::testing::Test {
 public:
+    GHPair father;
+    GHPair lch;
+    GHPair rch;
+    TreeBuilder treeBuilder;
 protected:
     void SetUp() override {
+        father = GHPair(5.1, 5);
+        lch = GHPair(-2.1, 2);
+        rch = GHPair(9.61, 3);
     }
 };
+
+
+TEST_F(TreeBuilderTest, compute_gain) {
+    EXPECT_FLOAT_EQ(treeBuilder.compute_gain(father, lch, rch, -5, 0.1), 26.791);
+}
 
 TEST_F(TreeBuilderTest, compute_histogram) {
     printf("### Test compute_histogram ###\n");
@@ -35,7 +47,7 @@ TEST_F(TreeBuilderTest, compute_histogram) {
 
     SyncArray<GHPair> hist(5);
     HistTreeBuilder htb;
-    hist.copy_from(htb.compute_histogram(n_instances, n_columns, gradients, cut, dense_bin_id));
+    hist.copy_from(htb.compute_histogram(gradients, cut, dense_bin_id));
     auto hist_data = hist.host_data();
     EXPECT_NEAR(hist_data[0].g, 0.4, 1e-5);
     EXPECT_NEAR(hist_data[0].h, 0.6, 1e-5);
@@ -94,22 +106,46 @@ TEST_F(TreeBuilderTest, merge_histogram_clients) {
 
     const vector<float_type> cut_points_val_vec1 = {0.1, 0.3, 5, 7, 9, 15, 25, 35, 10, 11};
     const vector<int> cut_ptr_vec1 = {0, 2, 5, 8, 10};
-    const vector<float_type> cut_points_val_vec2 = {0.3, 0.4, 0.5, 4, 8, 30, 50, 9, 12, 15};
+    const vector<float_type> cut_points_val_vec2 = {0.4, 0.5, 0.6, 4, 8, 30, 50, 9, 12, 15};
     const vector<int> cut_ptr_vec2 = {0, 3, 5, 7, 10};
 
     vector<HistCut> cuts(2);
-    cuts[0].cut_row_ptr = SyncArray<int>(10);
+    cuts[0].cut_row_ptr = SyncArray<int>(5);
     cuts[0].cut_row_ptr.copy_from(&cut_ptr_vec1[0], cut_ptr_vec1.size());
     cuts[0].cut_points_val = SyncArray<float_type>(10);
     cuts[0].cut_points_val.copy_from(&cut_points_val_vec1[0], cut_points_val_vec1.size());
-    cuts[1].cut_row_ptr = SyncArray<int>(10);
+    cuts[1].cut_row_ptr = SyncArray<int>(5);
     cuts[1].cut_row_ptr.copy_from(&cut_ptr_vec2[0], cut_ptr_vec2.size());
     cuts[1].cut_points_val = SyncArray<float_type>(10);
     cuts[1].cut_points_val.copy_from(&cut_points_val_vec2[0], cut_points_val_vec2.size());
 
-    SyncArray<GHPair> merged_hist(32);
+//    HistTreeBuilder htb;
+//    EXPECT_FLOAT_EQ(htb.merge_histograms_client_propose(hists, cuts)[0], -0.1);
+//    EXPECT_FLOAT_EQ(htb.merge_histograms_client_propose(hists, cuts)[7], 0.6);
+//    EXPECT_FLOAT_EQ(htb.merge_histograms_client_propose(hists, cuts)[8], 0);
+//    EXPECT_FLOAT_EQ(htb.merge_histograms_client_propose(hists, cuts)[9], 2);
+
+    SyncArray<GHPair> merged_hist(33);
     HistTreeBuilder htb;
     merged_hist.copy_from(htb.merge_histograms_client_propose(hists, cuts));
     auto hist_data = merged_hist.host_data();
     EXPECT_NEAR(hist_data[0].g, 0.5, 1e-5);
+    EXPECT_NEAR(hist_data[1].g, 0.5, 1e-5);
+    EXPECT_NEAR(hist_data[2].g, 0.5, 1e-5);
+    EXPECT_NEAR(hist_data[3].g, 0.5, 1e-5);
+    EXPECT_NEAR(hist_data[4].g, 1.5, 1e-5);
+    EXPECT_NEAR(hist_data[5].g, 1.5, 1e-5);
+    EXPECT_NEAR(hist_data[6].g, 1, 1e-5);
+    EXPECT_NEAR(hist_data[7].g, 1, 1e-5);
+    EXPECT_NEAR(hist_data[8].g, 0.5, 1e-5);
+    EXPECT_NEAR(hist_data[9].g, 1, 1e-5);
+    EXPECT_NEAR(hist_data[10].g, 1.5, 1e-5);
+    EXPECT_NEAR(hist_data[11].g, 1.5, 1e-5);
+    EXPECT_NEAR(hist_data[12].g, 1.5, 1e-5);
+    EXPECT_NEAR(hist_data[13].g, 1, 1e-5);
+    EXPECT_NEAR(hist_data[14].g, 1.25, 1e-5);
+    EXPECT_NEAR(hist_data[15].g, 1.5, 1e-5);
+    EXPECT_NEAR(hist_data[16].g, 1.5, 1e-5);
+    EXPECT_NEAR(hist_data[17].g, 1.5, 1e-5);
+    EXPECT_NEAR(hist_data[18].g, 0.5, 1e-5);
 }

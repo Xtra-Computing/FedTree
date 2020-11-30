@@ -15,7 +15,7 @@ public:
 
     void get_bin_ids();
 
-    SyncArray<GHPair> compute_histogram(int n_instances, int n_columns, SyncArray<GHPair> &gradients, HistCut &cut,
+    SyncArray<GHPair> compute_histogram(SyncArray<GHPair> &gradients, HistCut &cut,
                                         SyncArray<unsigned char> &dense_bin_id);
 
 //    void find_split(int level, int device_id) override;
