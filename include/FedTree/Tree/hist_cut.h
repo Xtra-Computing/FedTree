@@ -31,7 +31,7 @@ public:
 //    void get_cut_points(SparseColumns &columns, int max_num_bins, int n_instances);
 
     // equally divide the feature range to get cut points
-//    void get_cut_points(float_type feature_min, float_type feature_max, int max_num_bins, int n_instances);
+    void get_cut_points(float_type feature_min, float_type feature_max, int max_num_bins, int n_instances);
 };
 
 
