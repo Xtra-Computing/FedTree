@@ -17,8 +17,6 @@ public:
         this->pid = pid;
         this->dataset = dataset;
     };
-    void update_gradients();
-    void compute_histograms();
     void homo_encrytion();
     int pid;
 private:

@@ -15,7 +15,7 @@ public:
 
     void get_bin_ids();
 
-    SyncArray<GHPair> compute_histogram(int n_instances, int n_columns, SyncArray<GHPair> &gradients, HistCut &cut,
+    SyncArray<GHPair> compute_histogram(SyncArray<GHPair> &gradients, HistCut &cut,
                                         SyncArray<unsigned char> &dense_bin_id);
 
 //    void find_split(int level, int device_id) override;
@@ -27,8 +27,10 @@ public:
 //support equal division or weighted division
     void propose_split_candidates();
 
-    SyncArray<GHPair> merge_historgrams(MSyncArray<GHPair> &histograms, int n_bins);
+    SyncArray<GHPair> merge_histograms_server_propose(MSyncArray<GHPair> &histograms);
 
+    SyncArray<GHPair>
+    merge_histograms_client_propose(MSyncArray<GHPair> &histograms, vector<HistCut> &cuts);
 
 private:
     vector<HistCut> cut;

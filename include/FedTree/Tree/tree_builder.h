@@ -14,7 +14,7 @@ public:
     // Refer to ThunderGBM hist_tree_builder.cu find_split
     void compute_histogram();
 
-    float_type compute_gain(GHPair father, GHPair lch, GHPair rch, float_type min_child_weight, float_type lambda);
+    static float_type compute_gain(GHPair father, GHPair lch, GHPair rch, float_type min_child_weight, float_type lambda);
 
     SyncArray<float_type> gain(Tree tree, SyncArray<GHPair> hist, int level, int n_split);
 
@@ -56,6 +56,7 @@ public:
 
 protected:
     SyncArray<float_type> y_predict;
+    SyncArray<GHPair> gradients;
     GBDTParam param;
 //    vector<Shard> shards;
 //    int n_instances;
