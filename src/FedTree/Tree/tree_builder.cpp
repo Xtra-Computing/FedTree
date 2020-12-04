@@ -3,17 +3,12 @@
 
 #include "FedTree/Tree/tree_builder.h"
 #include "FedTree/Tree/hist_tree_builder.h"
-#include "FedTree/Tree/objective/regression_obj.h"
 #include "thrust/iterator/counting_iterator.h"
 #include "thrust/iterator/transform_iterator.h"
 #include "thrust/iterator/discard_iterator.h"
 #include <thrust/reduce.h>
 #include <thrust/execution_policy.h>
 #include <math.h>
-
-void update_gradients(){
-
-}
 
 float_type TreeBuilder:: compute_gain(GHPair father, GHPair lch, GHPair rch, float_type min_child_weight, float_type lambda) {
     if (lch.h >= min_child_weight && rch.h >= min_child_weight) {
@@ -99,8 +94,8 @@ TreeBuilder *TreeBuilder::create(std::string name) {
     return nullptr;
 }
 
-// Remove SyncArray<GHPair> missing_gh
-void TreeBuilder::find_split (SyncArray<SplitPoint> &sp, int n_nodes_in_level, Tree tree, SyncArray<int_float> best_idx_gain, int nid_offset, HistCut cut, SyncArray<GHPair> hist, int n_bins, int n_column) {
+// Remove SyncArray<GHPair> missing_gh, int n_columnf
+void TreeBuilder::find_split (SyncArray<SplitPoint> &sp, int n_nodes_in_level, Tree tree, SyncArray<int_float> best_idx_gain, int nid_offset, HistCut cut, SyncArray<GHPair> hist, int n_bins) {
     sp.resize(n_nodes_in_level);
     const int_float *best_idx_gain_data = best_idx_gain.host_data();
     auto hist_data = hist.host_data();

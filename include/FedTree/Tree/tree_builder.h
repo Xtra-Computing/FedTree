@@ -28,7 +28,7 @@ public:
 
     SyncArray<int_float> best_idx_gain(SyncArray<float_type> gain, int n_nodes_in_level, int n_split);
 
-    void find_split (SyncArray<SplitPoint> &sp, int n_nodes_in_level, Tree tree, SyncArray<int_float> best_idx_gain, int nid_offset, HistCut cut, SyncArray<GHPair> hist, int n_bins, int n_column);
+    void find_split (SyncArray<SplitPoint> &sp, int n_nodes_in_level, Tree tree, SyncArray<int_float> best_idx_gain, int nid_offset, HistCut cut, SyncArray<GHPair> hist, int n_bins);
 
     void update_tree(SyncArray<SplitPoint> sp, Tree &tree, float_type lambda, float_type rt_eps);
 
