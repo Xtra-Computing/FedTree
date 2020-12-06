@@ -20,35 +20,19 @@ TreeBuilder::compute_gain(GHPair father, GHPair lch, GHPair rch, float_type min_
     }
 }
 
-int TreeBuilder:: get_nid(int index, int level) {
-//    HistCut &cut = this->cut[device_id];
-//    int nid_offset = static_cast<int>(pow(2, level) - 1);
-//    int n_bins = cut.cut_points_val.size();
-//    return index/n_bins + nid_offset;
-    return 0;
-}
-
-int TreeBuilder:: get_pid(int index) {
-//    HistCut &cut = this->cut[device_id];
-//    auto &columns = shards[device_id].columns;
-//    int n_column = columns.n_column;
-//    int n_bins = cut.cut_points_val.size();
-//    int nid0 = index / n_bins;
-//    return nid0 * n_column + hist_fid[index];
-    return 0;
-}
-
 SyncArray<float_type> TreeBuilder::gain(Tree tree, SyncArray<GHPair> hist, int level, int n_split) {
     SyncArray<float_type> gain(n_split);
     const Tree::TreeNode *nodes_data = tree.nodes.host_data();
     float_type mcw = this->param.min_child_weight;
     float_type l = this->param.lambda;
+    int nid_offset = static_cast<int>(pow(2, level) - 1);
 //    SyncArray<GHPair> missing_gh(n_partition);
 //    const auto missing_gh_data = missing_gh.host_data();
     GHPair *gh_prefix_sum_data = hist.host_data();
     float_type *gain_data = gain.host_data();
     for (int i = 0; i < n_split; i++) {
-        int nid = get_nid(i, level);
+      int n_bins = hist.size();
+      int nid = i/n_bins + nid_offset;
         if (nodes_data[nid].is_valid) {
             GHPair father_gh = nodes_data[nid].sum_gh_pair;
 //            GHPair p_missing_gh = missing_gh_data[pid];
@@ -71,10 +55,11 @@ SyncArray<float_type> TreeBuilder::gain(Tree tree, SyncArray<GHPair> hist, int l
 }
 
 
-SyncArray<int_float> TreeBuilder::best_idx_gain(SyncArray<float_type> gain, int level, int n_nodes_in_level, int n_split) {
+SyncArray<int_float> TreeBuilder::best_idx_gain(SyncArray<float_type> gain, int n_bins, int level, int n_split) {
+    int n_nodes_in_level = static_cast<int>(pow(2, level));
     SyncArray<int_float> best_idx_gain(n_nodes_in_level);
-    auto nid = [this, level](int index) {
-        return get_nid(index, level);
+    auto nid = [this, n_bins](int index) {
+        return index/n_bins;
     };
     auto arg_abs_max = [](const int_float &a, const int_float &b) {
         if (fabsf(thrust::get<1>(a)) == fabsf(thrust::get<1>(b)))

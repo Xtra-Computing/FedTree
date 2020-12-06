@@ -18,13 +18,9 @@ public:
 
     SyncArray<float_type> gain(Tree tree, SyncArray<GHPair> hist, int level, int n_split);
 
-    int get_nid(int index, int level);
-
-    int get_pid(int index);
-
     void get_split(int level, int device_id);
 
-    SyncArray<int_float> best_idx_gain(SyncArray<float_type> gain, int level, int n_nodes_in_level, int n_split);
+    SyncArray<int_float> best_idx_gain(SyncArray<float_type> gain, int n_bins, int level, int n_split);
 
     void update_tree();
 
