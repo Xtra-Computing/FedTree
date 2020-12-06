@@ -20,41 +20,33 @@ TreeBuilder::compute_gain(GHPair father, GHPair lch, GHPair rch, float_type min_
     }
 }
 
-int TreeBuilder::get_nid(int index) {
-    return 0;
-}
-
-int TreeBuilder::get_pid(int index) {
-    return 0;
-}
-
-SyncArray<float_type> TreeBuilder::gain(Tree tree, int n_split, int n_partition, int n_max_splits) {
-    SyncArray<float_type> gain(n_max_splits);
-    const Tree::TreeNode *nodes_data = tree.nodes.device_data();
+SyncArray<float_type> TreeBuilder::gain(Tree &tree, SyncArray<GHPair> &hist, int level, int n_split) {
+    SyncArray<float_type> gain(n_split);
+    const Tree::TreeNode *nodes_data = tree.nodes.host_data();
     float_type mcw = this->param.min_child_weight;
     float_type l = this->param.lambda;
-    SyncArray<GHPair> missing_gh(n_partition);
-    const auto missing_gh_data = missing_gh.device_data();
-    SyncArray<GHPair> hist(n_max_splits);
-    GHPair *gh_prefix_sum_data = hist.device_data();
-    float_type *gain_data = gain.device_data();
+    int nid_offset = static_cast<int>(pow(2, level) - 1);
+//    SyncArray<GHPair> missing_gh(n_partition);
+//    const auto missing_gh_data = missing_gh.host_data();
+    GHPair *gh_prefix_sum_data = hist.host_data();
+    float_type *gain_data = gain.host_data();
     for (int i = 0; i < n_split; i++) {
-        int nid = get_nid(i);
-        int pid = get_pid(i);
+      int n_bins = hist.size();
+      int nid = i/n_bins + nid_offset;
         if (nodes_data[nid].is_valid) {
             GHPair father_gh = nodes_data[nid].sum_gh_pair;
-            GHPair p_missing_gh = missing_gh_data[pid];
+//            GHPair p_missing_gh = missing_gh_data[pid];
             GHPair rch_gh = gh_prefix_sum_data[i];
-            float_type default_to_left_gain = std::max(0.f,
-                                                       compute_gain(father_gh, father_gh - rch_gh, rch_gh, mcw, l));
-            rch_gh = rch_gh + p_missing_gh;
-            float_type default_to_right_gain = std::max(0.f,
-                                                        compute_gain(father_gh, father_gh - rch_gh, rch_gh, mcw, l));
-            if (default_to_left_gain > default_to_right_gain) {
-                gain_data[i] = default_to_left_gain;
-            } else {
-                gain_data[i] = -default_to_right_gain;//negative means default split to right
-            }
+            float_type left_gain = std::max(0.f, compute_gain(father_gh, father_gh - rch_gh, rch_gh, mcw, l));
+            gain_data[i] = left_gain;
+//          rch_gh = rch_gh + p_missing_gh;
+//          float_type default_to_right_gain = std::max(0.f,
+//                                                   compute_gain(father_gh, father_gh - rch_gh, rch_gh, mcw, l));
+//          if (default_to_left_gain > default_to_right_gain) {
+//              gain_data[i] = default_to_left_gain;
+//          } else {
+//              gain_data[i] = -default_to_right_gain;//negative means default split to right
+//          }
         } else {
             gain_data[i] = 0;
         }
@@ -63,10 +55,11 @@ SyncArray<float_type> TreeBuilder::gain(Tree tree, int n_split, int n_partition,
 }
 
 
-SyncArray<int_float> TreeBuilder::best_idx_gain(SyncArray<float_type> gain, int n_nodes_in_level, int n_split) {
+SyncArray<int_float> TreeBuilder::best_idx_gain(SyncArray<float_type> &gain, int n_bins, int level, int n_split) {
+    int n_nodes_in_level = static_cast<int>(pow(2, level));
     SyncArray<int_float> best_idx_gain(n_nodes_in_level);
-    auto nid = [this](int index) {
-        return get_nid(index);
+    auto nid = [this, n_bins](int index) {
+        return index/n_bins;
     };
     auto arg_abs_max = [](const int_float &a, const int_float &b) {
         if (fabsf(thrust::get<1>(a)) == fabsf(thrust::get<1>(b)))
@@ -78,9 +71,9 @@ SyncArray<int_float> TreeBuilder::best_idx_gain(SyncArray<float_type> gain, int 
     reduce_by_key(
             thrust::host,
             nid_iterator, nid_iterator + n_split,
-            make_zip_iterator(make_tuple(thrust::counting_iterator<int>(0), gain.device_data())),
+            make_zip_iterator(make_tuple(thrust::counting_iterator<int>(0), gain.host_data())),
             thrust::make_discard_iterator(),
-            best_idx_gain.device_data(),
+            best_idx_gain.host_data(),
             thrust::equal_to<int>(),
             arg_abs_max
     );
