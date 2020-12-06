@@ -20,7 +20,7 @@ TreeBuilder::compute_gain(GHPair father, GHPair lch, GHPair rch, float_type min_
     }
 }
 
-SyncArray<float_type> TreeBuilder::gain(Tree tree, SyncArray<GHPair> hist, int level, int n_split) {
+SyncArray<float_type> TreeBuilder::gain(Tree &tree, SyncArray<GHPair> &hist, int level, int n_split) {
     SyncArray<float_type> gain(n_split);
     const Tree::TreeNode *nodes_data = tree.nodes.host_data();
     float_type mcw = this->param.min_child_weight;
@@ -55,7 +55,7 @@ SyncArray<float_type> TreeBuilder::gain(Tree tree, SyncArray<GHPair> hist, int l
 }
 
 
-SyncArray<int_float> TreeBuilder::best_idx_gain(SyncArray<float_type> gain, int n_bins, int level, int n_split) {
+SyncArray<int_float> TreeBuilder::best_idx_gain(SyncArray<float_type> &gain, int n_bins, int level, int n_split) {
     int n_nodes_in_level = static_cast<int>(pow(2, level));
     SyncArray<int_float> best_idx_gain(n_nodes_in_level);
     auto nid = [this, n_bins](int index) {

@@ -27,6 +27,26 @@ TEST_F(TreeBuilderTest, compute_gain) {
     EXPECT_FLOAT_EQ(treeBuilder.compute_gain(father, lch, rch, -5, 0.1), 26.791);
 }
 
+TEST_F(TreeBuilderTest, gain_per_level) {
+    SyncArray<GHPair> gradients(4);
+    const vector<GHPair> gradients_vec = {GHPair(0.1, 0.2), GHPair(0.3, 0.4), GHPair(0.5, 0.6), GHPair(0.7, 0.8)};
+    gradients.copy_from(&gradients_vec[0], gradients_vec.size());
+    HistTreeBuilder htb;
+    Tree tree;
+    GBDTParam param = GBDTParam();
+    param.depth = 2;
+    param.min_child_weight = 0.0;
+    param.lambda = 0.2;
+    tree.init_CPU(gradients, param);
+    SyncArray<GHPair> hist(2);
+    const vector<GHPair> hist_vec = {GHPair(0.2, 0.2), GHPair(0.5, 0.5)};
+    hist.copy_from(&hist_vec[0], hist_vec.size());
+    auto result = htb.gain(tree, hist, 0, 2);
+    EXPECT_EQ(result.size(), 2);
+    EXPECT_FLOAT_EQ(result.host_data()[0], 0);
+    EXPECT_FLOAT_EQ(result.host_data()[1], 0);
+}
+
 TEST_F(TreeBuilderTest, compute_histogram) {
     printf("### Test compute_histogram ###\n");
     int n_instances = 4;
