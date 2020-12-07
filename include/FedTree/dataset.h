@@ -6,7 +6,7 @@
 #ifndef FEDTREE_DATASET_H
 #define FEDTREE_DATASET_H
 
-#include "FL/FLparam.h"
+#include "FedTree/FL/FLparam.h"
 #include "common.h"
 #include "syncarray.h"
 

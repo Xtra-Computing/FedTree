@@ -11,7 +11,6 @@
 
 class HistCut {
 public:
-//split_point[i] stores the split points of feature i
 
     // The vales of cut points
     SyncArray<float_type> cut_points_val;
@@ -27,11 +26,9 @@ public:
         cut_row_ptr.copy_from(cut.cut_row_ptr);
     }
 
-    // refer to thundergbm histcut.h. Can replace SparseColumns to DataSet.
-//    void get_cut_points(SparseColumns &columns, int max_num_bins, int n_instances);
-
     // equally divide the feature range to get cut points
-    void get_cut_points(float_type feature_min, float_type feature_max, int max_num_bins, int n_instances);
+    // void get_cut_points(float_type feature_min, float_type feature_max, int max_num_bins, int n_instances);
+    void get_cut_points(DataSet dataset, int max_num_bins, int n_instances);
 };
 
 
