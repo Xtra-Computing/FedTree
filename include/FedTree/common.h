@@ -14,6 +14,7 @@
 #include "cstdlib"
 #include "config.h"
 #include "thrust/tuple.h"
+#include "FedTree/Encryption/HE.h"
 
 using std::vector;
 using std::string;

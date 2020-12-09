@@ -67,7 +67,8 @@ TEST_F(TreeBuilderTest, compute_histogram) {
 
     SyncArray<GHPair> hist(5);
     HistTreeBuilder htb;
-    hist.copy_from(htb.compute_histogram(gradients, cut, dense_bin_id));
+    htb.compute_histogram(gradients, cut, dense_bin_id);
+    hist.copy_from(htb.get_hist());
     auto hist_data = hist.host_data();
     EXPECT_NEAR(hist_data[0].g, 0.4, 1e-5);
     EXPECT_NEAR(hist_data[0].h, 0.6, 1e-5);
@@ -99,7 +100,8 @@ TEST_F(TreeBuilderTest, merge_histogram_server) {
 
     SyncArray<GHPair> merged_hist(3);
     HistTreeBuilder htb;
-    merged_hist.copy_from(htb.merge_histograms_server_propose(hists));
+    htb.merge_histograms_server_propose(hists);
+    merged_hist.copy_from(htb.get_hist());
     auto hist_data = merged_hist.host_data();
     EXPECT_NEAR(hist_data[0].g, 0.21, 1e-5);
     EXPECT_NEAR(hist_data[0].h, 0.42, 1e-5);
@@ -147,7 +149,8 @@ TEST_F(TreeBuilderTest, merge_histogram_clients) {
 
     SyncArray<GHPair> merged_hist(33);
     HistTreeBuilder htb;
-    merged_hist.copy_from(htb.merge_histograms_client_propose(hists, cuts));
+    htb.merge_histograms_client_propose(hists, cuts);
+    merged_hist.copy_from(htb.get_hist());
     auto hist_data = merged_hist.host_data();
     EXPECT_NEAR(hist_data[0].g, 0.5, 1e-5);
     EXPECT_NEAR(hist_data[1].g, 0.5, 1e-5);

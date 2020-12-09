@@ -132,8 +132,7 @@ void TreeBuilder::update_tree(SyncArray<float> &gain, SyncArray<> &split, Tree &
 }
 */
 
-SyncArray<GHPair>
-HistTreeBuilder::compute_histogram(SyncArray<GHPair> &gradients, HistCut &cut,
+void HistTreeBuilder::compute_histogram(SyncArray<GHPair> &gradients, HistCut &cut,
                                    SyncArray<unsigned char> &dense_bin_id) {
     int n_columns = cut.cut_row_ptr.size() - 1;
     int n_instances = dense_bin_id.size() / n_columns;
@@ -159,13 +158,13 @@ HistTreeBuilder::compute_histogram(SyncArray<GHPair> &gradients, HistCut &cut,
             dest.g += src.g;
     }
 
-    return hist;
+    last_hist.resize(n_bins);
+    last_hist.copy_from(hist);
 }
 
 //assumption: GHPairs in the histograms of all clients are arranged in the same order
 
-SyncArray<GHPair>
-HistTreeBuilder::merge_histograms_server_propose(MSyncArray<GHPair> &histograms) {
+void HistTreeBuilder::merge_histograms_server_propose(MSyncArray<GHPair> &histograms) {
 
     int n_bins = histograms[0].size();
     SyncArray<GHPair> merged_hist(n_bins);
@@ -183,7 +182,8 @@ HistTreeBuilder::merge_histograms_server_propose(MSyncArray<GHPair> &histograms)
         }
     }
 
-    return merged_hist;
+    last_hist.resize(n_bins);
+    last_hist.copy_from(merged_hist);
 }
 
 
@@ -192,8 +192,7 @@ HistTreeBuilder::merge_histograms_server_propose(MSyncArray<GHPair> &histograms)
 //assumption 3: cut_val_data is sorted by feature id and split value, eg: [f0(0.1), f0(0.2), f0(0.3), f1(100), f1(200),...]
 //assumption 4: gradients and hessians are near uniformly distributed
 
-SyncArray<GHPair>
-HistTreeBuilder::merge_histograms_client_propose(MSyncArray<GHPair> &histograms, vector<HistCut> &cuts) {
+void HistTreeBuilder::merge_histograms_client_propose(MSyncArray<GHPair> &histograms, vector<HistCut> &cuts) {
     CHECK_EQ(histograms.size(), cuts.size());
     int n_columns = cuts[0].cut_row_ptr.size() - 1;
     vector<float_type> low(n_columns, std::numeric_limits<float>::max());
@@ -283,5 +282,6 @@ HistTreeBuilder::merge_histograms_client_propose(MSyncArray<GHPair> &histograms,
         }
     }
 
-    return merged_hist;
+    last_hist.resize(n_bins);
+    last_hist.copy_from(merged_hist);
 }
