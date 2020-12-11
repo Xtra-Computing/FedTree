@@ -46,3 +46,23 @@ TEST_F(HETest, negative_and_different_precision){
     float decrypt = he.decrypt(privateKey, aggregate);
     EXPECT_EQ(data1+data2, decrypt);
 }
+
+// aggregate with scalar
+TEST_F(HETest, aggregate_scalar){
+float data1 = 0.001;
+float data2 = 0.1;
+AdditivelyHE::EncryptedNumber encrypted1 = he.encrypt(publicKey, data1);
+AdditivelyHE::EncryptedNumber aggregate = he.aggregate_scalar(encrypted1, data2);
+float decrypt = he.decrypt(privateKey, aggregate);
+EXPECT_EQ(data1+data2, decrypt);
+}
+
+// multiply with scalar
+TEST_F(HETest, multiply_scalar){
+float data1 = 0.001;
+float data2 = 1.0;
+AdditivelyHE::EncryptedNumber encrypted1 = he.encrypt(publicKey, data1);
+AdditivelyHE::EncryptedNumber aggregate = he.multiply_scalar(encrypted1, data2);
+float decrypt = he.decrypt(privateKey, aggregate);
+EXPECT_EQ(data1*data2, decrypt);
+}
