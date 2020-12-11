@@ -2,13 +2,14 @@
 // Created by liqinbin on 10/14/20.
 //
 #include "FedTree/FL/FLtrainer.h"
+#include "FedTree/Encryption/HE.h"
 
 void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FLParam &params){
 //    server.fbuilder.propose_split_candidates();
 //    server.HE.generate_key();
 //    server.send_info(xx);
 //    for (int i = 0; i < params.gbdt_param.n_trees; i++){
-//        for (i = 0; i < parties.size(); i++){
+//        for (j = 0; j < parties.size(); j++){
 //            parties[j].update_gradients();
 //        }
 //        for (int j = 0; j < params.gbdt_param.depth; j++){
@@ -22,6 +23,7 @@ void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FL
 //            if (j != params.gbdt_param.depth - 1) {
 //                server.fbuilder.compute_gain();
 //                server.fbuilder.get_best_split(); // or using exponential mechanism
+//                server.fbuilder.update_tree();
 //                server.send_info(); // send split points
 //            }
 //            else{
@@ -35,7 +37,7 @@ void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FL
 
 
 void FLtrainer::vertical_fl_trainer(vector<Party> &parties, Server &server, FLParam &params){
-//    parties[0].HE.generate_key();
+    parties[0].homo_encrytion();
 //    parties[0].send_info();
 //    for (int i = 0; i < params.gbdt_param.n_trees; i++){
 //        parties[0].update_gradients();
