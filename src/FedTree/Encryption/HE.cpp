@@ -31,9 +31,23 @@ float AdditivelyHE::decrypt(PaillierPrivateKey privateKey, AdditivelyHE::Encrypt
     return decrypted;
 }
 
-// aggregate encrypted numbers
+// aggregate two encrypted numbers
 AdditivelyHE::EncryptedNumber AdditivelyHE::aggregate(AdditivelyHE::EncryptedNumber encrypted_number1, AdditivelyHE::EncryptedNumber encrypted_number2) {
     py::object aggregation = encrypted_number1.encrypted.attr("__add__")(encrypted_number2.encrypted);
+    AdditivelyHE::EncryptedNumber wrapped = {aggregation};
+    return wrapped;
+}
+
+// aggregate encrypted numbers with scalar number
+AdditivelyHE::EncryptedNumber AdditivelyHE::aggregate_scalar(AdditivelyHE::EncryptedNumber encrypted_number1, float scalar) {
+    py::object aggregation = encrypted_number1.encrypted.attr("__add__")(py::float_(scalar));
+    AdditivelyHE::EncryptedNumber wrapped = {aggregation};
+    return wrapped;
+}
+
+// aggregate encrypted numbers with scalar number
+AdditivelyHE::EncryptedNumber AdditivelyHE::multiply_scalar(AdditivelyHE::EncryptedNumber encrypted_number1, float scalar) {
+    py::object aggregation = encrypted_number1.encrypted.attr("__mul__")(py::float_(scalar));
     AdditivelyHE::EncryptedNumber wrapped = {aggregation};
     return wrapped;
 }
