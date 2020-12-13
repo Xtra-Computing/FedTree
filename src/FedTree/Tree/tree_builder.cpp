@@ -31,8 +31,8 @@ SyncArray<float_type> TreeBuilder::gain(Tree &tree, SyncArray<GHPair> &hist, int
     GHPair *gh_prefix_sum_data = hist.host_data();
     float_type *gain_data = gain.host_data();
     for (int i = 0; i < n_split; i++) {
-      int n_bins = hist.size();
-      int nid = i/n_bins + nid_offset;
+        int n_bins = hist.size();
+        int nid = i/n_bins + nid_offset;
         if (nodes_data[nid].is_valid) {
             GHPair father_gh = nodes_data[nid].sum_gh_pair;
 //            GHPair p_missing_gh = missing_gh_data[pid];
@@ -88,41 +88,78 @@ TreeBuilder *TreeBuilder::create(std::string name) {
     return nullptr;
 }
 
-/*
-// need to know the split format in order to proceed
-void TreeBuilder::update_tree(SyncArray<float> &gain, SyncArray<> &split, Tree &tree, float rt_eps, float lambda) {
-    int n_nodes_in_level = split.size();
-    Tree::TreeNode *nodes_data = tree.nodes;
+// Remove SyncArray<GHPair> missing_gh, int n_columnf
+void TreeBuilder::find_split (SyncArray<SplitPoint> &sp, int n_nodes_in_level, Tree tree, SyncArray<int_float> best_idx_gain, int nid_offset, HistCut cut, SyncArray<GHPair> hist, int n_bins) {
+    sp.resize(n_nodes_in_level);
+    const int_float *best_idx_gain_data = best_idx_gain.host_data();
+    auto hist_data = hist.host_data();
+//    const auto missing_gh_data = missing_gh.host_data();
+    auto cut_val_data = cut.cut_points_val.host_data();
+    auto sp_data = sp.host_data();
+    auto nodes_data = tree.nodes.host_data();
+    int column_offset = 0;
+    auto cut_fid_data = cut.cut_fid.host_data();
+    auto cut_row_ptr_data = cut.cut_row_ptr.host_data();
+    auto i2fid = [=](int i) {return cut_fid_data[i % n_bins];};
+    auto hist_fid = thrust::make_transform_iterator(thrust::counting_iterator<int>(0), i2fid);
+
     for (int i = 0; i < n_nodes_in_level; i++) {
-        float best_split_gain = gain[i];
+        int_float bsx = best_idx_gain_data[i];
+        float_type best_split_gain = thrust::get<1>(bsx);
+        int split_index = thrust::get<0>(bsx);
+
+        if (!nodes_data[i + nid_offset].is_valid) {
+            sp_data[i].split_fea_id = -1;
+            sp_data[i].nid = -1;
+            return;
+        }
+
+        int fid = hist_fid[split_index];
+        sp_data[i].split_fea_id = fid + column_offset;
+        sp_data[i].nid = i + nid_offset;
+        sp_data[i].gain = fabsf(best_split_gain);
+        sp_data[i].fval = cut_val_data[split_index % n_bins];
+        sp_data[i].split_bid = (unsigned char) (split_index % n_bins - cut_row_ptr_data[fid]);
+//        sp_data[i].fea_missing_gh = missing_gh_data[i * n_column + hist_fid[split_index]];
+        sp_data[i].default_right = best_split_gain < 0;
+        sp_data[i].rch_sum_gh = hist_data[split_index];
+    }
+}
+
+void TreeBuilder::update_tree(SyncArray<SplitPoint> sp, Tree &tree, float_type rt_eps, float_type lambda) {
+    int n_nodes_in_level = sp.size();
+    auto sp_data = sp.host_data();
+    Tree::TreeNode *nodes_data = tree.nodes.host_data();
+
+    for (int i = 0; i < n_nodes_in_level; i++) {
+        float_type best_split_gain = sp_data[i].gain;
         if (best_split_gain > rt_eps) {
-            if (split_data[i].nid == -1) return;
-            int nid = split_data[i].nid;
+            //do split
+            if (sp_data[i].nid == -1) return;
+            int nid = sp_data[i].nid;
             Tree::TreeNode &node = nodes_data[nid];
             node.gain = best_split_gain;
-            // left children
-            Tree::TreeNode &lch = nodes_data[node.lch_index];
-            // right children
-            Tree::TreeNode &rch = nodes_data[node.rch_index];
+
+            Tree::TreeNode &lch = nodes_data[node.lch_index];//left child
+            Tree::TreeNode &rch = nodes_data[node.rch_index];//right child
             lch.is_valid = true;
             rch.is_valid = true;
-            node.split_feature_id = split_data[i].split_fea_id;
-            // Gradient Hessian Pair
-            GHPair p_missing_gh = split_data[i].fea_missing_gh;
-            node.split_value = split_data[i].fval;
-            node.split_bid = split_data[i].split_bid;
-            rch.sum_gh_pair = split_data[i].rch_sum_gh;
-            if (split_data[i].default_right) {
-                rch.sum_gh_pair = rch.sum_gh_pair + p_missing_gh;
-                node.default_right = true;
-            }
+            node.split_feature_id = sp_data[i].split_fea_id;
+//            GHPair p_missing_gh = sp_data[i].fea_missing_gh;
+            node.split_value = sp_data[i].fval;
+            node.split_bid = sp_data[i].split_bid;
+            rch.sum_gh_pair = sp_data[i].rch_sum_gh;
+//            if (sp_data[i].default_right) {
+//                rch.sum_gh_pair = rch.sum_gh_pair + p_missing_gh;
+//                node.default_right = true;
+//            }
             lch.sum_gh_pair = node.sum_gh_pair - rch.sum_gh_pair;
             lch.calc_weight(lambda);
             rch.calc_weight(lambda);
-        }else {
+        } else {
             //set leaf
-            if (split_data[i].nid == -1) return;
-            int nid = split_data[i].nid;
+            if (sp_data[i].nid == -1) return;
+            int nid = sp_data[i].nid;
             Tree::TreeNode &node = nodes_data[nid];
             node.is_leaf = true;
             nodes_data[node.lch_index].is_valid = false;
@@ -130,7 +167,7 @@ void TreeBuilder::update_tree(SyncArray<float> &gain, SyncArray<> &split, Tree &
         }
     }
 }
-*/
+
 
 SyncArray<GHPair>
 HistTreeBuilder::compute_histogram(SyncArray<GHPair> &gradients, HistCut &cut,
