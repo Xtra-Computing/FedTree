@@ -25,10 +25,12 @@ public:
     };
     int pid;
     AdditivelyHE::PaillierPublicKey publicKey;
+    AdditivelyHE::PaillierPublicKey serverKey;
+    std::unique_ptr<TreeBuilder> fbuilder;
+//    vector<SplitCandidate> split_candidates;
 
 private:
     DataSet dataset;
-    std::unique_ptr<TreeBuilder> fbuilder;
     AdditivelyHE HE;
     AdditivelyHE::PaillierPrivateKey privateKey;
     DPnoises<double> DP;

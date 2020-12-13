@@ -168,7 +168,6 @@ void TreeBuilder::update_tree(SyncArray<SplitPoint> sp, Tree &tree, float_type r
     }
 }
 
-
 SyncArray<GHPair>
 HistTreeBuilder::compute_histogram(SyncArray<GHPair> &gradients, HistCut &cut,
                                    SyncArray<unsigned char> &dense_bin_id) {

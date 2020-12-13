@@ -15,6 +15,7 @@
 class Server {
     void propose_split_candidates();
     void send_info(string info_type);
+//    void send_info(vector<Party> &parties, AdditivelyHE::PaillierPublicKey serverKey,vector<SplitCandidate>candidates);
     void sum_histograms();
 
 private:
