@@ -69,7 +69,8 @@ TEST_F(TreeBuilderTest, compute_histogram) {
 
     SyncArray<GHPair> hist(5);
     HistTreeBuilder htb;
-    hist.copy_from(htb.compute_histogram(gradients, cut, dense_bin_id));
+    htb.compute_histogram(gradients, cut, dense_bin_id, false);
+    hist.copy_from(htb.get_hist());
     auto hist_data = hist.host_data();
     EXPECT_NEAR(hist_data[0].g, 0.4, 1e-5);
     EXPECT_NEAR(hist_data[0].h, 0.6, 1e-5);
@@ -101,7 +102,8 @@ TEST_F(TreeBuilderTest, merge_histogram_server) {
 
     SyncArray<GHPair> merged_hist(3);
     HistTreeBuilder htb;
-    merged_hist.copy_from(htb.merge_histograms_server_propose(hists));
+    htb.merge_histograms_server_propose(hists, false);
+    merged_hist.copy_from(htb.get_hist());
     auto hist_data = merged_hist.host_data();
     EXPECT_NEAR(hist_data[0].g, 0.21, 1e-5);
     EXPECT_NEAR(hist_data[0].h, 0.42, 1e-5);
@@ -147,9 +149,10 @@ TEST_F(TreeBuilderTest, merge_histogram_clients) {
 //    EXPECT_FLOAT_EQ(htb.merge_histograms_client_propose(hists, cuts)[8], 0);
 //    EXPECT_FLOAT_EQ(htb.merge_histograms_client_propose(hists, cuts)[9], 2);
 
-    SyncArray<GHPair> merged_hist(33);
+    SyncArray<GHPair> merged_hist(31);
     HistTreeBuilder htb;
-    merged_hist.copy_from(htb.merge_histograms_client_propose(hists, cuts));
+    htb.merge_histograms_client_propose(hists, cuts, false);
+    merged_hist.copy_from(htb.get_hist());
     auto hist_data = merged_hist.host_data();
     EXPECT_NEAR(hist_data[0].g, 0.5, 1e-5);
     EXPECT_NEAR(hist_data[1].g, 0.5, 1e-5);
@@ -158,16 +161,4 @@ TEST_F(TreeBuilderTest, merge_histogram_clients) {
     EXPECT_NEAR(hist_data[4].g, 1.5, 1e-5);
     EXPECT_NEAR(hist_data[5].g, 1.5, 1e-5);
     EXPECT_NEAR(hist_data[6].g, 1, 1e-5);
-    EXPECT_NEAR(hist_data[7].g, 1, 1e-5);
-    EXPECT_NEAR(hist_data[8].g, 0.5, 1e-5);
-    EXPECT_NEAR(hist_data[9].g, 1, 1e-5);
-    EXPECT_NEAR(hist_data[10].g, 1.5, 1e-5);
-    EXPECT_NEAR(hist_data[11].g, 1.5, 1e-5);
-    EXPECT_NEAR(hist_data[12].g, 1.5, 1e-5);
-    EXPECT_NEAR(hist_data[13].g, 1, 1e-5);
-    EXPECT_NEAR(hist_data[14].g, 1.25, 1e-5);
-    EXPECT_NEAR(hist_data[15].g, 1.5, 1e-5);
-    EXPECT_NEAR(hist_data[16].g, 1.5, 1e-5);
-    EXPECT_NEAR(hist_data[17].g, 1.5, 1e-5);
-    EXPECT_NEAR(hist_data[18].g, 0.5, 1e-5);
 }
