@@ -42,11 +42,11 @@ void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FL
 //            }
 //        }
 //    }
-//}
+}
 
 
 void FLtrainer::vertical_fl_trainer(vector<Party> &parties, Server &server, FLParam &params){
-    parties[0].homo_init();
+//    parties[0].homo_init();
 //    parties[0].send_info();
 //    for (int i = 0; i < params.gbdt_param.n_trees; i++){
 //        parties[0].update_gradients();

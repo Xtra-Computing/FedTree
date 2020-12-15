@@ -129,6 +129,7 @@ void Tree::reorder_nid() {
     }
 }
 
+/*
 void Tree::compute_leaf_value() {
     Tree::TreeNode *nodes_data = this->nodes.host_data();
     for(int i = 0; i < this->nodes.size(); i++) {
@@ -137,6 +138,7 @@ void Tree::compute_leaf_value() {
         }
     }
 }
+*/
 
 int Tree::try_prune_leaf(int nid, int np, float_type gamma, vector<int> &leaf_child_count) {
     Tree::TreeNode *nodes_data = nodes.host_data();
