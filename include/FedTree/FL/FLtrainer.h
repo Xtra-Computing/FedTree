@@ -10,6 +10,7 @@
 // Todo: different federated training algorithms including horizontal GBDT and vertical GBDT.
 
 class FLtrainer {
+public:
     void horizontal_fl_trainer(vector<Party> &parties, Server &server, FLParam &params);
 
     void vertical_fl_trainer(vector<Party> &parties, Server &server, FLParam &params);

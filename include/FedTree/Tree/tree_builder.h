@@ -9,6 +9,8 @@
 #include "FedTree/dataset.h"
 #include "FedTree/Encryption/HE.h"
 #include "tree.h"
+#include "splitpoint.h"
+#include "hist_cut.h"
 
 class TreeBuilder {
 public:
@@ -27,9 +29,13 @@ public:
 
     SyncArray<int_float> best_idx_gain(SyncArray<float_type> &gain, int n_bins, int level, int n_split);
 
-    void update_tree();
+    void find_split (SyncArray<SplitPoint> &sp, int n_nodes_in_level, Tree tree, SyncArray<int_float> best_idx_gain, int nid_offset, HistCut cut, SyncArray<GHPair> hist, int n_bins);
 
-//    virtual void find_split(int level, int device_id) = 0;
+    void update_tree(SyncArray<SplitPoint> sp, Tree &tree, float_type lambda, float_type rt_eps);
+
+    void merge_histograms();
+
+    void update_gradients(SyncArray<GHPair> &gradients, SyncArray<float_type> &y, SyncArray<float_type> &y_p);
 
 //    virtual void update_ins2node_id() = 0;
 
@@ -59,8 +65,7 @@ protected:
 //    int n_instances;
     vector<Tree> trees;
 //    SyncArray<int> ins2node_id;
-//    SyncArray<SplitPoint> sp;
-//    SyncArray<GHPair> gradients;
+    SyncArray<SplitPoint> sp;
 //    vector<bool> has_split;
 };
 

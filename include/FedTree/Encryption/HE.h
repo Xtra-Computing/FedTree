@@ -39,6 +39,10 @@ public:
     static float decrypt(PaillierPrivateKey privateKey, EncryptedNumber encrypted_value);
     // aggregate encrypted numbers
     static EncryptedNumber aggregate(EncryptedNumber encrypted_number1, EncryptedNumber encrypted_number2);
+    // aggregate encrypted numbers with scalar
+    EncryptedNumber aggregate_scalar(EncryptedNumber encrypted_number1, float scalar);
+    // multiply encrypted numbers with scalar
+    EncryptedNumber multiply_scalar(EncryptedNumber encrypted_number1, float scalar);
 };
 
 #endif //FEDERATEDLEARNINH_HE_H
