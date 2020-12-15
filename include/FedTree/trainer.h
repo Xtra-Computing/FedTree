@@ -5,9 +5,14 @@
 #ifndef FEDTREE_TRAINER_H
 #define FEDTREE_TRAINER_H
 
-#include "common.h"
-#include "tree.h"
-#include "dataset.h"
+#include "FedTree/common.h"
+#include "FedTree/Tree/tree.h"
+#include "FedTree/dataset.h"
+#include "FedTree/Tree/gbdt.h"
+
+
+
+
 
 class TreeTrainer{
 public:

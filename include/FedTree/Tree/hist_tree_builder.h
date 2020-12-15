@@ -12,7 +12,7 @@ class HistTreeBuilder : public TreeBuilder {
 public:
 
 
-//    void init(const DataSet &dataset, const GBDTParam &param) override;
+    void init(const DataSet &dataset, const GBDTParam &param) override;
 
     void get_bin_ids();
 

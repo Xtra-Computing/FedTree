@@ -7,14 +7,18 @@
 
 //Todo: the GBDT model, train a tree, update gradients
 #include "tree.h"
+#include "FedTree/dataset.h"
 
 class GBDT {
-    vector<vector<Tree>> gbdts;
-};
+    vector<vector<Tree>> trees;
 
+    GBDT() = default;
 
-class GBDTbuilder {
+    GBDT(const vector<vector<Tree>> gbdt){
+        trees = gbdt;
+    }
 
+    void train(GBDTParam &param, const DataSet &dataset);
 };
 
 #endif //FEDTREE_GBDT_H

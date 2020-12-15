@@ -12,6 +12,51 @@
 #include "thrust/binary_search.h"
 #include "FedTree/util/multi_device.h"
 
+void HistTreeBuilder::init(const DataSet &dataset, const GBMParam &param) {
+    TreeBuilder::init(dataset, param);
+    //TODO refactor
+    //init shards
+//    shards = vector<Shard>(n_device);
+//    vector<std::unique_ptr<SparseColumns>> v_columns(param.n_device);
+//    for (int i = 0; i < param.n_device; ++i) {
+//        v_columns[i].reset(&shards[i].columns);
+//        shards[i].ignored_set = SyncArray<bool>(dataset.n_features());
+//    }
+//    SparseColumns columns;
+//    if(dataset.use_cpu)
+//        columns.csr2csc_cpu(dataset, v_columns);
+//    else
+//        columns.csr2csc_gpu(dataset, v_columns);
+
+    dataset.csr_to_csc();
+//    cut = vector<HistCut>(param.n_device);
+//    dense_bin_id = SyncArray<unsigned char>();
+//    last_hist = MSyncArray<GHPair>(param.n_device);
+
+    cut.get_cut_points2(dataset, param.max_num_bin, n_instances);
+
+
+    DO_ON_MULTI_DEVICES(param.n_device, [&](int device_id){
+        if(dataset.use_cpu)
+            cut[device_id].get_cut_points2(shards[device_id].columns, param.max_num_bin, n_instances);
+        else
+            cut[device_id].get_cut_points3(shards[device_id].columns, param.max_num_bin, n_instances);
+        last_hist[device_id].resize((2 << param.depth) * cut[device_id].cut_points_val.size());
+    });
+
+    get_bin_ids();
+    for (int i = 0; i < param.n_device; ++i) {
+        v_columns[i].release();
+    }
+    // SyncMem::clear_cache();
+    int gpu_num;
+    cudaError_t err = cudaGetDeviceCount(&gpu_num);
+    std::atexit([](){
+        SyncMem::clear_cache();
+    });
+}
+
+
 
 void HistTreeBuilder::find_split(int level) {
     TIMED_FUNC(timerObj);
@@ -41,9 +86,6 @@ void HistTreeBuilder::find_split(int level) {
     get_best_gain_in_a_level(gain, best_idx_gain, n_nodes_in_level, n_bins);
     get_split_points(best_idx_gain, n_nodes_in_level, hist_fid);
 }
-
-
-
 
 void HistTreeBuilder::compute_histogram_in_a_level(int level, int n_max_splits, int n_bins, int n_nodes_in_level, transform_iterator& hist_fid) {
     std::chrono::high_resolution_clock timer;
