@@ -11,14 +11,25 @@
 class HistTreeBuilder : public TreeBuilder {
 public:
 
+
 //    void init(const DataSet &dataset, const GBDTParam &param) override;
 
     void get_bin_ids();
 
+    void find_split(int level) override;
+
+    void compute_histogram_in_a_level(int level, int n_max_splits, int n_bins, int n_nodes_in_level, transform_iterator& hist_fid)
+
+    void compute_gain_in_a_level(SyncArrary<float_type> &gain, int n_max_splits, int n_bins, transform_iterator& hist_fid);
+
+    void get_best_gain_in_a_level(SyncArray<float_type> &gain, SyncArray<int_float> &best_idx_gain, int n_nodes_in_level, int n_bins);
+
+    void get_split_points(SyncArray<int_float> &best_idx_gain);
+
     SyncArray<GHPair> compute_histogram(SyncArray<GHPair> &gradients, HistCut &cut,
                                         SyncArray<unsigned char> &dense_bin_id);
 
-//    void find_split(int level, int device_id) override;
+
 
     virtual ~HistTreeBuilder() {};
 
@@ -33,7 +44,7 @@ public:
     merge_histograms_client_propose(MSyncArray<GHPair> &histograms, vector<HistCut> &cuts);
 
 private:
-    vector<HistCut> cut;
+    HistCut cut;
     // MSyncArray<unsigned char> char_dense_bin_id;
     SyncArray<unsigned char> dense_bin_id;
     SyncArray<GHPair> last_hist;

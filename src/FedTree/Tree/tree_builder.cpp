@@ -2,7 +2,7 @@
 //
 
 #include "FedTree/Tree/tree_builder.h"
-#include "FedTree/Tree/hist_tree_builder.h"
+
 #include "thrust/iterator/counting_iterator.h"
 #include "thrust/iterator/transform_iterator.h"
 #include "thrust/iterator/discard_iterator.h"
@@ -10,15 +10,56 @@
 #include <thrust/execution_policy.h>
 #include <math.h>
 
-float_type
-TreeBuilder::compute_gain(GHPair father, GHPair lch, GHPair rch, float_type min_child_weight, float_type lambda) {
-    if (lch.h >= min_child_weight && rch.h >= min_child_weight) {
-        return (lch.g * lch.g) / (lch.h + lambda) + (rch.g * rch.g) / (rch.h + lambda) -
-               (father.g * father.g) / (father.h + lambda);
-    } else {
-        return 0;
+
+vector<Tree> TreeBuilder::build_approximate(const SyncArray<GHPair> &gradients) {
+    vector<Tree> trees(param.tree_per_rounds);
+    TIMED_FUNC(timerObj);
+    //Todo: add column sampling
+
+    for (int k = 0; k < param.tree_per_rounds; ++k) {
+        Tree &tree = trees[k];
+
+        this->ins2node_id.resize(n_instances);
+        this->gradients.set_host_data(const_cast<GHPair *>(gradients.host_data() + k * n_instances));
+        this->trees.init_CPU(this->gradients, param);
+
+        for (int level = 0; level < param.depth; ++level) {
+            //here
+            find_split(level);
+
+
+            split_point_all_reduce(level);
+            {
+                TIMED_SCOPE(timerObj, "apply sp");
+                update_tree();
+                update_ins2node_id();
+                {
+                    LOG(TRACE) << "gathering ins2node id";
+                    //get final result of the reset instance id to node id
+                    bool has_split = false;
+                    for (int d = 0; d < param.n_device; d++) {
+                        has_split |= this->has_split[d];
+                    }
+                    if (!has_split) {
+                        LOG(INFO) << "no splittable nodes, stop";
+                        break;
+                    }
+                }
+                ins2node_id_all_reduce(level);
+            }
+        }
+        DO_ON_MULTI_DEVICES(param.n_device, [&](int device_id){
+            this->trees[device_id].prune_self(param.gamma);
+        });
+        predict_in_training(k);
+        tree.nodes.resize(this->trees.front().nodes.size());
+        tree.nodes.copy_from(this->trees.front().nodes);
     }
+    return trees;
 }
+
+
+
 
 SyncArray<float_type> TreeBuilder::gain(Tree &tree, SyncArray<GHPair> &hist, int level, int n_split) {
     SyncArray<float_type> gain(n_split);
@@ -55,31 +96,6 @@ SyncArray<float_type> TreeBuilder::gain(Tree &tree, SyncArray<GHPair> &hist, int
 }
 
 
-SyncArray<int_float> TreeBuilder::best_idx_gain(SyncArray<float_type> &gain, int n_bins, int level, int n_split) {
-    int n_nodes_in_level = static_cast<int>(pow(2, level));
-    SyncArray<int_float> best_idx_gain(n_nodes_in_level);
-    auto nid = [this, n_bins](int index) {
-        return index/n_bins;
-    };
-    auto arg_abs_max = [](const int_float &a, const int_float &b) {
-        if (fabsf(thrust::get<1>(a)) == fabsf(thrust::get<1>(b)))
-            return thrust::get<0>(a) < thrust::get<0>(b) ? a : b;
-        else
-            return fabsf(thrust::get<1>(a)) > fabsf(thrust::get<1>(b)) ? a : b;
-    };
-    auto nid_iterator = thrust::make_transform_iterator(thrust::counting_iterator<int>(0), nid);
-    reduce_by_key(
-            thrust::host,
-            nid_iterator, nid_iterator + n_split,
-            make_zip_iterator(make_tuple(thrust::counting_iterator<int>(0), gain.host_data())),
-            thrust::make_discard_iterator(),
-            best_idx_gain.host_data(),
-            thrust::equal_to<int>(),
-            arg_abs_max
-    );
-
-    return best_idx_gain;
-}
 
 
 TreeBuilder *TreeBuilder::create(std::string name) {
@@ -132,35 +148,7 @@ void TreeBuilder::update_tree(SyncArray<float> &gain, SyncArray<> &split, Tree &
 }
 */
 
-SyncArray<GHPair>
-HistTreeBuilder::compute_histogram(SyncArray<GHPair> &gradients, HistCut &cut,
-                                   SyncArray<unsigned char> &dense_bin_id) {
-    int n_columns = cut.cut_row_ptr.size() - 1;
-    int n_instances = dense_bin_id.size() / n_columns;
-    auto gh_data = gradients.host_data();
-    auto cut_row_ptr_data = cut.cut_row_ptr.host_data();
-    auto dense_bin_id_data = dense_bin_id.host_data();
-    int n_bins = n_columns + cut_row_ptr_data[n_columns];
 
-    SyncArray<GHPair> hist(n_bins);
-    auto hist_data = hist.host_data();
-
-    for (int i = 0; i < n_instances * n_columns; i++) {
-        int iid = i / n_columns;
-        int fid = i % n_columns;
-        unsigned char bid = dense_bin_id_data[iid * n_columns + fid];
-
-        int feature_offset = cut_row_ptr_data[fid] + fid;
-        const GHPair src = gh_data[iid];
-        GHPair &dest = hist_data[feature_offset + bid];
-        if (src.h != 0)
-            dest.h += src.h;
-        if (src.g != 0)
-            dest.g += src.g;
-    }
-
-    return hist;
-}
 
 //assumption: GHPairs in the histograms of all clients are arranged in the same order
 

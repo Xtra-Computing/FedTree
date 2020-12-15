@@ -11,12 +11,20 @@
 
 class TreeBuilder {
 public:
+    virtual void find_split(int level) = 0;
+
+    virtual void update_ins2node_id() = 0;
+
+    vector<Tree> build_approximate(const SyncArray<GHPair> &gradients) override;
+
+
+
     // Refer to ThunderGBM hist_tree_builder.cu find_split
-    void compute_histogram();
 
-    static float_type compute_gain(GHPair father, GHPair lch, GHPair rch, float_type min_child_weight, float_type lambda);
 
-    SyncArray<float_type> gain(Tree &tree, SyncArray<GHPair> &hist, int level, int n_split);
+    float_type compute_gain(GHPair father, GHPair lch, GHPair rch, float_type min_child_weight, float_type lambda);
+
+//    SyncArray<float_type> gain(Tree &tree, SyncArray<GHPair> &hist, int level, int n_split);
 
     void get_split(int level, int device_id);
 
@@ -55,10 +63,12 @@ protected:
     SyncArray<GHPair> gradients;
     GBDTParam param;
 //    vector<Shard> shards;
-//    int n_instances;
+    DataSet& dataset;
+    int n_instances;
     vector<Tree> trees;
-//    SyncArray<int> ins2node_id;
-//    SyncArray<SplitPoint> sp;
+
+    SyncArray<int> ins2node_id;
+    SyncArray<SplitPoint> sp;
 //    SyncArray<GHPair> gradients;
 //    vector<bool> has_split;
 };

@@ -57,6 +57,14 @@ public:
         return device_data() + size();
     };
 
+    T *host_end() {
+        return host_data() + size();
+    };
+
+    const T *host_end() const {
+        return host_data() + size();
+    }
+
     void set_host_data(T *host_ptr) {
         mem->set_host_data(host_ptr);
     }
