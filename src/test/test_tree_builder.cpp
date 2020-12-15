@@ -113,6 +113,7 @@ TEST_F(TreeBuilderTest, merge_histogram_server) {
     EXPECT_NEAR(hist_data[2].h, 1.26, 1e-5);
 }
 
+/*
 TEST_F(TreeBuilderTest, merge_histogram_clients) {
     printf("### Test merge_histogram clients###\n");
 
@@ -162,3 +163,4 @@ TEST_F(TreeBuilderTest, merge_histogram_clients) {
     EXPECT_NEAR(hist_data[5].g, 1.5, 1e-5);
     EXPECT_NEAR(hist_data[6].g, 1, 1e-5);
 }
+*/
