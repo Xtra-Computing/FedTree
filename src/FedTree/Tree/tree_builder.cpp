@@ -32,7 +32,7 @@ SyncArray<float_type> TreeBuilder::gain(Tree &tree, SyncArray<GHPair> &hist, int
     float_type *gain_data = gain.host_data();
     for (int i = 0; i < n_split; i++) {
         int n_bins = hist.size();
-        int nid = i/n_bins + nid_offset;
+        int nid = i / n_bins + nid_offset;
         if (nodes_data[nid].is_valid) {
             GHPair father_gh = nodes_data[nid].sum_gh_pair;
 //            GHPair p_missing_gh = missing_gh_data[pid];
@@ -59,7 +59,7 @@ SyncArray<int_float> TreeBuilder::best_idx_gain(SyncArray<float_type> &gain, int
     int n_nodes_in_level = static_cast<int>(pow(2, level));
     SyncArray<int_float> best_idx_gain(n_nodes_in_level);
     auto nid = [this, n_bins](int index) {
-        return index/n_bins;
+        return index / n_bins;
     };
     auto arg_abs_max = [](const int_float &a, const int_float &b) {
         if (fabsf(thrust::get<1>(a)) == fabsf(thrust::get<1>(b)))
@@ -168,9 +168,9 @@ void TreeBuilder::update_tree(SyncArray<SplitPoint> sp, Tree &tree, float_type r
     }
 }
 
-SyncArray<GHPair>
-HistTreeBuilder::compute_histogram(SyncArray<GHPair> &gradients, HistCut &cut,
-                                   SyncArray<unsigned char> &dense_bin_id) {
+
+void HistTreeBuilder::compute_histogram(SyncArray<GHPair> &gradients, HistCut &cut,
+                                        SyncArray<unsigned char> &dense_bin_id, bool enc) {
     int n_columns = cut.cut_row_ptr.size() - 1;
     int n_instances = dense_bin_id.size() / n_columns;
     auto gh_data = gradients.host_data();
@@ -180,6 +180,12 @@ HistTreeBuilder::compute_histogram(SyncArray<GHPair> &gradients, HistCut &cut,
 
     SyncArray<GHPair> hist(n_bins);
     auto hist_data = hist.host_data();
+    if (enc) {
+        AdditivelyHE::PaillierPublicKey pk = gh_data[0].pk;
+        for (int i = 0; i < n_bins; i++) {
+            hist_data[i].homo_encrypt(pk);
+        }
+    }
 
     for (int i = 0; i < n_instances * n_columns; i++) {
         int iid = i / n_columns;
@@ -189,37 +195,44 @@ HistTreeBuilder::compute_histogram(SyncArray<GHPair> &gradients, HistCut &cut,
         int feature_offset = cut_row_ptr_data[fid] + fid;
         const GHPair src = gh_data[iid];
         GHPair &dest = hist_data[feature_offset + bid];
-        if (src.h != 0)
-            dest.h += src.h;
-        if (src.g != 0)
-            dest.g += src.g;
+        if (enc)
+            dest = dest.homo_add(src);
+        else
+            dest = dest + src;
     }
 
-    return hist;
+    last_hist.resize(n_bins);
+    last_hist.copy_from(hist);
 }
 
 //assumption: GHPairs in the histograms of all clients are arranged in the same order
 
-SyncArray<GHPair>
-HistTreeBuilder::merge_histograms_server_propose(MSyncArray<GHPair> &histograms) {
+void HistTreeBuilder::merge_histograms_server_propose(MSyncArray<GHPair> &histograms, bool enc) {
 
     int n_bins = histograms[0].size();
     SyncArray<GHPair> merged_hist(n_bins);
     auto merged_hist_data = merged_hist.host_data();
+    if (enc) {
+        AdditivelyHE::PaillierPublicKey pk = histograms[0].host_data()[0].pk;
+        for (int i = 0; i < n_bins; i++) {
+            merged_hist_data[i].homo_encrypt(pk);
+        }
+    }
 
     for (int i = 0; i < histograms.size(); i++) {
         auto hist_data = histograms[i].host_data();
         for (int j = 0; j < n_bins; j++) {
             GHPair &src = hist_data[j];
             GHPair &dest = merged_hist_data[j];
-            if (src.h != 0)
-                dest.h += src.h;
-            if (src.g != 0)
-                dest.g += src.g;
+            if (enc)
+                dest = dest.homo_add(src);
+            else
+                dest = dest + src;
         }
     }
 
-    return merged_hist;
+    last_hist.resize(n_bins);
+    last_hist.copy_from(merged_hist);
 }
 
 
@@ -228,8 +241,7 @@ HistTreeBuilder::merge_histograms_server_propose(MSyncArray<GHPair> &histograms)
 //assumption 3: cut_val_data is sorted by feature id and split value, eg: [f0(0.1), f0(0.2), f0(0.3), f1(100), f1(200),...]
 //assumption 4: gradients and hessians are near uniformly distributed
 
-SyncArray<GHPair>
-HistTreeBuilder::merge_histograms_client_propose(MSyncArray<GHPair> &histograms, vector<HistCut> &cuts) {
+void HistTreeBuilder::merge_histograms_client_propose(MSyncArray<GHPair> &histograms, vector<HistCut> &cuts, bool enc) {
     CHECK_EQ(histograms.size(), cuts.size());
     int n_columns = cuts[0].cut_row_ptr.size() - 1;
     vector<float_type> low(n_columns, std::numeric_limits<float>::max());
@@ -255,7 +267,6 @@ HistTreeBuilder::merge_histograms_client_propose(MSyncArray<GHPair> &histograms,
         bin_edges.push_back(v);
     }
 
-//    return bin_edges;
     int n_bins = 0;
     vector<float_type> merged_bin_edges;
     vector<int> merged_bins_count;
@@ -271,7 +282,6 @@ HistTreeBuilder::merge_histograms_client_propose(MSyncArray<GHPair> &histograms,
         for (int j = 0; j <= count; j++)
             merged_bin_edges.push_back(std::min(low[i] + j * resolution[i], high[i]));
     }
-//    return merged_bin_edges;
 
     SyncArray<GHPair> merged_hist(n_bins);
     auto merged_hist_data = merged_hist.host_data();
@@ -293,31 +303,43 @@ HistTreeBuilder::merge_histograms_client_propose(MSyncArray<GHPair> &histograms,
                         GHPair &dest = merged_hist_data[k];
                         GHPair &src = hist_data[m - j];
                         float_type factor = (bin_high - client_low) / (client_high - client_low);
-                        if (src.h != 0)
-                            dest.h += src.h * factor;
-                        if (src.g != 0)
-                            dest.g += src.g * factor;
+                        dest.g += src.g * factor;
+                        dest.h += src.h * factor;
                     } else if (bin_low >= client_low && bin_high <= client_high) {
                         GHPair &dest = merged_hist_data[k];
                         GHPair &src = hist_data[m];
                         float_type factor = (bin_high - bin_low) / (client_high - client_low);
-                        if (src.h != 0)
-                            dest.h += src.h * factor;
-                        if (src.g != 0)
-                            dest.g += src.g * factor;
+                        dest.g += src.g * factor;
+                        dest.h += src.h * factor;
                     } else if (bin_high > client_high && bin_low < client_high) {
                         GHPair &dest = merged_hist_data[k];
                         GHPair &src = hist_data[m];
                         float_type factor = (client_high - bin_low) / (client_high - client_low);
-                        if (src.h != 0)
-                            dest.h += src.h * factor;
-                        if (src.g != 0)
-                            dest.g += src.g * factor;
+                        dest.g += src.g * factor;
+                        dest.h += src.h * factor;
                     }
                 }
             }
         }
     }
+    last_hist.resize(n_bins);
+    last_hist.copy_from(merged_hist);
+}
 
-    return merged_hist;
+void TreeBuilder::encrypt_gradients(AdditivelyHE::PaillierPublicKey pk) {
+    auto gradients_data = gradients.host_data();
+    for (int i = 0; i < gradients.size(); i++)
+        gradients_data[i].homo_encrypt(pk);
+}
+
+SyncArray<GHPair> TreeBuilder::get_gradients() {
+    SyncArray<GHPair> gh;
+    gh.resize(gradients.size());
+    gh.copy_from(gradients);
+    return gh;
+}
+
+void TreeBuilder::set_gradients(SyncArray<GHPair> &gh) {
+    gradients.resize(gh.size());
+    gradients.copy_from(gh);
 }
