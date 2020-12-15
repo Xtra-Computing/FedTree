@@ -53,6 +53,26 @@ typedef float float_type;
 struct GHPair {
     float_type g;
     float_type h;
+    AdditivelyHE::EncryptedNumber g_enc;
+    AdditivelyHE::EncryptedNumber h_enc;
+    AdditivelyHE::PaillierPublicKey pk;
+
+    HOST_DEVICE void homo_encrypt(AdditivelyHE::PaillierPublicKey pk) {
+        g_enc = AdditivelyHE::encrypt(pk, g);
+        h_enc = AdditivelyHE::encrypt(pk, h);
+        this->pk = pk;
+        g = 0;
+        h = 0;
+    }
+
+    HOST_DEVICE GHPair homo_add(const GHPair &rhs) const {
+//        CHECK_EQ(this->pk, rhs.pk);
+        GHPair res;
+        res.homo_encrypt(pk);
+        res.g_enc = AdditivelyHE::aggregate(this->g_enc, res.g_enc);
+        res.h_enc = AdditivelyHE::aggregate(this->h_enc, res.h_enc);
+        return res;
+    }
 
     HOST_DEVICE GHPair operator+(const GHPair &rhs) const {
         GHPair res;
@@ -92,8 +112,6 @@ struct GHPair {
 typedef thrust::tuple<int, float_type> int_float;
 
 std::ostream &operator<<(std::ostream &os, const int_float &rhs);
-
-
 
 
 #endif //FEDTREE_COMMON_H

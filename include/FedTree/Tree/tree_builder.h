@@ -7,11 +7,17 @@
 #define FEDTREE_TREE_BUILDER_H
 
 #include "FedTree/dataset.h"
+#include "FedTree/Encryption/HE.h"
 #include "tree.h"
 
 class TreeBuilder {
 public:
     // Refer to ThunderGBM hist_tree_builder.cu find_split
+    void encrypt_gradients(AdditivelyHE::PaillierPublicKey pk);
+
+    SyncArray<GHPair> get_gradients();
+
+    void set_gradients(SyncArray<GHPair> &gh);
 
     static float_type compute_gain(GHPair father, GHPair lch, GHPair rch, float_type min_child_weight, float_type lambda);
 
