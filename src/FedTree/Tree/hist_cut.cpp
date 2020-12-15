@@ -2,10 +2,13 @@
 
 #include "FedTree/Tree/hist_cut.h"
 #include "FedTree/util/device_lambda.h"
+#include <thrust/iterator/constant_iterator.h>
+#include <thrust/transform.h>
 #include "thrust/unique.h"
+#include "thrust/execution_policy.h"
+
 
 void HistCut::get_cut_points(DataSet dataset, int max_num_bins, int n_instances){
-    LOG(INFO) << "Getting cut points";
 
     int n_column = dataset.n_features();
     SyncArray<float> unique_vals(n_column * n_instances);
