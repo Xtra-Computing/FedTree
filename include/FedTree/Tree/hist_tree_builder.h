@@ -20,6 +20,8 @@ public:
 
     void compute_histogram_in_a_level(int level, int n_max_splits, int n_bins, int n_nodes_in_level, transform_iterator& hist_fid)
 
+    void compute_histogram_in_a_node(SyncArray<GHPair> &gradients, HistCut &cut, SyncArray<unsigned char> &dense_bin_id, bool enc)
+
     void compute_gain_in_a_level(SyncArrary<float_type> &gain, int n_max_splits, int n_bins, transform_iterator& hist_fid);
 
     void get_best_gain_in_a_level(SyncArray<float_type> &gain, SyncArray<int_float> &best_idx_gain, int n_nodes_in_level, int n_bins);
@@ -30,7 +32,6 @@ public:
                                         SyncArray<unsigned char> &dense_bin_id);
 
 
-
     virtual ~HistTreeBuilder() {};
 
 //    void update_ins2node_id() override;
@@ -38,10 +39,15 @@ public:
 //support equal division or weighted division
     void propose_split_candidates();
 
-    SyncArray<GHPair> merge_histograms_server_propose(MSyncArray<GHPair> &histograms);
+    void merge_histograms_server_propose(MSyncArray<GHPair> &histograms, bool enc);
 
-    SyncArray<GHPair>
-    merge_histograms_client_propose(MSyncArray<GHPair> &histograms, vector<HistCut> &cuts);
+    void merge_histograms_client_propose(MSyncArray<GHPair> &histograms, vector<HistCut> &cuts, bool enc);
+
+    SyncArray<GHPair> get_hist() {
+        SyncArray<GHPair> h(last_hist.size());
+        h.copy_from(last_hist);
+        return h;
+    }
 
 private:
     HistCut cut;

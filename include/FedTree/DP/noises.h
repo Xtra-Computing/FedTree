@@ -18,7 +18,7 @@ public:
         *data += noise;
     }
 
-    void add_laplasian_noise(T& data, float variance) {
+    void add_laplacian_noise(T& data, float variance) {
         // a r.v. following Laplace(0, b) is equivalent to the difference of 2 i.i.d Exp(1/b) r.v.
         double b = sqrt(variance/2);
         std::default_random_engine generator;

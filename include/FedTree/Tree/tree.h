@@ -93,6 +93,8 @@ public:
 
     void prune_self(float_type gamma);
 
+    void compute_leaf_value();
+
     private:
     void preorder_traversal(int nid, int max_depth, int depth, string &s) const;
 

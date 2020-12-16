@@ -7,6 +7,7 @@
 #define FEDTREE_TREE_BUILDER_H
 
 #include "FedTree/dataset.h"
+#include "FedTree/Encryption/HE.h"
 #include "tree.h"
 #include "splitpoint.h"
 #include "hist_cut.h"
@@ -23,6 +24,11 @@ public:
 
     // Refer to ThunderGBM hist_tree_builder.cu find_split
 
+    void encrypt_gradients(AdditivelyHE::PaillierPublicKey pk);
+
+    SyncArray<GHPair> get_gradients();
+
+    void set_gradients(SyncArray<GHPair> &gh);
 
     float_type compute_gain(GHPair father, GHPair lch, GHPair rch, float_type min_child_weight, float_type lambda);
 
@@ -30,7 +36,7 @@ public:
 
     void get_split(int level, int device_id);
 
-    SyncArray<int_float> best_idx_gain(SyncArray<float_type> &gain, int n_bins, int level, int n_split);
+//    SyncArray<int_float> best_idx_gain(SyncArray<float_type> &gain, int n_bins, int level, int n_split);
 
     void find_split (SyncArray<SplitPoint> &sp, int n_nodes_in_level, Tree tree, SyncArray<int_float> best_idx_gain, int nid_offset, HistCut cut, SyncArray<GHPair> hist, int n_bins);
 
