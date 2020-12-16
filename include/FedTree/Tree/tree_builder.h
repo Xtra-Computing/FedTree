@@ -30,13 +30,7 @@ public:
 
     void set_gradients(SyncArray<GHPair> &gh);
 
-    float_type compute_gain(GHPair father, GHPair lch, GHPair rch, float_type min_child_weight, float_type lambda);
-
-//    SyncArray<float_type> gain(Tree &tree, SyncArray<GHPair> &hist, int level, int n_split);
-
     void get_split(int level, int device_id);
-
-//    SyncArray<int_float> best_idx_gain(SyncArray<float_type> &gain, int n_bins, int level, int n_split);
 
     void find_split (SyncArray<SplitPoint> &sp, int n_nodes_in_level, Tree tree, SyncArray<int_float> best_idx_gain, int nid_offset, HistCut cut, SyncArray<GHPair> hist, int n_bins);
 
@@ -46,23 +40,23 @@ public:
 
     void update_gradients(SyncArray<GHPair> &gradients, SyncArray<float_type> &y, SyncArray<float_type> &y_p);
 
-//    virtual void update_ins2node_id() = 0;
 
 //    virtual void init(const DataSet &dataset, const GBDTParam &param) {
 //        this->param = param;
 //    };
 
-    virtual const SyncArray<float_type> &get_y_predict(){ return y_predict; };
-
     static TreeBuilder *create(std::string name);
 
-//    virtual void update_tree();
+    virtual void update_tree();
 
-//    void predict_in_training(int k);
+//for multi-device
+//    virtual void ins2node_id_all_reduce(int depth);
+
+    void predict_in_training(int k);
 
 //    virtual void split_point_all_reduce(int depth);
 
-//    virtual void ins2node_id_all_reduce(int depth);
+
 
     virtual ~TreeBuilder(){};
 

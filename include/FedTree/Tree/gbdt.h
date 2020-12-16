@@ -19,6 +19,10 @@ class GBDT {
     }
 
     void train(GBDTParam &param, const DataSet &dataset);
+
+    vector<float_type> predict(const GBDTParam &model_param, const DataSet &dataSet);
+
+    void predict_raw(const GBDTParam &model_param, const DataSet &dataSet, SyncArray<float_type> &y_predict);
 };
 
 #endif //FEDTREE_GBDT_H

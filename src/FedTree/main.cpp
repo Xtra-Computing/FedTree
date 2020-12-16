@@ -42,5 +42,32 @@ int main(int argc, char** argv){
     test_dataset.load_from_file(fl_param.test_dataset_path);
     acc = model.predict(test_dataset);
 */
+
+//centralized training test
+    FLParam fl_param;
+    Parser parser;
+    parser.parse_param(fl_param, argc, argv);
+    GBDTParam &model_param = fl_param.gbdt_param;
+    if(model_param.verbose == 0) {
+        el::Loggers::reconfigureAllLoggers(el::Level::Debug, el::ConfigurationType::Enabled, "false");
+        el::Loggers::reconfigureAllLoggers(el::Level::Trace, el::ConfigurationType::Enabled, "false");
+        el::Loggers::reconfigureAllLoggers(el::Level::Info, el::ConfigurationType::Enabled, "false");
+    }
+    else if (model_param.verbose == 1) {
+        el::Loggers::reconfigureAllLoggers(el::Level::Debug, el::ConfigurationType::Enabled, "false");
+        el::Loggers::reconfigureAllLoggers(el::Level::Trace, el::ConfigurationType::Enabled, "false");
+    }
+
+    if (!model_param.profiling) {
+        el::Loggers::reconfigureAllLoggers(el::ConfigurationType::PerformanceTracking, "false");
+    }
+    DataSet dataset;
+    vector<vector<Tree>> boosted_model;
+
+//    dataset.load_csc_from_file(model_param.path, model_param);
+    dataset.load_from_file(model_param.path, model_param);
+    GBDT gbdt;
+    gbdt.train(model_param, dataset);
+    parser.save_model("tgbm.model", model_param, gbdt.trees, dataset);
     return 0;
 }

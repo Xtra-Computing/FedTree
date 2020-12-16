@@ -53,13 +53,27 @@ void Booster::init(const DataSet &dataSet, const GBMParam &param) {
 
     n_devices = param.n_device;
     int n_outputs = param.num_class * dataSet.n_instances();
-    gradients = MSyncArray<GHPair>(n_devices, n_outputs);
-    y = MSyncArray<float_type>(n_devices, dataSet.n_instances());
-
-    DO_ON_MULTI_DEVICES(n_devices, [&](int device_id) {
-        y[device_id].copy_from(dataSet.y.data(), dataSet.n_instances());
-    });
+    gradients = SyncArray<GHPair>(n_outputs);
+    y = SyncArray<float_type>(dataSet.n_instances());
+    y.copy_from(dataSet.y.data(), dataSet.n_instances());
 }
 
+
+void Booster::boost(vector<vector<Tree>> &boosted_model) {
+    TIMED_FUNC(timerObj);
+    std::unique_lock<std::mutex> lock(mtx);
+
+    //update gradients
+    obj->get_gradient(y, fbuilder->get_y_predict(), gradients);
+
+//    if (param.bagging) rowSampler.do_bagging(gradients);
+    PERFORMANCE_CHECKPOINT(timerObj);
+    //build new model/approximate function
+    boosted_model.push_back(fbuilder->build_approximate(gradients));
+
+    PERFORMANCE_CHECKPOINT(timerObj);
+    //show metric on training set
+    LOG(INFO) << metric->get_name() << " = " << metric->get_score(fbuilder->get_y_predict());
+}
 
 #endif //FEDTREE_BOOSTER_H

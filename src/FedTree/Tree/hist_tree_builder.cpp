@@ -33,30 +33,69 @@ void HistTreeBuilder::init(const DataSet &dataset, const GBMParam &param) {
 //    dense_bin_id = SyncArray<unsigned char>();
 //    last_hist = MSyncArray<GHPair>(param.n_device);
 
-    cut.get_cut_points2(dataset, param.max_num_bin, n_instances);
-
-
-    DO_ON_MULTI_DEVICES(param.n_device, [&](int device_id){
-        if(dataset.use_cpu)
-            cut[device_id].get_cut_points2(shards[device_id].columns, param.max_num_bin, n_instances);
-        else
-            cut[device_id].get_cut_points3(shards[device_id].columns, param.max_num_bin, n_instances);
-        last_hist[device_id].resize((2 << param.depth) * cut[device_id].cut_points_val.size());
-    });
-
+    cut.get_cut_points_fast(dataset, param.max_num_bin, n_instances);
+    last_hist.resize((2 << param.depth) * cut.cut_points_val.size())
     get_bin_ids();
-    for (int i = 0; i < param.n_device; ++i) {
-        v_columns[i].release();
-    }
-    // SyncMem::clear_cache();
-    int gpu_num;
-    cudaError_t err = cudaGetDeviceCount(&gpu_num);
-    std::atexit([](){
-        SyncMem::clear_cache();
-    });
 }
 
+void HistTreeBuilder::get_bin_ids() {
+//    SparseColumns &columns = shards[device_id].columns;
+    HistCut &cut = this->cut;
+    auto &dense_bin_id = this->dense_bin_id;
+    using namespace thrust;
+    int n_column = dataset.n_features();
+    int nnz = dataset.csr_val.size();
+    auto cut_row_ptr = cut.cut_row_ptr.host_data();
+    auto cut_points_ptr = cut.cut_points_val.host_data();
+    auto csc_val_data = &dataset.csc_val[0];
+    auto csc_col_ptr_data = &dataset.csc_col_ptr[0];
+    SyncArray<unsigned char> bin_id;
+    bin_id.resize(nnz);
+    auto bin_id_data = bin_id.host_data();
+    int n_block = fminf((nnz / n_column - 1) / 256 + 1, 4 * 56);
+    {
+        auto lowerBound = [=]__host__(const float_type *search_begin, const float_type *search_end, float_type val) {
+            const float_type *left = search_begin;
+            const float_type *right = search_end - 1;
 
+            while (left != right) {
+                const float_type *mid = left + (right - left) / 2;
+                if (*mid <= val)
+                    right = mid;
+                else left = mid + 1;
+            }
+            return left;
+        };
+        TIMED_SCOPE(timerObj, "binning");
+
+        #pragma omp parallel for
+        for(int cid = 0; cid < n_column; cid++){
+            for(int i = csc_col_ptr_data[cid]; i < csc_col_ptr_data[cid + 1]; i++){
+                auto search_begin = cut_points_ptr + cut_row_ptr[cid];
+                auto search_end = cut_points_ptr + cut_row_ptr[cid + 1];
+                auto val = csc_val_data[i];
+                bin_id_data[i] = lowerBound(thrust::host, search_begin, search_end, val) - search_begin;
+            }
+        }
+    }
+
+    auto max_num_bin = param.max_num_bin;
+    dense_bin_id.resize(n_instances * n_column);
+    auto dense_bin_id_data = dense_bin_id.host_data();
+    auto csc_row_idx_data = columns.csc_row_idx.host_data();
+    #pragma omp parallel for
+    for(int i = 0; i < n_instances * n_column; i++){
+        dense_bin_id_data[i] = max_num_bin;
+    }
+    #pragma omp parallel for
+    for(int fid = 0; fid < n_column; fid++){
+        for(int i = csc_col_ptr_data[fid]; i < csc_col_ptr_data[fid+1]; i++){
+            int row = csc_row_idx_data[i];
+            unsigned char bid = bin_id_data[i];
+            dense_bin_id_data[row * n_column + fid] = bid;
+        }
+    }
+}
 
 void HistTreeBuilder::find_split(int level) {
     TIMED_FUNC(timerObj);
@@ -258,6 +297,14 @@ void HistTreeBuilder::compute_histogram_in_a_level(int level, int n_max_splits, 
 
 void HistTreeBuilder::compute_gain_in_a_level(SyncArrary<float_type> &gain, int n_max_splits, int n_bins, transform_iterator& hist_fid){
 //    SyncArray<float_type> gain(n_max_splits);
+    auto compute_gain = []__host__(GHPair father, GHPair lch, GHPair rch, float_type min_child_weight,
+            float_type lambda) -> float_type {
+            if (lch.h >= min_child_weight && rch.h >= min_child_weight)
+            return (lch.g * lch.g) / (lch.h + lambda) + (rch.g * rch.g) / (rch.h + lambda) -
+            (father.g * father.g) / (father.h + lambda);
+            else
+            return 0;
+    };
     const Tree::TreeNode *nodes_data = trees.nodes.host_data();
     GHPair *gh_prefix_sum_data = last_hist.host_data();
     float_type *gain_data = gain.host_data();
@@ -296,7 +343,7 @@ void HistTreeBuilder::get_best_gain_in_a_level(SyncArray<float_type> &gain, Sync
     int n_split = n_nodes_in_level*n_bins;
     {
         TIMED_SCOPE(timerObj, "get best gain");
-        auto arg_abs_max = [](const int_float &a, const int_float &b) {
+        auto arg_abs_max = []__host__(const int_float &a, const int_float &b) {
             if (fabsf(get<1>(a)) == fabsf(get<1>(b)))
                 return get<0>(a) < get<0>(b) ? a : b;
             else
@@ -357,41 +404,46 @@ void HistTreeBuilder::get_split_points(SyncArray<int_float> &best_idx_gain, int 
     LOG(DEBUG) << "split points (gain/fea_id/nid): " << sp;
 }
 
-//SyncArray<int_float> TreeBuilder::best_idx_gain_junhui(SyncArray<float_type> &gain, int n_bins, int level, int n_split) {
-//    int n_nodes_in_level = static_cast<int>(pow(2, level));
-//    SyncArray<int_float> best_idx_gain(n_nodes_in_level);
-//    auto nid = [this, n_bins](int index) {
-//        return index/n_bins;
-//    };
-//    auto arg_abs_max = [](const int_float &a, const int_float &b) {
-//        if (fabsf(thrust::get<1>(a)) == fabsf(thrust::get<1>(b)))
-//            return thrust::get<0>(a) < thrust::get<0>(b) ? a : b;
-//        else
-//            return fabsf(thrust::get<1>(a)) > fabsf(thrust::get<1>(b)) ? a : b;
-//    };
-//    auto nid_iterator = thrust::make_transform_iterator(thrust::counting_iterator<int>(0), nid);
-//    reduce_by_key(
-//            thrust::host,
-//            nid_iterator, nid_iterator + n_split,
-//            make_zip_iterator(make_tuple(thrust::counting_iterator<int>(0), gain.host_data())),
-//            thrust::make_discard_iterator(),
-//            best_idx_gain.host_data(),
-//            thrust::equal_to<int>(),
-//            arg_abs_max
-//    );
-//
-//    return best_idx_gain;
-//}
+void HistTreeBuilder::update_ins2node_id() {
+    TIMED_FUNC(timerObj);
+    SyncArray<bool> has_splittable(1);
+//    auto &columns = shards.columns;
+    //set new node id for each instance
+    {
+//        TIMED_SCOPE(timerObj, "get new node id");
+        auto nid_data = ins2node_id.host_data();
+        const Tree::TreeNode *nodes_data = trees.nodes.host_data();
+        has_splittable.host_data()[0] = false;
+        bool *h_s_data = has_splittable.host_data();
+        int column_offset = 0;
 
-
-float_type
-TreeBuilder::compute_gain(GHPair father, GHPair lch, GHPair rch, float_type min_child_weight, float_type lambda) {
-    if (lch.h >= min_child_weight && rch.h >= min_child_weight) {
-        return (lch.g * lch.g) / (lch.h + lambda) + (rch.g * rch.g) / (rch.h + lambda) -
-               (father.g * father.g) / (father.h + lambda);
-    } else {
-        return 0;
+        int n_column = dataset.n_features();
+        auto dense_bin_id_data = dense_bin_id.host_data();
+        int max_num_bin = param.max_num_bin;
+        #pragma omp parallel for
+        for(int iid = 0; iid < n_instances; iid++){
+            int nid = nid_data[iid];
+            const Tree::TreeNode &node = nodes_data[nid];
+            int split_fid = node.split_feature_id;
+            if (node.splittable() && ((split_fid - column_offset < n_column) && (split_fid >= column_offset))) {
+                h_s_data[0] = true;
+                unsigned char split_bid = node.split_bid;
+                unsigned char bid = dense_bin_id_data[iid * n_column + split_fid - column_offset];
+                bool to_left = true;
+                if ((bid == max_num_bin && node.default_right) || (bid <= split_bid))
+                    to_left = false;
+                if (to_left) {
+                    //goes to left child
+                    nid_data[iid] = node.lch_index;
+                } else {
+                    //right child
+                    nid_data[iid] = node.rch_index;
+                }
+            }
+        }
     }
+    LOG(DEBUG) << "new tree_id = " << ins2node_id;
+    has_split = has_splittable.host_data()[0];
 }
 
 //for each node

@@ -438,6 +438,10 @@ void DataSet::csr_to_csc() {
     }
 }
 
+//void DataSet::csr_to_csc_syncarray(){
+//
+//}
+
 size_t DataSet::n_features() const {
     return n_features_;
 }

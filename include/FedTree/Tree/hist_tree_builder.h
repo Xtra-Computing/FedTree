@@ -18,9 +18,9 @@ public:
 
     void find_split(int level) override;
 
-    void compute_histogram_in_a_level(int level, int n_max_splits, int n_bins, int n_nodes_in_level, transform_iterator& hist_fid)
+    void compute_histogram_in_a_level(int level, int n_max_splits, int n_bins, int n_nodes_in_level, transform_iterator& hist_fid);
 
-    void compute_histogram_in_a_node(SyncArray<GHPair> &gradients, HistCut &cut, SyncArray<unsigned char> &dense_bin_id, bool enc)
+    void compute_histogram_in_a_node(SyncArray<GHPair> &gradients, HistCut &cut, SyncArray<unsigned char> &dense_bin_id, bool enc);
 
     void compute_gain_in_a_level(SyncArrary<float_type> &gain, int n_max_splits, int n_bins, transform_iterator& hist_fid);
 
@@ -34,7 +34,7 @@ public:
 
     virtual ~HistTreeBuilder() {};
 
-//    void update_ins2node_id() override;
+    void update_ins2node_id() override;
 
 //support equal division or weighted division
     void propose_split_candidates();

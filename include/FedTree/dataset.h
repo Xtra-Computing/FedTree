@@ -38,8 +38,16 @@ class DataSet{
     vector<int> csc_row_idx;
     vector<int> csc_col_ptr;
 
+    //Todo: SyncArray version
+//    SyncArray<float_type> csr_val;
+//    SyncArray<int> csr_row_ptr;
+//    SyncArray<int> csr_col_idx;
+//
+//    SyncArray<float_type> csc_val;
+//    SyncArray<int> csc_row_idx;
+//    SyncArray<int> csc_col_ptr;
     // whether the dataset is to big
-    int use_cpu = false;
+    int use_cpu = true;
 };
 
 #endif //FEDTREE_DATASET_H
