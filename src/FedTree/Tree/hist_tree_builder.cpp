@@ -162,7 +162,7 @@ void HistTreeBuilder::compute_histogram_in_a_level(int level, int n_max_splits, 
             auto max_num_bin = param.max_num_bin;
             auto n_instances = this->n_instances;
 //                ThunderGBM: check size of histogram.
-//                #pragma omp parallel for
+            #pragma omp parallel for
             for(int i = 0; i < n_instances * n_column; i++){
                 int iid = i / n_column;
                 int fid = i % n_column;
@@ -171,13 +171,15 @@ void HistTreeBuilder::compute_histogram_in_a_level(int level, int n_max_splits, 
                     int feature_offset = cut_row_ptr_data[fid];
                     const GHPair src = gh_data[iid];
                     GHPair &dest = hist_data[feature_offset + bid];
-                    if(src.h != 0)
+
+                    if(src.h != 0) {
+                        #pragma omp atomic
                         dest.h += src.h;
-//                        todo: atomic add on cpu
-//                            atomicAdd(&dest.h, src.h);
-                    if(src.g != 0)
+                    }
+                    if(src.g != 0) {
+                        #pragma omp atomic
                         dest.g += src.g;
-//                            atomicAdd(&dest.g, src.g);
+                    }
 
                 }
             }
@@ -233,7 +235,7 @@ void HistTreeBuilder::compute_histogram_in_a_level(int level, int n_max_splits, 
                     auto hist_data = hist.host_data() + nid0 * n_bins;
                     this->total_hist_num++;
                     //                ThunderGBM: check size of histogram.
-//                        #pragma omp parallel for
+                    #pragma omp parallel for
                     for(int i = 0; i < (idx_end - idx_begin) * n_column; i++){
                         int iid = node_idx_data[i / n_column + idx_begin];
                         int fid = i % n_column;
@@ -242,10 +244,14 @@ void HistTreeBuilder::compute_histogram_in_a_level(int level, int n_max_splits, 
                             int feature_offset = cut_row_ptr_data[fid];
                             const GHPair src = gh_data[iid];
                             GHPair &dest = hist_data[feature_offset + bid];
-                            if(src.h != 0)
-                                dest.h += src.h
-                            if(src.g != 0)
-                                dest.g += src.g
+                            if(src.h != 0) {
+                                #pragma omp atomic
+                                dest.h += src.h;
+                            }
+                            if(src.g != 0) {
+                                #pragma omp atomic
+                                dest.g += src.g;
+                            }
                         }
                     }
                 }
