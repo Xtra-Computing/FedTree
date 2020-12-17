@@ -3,7 +3,7 @@
 //
 
 
-#include "thundergbm/objective/multiclass_obj.h"
+#include "FedTree/objective/multiclass_obj.h"
 
 void Softmax::configure(GBDTParam param, const DataSet &dataset) {
     num_class = param.num_class;

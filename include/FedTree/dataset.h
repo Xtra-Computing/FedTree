@@ -14,8 +14,11 @@
 class DataSet{
     public:
     ///load dataset from file
-    void load_from_file(const string& file_name, FLParam &param);
+//    void load_from_file(const string& file_name, FLParam &param);
+    void load_from_file(string file_name, FLParam &param);
     void load_from_files(vector<string>file_names, FLParam &param);
+    void load_group_file(string file_name);
+    void group_label();
 
     void load_csc_from_file(string file_name, FLParam &param, int const nfeatures=500);
     void csr_to_csc();
@@ -47,7 +50,8 @@ class DataSet{
 //    SyncArray<int> csc_row_idx;
 //    SyncArray<int> csc_col_ptr;
     // whether the dataset is to big
-    int use_cpu = true;
+    bool use_cpu = true;
+    bool has_csc = false;
 };
 
 #endif //FEDTREE_DATASET_H

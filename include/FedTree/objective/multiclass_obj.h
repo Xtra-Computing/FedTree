@@ -2,11 +2,11 @@
 // Created by liqinbin on 12/15/20.
 //
 
-#ifndef FEDTREE_MULTICLASS_METRIC_H
-#define FEDTREE_MULTICLASS_METRIC_H
+#ifndef FEDTREE_MULTICLASS_OBJ_H
+#define FEDTREE_MULTICLASS_OBJ_H
 
 #include "objective_function.h"
-#include "FedTree/util/device_lambda.cuh"
+#include "FedTree/util/device_lambda.h"
 
 class Softmax : public ObjectiveFunction {
 public:
@@ -35,4 +35,4 @@ public:
 
 };
 
-#endif //FEDTREE_MULTICLASS_METRIC_H
+#endif //FEDTREE_MULTICLASS_OBJ_H

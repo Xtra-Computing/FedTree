@@ -6,15 +6,15 @@
 #define FEDTREE_FUNCTION_BUILDER_H
 
 
-#include <FedTree/tree.h>
+#include "tree.h"
 #include "FedTree/common.h"
-#include "FedTree/sparse_columns.h"
+#include "FedTree/dataset.h"
 
 class FunctionBuilder {
 public:
     virtual vector<Tree> build_approximate(const SyncArray<GHPair> &gradients) = 0;
 
-    virtual void init(const DataSet &dataset, const GBMParam &param) {
+    virtual void init(DataSet &dataset, const GBDTParam &param) {
         this->param = param;
     };
 
@@ -26,7 +26,7 @@ public:
 
 protected:
     SyncArray<float_type> y_predict;
-    GBMParam param;
+    GBDTParam param;
 };
 
 

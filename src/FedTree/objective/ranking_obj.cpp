@@ -93,7 +93,7 @@ LambdaRank::get_gradient(const SyncArray<float_type> &y, const SyncArray<float_t
 
 string LambdaRank::default_metric_name() { return "map"; }
 
-void LambdaRankNDCG::configure(GBMParam param, const DataSet &dataset) {
+void LambdaRankNDCG::configure(GBDTParam param, const DataSet &dataset) {
     LambdaRank::configure(param, dataset);
     NDCG::get_IDCG(gptr, dataset.y, idcg);
 }

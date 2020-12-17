@@ -25,7 +25,7 @@ float_type RankListMetric::get_score(const SyncArray<float_type> &y_p) const {
     return sum_score / n_group;
 }
 
-void RankListMetric::configure(const GBMParam &param, const DataSet &dataset) {
+void RankListMetric::configure(const GBDTParam &param, const DataSet &dataset) {
     Metric::configure(param, dataset);
 
     //init gptr
@@ -72,7 +72,7 @@ float_type MAP::eval_query_group(vector<float_type> &y, vector<float_type> &y_p,
     else return 1;
 }
 
-void NDCG::configure(const GBMParam &param, const DataSet &dataset) {
+void NDCG::configure(const GBDTParam &param, const DataSet &dataset) {
     RankListMetric::configure(param, dataset);
     get_IDCG(gptr, dataset.y, idcg);
 }

@@ -6,6 +6,8 @@
 #include "FedTree/FL/FLtrainer.h"
 #include "FedTree/parser.h"
 #include "FedTree/dataset.h"
+#include "FedTree/Tree/gbdt.h"
+
 #ifdef _WIN32
 INITIALIZE_EASYLOGGINGPP
 #endif
@@ -65,7 +67,7 @@ int main(int argc, char** argv){
     vector<vector<Tree>> boosted_model;
 
 //    dataset.load_csc_from_file(model_param.path, model_param);
-    dataset.load_from_file(model_param.path, model_param);
+    dataset.load_from_file(model_param.path, fl_param);
     GBDT gbdt;
     gbdt.train(model_param, dataset);
     parser.save_model("tgbm.model", model_param, gbdt.trees, dataset);

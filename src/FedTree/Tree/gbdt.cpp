@@ -5,7 +5,7 @@
 #include "FedTree/Tree/gbdt.h"
 #include "FedTree/booster.h"
 
-void GBDT::train(GBDTParam &param, const DataSet &dataset){
+void GBDT::train(GBDTParam &param, DataSet &dataset){
     if (param.tree_method == "auto")
         param.tree_method = "hist";
     else if (param.tree_method != "hist"){
@@ -37,13 +37,10 @@ void GBDT::train(GBDTParam &param, const DataSet &dataset){
     auto stop = timer.now();
     std::chrono::duration<float> training_time = stop - start;
     LOG(INFO) << "training time = " << training_time.count();
-
-    std::atexit([]() {
-        SyncMem::clear_cache();
-    });
+    return;
 }
 
-vector<float_type> predict(const GBMParam &model_param, const DataSet &dataSet) {
+vector<float_type> GBDT::predict(const GBDTParam &model_param, const DataSet &dataSet) {
     SyncArray<float_type> y_predict;
     predict_raw(model_param, dataSet, y_predict);
     //convert the aggregated values to labels, probabilities or ranking scores.
@@ -64,15 +61,15 @@ vector<float_type> predict(const GBMParam &model_param, const DataSet &dataSet) 
 }
 
 
-void Predictor::predict_raw(const GBMParam &model_param, const DataSet &dataSet, SyncArray<float_type> &y_predict) {
+void GBDT::predict_raw(const GBDTParam &model_param, const DataSet &dataSet, SyncArray<float_type> &y_predict) {
     TIMED_SCOPE(timerObj, "predict");
     int n_instances = dataSet.n_instances();
-    int n_features = dataSet.n_features();
+//    int n_features = dataSet.n_features();
 
     //the whole model to an array
     int num_iter = trees.size();
     int num_class = trees.front().size();
-    int num_node = boosted_model[0][0].nodes.size();
+    int num_node = trees[0][0].nodes.size();
     int total_num_node = num_iter * num_class * num_node;
     //TODO: reduce the output size for binary classification
     y_predict.resize(n_instances * num_class);
@@ -162,6 +159,5 @@ void Predictor::predict_raw(const GBMParam &model_param, const DataSet &dataSet,
             }
             predict_data_class[iid] += sum;
         }//end all tree prediction
-    });
-
+    }
 }

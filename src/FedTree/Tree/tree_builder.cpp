@@ -12,13 +12,14 @@
 
 
 
-void TreeBuilder::init(const DataSet &dataset, const GBMParam &param) {
+void TreeBuilder::init(DataSet &dataSet, const GBDTParam &param) {
 //    int n_available_device;
 //    cudaGetDeviceCount(&n_available_device);
 //    CHECK_GE(n_available_device, param.n_device) << "only " << n_available_device
 //                                                 << " GPUs available; please set correct number of GPUs to use";
-    FunctionBuilder::init(dataset, param);
-    this->n_instances = dataset.n_instances();
+    this->dataset = &dataSet;
+    FunctionBuilder::init(dataSet, param);
+    this->n_instances = dataset->n_instances();
 //    trees = vector<Tree>(1);
     ins2node_id = SyncArray<int>(n_instances);
     sp = SyncArray<SplitPoint>();
@@ -26,6 +27,7 @@ void TreeBuilder::init(const DataSet &dataset, const GBMParam &param) {
     int n_outputs = param.num_class * n_instances;
     y_predict = SyncArray<float_type>(n_outputs);
     gradients = SyncArray<GHPair>(n_instances);
+
 }
 
 void TreeBuilder::split_point_all_reduce(int depth) {
@@ -33,7 +35,7 @@ void TreeBuilder::split_point_all_reduce(int depth) {
     //get global best split of each node
     int n_nodes_in_level = 1 << depth;//2^i
     int nid_offset = (1 << depth) - 1;//2^i - 1
-    auto global_sp_data = sp.front().host_data();
+    auto global_sp_data = sp.host_data();
     vector<bool> active_sp(n_nodes_in_level);
 
 
@@ -109,13 +111,6 @@ vector<Tree> TreeBuilder::build_approximate(const SyncArray<GHPair> &gradients) 
     return trees;
 }
 
-
-TreeBuilder *TreeBuilder::create(std::string name) {
-    if (name == "hist") return new HistTreeBuilder;
-    LOG(FATAL) << "unknown builder " << name;
-    return nullptr;
-}
-
 // Remove SyncArray<GHPair> missing_gh, int n_columnf
 void TreeBuilder::find_split (SyncArray<SplitPoint> &sp, int n_nodes_in_level, Tree tree, SyncArray<int_float> best_idx_gain, int nid_offset, HistCut cut, SyncArray<GHPair> hist, int n_bins) {
     sp.resize(n_nodes_in_level);
@@ -171,7 +166,8 @@ void TreeBuilder::update_tree() {
         float_type best_split_gain = sp_data[i].gain;
         if (best_split_gain > rt_eps) {
             //do split
-            if (sp_data[i].nid == -1) return;
+            //todo: check, thundergbm uses return
+            if (sp_data[i].nid == -1) continue;
             int nid = sp_data[i].nid;
             Tree::TreeNode &node = nodes_data[nid];
             node.gain = best_split_gain;
@@ -195,7 +191,8 @@ void TreeBuilder::update_tree() {
             rch.calc_weight(lambda);
         } else {
             //set leaf
-            if (sp_data[i].nid == -1) return;
+            //todo: check, thundergbm uses return
+            if (sp_data[i].nid == -1) continue;
             int nid = sp_data[i].nid;
             Tree::TreeNode &node = nodes_data[nid];
             node.is_leaf = true;

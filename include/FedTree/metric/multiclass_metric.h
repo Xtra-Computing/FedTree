@@ -11,7 +11,7 @@
 
 class MulticlassMetric: public Metric {
 public:
-    void configure(const GBMParam &param, const DataSet &dataset) override {
+    void configure(const GBDTParam &param, const DataSet &dataset) override {
         Metric::configure(param, dataset);
         num_class = param.num_class;
         CHECK_EQ(num_class, dataset.label.size());

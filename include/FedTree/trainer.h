@@ -8,15 +8,11 @@
 #include "FedTree/common.h"
 #include "FedTree/Tree/tree.h"
 #include "FedTree/dataset.h"
-#include "FedTree/Tree/gbdt.h"
-
-
-
 
 
 class TreeTrainer{
 public:
-    vector<vector<Tree>> train (GBMParam &param, const Dataset &dataset);
+    vector<vector<Tree>> train (GBDTParam &param, const DataSet &dataset);
 };
 
 #endif //FEDTREE_TRAINER_H

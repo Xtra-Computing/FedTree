@@ -10,6 +10,7 @@
 #include "FedTree/dataset.h"
 
 class GBDT {
+public:
     vector<vector<Tree>> trees;
 
     GBDT() = default;
@@ -18,7 +19,7 @@ class GBDT {
         trees = gbdt;
     }
 
-    void train(GBDTParam &param, const DataSet &dataset);
+    void train(GBDTParam &param, DataSet &dataset);
 
     vector<float_type> predict(const GBDTParam &model_param, const DataSet &dataSet);
 

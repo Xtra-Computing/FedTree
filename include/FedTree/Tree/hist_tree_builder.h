@@ -11,25 +11,26 @@
 class HistTreeBuilder : public TreeBuilder {
 public:
 
-
-    void init(const DataSet &dataset, const GBDTParam &param) override;
+    void init(DataSet &dataset, const GBDTParam &param) override;
 
     void get_bin_ids();
 
     void find_split(int level) override;
 
-    void compute_histogram_in_a_level(int level, int n_max_splits, int n_bins, int n_nodes_in_level, transform_iterator& hist_fid);
+    void compute_histogram_in_a_level(int level, int n_max_splits, int n_bins, int n_nodes_in_level, int* hist_fid_data,
+                                      SyncArray<GHPair> &missing_gh);
 
     void compute_histogram_in_a_node(SyncArray<GHPair> &gradients, HistCut &cut, SyncArray<unsigned char> &dense_bin_id, bool enc);
 
-    void compute_gain_in_a_level(SyncArrary<float_type> &gain, int n_max_splits, int n_bins, transform_iterator& hist_fid);
+    void compute_gain_in_a_level(SyncArray<float_type> &gain, int n_nodes_in_level, int n_bins, int* hist_fid_data,
+                                 SyncArray<GHPair> &missing_gh);
 
     void get_best_gain_in_a_level(SyncArray<float_type> &gain, SyncArray<int_float> &best_idx_gain, int n_nodes_in_level, int n_bins);
 
-    void get_split_points(SyncArray<int_float> &best_idx_gain);
+    void get_split_points(SyncArray<int_float> &best_idx_gain, int level, int *hist_fid, SyncArray<GHPair> &missing_gh);
 
-    SyncArray<GHPair> compute_histogram(SyncArray<GHPair> &gradients, HistCut &cut,
-                                        SyncArray<unsigned char> &dense_bin_id);
+//    SyncArray<GHPair> compute_histogram(SyncArray<GHPair> &gradients, HistCut &cut,
+//                                        SyncArray<unsigned char> &dense_bin_id);
 
 
     virtual ~HistTreeBuilder() {};
@@ -42,6 +43,8 @@ public:
     void merge_histograms_server_propose(MSyncArray<GHPair> &histograms, bool enc);
 
     void merge_histograms_client_propose(MSyncArray<GHPair> &histograms, vector<HistCut> &cuts, bool enc);
+
+    SyncArray<float_type> gain(Tree &tree, SyncArray<GHPair> &hist, int level, int n_split);
 
     SyncArray<GHPair> get_hist() {
         SyncArray<GHPair> h(last_hist.size());

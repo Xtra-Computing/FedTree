@@ -11,7 +11,7 @@ class RankListMetric : public Metric {
 public:
     float_type get_score(const SyncArray<float_type> &y_p) const override;
 
-    void configure(const GBMParam &param, const DataSet &dataset) override;
+    void configure(const GBDTParam &param, const DataSet &dataset) override;
 
     static void configure_gptr(const vector<int> &group, vector<int> &gptr);
 
@@ -36,7 +36,7 @@ class NDCG : public RankListMetric {
 public:
     string get_name() const override { return "NDCG"; };
 
-    void configure(const GBMParam &param, const DataSet &dataset) override;
+    void configure(const GBDTParam &param, const DataSet &dataset) override;
 
     inline HOST_DEVICE static float_type discounted_gain(int label, int rank) {
         return ((1 << label) - 1) / log2f(rank + 1 + 1);

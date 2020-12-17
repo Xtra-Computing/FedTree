@@ -2,9 +2,10 @@
 // Created by liqinbin on 12/11/20.
 //
 
-#include "FeTree/metric/multiclass_metric.h"
-#include "FedTree/util/device_lambda.cuh"
+#include "FedTree/metric/multiclass_metric.h"
+#include "FedTree/util/device_lambda.h"
 #include "thrust/reduce.h"
+#include "thrust/execution_policy.h"
 
 
 float_type MulticlassAccuracy::get_score(const SyncArray<float_type> &y_p) const {

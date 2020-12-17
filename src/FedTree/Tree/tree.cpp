@@ -3,6 +3,8 @@
 //
 
 #include "FedTree/Tree/tree.h"
+#include "thrust/reduce.h"
+#include "thrust/execution_policy.h"
 #include "cmath"
 
 void Tree::init_CPU(const SyncArray<GHPair> &gradients, const GBDTParam &param) {
