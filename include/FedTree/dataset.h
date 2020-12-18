@@ -16,6 +16,7 @@ class DataSet{
     ///load dataset from file
 //    void load_from_file(const string& file_name, FLParam &param);
     void load_from_file(string file_name, FLParam &param);
+//    void load_from_file_dense(string file_name, FLParam &param);
     void load_from_files(vector<string>file_names, FLParam &param);
     void load_group_file(string file_name);
     void group_label();
@@ -27,6 +28,7 @@ class DataSet{
 
     size_t n_instances() const;
 
+//    vector<vector<float_type>> dense_mtx;
     vector<float_type> csr_val;
     vector<int> csr_row_ptr;
     vector<int> csr_col_idx;
