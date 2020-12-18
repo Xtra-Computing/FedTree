@@ -581,47 +581,91 @@ void DataSet::load_csc_from_file(string file_name, FLParam &param, const int nfe
 }
 
 
-void DataSet::csr_to_csc() {
-    has_csc = true;
-    const int nnz = csr_row_ptr[n_instances()];
+//void DataSet::csr_to_csc() {
+//    has_csc = true;
+//    const int nnz = csr_row_ptr[n_instances()];
+//
+//    //compute number of non-zero entries per column of A
+//    std::fill(csc_col_ptr.begin(), csc_col_ptr.begin() + n_features(), 0);
+//
+//    for (int n = 0; n < nnz; n++) {
+//        csc_col_ptr[csr_col_idx[n]]++;
+//    }
+//
+//    //cumsum the nnz per column to get csc_col_ptr[]
+//    for (int col = 0, cumsum = 0; col < n_features(); col++) {
+//        int temp = csc_col_ptr[col];
+//        csc_col_ptr[col] = cumsum;
+//        cumsum += temp;
+//    }
+//    csc_col_ptr[n_features()] = nnz;
+//
+//    for (int row = 0; row < n_features(); row++) {
+//        for (int jj = csr_row_ptr[row]; jj < csr_row_ptr[row + 1]; jj++) {
+//            int col = csr_col_idx[jj];
+//            int dest = csc_col_ptr[col];
+//
+//            csc_row_idx[dest] = row;
+//            csc_val[dest] = csr_val[jj];
+//
+//            csc_col_ptr[col]++;
+//        }
+//    }
+//
+//    for (int col = 0, last = 0; col <= n_features(); col++) {
+//        int temp = csc_col_ptr[col];
+//        csc_col_ptr[col] = last;
+//        last = temp;
+//    }
+//}
 
-    //compute number of non-zero entries per column of A
-    std::fill(csc_col_ptr.begin(), csc_col_ptr.begin() + n_features(), 0);
+void DataSet::csr_to_csc(){
+    LOG(INFO) << "convert csr to csc using cpu...";
+    //cpu transpose
+    int n_column = this->n_features();
+    int n_row = this->n_instances();
+    int nnz = this->csr_val.size();
 
-    for (int n = 0; n < nnz; n++) {
-        csc_col_ptr[csr_col_idx[n]]++;
+
+    csc_val.resize(nnz);
+    csc_row_idx.resize(nnz);
+    csc_col_ptr.resize(n_column+1);
+
+    LOG(INFO) << string_format("#non-zeros = %ld, density = %.2f%%", nnz,
+                               (float) nnz / n_column / n_row * 100);
+    for (int i = 0; i <= n_column; ++i) {
+        csc_col_ptr[i] = 0;
     }
 
-    //cumsum the nnz per column to get csc_col_ptr[]
-    for (int col = 0, cumsum = 0; col < n_features(); col++) {
-        int temp = csc_col_ptr[col];
-        csc_col_ptr[col] = cumsum;
-        cumsum += temp;
+#pragma omp parallel for // about 5s
+    for (int i = 0; i < nnz; ++i) {
+        int idx = csr_col_idx[i] + 1;
+#pragma omp atomic
+        csc_col_ptr[idx] += 1;
     }
-    csc_col_ptr[n_features()] = nnz;
 
-    for (int row = 0; row < n_features(); row++) {
-        for (int jj = csr_row_ptr[row]; jj < csr_row_ptr[row + 1]; jj++) {
-            int col = csr_col_idx[jj];
-            int dest = csc_col_ptr[col];
+    for (int i = 1; i < n_column + 1; ++i){
+        csc_col_ptr[i] += csc_col_ptr[i - 1];
+    }
 
+    // TODO to parallelize here
+    for (int row = 0; row < n_instances(); ++row) {
+        for (int j = csr_row_ptr[row]; j < csr_row_ptr[row + 1]; ++j) {
+            int col = csr_col_idx[j]; // csr col
+            int dest = csc_col_ptr[col]; // destination index in csc array
+            csc_val[dest] = csr_val[j];
             csc_row_idx[dest] = row;
-            csc_val[dest] = csr_val[jj];
-
-            csc_col_ptr[col]++;
+            csc_col_ptr[col] += 1; //increment sscolumn start position
         }
     }
 
-    for (int col = 0, last = 0; col <= n_features(); col++) {
-        int temp = csc_col_ptr[col];
-        csc_col_ptr[col] = last;
-        last = temp;
+    //recover column start position
+    for (int i = 0, last = 0; i < n_column; ++i) {
+        int next_last = csc_col_ptr[i];
+        csc_col_ptr[i] = last;
+        last = next_last;
     }
 }
-
-//void DataSet::csr_to_csc_syncarray(){
-//
-//}
 
 size_t DataSet::n_features() const {
     return n_features_;

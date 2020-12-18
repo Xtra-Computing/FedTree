@@ -107,6 +107,8 @@ vector<Tree> TreeBuilder::build_approximate(const SyncArray<GHPair> &gradients) 
         //here
         this->trees.prune_self(param.gamma);
         predict_in_training(k);
+        tree.nodes.resize(this->trees.nodes.size());
+        tree.nodes.copy_from(this->trees.nodes);
     }
     return trees;
 }

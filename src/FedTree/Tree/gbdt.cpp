@@ -25,7 +25,6 @@ void GBDT::train(GBDTParam &param, DataSet &dataset){
     else if(param.objective.find("reg:") != std::string::npos){
         param.num_class = 1;
     }
-
     Booster booster;
     booster.init(dataset, param);
     std::chrono::high_resolution_clock timer;
