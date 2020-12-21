@@ -15,6 +15,7 @@ public:
     string mode; // "horizontal" or "vertical"
     string privacy_tech; //"none" or "he" or "dp"
     string propose_split; // "server" or "client"
+    string merge_histogram; // "server" or "client"
     GBDTParam gbdt_param; // parameters for the gbdt training
 };
 
