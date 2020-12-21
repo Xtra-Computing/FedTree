@@ -7,7 +7,6 @@
 
 #include "FedTree/Tree/tree.h"
 
-class SplitPoint;
 
 class SplitPoint {
 public:

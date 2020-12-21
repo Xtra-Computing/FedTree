@@ -8,7 +8,7 @@
 #include <string>
 #include <FedTree/common.h>
 
-// Todo: gbdt params, refer to ThudnerGBM https://github.com/Xtra-Computing/thundergbm/blob/master/include/thundergbm/common.h
+// Todo: gbdt params, refer to ThunderGBM https://github.com/Xtra-Computing/thundergbm/blob/master/include/thundergbm/common.h
 struct GBDTParam {
     int depth;
     int n_trees;

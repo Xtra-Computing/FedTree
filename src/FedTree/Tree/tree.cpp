@@ -3,6 +3,8 @@
 //
 
 #include "FedTree/Tree/tree.h"
+#include "thrust/reduce.h"
+#include "thrust/execution_policy.h"
 #include "cmath"
 
 void Tree::init_CPU(const SyncArray<GHPair> &gradients, const GBDTParam &param) {
@@ -10,6 +12,7 @@ void Tree::init_CPU(const SyncArray<GHPair> &gradients, const GBDTParam &param) 
     int n_max_nodes = static_cast<int>(pow(2, param.depth + 1) - 1);
     nodes = SyncArray<TreeNode>(n_max_nodes);
     auto node_data = nodes.host_data();
+#pragma omp parallel for
     for (int i = 0; i < n_max_nodes; i ++) {
         node_data[i].final_id = i;
         node_data[i].split_feature_id = -1;
@@ -28,11 +31,13 @@ void Tree::init_CPU(const SyncArray<GHPair> &gradients, const GBDTParam &param) 
     }
 
     //init root node
-    GHPair sum_gh = GHPair(0.0, 0.0);
-    auto gh_pairs = gradients.host_data();
-    for (int i = 0; i < gradients.size(); i ++) {
-        sum_gh.operator+(gh_pairs[i]);
-    }
+//    GHPair sum_gh = GHPair(0.0, 0.0);
+//    auto gh_pairs = gradients.host_data();
+//    for (int i = 0; i < gradients.size(); i ++) {
+//        sum_gh.operator+(gh_pairs[i]);
+//    }
+    GHPair sum_gh = thrust::reduce(thrust::host, gradients.host_data(), gradients.host_end());
+
     float_type lambda = param.lambda;
     Tree::TreeNode &root_node = node_data[0];
     root_node.sum_gh_pair = sum_gh;
@@ -128,6 +133,17 @@ void Tree::reorder_nid() {
         }
     }
 }
+
+/*
+void Tree::compute_leaf_value() {
+    Tree::TreeNode *nodes_data = this->nodes.host_data();
+    for(int i = 0; i < this->nodes.size(); i++) {
+        if(nodes_data[i].is_leaf) {
+            nodes_data[i].calc_weight();
+        }
+    }
+}
+*/
 
 int Tree::try_prune_leaf(int nid, int np, float_type gamma, vector<int> &leaf_child_count) {
     Tree::TreeNode *nodes_data = nodes.host_data();

@@ -34,11 +34,11 @@ public:
     // generate key pairs
     std::tuple<PaillierPublicKey, PaillierPrivateKey> generate_key_pairs();
     // encrypt with public key and return EncryptedNumber (pyobject)
-    EncryptedNumber encrypt(PaillierPublicKey publicKey, float value);
+    static EncryptedNumber encrypt(PaillierPublicKey publicKey, float value);
     // decrypt with private key and return EncryptedNumber (pyobject)
-    float decrypt(PaillierPrivateKey privateKey, EncryptedNumber encrypted_value);
+    static float decrypt(PaillierPrivateKey privateKey, EncryptedNumber encrypted_value);
     // aggregate encrypted numbers
-    EncryptedNumber aggregate(EncryptedNumber encrypted_number1, EncryptedNumber encrypted_number2);
+    static EncryptedNumber aggregate(EncryptedNumber encrypted_number1, EncryptedNumber encrypted_number2);
     // aggregate encrypted numbers with scalar
     EncryptedNumber aggregate_scalar(EncryptedNumber encrypted_number1, float scalar);
     // multiply encrypted numbers with scalar
