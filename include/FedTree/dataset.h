@@ -6,18 +6,19 @@
 #ifndef FEDTREE_DATASET_H
 #define FEDTREE_DATASET_H
 
+
 #include "FedTree/FL/FLparam.h"
 #include "common.h"
 #include "syncarray.h"
 
-
-// Todo: datset structure (csr and csc). load from file. Refer to ThunderGBM dataset.h https://github.com/Xtra-Computing/thundergbm/blob/master/include/thundergbm/dataset.h
-
 class DataSet{
     public:
     ///load dataset from file
-    void load_from_file(const string& file_name, FLParam &param);
+//    void load_from_file(const string& file_name, FLParam &param);
+    void load_from_file(string file_name, FLParam &param);
     void load_from_files(vector<string>file_names, FLParam &param);
+    void load_group_file(string file_name);
+    void group_label();
 
     void load_csc_from_file(string file_name, FLParam &param, int const nfeatures=500);
     void csr_to_csc();
@@ -40,8 +41,17 @@ class DataSet{
     vector<int> csc_row_idx;
     vector<int> csc_col_ptr;
 
+    //Todo: SyncArray version
+//    SyncArray<float_type> csr_val;
+//    SyncArray<int> csr_row_ptr;
+//    SyncArray<int> csr_col_idx;
+//
+//    SyncArray<float_type> csc_val;
+//    SyncArray<int> csc_row_idx;
+//    SyncArray<int> csc_col_ptr;
     // whether the dataset is to big
-    int use_cpu = false;
+    bool use_cpu = true;
+    bool has_csc = false;
 };
 
 #endif //FEDTREE_DATASET_H
