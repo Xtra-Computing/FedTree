@@ -6,29 +6,35 @@
 
 void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FLParam &params){
 // Is propose_split_candidates implemented? Should it be a method of TreeBuilder, HistTreeBuilder or server? Shouldnt there be a vector of SplitCandidates returned
-//  vector<SplitCandidate> candidates = server.fbuilder.propose_split_candidates();
-//  std::tuple <AdditivelyHE::PaillierPublicKey, AdditivelyHE::PaillierPrivateKey> key_pair = server.HE.generate_key_pairs();
-//    server.send_info(parties, std::get<0>(keyPairs), candidates);
+//  if (params.propose_split == 'server')
+//    vector<SplitCandidate> candidates = server.fbuilder.propose_split_candidates();
+//    // server.send_split_candidates
+//  if (params.privacy_tech == 'he') {
+//      server.fbuilder.homo_init();
+//      server.send_public_key(parties);
+//  }
 //    for (int i = 0; i < params.gbdt_param.n_trees; i++){
 //        for (j = 0; j < parties.size(); j++){
 //            parties[j].update_gradients();
 //        }
 //        for (int j = 0; j < params.gbdt_param.depth; j++){
 //            for (int k = 0; k < parties.size(); k++) {
-//                SyncArray<GHPair> hist = parties[j].fbuilder->compute_histogram();
+//                if (params.propose_split == 'client')
+//                    parties[k].fbuilder.propose_split_candidates();
+//                SyncArray<GHPair> hist = parties[k].fbuilder->compute_histogram();
 //                if (params.privacy_tech == "he") {
-                    // Should HE be a public member of Party?
+//                     Should HE be a public member of Party?
 //                    parties[k].HE.encryption();
 //                }
 //                if (params.privacy_tech == "dp") {
-                    // Should DP be public member of Party?
+//                     Should DP be public member of Party?
 //                    parties[k].DP.add_gaussian_noise();
 //                }
 //                parties[k].send_info(hist);
 //            }
-            // merge_histograms in tree_builder?
-//            server.sum_histograms(); // or on Party 1 if using homo encryption
-//            server.HE.decrption();
+//             merge_histograms in tree_builder?
+//            if (params.privacy_tech == 'he')
+//                parties[0].sum_histograms(); // or on Party 1 if using homo encryption;
 //            if (j != params.gbdt_param.depth - 1) {
 //                server.fbuilder.compute_gain();
 //                server.fbuilder.get_best_split(); // or using exponential mechanism

@@ -13,8 +13,20 @@
 // Todo: the server structure.
 
 class Server {
+public:
+    AdditivelyHE::PaillierPublicKey publicKey;
+    void homo_init() {
+        std::tuple<AdditivelyHE::PaillierPublicKey, AdditivelyHE::PaillierPrivateKey> keyPairs = this->HE.generate_key_pairs();
+        publicKey = std::get<0>(keyPairs);
+        privateKey = std::get<1>(keyPairs);
+    };
+
     void propose_split_candidates();
-    void send_info(string info_type);
+    void send_public_key(vector<Party> &parties) {
+        for (Party p : parties) {
+            p.publicKey = publicKey;
+        }
+    };
 //    void send_info(vector<Party> &parties, AdditivelyHE::PaillierPublicKey serverKey,vector<SplitCandidate>candidates);
     void sum_histograms();
 
@@ -22,6 +34,7 @@ private:
     DataSet dataset;
     std::unique_ptr<TreeBuilder> fbuilder;
     AdditivelyHE HE;
+    AdditivelyHE::PaillierPrivateKey privateKey;
     DPnoises<double> DP;
 };
 

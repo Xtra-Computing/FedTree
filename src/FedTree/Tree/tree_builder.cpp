@@ -87,6 +87,7 @@ vector<Tree> TreeBuilder::build_approximate(const SyncArray<GHPair> &gradients) 
         this->trees.init_CPU(this->gradients, param);
 
         for (int level = 0; level < param.depth; ++level) {
+        for (int level = 0; level < param.depth; ++level) {
             find_split(level);
             split_point_all_reduce(level);
             {
