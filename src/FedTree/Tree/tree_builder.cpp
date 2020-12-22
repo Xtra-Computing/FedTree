@@ -30,36 +30,36 @@ void TreeBuilder::init(DataSet &dataSet, const GBDTParam &param) {
 
 }
 
-void TreeBuilder::split_point_all_reduce(int depth) {
-    TIMED_FUNC(timerObj);
-    //get global best split of each node
-    int n_nodes_in_level = 1 << depth;//2^i
-    int nid_offset = (1 << depth) - 1;//2^i - 1
-    auto global_sp_data = sp.host_data();
-    vector<bool> active_sp(n_nodes_in_level);
-
-
-    auto local_sp_data = sp.host_data();
-    for (int j = 0; j < sp.size(); j++) {
-        int sp_nid = local_sp_data[j].nid;
-        if (sp_nid == -1) continue;
-        int global_pos = sp_nid - nid_offset;
-        if (!active_sp[global_pos])
-            global_sp_data[global_pos] = local_sp_data[j];
-        else
-            global_sp_data[global_pos] = (global_sp_data[global_pos].gain >= local_sp_data[j].gain) ?
-                    global_sp_data[global_pos] : local_sp_data[j];
-        active_sp[global_pos] = true;
-    }
-
-    //set inactive sp
-    for (int n = 0; n < n_nodes_in_level; n++) {
-        if (!active_sp[n])
-            global_sp_data[n].nid = -1;
-    }
-
-    LOG(DEBUG) << "global best split point = " << sp;
-}
+//void TreeBuilder::split_point_all_reduce(int depth) {
+//    TIMED_FUNC(timerObj);
+//    //get global best split of each node
+//    int n_nodes_in_level = 1 << depth;//2^i
+//    int nid_offset = (1 << depth) - 1;//2^i - 1
+//    auto global_sp_data = sp.host_data();
+//    vector<bool> active_sp(n_nodes_in_level);
+//
+//
+//    auto local_sp_data = sp.host_data();
+//    for (int j = 0; j < sp.size(); j++) {
+//        int sp_nid = local_sp_data[j].nid;
+//        if (sp_nid == -1) continue;
+//        int global_pos = sp_nid - nid_offset;
+//        if (!active_sp[global_pos])
+//            global_sp_data[global_pos] = local_sp_data[j];
+//        else
+//            global_sp_data[global_pos] = (global_sp_data[global_pos].gain >= local_sp_data[j].gain) ?
+//                    global_sp_data[global_pos] : local_sp_data[j];
+//        active_sp[global_pos] = true;
+//    }
+//
+//    //set inactive sp
+//    for (int n = 0; n < n_nodes_in_level; n++) {
+//        if (!active_sp[n])
+//            global_sp_data[n].nid = -1;
+//    }
+//
+//    LOG(DEBUG) << "global best split point = " << sp;
+//}
 
 void TreeBuilder::predict_in_training(int k) {
     auto y_predict_data = y_predict.host_data() + k * n_instances;
@@ -88,7 +88,7 @@ vector<Tree> TreeBuilder::build_approximate(const SyncArray<GHPair> &gradients) 
 
         for (int level = 0; level < param.depth; ++level) {
             find_split(level);
-            split_point_all_reduce(level);
+//            split_point_all_reduce(level);
             {
                 TIMED_SCOPE(timerObj, "apply sp");
                 update_tree();
