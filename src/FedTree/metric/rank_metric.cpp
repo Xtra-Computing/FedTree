@@ -3,7 +3,7 @@
 //
 
 #include <FedTree/metric/ranking_metric.h>
-#ifndef _WIN32
+#ifdef __unix__
 #include "parallel/algorithm"
 #endif
 
@@ -51,10 +51,10 @@ float_type MAP::eval_query_group(vector<float_type> &y, vector<float_type> &y_p,
     for (int i = 0; i < len; ++i) {
         idx[i] = i;
     }
-#ifdef _WIN32
-    std::sort(idx.begin(), idx.end(), [=](int a, int b) { return yp_data[a] > yp_data[b]; });
-#else
+#ifdef __unix__
     __gnu_parallel::sort(idx.begin(), idx.end(), [=](int a, int b) { return yp_data[a] > yp_data[b]; });
+#else
+    std::sort(idx.begin(), idx.end(), [=](int a, int b) { return yp_data[a] > yp_data[b]; });
 #endif
     int nhits = 0;
     double sum_ap = 0;
