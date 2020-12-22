@@ -9,6 +9,7 @@
 #include "FedTree/Tree/tree_builder.h"
 #include "FedTree/Encryption/HE.h"
 #include "FedTree/DP/noises.h"
+#include "FedTree/Tree/gbdt.h"
 
 // Todo: the server structure.
 
@@ -17,6 +18,13 @@ class Server {
     void send_info(string info_type);
 //    void send_info(vector<Party> &parties, AdditivelyHE::PaillierPublicKey serverKey,vector<SplitCandidate>candidates);
     void sum_histograms();
+    void merge_trees();
+public:
+    GBDT global_trees;
+    vector<GBDT> local_trees;
+    GBDTParam model_param;
+    int n_total_instances;
+    vector<int> n_instance_per_party;
 
 private:
     DataSet dataset;

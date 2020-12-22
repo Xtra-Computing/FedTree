@@ -302,6 +302,10 @@ void DataSet::load_from_file(string file_name, FLParam &param) {
 //        this->use_cpu = true;
 }
 
+//void DataSet::load_from_file_dense(string file_name, FLParam &param){
+//
+//}
+
 //void DataSet::load_from_file(const string &file_name, FLParam &param) {
 //    LOG(INFO) << "loading LIBSVM dataset from file \"" << file_name << "\"";
 //    std::chrono::high_resolution_clock timer;

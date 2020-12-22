@@ -24,12 +24,12 @@ public:
 
     void boost(vector<vector<Tree>> &boosted_model);
 
+    std::unique_ptr<FunctionBuilder> fbuilder;
 private:
     SyncArray<GHPair> gradients;
     std::unique_ptr<ObjectiveFunction> obj;
     std::unique_ptr<Metric> metric;
     SyncArray<float_type> y;
-    std::unique_ptr<FunctionBuilder> fbuilder;
 //    RowSampler rowSampler;
     GBDTParam param;
     int n_devices;

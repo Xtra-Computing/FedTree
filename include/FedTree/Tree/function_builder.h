@@ -9,6 +9,7 @@
 #include "tree.h"
 #include "FedTree/common.h"
 #include "FedTree/dataset.h"
+#include "FedTree/Encryption/HE.h"
 
 class FunctionBuilder {
 public:
@@ -19,6 +20,12 @@ public:
     };
 
     virtual const SyncArray<float_type> &get_y_predict(){ return y_predict; };
+
+    virtual void encrypt_gradients(AdditivelyHE::PaillierPublicKey pk) = 0;
+
+    virtual void set_gradients(SyncArray<GHPair> &gh) = 0;
+
+    virtual SyncArray<GHPair> get_gradients() = 0;
 
     virtual ~FunctionBuilder(){};
 
