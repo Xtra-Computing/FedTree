@@ -87,10 +87,10 @@ float_type NDCG::eval_query_group(vector<float_type> &y, vector<float_type> &y_p
     }
     auto label = y.data();
     auto score = y_p.data();
-#ifdef _WIN32
-    std::sort(idx.begin(), idx.end(), [=](int a, int b) { return score[a] > score[b]; });
-#else
+#ifdef __unix__
     __gnu_parallel::sort(idx.begin(), idx.end(), [=](int a, int b) { return score[a] > score[b]; });
+#else
+    std::sort(idx.begin(), idx.end(), [=](int a, int b) { return score[a] > score[b]; });
 #endif
 
     float_type dcg = 0;
@@ -111,10 +111,10 @@ void NDCG::get_IDCG(const vector<int> &gptr, const vector<float_type> &y, vector
         int len = gptr[k + 1] - group_start;
         vector<float_type> sorted_label(len);
         memcpy(sorted_label.data(), y.data() + group_start, len * sizeof(float_type));
-#ifdef _WIN32
-        std::sort(sorted_label.begin(), sorted_label.end(), std::greater<float_type>());
-#else
+#ifdef __unix__
         __gnu_parallel::sort(sorted_label.begin(), sorted_label.end(), std::greater<float_type>());
+#else
+        std::sort(sorted_label.begin(), sorted_label.end(), std::greater<float_type>());
 #endif
         for (int i = 0; i < sorted_label.size(); ++i) {
             //assume labels are int
