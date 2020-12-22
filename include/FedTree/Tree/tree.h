@@ -84,6 +84,8 @@ public:
 
     void init_CPU(const SyncArray<GHPair> &gradients, const GBDTParam &param);
 
+    void init_structure(int depth);
+
     // TODO: GPU initialization 
     // void init2(const SyncArray<GHPair> &gradients, const GBDTParam &param);
 
