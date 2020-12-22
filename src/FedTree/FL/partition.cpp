@@ -95,16 +95,16 @@ void Partition::hybrid_partition(const DataSet &dataset, const int n_parties, ve
     dirichlet_distribution<std::mt19937> dir(alpha);
     vector<double> dir_numbers = dir(gen);
     CHECK_EQ(dir_numbers.size(),n_parties);
-    int n_parts_each_party_accu[n_parties + 1] = {0};
+    vector<int> n_parts_each_party_accu(n_parties + 1, 0);
     for(int i = 1; i < n_parties; i++){
         n_parts_each_party_accu[i] = n_parts_each_party_accu[i-1];
         n_parts_each_party_accu[i] += (int) (n_parts * dir_numbers[i]);
     }
     n_parts_each_party_accu[n_parties+1] = n_parts;
-    int idx[n_parts] = {0};
-    thrust::sequence(thrust::host, idx, idx+n_parts, 0);
-    std::shuffle(idx, idx+n_parts, gen);
-    int partid2party[n_parts];
+    vector<int> idx(n_parts);
+    thrust::sequence(thrust::host, idx.data(), idx.data()+n_parts, 0);
+    std::shuffle(idx.data(), idx.data()+n_parts, gen);
+    vector<int> partid2party(n_parts);
     for(int i = 0; i < n_parties; i++){
         for(int j = n_parts_each_party_accu[i]; j < n_parts_each_party_accu[i+1]; j++){
             partid2party[idx[j]] = i;
@@ -112,7 +112,7 @@ void Partition::hybrid_partition(const DataSet &dataset, const int n_parties, ve
     }
 //    vector<DataSet> subsets(n_parties);
     for(int i = 0; i < dataset.csr_row_ptr.size()-1; i++){
-        int csr_row_sub[n_parties] = {0};
+        vector<int> csr_row_sub(n_parties, 0);
         for(int j = dataset.csr_row_ptr[i]; j < dataset.csr_row_ptr[i+1]; j++){
             float_type value = dataset.csr_val[j];
             int cid = dataset.csr_col_idx[j];
