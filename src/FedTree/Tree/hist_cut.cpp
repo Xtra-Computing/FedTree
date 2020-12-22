@@ -8,8 +8,7 @@
 #include "thrust/execution_policy.h"
 
 
-void HistCut::get_cut_points(DataSet &dataset, int max_num_bins, int n_instances){
-    LOG(INFO) << "Getting cut points...";
+void HistCut::get_cut_points_by_data_range(DataSet &dataset, int max_num_bins, int n_instances){
     int n_column = dataset.n_features();
     SyncArray<float> unique_vals(n_column * n_instances);
     SyncArray<int> temp_row_ptr(n_column + 1);
@@ -26,6 +25,7 @@ void HistCut::get_cut_points(DataSet &dataset, int max_num_bins, int n_instances
 
     #pragma omp parallel for
     for(int fid = 0; fid < n_column; fid++) {
+        // copy data value from csc array to unique array
         int col_start = csc_col_ptr_data[fid];
         int col_len = csc_col_ptr_data[fid+1] - col_start;
 
@@ -185,4 +185,41 @@ void HistCut::get_cut_points_fast(DataSet &dataset, int max_num_bins, int n_inst
     LOG(DEBUG) << "--->>>> cut fid: " << cut_fid;
     LOG(DEBUG) << "TOTAL CP:" << cut_fid.size();
     LOG(DEBUG) << "NNZ: " << dataset.csc_val.size();
+}
+
+void HistCut::get_cut_points_by_n_instance(DataSet &dataset, int max_num_bins) {
+    int n_features = dataset.n_features();
+    int n_instances = dataset.n_instances();
+
+    auto csc_val_data = &dataset.csc_val[0]; //CPU version; need conversion to syncarray pointer for GPU processing
+    auto csc_col_ptr_data = &dataset.csc_col_ptr[0]; //CPU version; need conversion to syncarray pointer for GPU processing
+
+    int n_cp_col = (n_instances <= max_num_bins) ? n_instances : max_num_bins;
+    int n_cp = n_features * n_cp_col;
+
+    cut_points_val.resize(n_cp);
+    cut_row_ptr.resize(n_features+1);
+    cut_fid.resize(n_cp);
+
+    auto cut_points_val_data = cut_points_val.host_data();
+    auto cut_row_ptr_data = cut_row_ptr.host_data();
+    auto cut_fid_data = cut_fid.host_data();
+
+    cut_row_ptr_data[0] = 0;
+    for(int i = 1; i < (n_features+1); i ++) {
+        cut_row_ptr_data[i] = n_cp_col * i;
+    }
+
+    // evenly split to bins for each feature
+    #pragma omp parallel for
+    for(int fid = 0; fid < n_features; fid ++) {
+        for(int i = 0; i < n_cp_col; i ++) {
+            cut_fid_data[fid];
+
+            int cp_index = n_instances / n_cp_col * i;
+
+            auto col_val = csc_val_data + csc_col_ptr_data[fid];
+            cut_points_val_data[cut_row_ptr_data[fid]+i] = col_val[cp_index];
+        }
+    }
 }
