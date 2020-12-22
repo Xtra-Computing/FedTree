@@ -73,3 +73,16 @@ void FLtrainer::vertical_fl_trainer(vector<Party> &parties, Server &server, FLPa
 //        }
 //    }
 }
+
+
+void FLtrainer::hybrid_fl_trainer(vector<Party> &parties, Server &server, FLParam &params){
+    // todo: initialize parties and server
+    int n_party = parties.size();
+//    for(int i = 0; i < n_party; i++){
+//        parties[i].booster.boost(parties[i].gbdt.trees[0]);
+//        parties[i].send_last_trees(server);
+//    }
+    
+
+
+}
