@@ -641,10 +641,10 @@ void DataSet::csr_to_csc(){
         csc_col_ptr[i] = 0;
     }
 
-#pragma omp parallel for // about 5s
+    #pragma omp parallel for // about 5s
     for (int i = 0; i < nnz; ++i) {
         int idx = csr_col_idx[i] + 1;
-#pragma omp atomic
+        #pragma omp atomic
         csc_col_ptr[idx] += 1;
     }
 

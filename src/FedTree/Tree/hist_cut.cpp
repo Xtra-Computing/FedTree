@@ -133,8 +133,6 @@ void HistCut::get_cut_points_fast(DataSet &dataset, int max_num_bins, int n_inst
     cut_row_ptr.resize(dataset.csc_col_ptr.size());
     cut_fid.resize(dataset.csc_val.size());
     cut_points_val.copy_from(&dataset.csc_val[0], dataset.csc_val.size());
-    LOG(INFO)<<"csc_col_ptr:"<<dataset.csc_col_ptr;
-    LOG(INFO)<<"csc_val:"<<dataset.csc_val;
     auto csc_ptr = &dataset.csc_col_ptr[0];
 
     auto cut_fid_data = cut_fid.host_data();
@@ -181,7 +179,7 @@ void HistCut::get_cut_points_fast(DataSet &dataset, int max_num_bins, int n_inst
     }
     thrust::inclusive_scan(thrust::host, cut_row_ptr_data, cut_row_ptr_data + cut_row_ptr.size(), cut_row_ptr_data);
 
-    LOG(INFO) << "--->>>>  cut points value: " << cut_points_val;
+    LOG(DEBUG) << "--->>>>  cut points value: " << cut_points_val;
     LOG(DEBUG) << "--->>>> cut row ptr: " << cut_row_ptr;
     LOG(DEBUG) << "--->>>> cut fid: " << cut_fid;
     LOG(DEBUG) << "TOTAL CP:" << cut_fid.size();
