@@ -10,26 +10,26 @@
 template<class RNG>
 class dirichlet_distribution {
 public:
-    dirichlet_distribution(const vector<double> &);
+    dirichlet_distribution(const vector<float> &);
 
-    void set_params(const vector<double> &);
+    void set_params(const vector<float> &);
 
-    vector<double> get_params();
+    vector<float> get_params();
 
-    vector<double> operator()(RNG &);
+    vector<float> operator()(RNG &);
 
 private:
-    vector<double> alpha;
+    vector<float> alpha;
     vector<std::gamma_distribution<>> gamma;
 };
 
 template<class RNG>
-dirichlet_distribution<RNG>::dirichlet_distribution(const vector<double> &alpha) {
+dirichlet_distribution<RNG>::dirichlet_distribution(const vector<float> &alpha) {
     set_params(alpha);
 }
 
 template<class RNG>
-void dirichlet_distribution<RNG>::set_params(const vector<double> &new_params) {
+void dirichlet_distribution<RNG>::set_params(const vector<float> &new_params) {
     alpha = new_params;
     vector<std::gamma_distribution<>> new_gamma(alpha.size());
     for (int i = 0; i < alpha.size(); ++i) {
@@ -40,19 +40,19 @@ void dirichlet_distribution<RNG>::set_params(const vector<double> &new_params) {
 }
 
 template<class RNG>
-vector<double> dirichlet_distribution<RNG>::get_params() {
+vector<float> dirichlet_distribution<RNG>::get_params() {
     return alpha;
 }
 
 template<class RNG>
-vector<double> dirichlet_distribution<RNG>::operator()(RNG &generator) {
-    vector<double> x(alpha.size());
-    double sum = 0.0;
+vector<float> dirichlet_distribution<RNG>::operator()(RNG &generator) {
+    vector<float> x(alpha.size());
+    float sum = 0.0;
     for (int i = 0; i < alpha.size(); ++i) {
         x[i] = gamma[i](generator);
         sum += x[i];
     }
-    for (double &xi : x) xi = xi / sum;
+    for (float &xi : x) xi = xi / sum;
     return x;
 }
 
