@@ -103,7 +103,7 @@ void HistTreeBuilder::get_bin_ids() {
 void HistTreeBuilder::find_split(int level) {
     TIMED_FUNC(timerObj);
     std::chrono::high_resolution_clock timer;
-    int n_nodes_in_level = static_cast<int>(pow(2, level));
+    int n_nodes_in_level = 1<<level;
 //    int nid_offset = static_cast<int>(pow(2, level) - 1);
     int n_column = dataset->n_features();
     int n_partition = n_column * n_nodes_in_level;

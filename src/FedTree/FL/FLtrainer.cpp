@@ -3,6 +3,7 @@
 //
 #include "FedTree/FL/FLtrainer.h"
 #include "FedTree/Encryption/HE.h"
+#include "FedTree/FL/partition.h"
 
 void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FLParam &params){
 // Is propose_split_candidates implemented? Should it be a method of TreeBuilder, HistTreeBuilder or server? Shouldnt there be a vector of SplitCandidates returned
@@ -46,6 +47,35 @@ void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FL
 
 
 void FLtrainer::vertical_fl_trainer(vector<Party> &parties, Server &server, FLParam &params){
+
+    // load dataset
+    GBDTParam &model_param = params.gbdt_param;
+    DataSet dataset;
+    dataset.load_from_file(model_param.path, params);
+
+    // partition dataset
+    int parties_size = parties.size() + 1;
+    vector<DataSet> subsets(parties_size);
+    Partition partition;
+    vector<double> alpha;
+    partition.hybrid_partition(dataset, parties_size, alpha, subsets);
+
+    // server and party initialization
+    server.init(0, subsets[0], params);
+    server.homo_init();
+    for (int i = 1; i < parties_size; i++) {
+        parties[i - 1].init(i, subsets[i], params);
+    }
+
+    // start training
+    for (int i = 0; i < params.gbdt_param.n_trees; i++) {
+        // Server update, encrypt and send gradients
+        server.booster.update_gradients();
+        server.booster.fbuilder->encrypt_gradients(server.publicKey);
+        for (int m = 0; m < parties.size(); m++) {
+            server.send_gradients(parties[m]);
+        }
+    }
 //    parties[0].homo_init();
 //    parties[0].send_info();
 //    for (int i = 0; i < params.gbdt_param.n_trees; i++){
