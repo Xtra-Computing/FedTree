@@ -4,6 +4,7 @@
 #include "FedTree/FL/FLtrainer.h"
 #include "FedTree/Encryption/HE.h"
 #include "FedTree/FL/partition.h"
+#include "FedTree/FL/comm_helper.h"
 
 void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FLParam &params){
 // Is propose_split_candidates implemented? Should it be a method of TreeBuilder, HistTreeBuilder or server? Shouldnt there be a vector of SplitCandidates returned
@@ -57,7 +58,7 @@ void FLtrainer::vertical_fl_trainer(vector<Party> &parties, Server &server, FLPa
     int parties_size = parties.size() + 1;
     vector<DataSet> subsets(parties_size);
     Partition partition;
-    vector<double> alpha;
+    vector<float> alpha;
     partition.hybrid_partition(dataset, parties_size, alpha, subsets);
 
     // server and party initialization
@@ -108,11 +109,19 @@ void FLtrainer::vertical_fl_trainer(vector<Party> &parties, Server &server, FLPa
 void FLtrainer::hybrid_fl_trainer(vector<Party> &parties, Server &server, FLParam &params){
     // todo: initialize parties and server
     int n_party = parties.size();
-//    for(int i = 0; i < n_party; i++){
-//        parties[i].booster.boost(parties[i].gbdt.trees[0]);
-//        parties[i].send_last_trees(server);
-//    }
-    
-
+    Comm comm_helper;
+    for(int i = 0; i < params.gbdt_param.n_trees; i++) {
+        #pragma omp parallel for
+        for (int i = 0; i < n_party; i++) {
+            parties[i].booster.boost(parties[i].gbdt.trees);
+            comm_helper.send_last_trees_to_server(parties[i], i, server);
+        }
+        server.merge_trees();
+        // todo: send the trees to the party to correct the trees and compute leaf values
+        #pragma omp parallel for
+        for (int i = 0; i < n_party; i++) {
+            comm_helper.send_last_global_trees_to_party(server, parties[i]);
+        }
+    }
 
 }

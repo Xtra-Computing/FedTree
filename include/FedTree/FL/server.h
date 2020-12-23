@@ -14,12 +14,12 @@
 // Todo: the server structure.
 
 class Server : public Party {
+public:
     void propose_split_candidates();
     void send_info(string info_type);
 //    void send_info(vector<Party> &parties, AdditivelyHE::PaillierPublicKey serverKey,vector<SplitCandidate>candidates);
     void sum_histograms();
     void merge_trees();
-public:
     GBDT global_trees;
     vector<GBDT> local_trees;
     GBDTParam model_param;

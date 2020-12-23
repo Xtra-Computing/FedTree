@@ -76,31 +76,4 @@ void Server::merge_trees(){
         }
         //todo: add feature id offset
     }
-
-
-
-//    // maintain an array to store the current candidates and their gains. make node_gains sorted
-//    // and choose the first one each time.
-//    vector<float_type> treenode_candidates;
-//    vector<float_type> node_gains;
-//    for(int pid = 0; pid < local_trees.size(); pid++){
-//        for(int tid = 0; tid < local_trees[pid][0].size(); tid++){
-//            treenode_candidates.push_back(tid);
-//        }
-//        treenode_candidates.push_back(tid);
-//        node_gains.push_back()
-//    }
-//    for(int tid = 0; tid < trees.size(); tid++) {
-//        Tree &tree = trees[tid];
-//        tree.init_structure(model_param.depth);
-//        for (int i = 0; i < model_param.depth; i++) {
-//            int n_nodes_in_level = pow(2, level);
-//            int nid_offset = pow(2, level) - 1;
-//            for (int nid = nid_offset; nid < nid_offset + n_nodes_in_level; nid++) {
-//
-//                trees[nid].
-//            }
-//        }
-//    }
-
 }

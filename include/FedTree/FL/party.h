@@ -27,10 +27,6 @@ public:
         party.booster.fbuilder->set_gradients(gh);
     }
 
-//    void send_last_trees(Server &server){
-//        server.local_trees[pid].trees[0] = this->gbdt.trees.back();
-//    }
-
     int pid;
 //    AdditivelyHE::PaillierPublicKey publicKey;
     AdditivelyHE::PaillierPublicKey serverKey;
