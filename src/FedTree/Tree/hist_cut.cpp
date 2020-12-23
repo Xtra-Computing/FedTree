@@ -9,8 +9,7 @@
 #include "thrust/execution_policy.h"
 
 
-void HistCut::get_cut_points(DataSet &dataset, int max_num_bins, int n_instances){
-    LOG(INFO) << "Getting cut points...";
+void HistCut::get_cut_points_by_data_range(DataSet &dataset, int max_num_bins, int n_instances){
     int n_column = dataset.n_features();
     SyncArray<float> unique_vals(n_column * n_instances);
     SyncArray<int> temp_row_ptr(n_column + 1);
@@ -27,6 +26,7 @@ void HistCut::get_cut_points(DataSet &dataset, int max_num_bins, int n_instances
 
     #pragma omp parallel for
     for(int fid = 0; fid < n_column; fid++) {
+        // copy data value from csc array to unique array
         int col_start = csc_col_ptr_data[fid];
         int col_len = csc_col_ptr_data[fid+1] - col_start;
 
@@ -186,4 +186,34 @@ void HistCut::get_cut_points_fast(DataSet &dataset, int max_num_bins, int n_inst
     LOG(DEBUG) << "--->>>> cut fid: " << cut_fid;
     LOG(DEBUG) << "TOTAL CP:" << cut_fid.size();
     LOG(DEBUG) << "NNZ: " << dataset.csc_val.size();
+}
+
+/**
+ * Generates cut points for each feature based on numeric ranges of feature values
+ * @param f_range Min and max values for each feature.
+ * @param max_num_bins Number of cut points for each feature.
+ */ 
+void HistCut::get_cut_points_by_feature_range(vector<vector<float>> f_range, int max_num_bins) {
+    int n_features = f_range.size();
+
+    cut_points_val.resize(n_features * max_num_bins);
+    cut_row_ptr.resize(n_features + 1);
+    cut_fid.resize(n_features * max_num_bins);
+
+    auto cut_points_val_data = cut_points_val.host_data();
+    auto cut_row_ptr_data = cut_row_ptr.host_data();
+    auto cut_fid_data = cut_fid.host_data();
+
+    #pragma omp parallel for
+    for(int fid = 0; fid < n_features; fid ++) {
+        cut_row_ptr_data[fid] = fid * max_num_bins;
+        float val_range = f_range[fid][1] - f_range[fid][0];
+        float val_step = val_range / max_num_bins;
+
+        for(int i = 0; i < max_num_bins; i ++) {
+            cut_fid_data[fid * max_num_bins + i] = fid;
+            cut_points_val_data[fid * max_num_bins + 1] = i * val_step + f_range[fid][0];
+        }
+    }   
+    cut_row_ptr_data[n_features] = n_features * max_num_bins;
 }

@@ -28,8 +28,10 @@ public:
 
     // equally divide the feature range to get cut points
     // void get_cut_points(float_type feature_min, float_type feature_max, int max_num_bins, int n_instances);
-    void get_cut_points(DataSet &dataset, int max_num_bins, int n_instances);
+    void get_cut_points_by_data_range(DataSet &dataset, int max_num_bins, int n_instances);
     void get_cut_points_fast(DataSet &dataset, int max_num_bins, int n_instances);
+    void get_cut_points_by_n_instance(DataSet &dataset, int max_num_bins);
+    void get_cut_points_by_feature_range(vector<vector<float>> f_range, int max_num_bins);
 };
 
 
