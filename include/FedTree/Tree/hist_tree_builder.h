@@ -18,16 +18,16 @@ public:
     void find_split(int level) override;
 
     void compute_histogram_in_a_level(int level, int n_max_splits, int n_bins, int n_nodes_in_level, int* hist_fid_data,
-                                      SyncArray<GHPair> &missing_gh);
+                                      SyncArray<GHPair> &missing_gh, SyncArray<GHPair> &hist);
 
     void compute_histogram_in_a_node(SyncArray<GHPair> &gradients, HistCut &cut, SyncArray<unsigned char> &dense_bin_id, bool enc);
 
     void compute_gain_in_a_level(SyncArray<float_type> &gain, int n_nodes_in_level, int n_bins, int* hist_fid_data,
-                                 SyncArray<GHPair> &missing_gh);
+                                 SyncArray<GHPair> &missing_gh, SyncArray<GHPair> &hist);
 
     void get_best_gain_in_a_level(SyncArray<float_type> &gain, SyncArray<int_float> &best_idx_gain, int n_nodes_in_level, int n_bins);
 
-    void get_split_points(SyncArray<int_float> &best_idx_gain, int level, int *hist_fid, SyncArray<GHPair> &missing_gh);
+    void get_split_points(SyncArray<int_float> &best_idx_gain, int level, int *hist_fid, SyncArray<GHPair> &missing_gh, SyncArray<GHPair> &hist);
 
 //    SyncArray<GHPair> compute_histogram(SyncArray<GHPair> &gradients, HistCut &cut,
 //                                        SyncArray<unsigned char> &dense_bin_id);
