@@ -214,5 +214,5 @@ void HistCut::get_cut_points_by_feature_range(vector<vector<float>> f_range, int
             cut_points_val_data[fid * max_num_bins + 1] = i * val_step + f_range[fid][0];
         }
     }   
-    cut_row_ptr_data[n_features + 1] = n_features * max_num_bins;
+    cut_row_ptr_data[n_features] = n_features * max_num_bins;
 }
