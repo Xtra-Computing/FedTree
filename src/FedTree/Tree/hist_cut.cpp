@@ -2,6 +2,7 @@
 
 #include "FedTree/Tree/hist_cut.h"
 #include "FedTree/util/device_lambda.h"
+#include "FedTree/util/cub_wrapper.h"
 #include <thrust/iterator/constant_iterator.h>
 #include <thrust/transform.h>
 #include "thrust/unique.h"
@@ -95,9 +96,7 @@ void unique_by_flag(SyncArray<float> &target_arr, SyncArray<int> &flags, int n_c
 
 //    float max_elem = max_elements(target_arr);
     float max_elem = *thrust::max_element(thrust::host, target_arr.host_data(), target_arr.host_end());
-    LOG(DEBUG) << "max feature value: " << max_elem;
     CHECK_LT(max_elem + n_columns*(max_elem + 1),INT_MAX) << "Max_values is too large to be transformed";
-
     // 1. transform data into unique ranges
     thrust::transform(thrust::host,
                       target_arr.host_data(),
@@ -126,33 +125,36 @@ void unique_by_flag(SyncArray<float> &target_arr, SyncArray<int> &flags, int n_c
 // cost more memory
 void HistCut::get_cut_points_fast(DataSet &dataset, int max_num_bins, int n_instances) {
     LOG(INFO) << "Fast getting cut points...";
+
     int n_column = dataset.n_features();
+    //todo: bug: thundergbm csc_val is sorted
 
     cut_points_val.resize(dataset.csc_val.size());
     cut_row_ptr.resize(dataset.csc_col_ptr.size());
     cut_fid.resize(dataset.csc_val.size());
     cut_points_val.copy_from(&dataset.csc_val[0], dataset.csc_val.size());
+    LOG(INFO)<<"csc_col_ptr:"<<dataset.csc_col_ptr;
+    LOG(INFO)<<"csc_val:"<<dataset.csc_val;
     auto csc_ptr = &dataset.csc_col_ptr[0];
 
     auto cut_fid_data = cut_fid.host_data();
-#pragma omp parallel for
+    #pragma omp parallel for
     for(int fid = 0; fid < n_column; fid ++)
-        for(int i = csc_ptr[fid]; i < csc_ptr[fid+1]; i++)
+        for(int i = csc_ptr[fid]; i < csc_ptr[fid+1]; i++) {
             cut_fid_data[i] = fid;
-
+        }
     unique_by_flag(cut_points_val, cut_fid, n_column);
-
+    //need to reassign the host_data since cut_fid is resized
+    cut_fid_data = cut_fid.host_data();
     cut_row_ptr.resize(n_column + 1);
     auto cut_row_ptr_data = cut_row_ptr.host_data();
     for(int fid = 0; fid < cut_fid.size(); fid++){
         *(cut_row_ptr_data + cut_fid_data[fid] + 1) += 1;
     }
-
     thrust::inclusive_scan(thrust::host, cut_row_ptr_data, cut_row_ptr_data + cut_row_ptr.size(), cut_row_ptr_data);
-
     SyncArray<int> select_index(cut_fid.size());
     auto select_index_data = select_index.host_data();
-#pragma omp parallel for
+    #pragma omp parallel for
     for(int fid = 0; fid < n_column; fid++){
         int interval = (cut_row_ptr_data[fid+1] - cut_row_ptr_data[fid])/max_num_bins;
         for (int i = cut_row_ptr_data[fid]; i < cut_row_ptr_data[fid+1]; i++){
@@ -163,7 +165,6 @@ void HistCut::get_cut_points_fast(DataSet &dataset, int max_num_bins, int n_inst
                 select_index_data[cut_row_ptr_data[fid] + interval * feature_idx] = 1;
         }
     }
-
     auto cut_fid_new_end = thrust::remove_if(thrust::host, cut_fid_data, cut_fid_data+cut_fid.size(), select_index_data,
                                              thrust::not1(thrust::identity<int>()));
     syncarray_resize_cpu(cut_fid, cut_fid_new_end - cut_fid_data);
@@ -180,7 +181,7 @@ void HistCut::get_cut_points_fast(DataSet &dataset, int max_num_bins, int n_inst
     }
     thrust::inclusive_scan(thrust::host, cut_row_ptr_data, cut_row_ptr_data + cut_row_ptr.size(), cut_row_ptr_data);
 
-    LOG(DEBUG) << "--->>>>  cut points value: " << cut_points_val;
+    LOG(INFO) << "--->>>>  cut points value: " << cut_points_val;
     LOG(DEBUG) << "--->>>> cut row ptr: " << cut_row_ptr;
     LOG(DEBUG) << "--->>>> cut fid: " << cut_fid;
     LOG(DEBUG) << "TOTAL CP:" << cut_fid.size();
