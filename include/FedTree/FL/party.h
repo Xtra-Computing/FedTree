@@ -10,8 +10,8 @@
 #include "FedTree/Encryption/HE.h"
 #include "FedTree/DP/noises.h"
 #include "FLparam.h"
-#include "server.h"
 #include "FedTree/booster.h"
+#include "FedTree/Tree/gbdt.h"
 
 // Todo: the party structure
 class Party {
@@ -22,27 +22,17 @@ public:
         booster.init(dataset, param.gbdt_param);
     };
 
-    void homo_init() {
-        std::tuple<AdditivelyHE::PaillierPublicKey, AdditivelyHE::PaillierPrivateKey> keyPairs = this->HE.generate_key_pairs();
-        publicKey = std::get<0>(keyPairs);
-        privateKey = std::get<1>(keyPairs);
-        booster.fbuilder->encrypt_gradients(publicKey);
-    };
-
-    void overwrite_gradients(SyncArray<GHPair> gh){
-        booster.fbuilder->set_gradients(gh);
-    };
-
     void send_gradients(Party &party){
-        party.overwrite_gradients(booster.fbuilder->get_gradients());
+        SyncArray<GHPair> gh = booster.fbuilder->get_gradients();
+        party.booster.fbuilder->set_gradients(gh);
     }
 
-    void send_last_trees(Server &server){
-        server.local_trees[pid].trees[0] = this->gbdt.trees.back();
-    }
+//    void send_last_trees(Server &server){
+//        server.local_trees[pid].trees[0] = this->gbdt.trees.back();
+//    }
 
     int pid;
-    AdditivelyHE::PaillierPublicKey publicKey;
+//    AdditivelyHE::PaillierPublicKey publicKey;
     AdditivelyHE::PaillierPublicKey serverKey;
 //    std::unique_ptr<TreeBuilder> fbuilder;
 //    vector<SplitCandidate> split_candidates;
@@ -50,8 +40,8 @@ public:
     GBDT gbdt;
 private:
     DataSet dataset;
-    AdditivelyHE HE;
-    AdditivelyHE::PaillierPrivateKey privateKey;
+//    AdditivelyHE HE;
+//    AdditivelyHE::PaillierPrivateKey privateKey;
     DPnoises<double> DP;
 
 

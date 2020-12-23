@@ -22,6 +22,8 @@ class Booster {
 public:
     void init(DataSet &dataSet, const GBDTParam &param);
 
+    void update_gradients();
+
     void boost(vector<vector<Tree>> &boosted_model);
 
     std::unique_ptr<FunctionBuilder> fbuilder;

@@ -28,6 +28,10 @@ void Booster::init(DataSet &dataSet, const GBDTParam &param) {
 }
 
 
+void Booster::update_gradients() {
+    obj->get_gradient(y, fbuilder->get_y_predict(), gradients);
+}
+
 void Booster::boost(vector<vector<Tree>> &boosted_model) {
     TIMED_FUNC(timerObj);
     std::unique_lock<std::mutex> lock(mtx);
