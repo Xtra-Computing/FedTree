@@ -28,8 +28,8 @@ public:
         if (param.privacy_tech == "dp") {
             auto gh_data = gh.host_data();
             for(int i = 0; i < gh.size(); i++) {
-                gh_data[i].g = DP.add_gaussian_noise(gh[i].g, param.variance);
-                gh_data[i].h = DP.add_gaussian_noise(gh[i].h, param.variance);
+//                DP.add_gaussian_noise(&gh_data, param.variance);
+//                gh_data[i].h = DP.add_gaussian_noise(h, param.variance);
             }
         }
         party.booster.fbuilder->set_gradients(gh);
