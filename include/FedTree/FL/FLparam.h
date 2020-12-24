@@ -14,6 +14,7 @@ public:
     int n_parties; // number of parties
     bool partition; // input a single dataset for partitioning or input datasets for each party.
     float alpha; //the concentration parameter of Dir based partition approaches.
+    float variance; // variance of gaussian noise
     string mode; // "horizontal", "vertical", "hybrid", or "centralized"
     string privacy_tech; //"none" or "he" or "dp"
     GBDTParam gbdt_param; // parameters for the gbdt training

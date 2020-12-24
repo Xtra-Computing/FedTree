@@ -25,6 +25,16 @@ public:
 
     virtual void update_tree();
 
+    Tree get_tree() override {
+        return this->trees;
+    }
+
+    void set_tree(Tree tree) override {
+       trees = Tree(tree);
+    }
+
+    void set_y_predict(int k) override;
+
     void predict_in_training(int k);
 
 //    virtual void split_point_all_reduce(int depth);
@@ -70,6 +80,7 @@ protected:
     bool has_split;
 //    vector<Shard> shards;
     DataSet* dataset;
+
 };
 
 #endif //FEDTREE_TREE_BUILDER_H

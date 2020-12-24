@@ -19,26 +19,36 @@ public:
     void init(int pid, DataSet &dataset, FLParam &param) {
         this->pid = pid;
         this->dataset = dataset;
+        this->param = param;
         booster.init(dataset, param.gbdt_param);
     };
 
     void send_gradients(Party &party){
         SyncArray<GHPair> gh = booster.fbuilder->get_gradients();
+        if (param.privacy_tech == "dp") {
+            auto gh_data = gh.host_data();
+            for(int i = 0; i < gh.size(); i++) {
+                gh_data[i].g = DP.add_gaussian_noise(gh[i].g, param.variance);
+                gh_data[i].h = DP.add_gaussian_noise(gh[i].h, param.variance);
+            }
+        }
         party.booster.fbuilder->set_gradients(gh);
     }
 
+    void send_trees(Party &party) const{
+        Tree tree = booster.fbuilder->get_tree();
+        party.booster.fbuilder->set_tree(tree);
+    }
+
     int pid;
-//    AdditivelyHE::PaillierPublicKey publicKey;
     AdditivelyHE::PaillierPublicKey serverKey;
-//    std::unique_ptr<TreeBuilder> fbuilder;
-//    vector<SplitCandidate> split_candidates;
+
     Booster booster;
     GBDT gbdt;
 private:
     DataSet dataset;
-//    AdditivelyHE HE;
-//    AdditivelyHE::PaillierPrivateKey privateKey;
     DPnoises<double> DP;
+    FLParam param;
 
 
 };

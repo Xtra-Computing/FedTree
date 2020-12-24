@@ -15,7 +15,6 @@
 //    }
 //}
 
-
 void Server::merge_trees(){
     vector<Tree> &trees = global_trees.trees.back();
     int n_max_nodes_in_a_tree = pow(2, model_param.depth) - 1;
