@@ -23,8 +23,8 @@ public:
     };
 
     void send_gradients(Party &party){
-        SyncArray<GHPair> gh = booster.fbuilder->get_gradients();
-        party.booster.fbuilder->set_gradients(gh);
+        SyncArray<GHPair> gh = booster.get_gradients();
+        party.booster.set_gradients(gh);
     }
 
 //    void send_last_trees(Server &server){

@@ -14,6 +14,7 @@
 #include "FedTree/syncarray.h"
 #include "FedTree/Tree/tree.h"
 
+
 //#include "row_sampler.h"
 
 
@@ -21,6 +22,12 @@
 class Booster {
 public:
     void init(DataSet &dataSet, const GBDTParam &param);
+
+    SyncArray<GHPair> get_gradients();
+
+    void set_gradients(SyncArray<GHPair> &gh);
+
+    void encrypt_gradients(AdditivelyHE::PaillierPublicKey pk);
 
     void update_gradients();
 

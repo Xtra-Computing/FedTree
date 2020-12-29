@@ -5,7 +5,7 @@
 #include "FedTree/Encryption/HE.h"
 #include "FedTree/FL/partition.h"
 
-void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FLParam &params){
+void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FLParam &params) {
 // Is propose_split_candidates implemented? Should it be a method of TreeBuilder, HistTreeBuilder or server? Shouldnt there be a vector of SplitCandidates returned
 //  vector<SplitCandidate> candidates = server.fbuilder.propose_split_candidates();
 //  std::tuple <AdditivelyHE::PaillierPublicKey, AdditivelyHE::PaillierPrivateKey> key_pair = server.HE.generate_key_pairs();
@@ -18,16 +18,16 @@ void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FL
 //            for (int k = 0; k < parties.size(); k++) {
 //                SyncArray<GHPair> hist = parties[j].fbuilder->compute_histogram();
 //                if (params.privacy_tech == "he") {
-                    // Should HE be a public member of Party?
+    // Should HE be a public member of Party?
 //                    parties[k].HE.encryption();
 //                }
 //                if (params.privacy_tech == "dp") {
-                    // Should DP be public member of Party?
+    // Should DP be public member of Party?
 //                    parties[k].DP.add_gaussian_noise();
 //                }
 //                parties[k].send_info(hist);
 //            }
-            // merge_histograms in tree_builder?
+    // merge_histograms in tree_builder?
 //            server.sum_histograms(); // or on Party 1 if using homo encryption
 //            server.HE.decrption();
 //            if (j != params.gbdt_param.depth - 1) {
@@ -46,7 +46,7 @@ void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FL
 }
 
 
-void FLtrainer::vertical_fl_trainer(vector<Party> &parties, Server &server, FLParam &params){
+void FLtrainer::vertical_fl_trainer(vector<Party> &parties, Server &server, FLParam &params) {
 
     // load dataset
     GBDTParam &model_param = params.gbdt_param;
@@ -71,9 +71,15 @@ void FLtrainer::vertical_fl_trainer(vector<Party> &parties, Server &server, FLPa
     for (int i = 0; i < params.gbdt_param.n_trees; i++) {
         // Server update, encrypt and send gradients
         server.booster.update_gradients();
-        server.booster.fbuilder->encrypt_gradients(server.publicKey);
-        for (int m = 0; m < parties.size(); m++) {
-            server.send_gradients(parties[m]);
+        server.booster.encrypt_gradients(server.publicKey);
+        for (int j = 0; j < parties.size(); j++) {
+            server.send_gradients(parties[j]);
+            for (int k = 0; k < params.gbdt_param.tree_per_rounds; k++) {
+                parties[j].booster.fbuilder->build_init(parties[j].booster.get_gradients(), k);
+                for (int l = 0; l < params.gbdt_param.depth; l++) {
+                    parties[j].booster.fbuilder->compute_hist(l);
+                }
+            }
         }
     }
 //    parties[0].homo_init();
@@ -105,14 +111,14 @@ void FLtrainer::vertical_fl_trainer(vector<Party> &parties, Server &server, FLPa
 }
 
 
-void FLtrainer::hybrid_fl_trainer(vector<Party> &parties, Server &server, FLParam &params){
+void FLtrainer::hybrid_fl_trainer(vector<Party> &parties, Server &server, FLParam &params) {
     // todo: initialize parties and server
     int n_party = parties.size();
 //    for(int i = 0; i < n_party; i++){
 //        parties[i].booster.boost(parties[i].gbdt.trees[0]);
 //        parties[i].send_last_trees(server);
 //    }
-    
+
 
 
 }

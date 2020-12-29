@@ -15,19 +15,17 @@ class FunctionBuilder {
 public:
     virtual vector<Tree> build_approximate(const SyncArray<GHPair> &gradients) = 0;
 
+    virtual void build_init(const SyncArray<GHPair> &gradients, int k) = 0;
+
+    virtual void compute_hist(int level) = 0;
+
     virtual void init(DataSet &dataset, const GBDTParam &param) {
         this->param = param;
     };
 
-    virtual const SyncArray<float_type> &get_y_predict(){ return y_predict; };
+    virtual const SyncArray<float_type> &get_y_predict() { return y_predict; };
 
-    virtual void encrypt_gradients(AdditivelyHE::PaillierPublicKey pk) = 0;
-
-    virtual void set_gradients(SyncArray<GHPair> &gh) = 0;
-
-    virtual SyncArray<GHPair> get_gradients() = 0;
-
-    virtual ~FunctionBuilder(){};
+    virtual ~FunctionBuilder() {};
 
     static FunctionBuilder *create(std::string name);
 

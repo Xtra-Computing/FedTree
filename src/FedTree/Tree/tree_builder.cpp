@@ -74,6 +74,12 @@ void TreeBuilder::predict_in_training(int k) {
     }
 }
 
+void TreeBuilder::build_init(const SyncArray<GHPair> &gradients, int k) {
+    this->ins2node_id.resize(n_instances);
+    this->gradients.set_host_data(const_cast<GHPair *>(gradients.host_data() + k * n_instances));
+    this->trees.init_CPU(this->gradients, param);
+}
+
 vector<Tree> TreeBuilder::build_approximate(const SyncArray<GHPair> &gradients) {
     vector<Tree> trees(param.tree_per_rounds);
     TIMED_FUNC(timerObj);
@@ -203,22 +209,4 @@ void TreeBuilder::update_tree() {
         }
     }
     LOG(DEBUG) << tree.nodes;
-}
-
-void TreeBuilder::encrypt_gradients(AdditivelyHE::PaillierPublicKey pk) {
-    auto gradients_data = gradients.host_data();
-    for (int i = 0; i < gradients.size(); i++)
-        gradients_data[i].homo_encrypt(pk);
-}
-
-SyncArray<GHPair> TreeBuilder::get_gradients() {
-    SyncArray<GHPair> gh;
-    gh.resize(gradients.size());
-    gh.copy_from(gradients);
-    return gh;
-}
-
-void TreeBuilder::set_gradients(SyncArray<GHPair> &gh) {
-    gradients.resize(gh.size());
-    gradients.copy_from(gh);
 }
