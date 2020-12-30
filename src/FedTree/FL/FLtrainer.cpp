@@ -68,17 +68,30 @@ void FLtrainer::vertical_fl_trainer(vector<Party> &parties, Server &server, FLPa
     }
 
     // start training
+    // for each boosting round
     for (int i = 0; i < params.gbdt_param.n_trees; i++) {
         // Server update, encrypt and send gradients
         server.booster.update_gradients();
         server.booster.encrypt_gradients(server.publicKey);
         for (int j = 0; j < parties.size(); j++) {
             server.send_gradients(parties[j]);
-            for (int k = 0; k < params.gbdt_param.tree_per_rounds; k++) {
+        }
+        // for each tree in a round
+        for (int k = 0; k < params.gbdt_param.tree_per_rounds; k++) {
+            // each party initialize ins2node_id, gradients, etc.
+            for (int j = 0; j < parties.size(); j++)
                 parties[j].booster.fbuilder->build_init(parties[j].booster.get_gradients(), k);
-                for (int l = 0; l < params.gbdt_param.depth; l++) {
+            // server initialize hist container
+            server.booster.fbuilder->parties_hist_init(parties.size());
+            // for each level
+            for (int l = 0; l < params.gbdt_param.depth; l++) {
+                // each party compute hist, send hist to server
+                for (int j = 0; j < parties.size(); j++) {
                     parties[j].booster.fbuilder->compute_hist(l);
+                    parties[j].send_hist(server);
                 }
+                // server concat histograms
+                server.booster.fbuilder->concat_histograms();
             }
         }
     }

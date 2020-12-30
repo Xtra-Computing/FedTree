@@ -19,6 +19,14 @@ public:
 
     virtual void compute_hist(int level) = 0;
 
+    virtual SyncArray<GHPair> get_hist() = 0;
+
+    virtual void parties_hist_init(int party_size) = 0;
+
+    virtual void append_hist(SyncArray<GHPair> &hist) = 0;
+
+    virtual void concat_histograms() = 0;
+
     virtual void init(DataSet &dataset, const GBDTParam &param) {
         this->param = param;
     };

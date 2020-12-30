@@ -15,6 +15,7 @@
 
 
 using namespace thrust;
+
 void HistTreeBuilder::init(DataSet &dataset, const GBDTParam &param) {
     TreeBuilder::init(dataset, param);
     //TODO refactor
@@ -70,9 +71,9 @@ void HistTreeBuilder::get_bin_ids() {
         };
         TIMED_SCOPE(timerObj, "binning");
 
-        #pragma omp parallel for
-        for(int cid = 0; cid < n_column; cid++){
-            for(int i = csc_col_ptr_data[cid]; i < csc_col_ptr_data[cid + 1]; i++){
+#pragma omp parallel for
+        for (int cid = 0; cid < n_column; cid++) {
+            for (int i = csc_col_ptr_data[cid]; i < csc_col_ptr_data[cid + 1]; i++) {
                 auto search_begin = cut_points_ptr + cut_row_ptr[cid];
                 auto search_end = cut_points_ptr + cut_row_ptr[cid + 1];
                 auto val = csc_val_data[i];
@@ -85,13 +86,13 @@ void HistTreeBuilder::get_bin_ids() {
     dense_bin_id.resize(n_instances * n_column);
     auto dense_bin_id_data = dense_bin_id.host_data();
     auto csc_row_idx_data = dataset->csc_row_idx.data();
-    #pragma omp parallel for
-    for(int i = 0; i < n_instances * n_column; i++){
+#pragma omp parallel for
+    for (int i = 0; i < n_instances * n_column; i++) {
         dense_bin_id_data[i] = max_num_bin;
     }
-    #pragma omp parallel for
-    for(int fid = 0; fid < n_column; fid++){
-        for(int i = csc_col_ptr_data[fid]; i < csc_col_ptr_data[fid+1]; i++){
+#pragma omp parallel for
+    for (int fid = 0; fid < n_column; fid++) {
+        for (int i = csc_col_ptr_data[fid]; i < csc_col_ptr_data[fid + 1]; i++) {
             int row = csc_row_idx_data[i];
             unsigned char bid = bin_id_data[i];
             dense_bin_id_data[row * n_column + fid] = bid;
@@ -119,7 +120,7 @@ void HistTreeBuilder::compute_hist(int level) {
     auto hist_fid_data = hist_fid.host_data();
 
 #pragma omp parallel for
-    for(int i = 0; i < hist_fid.size(); i++)
+    for (int i = 0; i < hist_fid.size(); i++)
         hist_fid_data[i] = cut_fid_data[i % n_bins];
 
 
@@ -152,7 +153,7 @@ void HistTreeBuilder::find_split(int level) {
     auto hist_fid_data = hist_fid.host_data();
 
 #pragma omp parallel for
-    for(int i = 0; i < hist_fid.size(); i++)
+    for (int i = 0; i < hist_fid.size(); i++)
         hist_fid_data[i] = cut_fid_data[i % n_bins];
 
 
@@ -172,7 +173,7 @@ void HistTreeBuilder::find_split(int level) {
 }
 
 void HistTreeBuilder::compute_histogram_in_a_level(int level, int n_max_splits, int n_bins, int n_nodes_in_level,
-                                                   int* hist_fid, SyncArray<GHPair> &missing_gh) {
+                                                   int *hist_fid, SyncArray<GHPair> &missing_gh) {
     std::chrono::high_resolution_clock timer;
 
     SyncArray<int> &nid = ins2node_id;
@@ -199,7 +200,7 @@ void HistTreeBuilder::compute_histogram_in_a_level(int level, int n_max_splits, 
 
     {
         TIMED_SCOPE(timerObj, "build hist");
-        if (n_nodes_in_level == 1){
+        if (n_nodes_in_level == 1) {
             auto hist_data = hist.host_data();
             auto cut_row_ptr_data = cut.cut_row_ptr.host_data();
             auto gh_data = gh_pair.host_data();
@@ -207,8 +208,8 @@ void HistTreeBuilder::compute_histogram_in_a_level(int level, int n_max_splits, 
             auto max_num_bin = param.max_num_bin;
             auto n_instances = this->n_instances;
 //                ThunderGBM: check size of histogram.
-            #pragma omp parallel for
-            for(int i = 0; i < n_instances * n_column; i++){
+#pragma omp parallel for
+            for (int i = 0; i < n_instances * n_column; i++) {
                 int iid = i / n_column;
                 int fid = i % n_column;
                 unsigned char bid = dense_bin_id_data[iid * n_column + fid];
@@ -217,19 +218,18 @@ void HistTreeBuilder::compute_histogram_in_a_level(int level, int n_max_splits, 
                     const GHPair src = gh_data[iid];
                     GHPair &dest = hist_data[feature_offset + bid];
 
-                    if(src.h != 0) {
-                        #pragma omp atomic
+                    if (src.h != 0) {
+#pragma omp atomic
                         dest.h += src.h;
                     }
-                    if(src.g != 0) {
-                        #pragma omp atomic
+                    if (src.g != 0) {
+#pragma omp atomic
                         dest.g += src.g;
                     }
 
                 }
             }
-        }
-        else{
+        } else {
             auto t_dp_begin = timer.now();
             SyncArray<int> node_idx(n_instances);
             SyncArray<int> node_ptr(n_nodes_in_level + 1);
@@ -239,14 +239,15 @@ void HistTreeBuilder::compute_histogram_in_a_level(int level, int n_max_splits, 
                 nid4sort.copy_from(ins2node_id);
                 sequence(thrust::host, node_idx.host_data(), node_idx.host_end(), 0);
 
-                thrust:sort_by_key(thrust::host, nid4sort.host_data(), nid4sort.host_end(), node_idx.host_data());
-                auto counting_iter = thrust::make_counting_iterator < int > (nid_offset);
+                thrust:
+                sort_by_key(thrust::host, nid4sort.host_data(), nid4sort.host_end(), node_idx.host_data());
+                auto counting_iter = thrust::make_counting_iterator<int>(nid_offset);
                 node_ptr.host_data()[0] =
                         thrust::lower_bound(thrust::host, nid4sort.host_data(), nid4sort.host_end(), nid_offset) -
                         nid4sort.host_data();
 
                 thrust::upper_bound(thrust::host, nid4sort.host_data(), nid4sort.host_end(), counting_iter,
-                            counting_iter + n_nodes_in_level, node_ptr.host_data() + 1);
+                                    counting_iter + n_nodes_in_level, node_ptr.host_data() + 1);
                 LOG(DEBUG) << "node ptr = " << node_ptr;
             }
             auto t_dp_end = timer.now();
@@ -280,8 +281,8 @@ void HistTreeBuilder::compute_histogram_in_a_level(int level, int n_max_splits, 
                     auto hist_data = hist.host_data() + nid0 * n_bins;
                     this->total_hist_num++;
                     //                ThunderGBM: check size of histogram.
-                    #pragma omp parallel for
-                    for(int i = 0; i < (idx_end - idx_begin) * n_column; i++){
+#pragma omp parallel for
+                    for (int i = 0; i < (idx_end - idx_begin) * n_column; i++) {
                         int iid = node_idx_data[i / n_column + idx_begin];
                         int fid = i % n_column;
                         unsigned char bid = dense_bin_id_data[iid * n_column + fid];
@@ -289,12 +290,12 @@ void HistTreeBuilder::compute_histogram_in_a_level(int level, int n_max_splits, 
                             int feature_offset = cut_row_ptr_data[fid];
                             const GHPair src = gh_data[iid];
                             GHPair &dest = hist_data[feature_offset + bid];
-                            if(src.h != 0) {
-                                #pragma omp atomic
+                            if (src.h != 0) {
+#pragma omp atomic
                                 dest.h += src.h;
                             }
-                            if(src.g != 0) {
-                                #pragma omp atomic
+                            if (src.g != 0) {
+#pragma omp atomic
                                 dest.g += src.g;
                             }
                         }
@@ -307,8 +308,8 @@ void HistTreeBuilder::compute_histogram_in_a_level(int level, int n_max_splits, 
                     auto hist_data_computed = hist.host_data() + nid0_to_compute * n_bins;
                     auto hist_data_to_compute = hist.host_data() + nid0_to_substract * n_bins;
                     auto father_hist_data = last_hist.host_data() + (nid0_to_substract / 2) * n_bins;
-                    #pragma omp parallel for
-                    for(int i = 0; i < n_bins; i++){
+#pragma omp parallel for
+                    for (int i = 0; i < n_bins; i++) {
                         hist_data_to_compute[i] = father_hist_data[i] - hist_data_computed[i];
                     }
                 }
@@ -331,7 +332,7 @@ void HistTreeBuilder::compute_histogram_in_a_level(int level, int n_max_splits, 
     auto cut_row_ptr = cut.cut_row_ptr.host_data();
     auto hist_data = hist.host_data();
 #pragma omp parallel for
-    for(int pid = 0; pid < n_partition; pid++){
+    for (int pid = 0; pid < n_partition; pid++) {
         int nid0 = pid / n_column;
         int nid = nid0 + nid_offset;
         //            todo: check, ThunderGBM uses return;
@@ -347,18 +348,19 @@ void HistTreeBuilder::compute_histogram_in_a_level(int level, int n_max_splits, 
 }
 
 
-void HistTreeBuilder::compute_gain_in_a_level(SyncArray<float_type> &gain, int n_nodes_in_level, int n_bins, int* hist_fid,
-                                              SyncArray<GHPair> &missing_gh){
+void
+HistTreeBuilder::compute_gain_in_a_level(SyncArray<float_type> &gain, int n_nodes_in_level, int n_bins, int *hist_fid,
+                                         SyncArray<GHPair> &missing_gh) {
 //    SyncArray<float_type> gain(n_max_splits);
     int n_column = dataset->n_features();
     int n_split = n_nodes_in_level * n_bins;
     int nid_offset = static_cast<int>(n_nodes_in_level - 1);
     auto compute_gain = []__host__(GHPair father, GHPair lch, GHPair rch, float_type min_child_weight,
-            float_type lambda) -> float_type {
-            if (lch.h >= min_child_weight && rch.h >= min_child_weight)
+                                   float_type lambda) -> float_type {
+        if (lch.h >= min_child_weight && rch.h >= min_child_weight)
             return (lch.g * lch.g) / (lch.h + lambda) + (rch.g * rch.g) / (rch.h + lambda) -
-            (father.g * father.g) / (father.h + lambda);
-            else
+                   (father.g * father.g) / (father.h + lambda);
+        else
             return 0;
     };
     const Tree::TreeNode *nodes_data = trees.nodes.host_data();
@@ -371,7 +373,7 @@ void HistTreeBuilder::compute_gain_in_a_level(SyncArray<float_type> &gain, int n
     float_type l = param.lambda;
 
 #pragma omp parallel for
-    for(int i = 0; i < n_split; i++){
+    for (int i = 0; i < n_split; i++) {
         int nid0 = i / n_bins;
         int nid = nid0 + nid_offset;
         int fid = hist_fid[i % n_bins];
@@ -382,10 +384,10 @@ void HistTreeBuilder::compute_gain_in_a_level(SyncArray<float_type> &gain, int n
             GHPair p_missing_gh = missing_gh_data[pid];
             GHPair rch_gh = gh_prefix_sum_data[i];
             float_type default_to_left_gain = std::max(0.f,
-                                                  compute_gain(father_gh, father_gh - rch_gh, rch_gh, mcw, l));
+                                                       compute_gain(father_gh, father_gh - rch_gh, rch_gh, mcw, l));
             rch_gh = rch_gh + p_missing_gh;
             float_type default_to_right_gain = std::max(0.f,
-                                                   compute_gain(father_gh, father_gh - rch_gh, rch_gh, mcw, l));
+                                                        compute_gain(father_gh, father_gh - rch_gh, rch_gh, mcw, l));
             if (default_to_left_gain > default_to_right_gain)
                 gain_data[i] = default_to_left_gain;
             else
@@ -397,9 +399,9 @@ void HistTreeBuilder::compute_gain_in_a_level(SyncArray<float_type> &gain, int n
 }
 
 void HistTreeBuilder::get_best_gain_in_a_level(SyncArray<float_type> &gain, SyncArray<int_float> &best_idx_gain,
-                                               int n_nodes_in_level, int n_bins){
+                                               int n_nodes_in_level, int n_bins) {
     using namespace thrust;
-    int n_split = n_nodes_in_level*n_bins;
+    int n_split = n_nodes_in_level * n_bins;
     {
         TIMED_SCOPE(timerObj, "get best gain");
         auto arg_abs_max = []__host__(const int_float &a, const int_float &b) {
@@ -409,7 +411,8 @@ void HistTreeBuilder::get_best_gain_in_a_level(SyncArray<float_type> &gain, Sync
                 return fabsf(thrust::get<1>(a)) > fabsf(thrust::get<1>(b)) ? a : b;
         };
 
-        auto nid_iterator = thrust::make_transform_iterator(thrust::counting_iterator<int>(0), thrust::placeholders::_1 / n_bins);
+        auto nid_iterator = thrust::make_transform_iterator(thrust::counting_iterator<int>(0),
+                                                            thrust::placeholders::_1 / n_bins);
 
         reduce_by_key(
                 thrust::host,
@@ -428,7 +431,7 @@ void HistTreeBuilder::get_best_gain_in_a_level(SyncArray<float_type> &gain, Sync
 
 
 void HistTreeBuilder::get_split_points(SyncArray<int_float> &best_idx_gain, int n_nodes_in_level, int *hist_fid,
-                                       SyncArray<GHPair> &missing_gh){
+                                       SyncArray<GHPair> &missing_gh) {
 //    TIMED_SCOPE(timerObj, "get split points");
     int nid_offset = static_cast<int>(n_nodes_in_level - 1);
     const int_float *best_idx_gain_data = best_idx_gain.host_data();
@@ -442,10 +445,10 @@ void HistTreeBuilder::get_split_points(SyncArray<int_float> &best_idx_gain, int 
 
     auto cut_row_ptr_data = cut.cut_row_ptr.host_data();
 #pragma omp parallel for
-    for(int i = 0; i < n_nodes_in_level; i++){
+    for (int i = 0; i < n_nodes_in_level; i++) {
         int_float bst = best_idx_gain_data[i];
-        float_type best_split_gain = get<1>(bst);
-        int split_index = get<0>(bst);
+        float_type best_split_gain = get < 1 > (bst);
+        int split_index = get < 0 > (bst);
         if (!nodes_data[i + nid_offset].is_valid) {
             sp_data[i].split_fea_id = -1;
             sp_data[i].nid = -1;
@@ -483,8 +486,8 @@ void HistTreeBuilder::update_ins2node_id() {
         int n_column = dataset->n_features();
         auto dense_bin_id_data = dense_bin_id.host_data();
         int max_num_bin = param.max_num_bin;
-        #pragma omp parallel for
-        for(int iid = 0; iid < n_instances; iid++){
+#pragma omp parallel for
+        for (int iid = 0; iid < n_instances; iid++) {
             int nid = nid_data[iid];
             const Tree::TreeNode &node = nodes_data[nid];
             int split_fid = node.split_feature_id;
@@ -511,7 +514,7 @@ void HistTreeBuilder::update_ins2node_id() {
 
 //for each node
 void HistTreeBuilder::compute_histogram_in_a_node(SyncArray<GHPair> &gradients, HistCut &cut,
-                                        SyncArray<unsigned char> &dense_bin_id, bool enc) {
+                                                  SyncArray<unsigned char> &dense_bin_id, bool enc) {
     int n_columns = cut.cut_row_ptr.size() - 1;
     int n_instances = dense_bin_id.size() / n_columns;
     auto gh_data = gradients.host_data();
@@ -549,27 +552,28 @@ void HistTreeBuilder::compute_histogram_in_a_node(SyncArray<GHPair> &gradients, 
 
 //assumption: GHPairs in the histograms of all clients are arranged in the same order
 
-void HistTreeBuilder::merge_histograms_server_propose(MSyncArray<GHPair> &histograms, bool enc) {
+void HistTreeBuilder::merge_histograms_server_propose() {
 
-    int n_bins = histograms[0].size();
+    int n_bins = parties_hist[0].size();
     SyncArray<GHPair> merged_hist(n_bins);
     auto merged_hist_data = merged_hist.host_data();
-    if (enc) {
-        AdditivelyHE::PaillierPublicKey pk = histograms[0].host_data()[0].pk;
-        for (int i = 0; i < n_bins; i++) {
-            merged_hist_data[i].homo_encrypt(pk);
-        }
-    }
+//    if (enc) {
+//        AdditivelyHE::PaillierPublicKey pk = histograms[0].host_data()[0].pk;
+//        for (int i = 0; i < n_bins; i++) {
+//            merged_hist_data[i].homo_encrypt(pk);
+//        }
+//    }
 
-    for (int i = 0; i < histograms.size(); i++) {
-        auto hist_data = histograms[i].host_data();
+    for (int i = 0; i < parties_hist.size(); i++) {
+        auto hist_data = parties_hist[i].host_data();
         for (int j = 0; j < n_bins; j++) {
             GHPair &src = hist_data[j];
             GHPair &dest = merged_hist_data[j];
-            if (enc)
-                dest = dest.homo_add(src);
-            else
-                dest = dest + src;
+//            if (enc)
+//                dest = dest.homo_add(src);
+//            else
+//                dest = dest + src;
+            dest = dest + src;
         }
     }
 
@@ -583,16 +587,16 @@ void HistTreeBuilder::merge_histograms_server_propose(MSyncArray<GHPair> &histog
 //assumption 3: cut_val_data is sorted by feature id and split value, eg: [f0(0.1), f0(0.2), f0(0.3), f1(100), f1(200),...]
 //assumption 4: gradients and hessians are near uniformly distributed
 
-void HistTreeBuilder::merge_histograms_client_propose(MSyncArray<GHPair> &histograms, vector<HistCut> &cuts, bool enc) {
-    CHECK_EQ(histograms.size(), cuts.size());
-    int n_columns = cuts[0].cut_row_ptr.size() - 1;
+void HistTreeBuilder::merge_histograms_client_propose() {
+    CHECK_EQ(parties_hist.size(), parties_cut.size());
+    int n_columns = parties_cut[0].cut_row_ptr.size() - 1;
     vector<float_type> low(n_columns, std::numeric_limits<float>::max());
     vector<float_type> high(n_columns, -std::numeric_limits<float>::max());
     vector<float_type> resolution(n_columns, std::numeric_limits<float>::max());
     vector<vector<float_type>> bin_edges;
-    for (int i = 0; i < cuts.size(); i++) {
-        auto cut_val_data = cuts[i].cut_points_val.host_data();
-        auto cut_row_ptr_data = cuts[i].cut_row_ptr.host_data();
+    for (int i = 0; i < parties_cut.size(); i++) {
+        auto cut_val_data = parties_cut[i].cut_points_val.host_data();
+        auto cut_row_ptr_data = parties_cut[i].cut_row_ptr.host_data();
         vector<float_type> v = {};
         for (int j = 0; j < n_columns; j++) {
             int end = cut_row_ptr_data[j + 1];
@@ -627,11 +631,11 @@ void HistTreeBuilder::merge_histograms_client_propose(MSyncArray<GHPair> &histog
 
     SyncArray<GHPair> merged_hist(n_bins);
     auto merged_hist_data = merged_hist.host_data();
-    for (int i = 0; i < histograms.size(); i++) {
-        CHECK_EQ(histograms[i].size(), cuts[i].cut_points_val.size() + n_columns);
-        CHECK_EQ(histograms[i].size() + n_columns, bin_edges[i].size());
-        auto hist_data = histograms[i].host_data();
-        auto cut_row_ptr_data = cuts[i].cut_row_ptr.host_data();
+    for (int i = 0; i < parties_hist.size(); i++) {
+        CHECK_EQ(parties_hist[i].size(), parties_cut[i].cut_points_val.size() + n_columns);
+        CHECK_EQ(parties_hist[i].size() + n_columns, bin_edges[i].size());
+        auto hist_data = parties_hist[i].host_data();
+        auto cut_row_ptr_data = parties_cut[i].cut_row_ptr.host_data();
         for (int j = 0; j < n_columns; j++) {
             int client_bin_index_low = cut_row_ptr_data[j] + 2 * j;
             int client_bin_index_high = cut_row_ptr_data[j + 1] + 2 * (j + 1);
@@ -668,6 +672,26 @@ void HistTreeBuilder::merge_histograms_client_propose(MSyncArray<GHPair> &histog
     last_hist.copy_from(merged_hist);
 }
 
+void HistTreeBuilder::concat_histograms() {
+    int n_bins = 0;
+    vector<int> ptr = {0};
+    for (int i = 0; i < parties_hist.size(); i++) {
+        n_bins += parties_hist[i].size();
+        ptr.push_back(ptr.back() + n_bins);
+    }
+    SyncArray<GHPair> concat_hist(n_bins);
+    auto concat_hist_data = concat_hist.host_data();
+
+    for (int i = 0; i < parties_hist.size(); i++) {
+        auto hist_data = parties_hist[i].host_data();
+        for (int j = 0; j < parties_hist[i].size(); j++) {
+            concat_hist_data[ptr[i] + j] = hist_data[j];
+        }
+    }
+
+    last_hist.resize(n_bins);
+    last_hist.copy_from(concat_hist);
+}
 
 SyncArray<float_type> HistTreeBuilder::gain(Tree &tree, SyncArray<GHPair> &hist, int level, int n_split) {
     SyncArray<float_type> gain(n_split);
@@ -680,11 +704,11 @@ SyncArray<float_type> HistTreeBuilder::gain(Tree &tree, SyncArray<GHPair> &hist,
     GHPair *gh_prefix_sum_data = hist.host_data();
     float_type *gain_data = gain.host_data();
     auto compute_gain = []__host__(GHPair father, GHPair lch, GHPair rch, float_type min_child_weight,
-            float_type lambda) -> float_type {
-            if (lch.h >= min_child_weight && rch.h >= min_child_weight)
+                                   float_type lambda) -> float_type {
+        if (lch.h >= min_child_weight && rch.h >= min_child_weight)
             return (lch.g * lch.g) / (lch.h + lambda) + (rch.g * rch.g) / (rch.h + lambda) -
-            (father.g * father.g) / (father.h + lambda);
-            else
+                   (father.g * father.g) / (father.h + lambda);
+        else
             return 0;
     };
     for (int i = 0; i < n_split; i++) {

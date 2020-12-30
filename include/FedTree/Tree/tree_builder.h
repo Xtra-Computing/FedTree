@@ -15,8 +15,6 @@
 
 class TreeBuilder : public FunctionBuilder{
 public:
-    virtual void compute_hist(int level) = 0;
-
     virtual void find_split(int level) = 0;
 
     virtual void update_ins2node_id() = 0;
