@@ -131,7 +131,8 @@ void HistTreeBuilder::compute_hist(int level) {
 
     auto t_build_start = timer.now();
 
-    compute_histogram_in_a_level(level, n_max_splits, n_bins, n_nodes_in_level, hist_fid_data, missing_gh);
+    SyncArray<GHPair> hist(n_max_splits);
+    compute_histogram_in_a_level(level, n_max_splits, n_bins, n_nodes_in_level, hist_fid_data, missing_gh, hist);
 }
 
 void HistTreeBuilder::find_split(int level) {
