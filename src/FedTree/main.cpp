@@ -4,9 +4,11 @@
 
 #include "FedTree/FL/FLparam.h"
 #include "FedTree/FL/FLtrainer.h"
+#include "FedTree/FL/partition.h"
 #include "FedTree/parser.h"
 #include "FedTree/dataset.h"
 #include "FedTree/Tree/gbdt.h"
+
 
 #ifdef _WIN32
 INITIALIZE_EASYLOGGINGPP
@@ -63,13 +65,40 @@ int main(int argc, char** argv){
     if (!model_param.profiling) {
         el::Loggers::reconfigureAllLoggers(el::ConfigurationType::PerformanceTracking, "false");
     }
-    DataSet dataset;
-    vector<vector<Tree>> boosted_model;
-
-//    dataset.load_csc_from_file(model_param.path, model_param);
-    dataset.load_from_file(model_param.path, fl_param);
-    GBDT gbdt;
-    gbdt.train(model_param, dataset);
-    parser.save_model("tgbm.model", model_param, gbdt.trees, dataset);
+    if(fl_param.mode == "centralized") {
+        DataSet dataset;
+        vector <vector<Tree>> boosted_model;
+        dataset.load_from_file(model_param.path, fl_param);
+        GBDT gbdt;
+        gbdt.train(model_param, dataset);
+        parser.save_model("tgbm.model", model_param, gbdt.trees, dataset);
+    }
+    else{
+        int n_parties = fl_param.n_parties;
+        vector<DataSet> subsets(n_parties);
+        if(fl_param.partition == true){
+            DataSet dataset;
+            dataset.load_from_file(model_param.path, fl_param);
+            Partition partition;
+            if(fl_param.mode == "hybrid"){
+                vector<float> alpha(n_parties, fl_param.alpha);
+                partition.hybrid_partition(dataset, n_parties, alpha, subsets);
+            }
+            else{
+                std::cout<<"not supported yet"<<std::endl;
+                exit(1);
+            }
+        }
+        vector<Party> parties(n_parties);
+        for(int i = 0; i < n_parties; i++){
+            parties[i].init(i, subsets[i], fl_param);
+        }
+        Server server;
+        FLtrainer trainer;
+        if(fl_param.mode == "hybrid"){
+            trainer.hybrid_fl_trainer(parties, server, fl_param);
+        }
+//        parser.save_model("global_model", fl_param.gbdt_param, server.global_trees.trees, dataset);
+    }
     return 0;
 }

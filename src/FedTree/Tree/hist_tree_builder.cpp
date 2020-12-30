@@ -36,6 +36,7 @@ void HistTreeBuilder::init(DataSet &dataset, const GBDTParam &param) {
 //    cut = vector<HistCut>(param.n_device);
 //    dense_bin_id = SyncArray<unsigned char>();
 //    last_hist = MSyncArray<GHPair>(param.n_device);
+    seg_sort_by_key_cpu(dataset.csc_val, dataset.csc_row_idx, dataset.csc_col_ptr);
     cut.get_cut_points_fast(dataset, param.max_num_bin, n_instances);
     last_hist.resize((2 << param.depth) * cut.cut_points_val.size());
     get_bin_ids();
@@ -163,17 +164,17 @@ void HistTreeBuilder::find_split(int level) {
 
     auto t_build_start = timer.now();
 
-//    SyncArray<GHPair> hist(n_max_splits);
+    SyncArray<GHPair> hist(n_max_splits);
     SyncArray<float_type> gain(n_max_splits);
-    compute_histogram_in_a_level(level, n_max_splits, n_bins, n_nodes_in_level, hist_fid_data, missing_gh);
-    compute_gain_in_a_level(gain, n_nodes_in_level, n_bins, hist_fid_data, missing_gh);
+    compute_histogram_in_a_level(level, n_max_splits, n_bins, n_nodes_in_level, hist_fid_data, missing_gh, hist);
+    compute_gain_in_a_level(gain, n_nodes_in_level, n_bins, hist_fid_data, missing_gh, hist);
     SyncArray<int_float> best_idx_gain(n_nodes_in_level);
     get_best_gain_in_a_level(gain, best_idx_gain, n_nodes_in_level, n_bins);
-    get_split_points(best_idx_gain, n_nodes_in_level, hist_fid_data, missing_gh);
+    get_split_points(best_idx_gain, n_nodes_in_level, hist_fid_data, missing_gh, hist);
 }
 
 void HistTreeBuilder::compute_histogram_in_a_level(int level, int n_max_splits, int n_bins, int n_nodes_in_level,
-                                                   int *hist_fid, SyncArray<GHPair> &missing_gh) {
+                                                   int* hist_fid, SyncArray<GHPair> &missing_gh, SyncArray<GHPair> &hist) {
     std::chrono::high_resolution_clock timer;
 
     SyncArray<int> &nid = ins2node_id;
@@ -195,8 +196,6 @@ void HistTreeBuilder::compute_histogram_in_a_level(int level, int n_max_splits, 
     int n_split = n_nodes_in_level * n_bins;
 
     LOG(TRACE) << "start finding split";
-
-    SyncArray<GHPair> hist(n_max_splits);
 
     {
         TIMED_SCOPE(timerObj, "build hist");
@@ -348,9 +347,8 @@ void HistTreeBuilder::compute_histogram_in_a_level(int level, int n_max_splits, 
 }
 
 
-void
-HistTreeBuilder::compute_gain_in_a_level(SyncArray<float_type> &gain, int n_nodes_in_level, int n_bins, int *hist_fid,
-                                         SyncArray<GHPair> &missing_gh) {
+void HistTreeBuilder::compute_gain_in_a_level(SyncArray<float_type> &gain, int n_nodes_in_level, int n_bins, int* hist_fid,
+                                              SyncArray<GHPair> &missing_gh, SyncArray<GHPair> &hist){
 //    SyncArray<float_type> gain(n_max_splits);
     int n_column = dataset->n_features();
     int n_split = n_nodes_in_level * n_bins;
@@ -364,7 +362,7 @@ HistTreeBuilder::compute_gain_in_a_level(SyncArray<float_type> &gain, int n_node
             return 0;
     };
     const Tree::TreeNode *nodes_data = trees.nodes.host_data();
-    GHPair *gh_prefix_sum_data = last_hist.host_data();
+    GHPair *gh_prefix_sum_data = hist.host_data();
     float_type *gain_data = gain.host_data();
     const auto missing_gh_data = missing_gh.host_data();
 //    auto ignored_set_data = ignored_set.host_data();
@@ -377,7 +375,6 @@ HistTreeBuilder::compute_gain_in_a_level(SyncArray<float_type> &gain, int n_node
         int nid0 = i / n_bins;
         int nid = nid0 + nid_offset;
         int fid = hist_fid[i % n_bins];
-//        LOG(INFO)<<"before nodes data";
         if (nodes_data[nid].is_valid) {
             int pid = nid0 * n_column + hist_fid[i];
             GHPair father_gh = nodes_data[nid].sum_gh_pair;
@@ -392,7 +389,6 @@ HistTreeBuilder::compute_gain_in_a_level(SyncArray<float_type> &gain, int n_node
                 gain_data[i] = default_to_left_gain;
             else
                 gain_data[i] = -default_to_right_gain;//negative means default split to right
-//            LOG(INFO)<<"set gain data";
         } else gain_data[i] = 0;
     }
     return;
@@ -431,11 +427,11 @@ void HistTreeBuilder::get_best_gain_in_a_level(SyncArray<float_type> &gain, Sync
 
 
 void HistTreeBuilder::get_split_points(SyncArray<int_float> &best_idx_gain, int n_nodes_in_level, int *hist_fid,
-                                       SyncArray<GHPair> &missing_gh) {
+                                       SyncArray<GHPair> &missing_gh, SyncArray<GHPair> &hist){
 //    TIMED_SCOPE(timerObj, "get split points");
     int nid_offset = static_cast<int>(n_nodes_in_level - 1);
     const int_float *best_idx_gain_data = best_idx_gain.host_data();
-    auto hist_data = last_hist.host_data();
+    auto hist_data = hist.host_data();
     const auto missing_gh_data = missing_gh.host_data();
     auto cut_val_data = cut.cut_points_val.host_data();
 

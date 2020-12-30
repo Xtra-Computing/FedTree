@@ -4,6 +4,7 @@
 #include "FedTree/FL/FLtrainer.h"
 #include "FedTree/Encryption/HE.h"
 #include "FedTree/FL/partition.h"
+#include "FedTree/FL/comm_helper.h"
 
 void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FLParam &params) {
 // Is propose_split_candidates implemented? Should it be a method of TreeBuilder, HistTreeBuilder or server? Shouldnt there be a vector of SplitCandidates returned
@@ -18,16 +19,16 @@ void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FL
 //            for (int k = 0; k < parties.size(); k++) {
 //                SyncArray<GHPair> hist = parties[j].fbuilder->compute_histogram();
 //                if (params.privacy_tech == "he") {
-    // Should HE be a public member of Party?
+                    // Should HE be a public member of Party?
 //                    parties[k].HE.encryption();
 //                }
 //                if (params.privacy_tech == "dp") {
-    // Should DP be public member of Party?
+                    // Should DP be public member of Party?
 //                    parties[k].DP.add_gaussian_noise();
 //                }
 //                parties[k].send_info(hist);
 //            }
-    // merge_histograms in tree_builder?
+            // merge_histograms in tree_builder?
 //            server.sum_histograms(); // or on Party 1 if using homo encryption
 //            server.HE.decrption();
 //            if (j != params.gbdt_param.depth - 1) {
@@ -57,7 +58,7 @@ void FLtrainer::vertical_fl_trainer(vector<Party> &parties, Server &server, FLPa
     int parties_size = parties.size() + 1;
     vector<DataSet> subsets(parties_size);
     Partition partition;
-    vector<double> alpha;
+    vector<float> alpha;
     partition.hybrid_partition(dataset, parties_size, alpha, subsets);
 
     // server and party initialization
@@ -124,14 +125,22 @@ void FLtrainer::vertical_fl_trainer(vector<Party> &parties, Server &server, FLPa
 }
 
 
-void FLtrainer::hybrid_fl_trainer(vector<Party> &parties, Server &server, FLParam &params) {
+void FLtrainer::hybrid_fl_trainer(vector<Party> &parties, Server &server, FLParam &params){
     // todo: initialize parties and server
     int n_party = parties.size();
-//    for(int i = 0; i < n_party; i++){
-//        parties[i].booster.boost(parties[i].gbdt.trees[0]);
-//        parties[i].send_last_trees(server);
-//    }
-
-
+    Comm comm_helper;
+    for(int i = 0; i < params.gbdt_param.n_trees; i++) {
+        #pragma omp parallel for
+        for (int i = 0; i < n_party; i++) {
+            parties[i].booster.boost(parties[i].gbdt.trees);
+            comm_helper.send_last_trees_to_server(parties[i], i, server);
+        }
+        server.merge_trees();
+        // todo: send the trees to the party to correct the trees and compute leaf values
+        #pragma omp parallel for
+        for (int i = 0; i < n_party; i++) {
+            comm_helper.send_last_global_trees_to_party(server, parties[i]);
+        }
+    }
 
 }

@@ -32,10 +32,6 @@ public:
         party.booster.fbuilder->append_hist(hist);
     }
 
-//    void send_last_trees(Server &server){
-//        server.local_trees[pid].trees[0] = this->gbdt.trees.back();
-//    }
-
     int pid;
 //    AdditivelyHE::PaillierPublicKey publicKey;
     AdditivelyHE::PaillierPublicKey serverKey;
