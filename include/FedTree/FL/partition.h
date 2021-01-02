@@ -16,8 +16,12 @@ public:
     hetero_partition(const DataSet &dataset, const int n_parties, const bool is_horizontal,
                      const vector<float> alpha = {});
 
-    void hybrid_partition(const DataSet &dataset, const int n_parties, vector<float> &alpha, vector<DataSet> &subsets,
-                          vector<SyncArray<bool>> &feature_map);
+    void hybrid_partition(const DataSet &dataset, const int n_parties, vector<float> &alpha,
+                          vector<SyncArray<bool>> &feature_map, vector<DataSet> &subsets);
+
+    void hybrid_partition_with_test(const DataSet &dataset, const int n_parties, vector<float> &alpha,
+                                    vector<SyncArray<bool>> &feature_map, vector<DataSet> &train_subsets,
+                                    vector<DataSet> &test_subsets, float train_test_fraction=0.75);
 
 };
 
