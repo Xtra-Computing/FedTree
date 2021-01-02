@@ -105,6 +105,18 @@ int main(int argc, char** argv){
                 parties[i].gbdt.predict(fl_param.gbdt_param, test_subsets[i]);
             }
         }
+        else if(fl_param.mode == "ensemble"){
+            trainer.ensemble_trainer(parties, server, fl_param);
+            for(int i = 0; i < n_parties; i++) {
+                server.global_trees.predict(fl_param.gbdt_param, test_subsets[i]);
+            }
+        }
+        else if(fl_param.mode == "solo"){
+            trainer.solo_trainer(parties, fl_param);
+            for(int i = 0; i < n_parties; i++){
+                parties[i].gbdt.predict(fl_param.gbdt_param, test_subsets[i]);
+            }
+        }
 //        parser.save_model("global_model", fl_param.gbdt_param, server.global_trees.trees, dataset);
     }
     return 0;

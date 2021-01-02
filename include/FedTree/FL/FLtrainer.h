@@ -19,5 +19,7 @@ public:
 
     void ensemble_trainer(vector<Party> &parties, Server &server, FLParam &params);
 
+    void solo_trainer(vector<Party> &parties, FLParam &params);
+
 };
 #endif //FEDTREE_FLTRAINER_H
