@@ -16,9 +16,9 @@
 //}
 
 
-void Server::merge_trees(){
+void Server::hybrid_merge_trees(){
     vector<Tree> &trees = global_trees.trees.back();
-    int n_max_nodes_in_a_tree = pow(2, model_param.depth) - 1;
+    int n_max_internal_nodes_in_a_tree = pow(2, model_param.depth) - 1;
     for (int tid = 0; tid < local_trees[0].trees[0].size(); tid++) {
         // maintain an array to store the current candidates and their gains. make node_gains sorted
         // and choose the last one each time.
@@ -26,8 +26,8 @@ void Server::merge_trees(){
         vector <float_type> candidate_gains;
         for (int pid = 0; pid < local_trees.size(); pid++) {
             //store the root nodes of all local trees
-            //the new node id: party_id * n_max_nodes_in_a_tree + node_id
-            treenode_candidates.push_back(pid * n_max_nodes_in_a_tree);
+            //the new node id: party_id * n_max_internal_nodes_in_a_tree + node_id
+            treenode_candidates.push_back(pid * n_max_internal_nodes_in_a_tree);
             float scale_factor = 1.0 * n_total_instances / n_instance_per_party[pid];
             candidate_gains.push_back(local_trees[pid].trees[0][tid].nodes.host_data()[0].gain * scale_factor);
             //check the node id after prune.
@@ -35,13 +35,13 @@ void Server::merge_trees(){
         // sort the gain and the corresponding node ids
         thrust::stable_sort_by_key(thrust::host, candidate_gains.data(), candidate_gains.data() + candidate_gains.size(),
                                    treenode_candidates.data());
-        for(int nid = 0; nid < n_max_nodes_in_a_tree; nid++) {
+        for(int nid = 0; nid < n_max_internal_nodes_in_a_tree; nid++) {
             int id_with_max_gain = treenode_candidates.back();
             float_type max_gain = candidate_gains.back();
             auto global_tree_node_data = trees[tid].nodes.host_data();
 
-            int pid_max_gain = id_with_max_gain / n_max_nodes_in_a_tree;
-            int nid_max_gain = id_with_max_gain % n_max_nodes_in_a_tree;
+            int pid_max_gain = id_with_max_gain / n_max_internal_nodes_in_a_tree;
+            int nid_max_gain = id_with_max_gain % n_max_internal_nodes_in_a_tree;
             auto node_max_gain_data = local_trees[pid_max_gain].trees[0][tid].nodes.host_data();
             global_tree_node_data[nid] = node_max_gain_data[nid_max_gain];
             global_tree_node_data[nid].gain = max_gain;
@@ -65,15 +65,22 @@ void Server::merge_trees(){
             auto gain_insert_pos = candidate_gains.begin()+insert_offset;
             auto node_insert_pos = treenode_candidates.begin()+insert_offset;
             candidate_gains.insert(gain_insert_pos, node_max_gain_data[left_child].gain);
-            treenode_candidates.insert(node_insert_pos, pid_max_gain * n_max_nodes_in_a_tree + left_child);
+            treenode_candidates.insert(node_insert_pos, pid_max_gain * n_max_internal_nodes_in_a_tree + left_child);
             insert_pos = thrust::lower_bound(thrust::host, candidate_gains.data(),
                                              candidate_gains.data() + candidate_gains.size(), right_gain);
             insert_offset = insert_pos - candidate_gains.data();
             gain_insert_pos = candidate_gains.begin()+insert_offset;
             node_insert_pos = treenode_candidates.begin()+insert_offset;
             candidate_gains.insert(gain_insert_pos, node_max_gain_data[right_child].gain);
-            treenode_candidates.insert(node_insert_pos, pid_max_gain * n_max_nodes_in_a_tree + right_child);
+            treenode_candidates.insert(node_insert_pos, pid_max_gain * n_max_internal_nodes_in_a_tree + right_child);
         }
         //todo: add feature id offset
+    }
+}
+
+void Server::ensemble_merge_trees(){
+    for(int i = 0; i < local_trees.size(); i++){
+        for(int j = 0; j < local_trees[i].trees.size(); j++)
+            global_trees.trees.push_back(local_trees[i].trees[j]);
     }
 }

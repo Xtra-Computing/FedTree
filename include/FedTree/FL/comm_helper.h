@@ -16,6 +16,9 @@ public:
     void send_last_global_trees_to_party(Server &server, Party &party) {
         party.gbdt.trees.push_back(server.global_trees.trees.back());
     };
+    void send_all_trees_to_server(Party &party, int pid, Server &server){
+        server.local_trees[pid].trees = party.gbdt.trees;
+    }
 };
 
 

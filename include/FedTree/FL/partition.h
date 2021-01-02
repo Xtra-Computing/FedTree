@@ -16,8 +16,8 @@ public:
     hetero_partition(const DataSet &dataset, const int n_parties, const bool is_horizontal,
                      const vector<float> alpha = {});
 
-    void hybrid_partition(const DataSet &dataset, const int n_parties, vector<float> alpha,
-                                     vector<DataSet> &subsets);
+    void hybrid_partition(const DataSet &dataset, const int n_parties, vector<float> &alpha, vector<DataSet> &subsets,
+                          vector<SyncArray<bool>> &feature_map);
 
 };
 

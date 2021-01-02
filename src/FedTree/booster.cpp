@@ -4,7 +4,7 @@
 
 #include "FedTree/booster.h"
 
-std::mutex mtx;
+//std::mutex mtx;
 void Booster::init(DataSet &dataSet, const GBDTParam &param) {
 //    int n_available_device;
 //    cudaGetDeviceCount(&n_available_device);
@@ -12,8 +12,8 @@ void Booster::init(DataSet &dataSet, const GBDTParam &param) {
 //                                                 << " GPUs available; please set correct number of GPUs to use";
     this->param = param;
 
-    //here
-    fbuilder.reset(FunctionBuilder::create(param.tree_method));
+//    fbuilder.reset(FunctionBuilder::create(param.tree_method));
+    fbuilder.reset(new HistTreeBuilder);
     fbuilder->init(dataSet, param);
     obj.reset(ObjectiveFunction::create(param.objective));
     obj->configure(param, dataSet);
@@ -34,7 +34,7 @@ void Booster::update_gradients() {
 
 void Booster::boost(vector<vector<Tree>> &boosted_model) {
     TIMED_FUNC(timerObj);
-    std::unique_lock<std::mutex> lock(mtx);
+//    std::unique_lock<std::mutex> lock(mtx);
     //update gradients
     obj->get_gradient(y, fbuilder->get_y_predict(), gradients);
 
@@ -42,6 +42,22 @@ void Booster::boost(vector<vector<Tree>> &boosted_model) {
     PERFORMANCE_CHECKPOINT(timerObj);
     //build new model/approximate function
     boosted_model.push_back(fbuilder->build_approximate(gradients));
+
+    PERFORMANCE_CHECKPOINT(timerObj);
+    //show metric on training set
+    LOG(INFO) << metric->get_name() << " = " << metric->get_score(fbuilder->get_y_predict());
+}
+
+void Booster::boost_without_prediction(vector<vector<Tree>> &boosted_model) {
+    TIMED_FUNC(timerObj);
+//    std::unique_lock<std::mutex> lock(mtx);
+    //update gradients
+    obj->get_gradient(y, fbuilder->get_y_predict(), gradients);
+
+//    if (param.bagging) rowSampler.do_bagging(gradients);
+    PERFORMANCE_CHECKPOINT(timerObj);
+    //build new model/approximate function
+    boosted_model.push_back(fbuilder->build_approximate(gradients, false));
 
     PERFORMANCE_CHECKPOINT(timerObj);
     //show metric on training set

@@ -2,7 +2,7 @@
 //
 
 #include "FedTree/Tree/tree_builder.h"
-
+#include "FedTree/util/cub_wrapper.h"
 #include "thrust/iterator/counting_iterator.h"
 #include "thrust/iterator/transform_iterator.h"
 #include "thrust/iterator/discard_iterator.h"
@@ -17,9 +17,15 @@ void TreeBuilder::init(DataSet &dataSet, const GBDTParam &param) {
 //    cudaGetDeviceCount(&n_available_device);
 //    CHECK_GE(n_available_device, param.n_device) << "only " << n_available_device
 //                                                 << " GPUs available; please set correct number of GPUs to use";
-    this->dataset = &dataSet;
+//    this->dataset = &dataSet;
     FunctionBuilder::init(dataSet, param);
-    this->n_instances = dataset->n_instances();
+
+
+    if (!dataSet.has_csc)
+        dataSet.csr_to_csc();
+    this->sorted_dataset = dataSet;
+    seg_sort_by_key_cpu(sorted_dataset.csc_val, sorted_dataset.csc_row_idx, sorted_dataset.csc_col_ptr);
+    this->n_instances = sorted_dataset.n_instances();
 //    trees = vector<Tree>(1);
     ins2node_id = SyncArray<int>(n_instances);
     sp = SyncArray<SplitPoint>();
@@ -74,7 +80,7 @@ void TreeBuilder::predict_in_training(int k) {
     }
 }
 
-vector<Tree> TreeBuilder::build_approximate(const SyncArray<GHPair> &gradients) {
+vector<Tree> TreeBuilder::build_approximate(const SyncArray<GHPair> &gradients, bool update_y_predict) {
     vector<Tree> trees(param.tree_per_rounds);
     TIMED_FUNC(timerObj);
     //Todo: add column sampling
@@ -87,7 +93,49 @@ vector<Tree> TreeBuilder::build_approximate(const SyncArray<GHPair> &gradients) 
         this->trees.init_CPU(this->gradients, param);
 
         for (int level = 0; level < param.depth; ++level) {
-            find_split(level);
+                find_split(level);
+//            split_point_all_reduce(level);
+            {
+                TIMED_SCOPE(timerObj, "apply sp");
+                update_tree();
+                update_ins2node_id();
+                {
+                    LOG(TRACE) << "gathering ins2node id";
+                    //get final result of the reset instance id to node id
+                    if (!has_split) {
+                        LOG(INFO) << "no splittable nodes, stop";
+                        break;
+                    }
+                }
+//                ins2node_id_all_reduce(level);
+            }
+        }
+        //here
+        this->trees.prune_self(param.gamma);
+        if(update_y_predict)
+            predict_in_training(k);
+        tree.nodes.resize(this->trees.nodes.size());
+        tree.nodes.copy_from(this->trees.nodes);
+    }
+    return trees;
+}
+
+/*
+ * Build a tree with the given structure and split features.
+ */
+void TreeBuilder::build_tree_by_predefined_structure(const SyncArray<GHPair> &gradients, vector<Tree> &trees){
+    TIMED_FUNC(timerObj);
+    //Todo: add column sampling
+
+    for (int k = 0; k < param.tree_per_rounds; ++k) {
+        Tree &tree = trees[k];
+
+        this->ins2node_id.resize(n_instances);
+        this->gradients.set_host_data(const_cast<GHPair *>(gradients.host_data() + k * n_instances));
+        this->trees = tree;
+
+        for (int level = 0; level < param.depth; ++level) {
+            find_split_by_predefined_features(level);
 //            split_point_all_reduce(level);
             {
                 TIMED_SCOPE(timerObj, "apply sp");
@@ -107,10 +155,10 @@ vector<Tree> TreeBuilder::build_approximate(const SyncArray<GHPair> &gradients) 
         //here
         this->trees.prune_self(param.gamma);
         predict_in_training(k);
-        tree.nodes.resize(this->trees.nodes.size());
-        tree.nodes.copy_from(this->trees.nodes);
+        tree = this->trees;
+//        tree.nodes.resize(this->trees.nodes.size());
+//        tree.nodes.copy_from(this->trees.nodes);
     }
-    return trees;
 }
 
 // Remove SyncArray<GHPair> missing_gh, int n_columnf
@@ -124,7 +172,7 @@ void TreeBuilder::find_split (SyncArray<SplitPoint> &sp, int n_nodes_in_level, T
     auto nodes_data = tree.nodes.host_data();
     int column_offset = 0;
     auto cut_fid_data = cut.cut_fid.host_data();
-    auto cut_row_ptr_data = cut.cut_row_ptr.host_data();
+    auto cut_col_ptr_data = cut.cut_col_ptr.host_data();
     auto i2fid = [=](int i) {return cut_fid_data[i % n_bins];};
     auto hist_fid = thrust::make_transform_iterator(thrust::counting_iterator<int>(0), i2fid);
 
@@ -144,7 +192,7 @@ void TreeBuilder::find_split (SyncArray<SplitPoint> &sp, int n_nodes_in_level, T
         sp_data[i].nid = i + nid_offset;
         sp_data[i].gain = fabsf(best_split_gain);
         sp_data[i].fval = cut_val_data[split_index % n_bins];
-        sp_data[i].split_bid = (unsigned char) (split_index % n_bins - cut_row_ptr_data[fid]);
+        sp_data[i].split_bid = (unsigned char) (split_index % n_bins - cut_col_ptr_data[fid]);
 //        sp_data[i].fea_missing_gh = missing_gh_data[i * n_column + hist_fid[split_index]];
         sp_data[i].default_right = best_split_gain < 0;
         sp_data[i].rch_sum_gh = hist_data[split_index];

@@ -79,8 +79,9 @@ Partition::hetero_partition(const DataSet &dataset, const int n_parties, const b
 }
 
 
-void Partition::hybrid_partition(const DataSet &dataset, const int n_parties, vector<float> alpha,
-                                 vector<DataSet> &subsets){
+void Partition::hybrid_partition(const DataSet &dataset, const int n_parties, vector<float> &alpha,
+                                 vector<DataSet> &subsets, vector<SyncArray<bool>> &feature_map){
+
     for(int i = 0; i < n_parties; i++){
         //todo: group label
         subsets[i].n_features_ = dataset.n_features_;
@@ -105,17 +106,31 @@ void Partition::hybrid_partition(const DataSet &dataset, const int n_parties, ve
     thrust::sequence(thrust::host, idx.data(), idx.data()+n_parts, 0);
     std::shuffle(idx.data(), idx.data()+n_parts, gen);
     vector<int> partid2party(n_parts);
+//    vector<vector<int>> feature_list (n_parties);
     for(int i = 0; i < n_parties; i++){
         for(int j = n_parts_each_party_accu[i]; j < n_parts_each_party_accu[i+1]; j++){
+//            feature_list[i].push_back(j % n_parties);
             partid2party[idx[j]] = i;
         }
+
     }
+
 //    vector<DataSet> subsets(n_parties);
+
+    for(int i = 0; i < n_parties; i++) {
+        feature_map[i].resize(dataset.n_features());
+        auto feature_map_data = feature_map[i].host_data();
+        for(int j = 0; j < feature_map[i].size(); j++){
+            feature_map_data[j] = false;
+        }
+    }
     for(int i = 0; i < dataset.csr_row_ptr.size()-1; i++){
         vector<int> csr_row_sub(n_parties, 0);
+        auto feature_map_data = feature_map[i].host_data();
         for(int j = dataset.csr_row_ptr[i]; j < dataset.csr_row_ptr[i+1]; j++){
             float_type value = dataset.csr_val[j];
             int cid = dataset.csr_col_idx[j];
+            feature_map_data[cid]=true;
             int part_id = std::min(i / ins_interval, n_parties - 1) * n_parties + std::min(cid / fea_interval, n_parties);
             int party_id = partid2party[part_id];
             subsets[party_id].csr_val.push_back(value);

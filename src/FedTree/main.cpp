@@ -19,7 +19,6 @@ int main(int argc, char** argv){
     el::Loggers::addFlag(el::LoggingFlag::FixedTimeFormat);
 
 /*
-
     //initialize parameters
     FLParam fl_param;
     Parser parser;
@@ -76,27 +75,34 @@ int main(int argc, char** argv){
     else{
         int n_parties = fl_param.n_parties;
         vector<DataSet> subsets(n_parties);
+        vector<SyncArray<bool>> feature_map(n_parties);
         if(fl_param.partition == true){
             DataSet dataset;
             dataset.load_from_file(model_param.path, fl_param);
             Partition partition;
             if(fl_param.mode == "hybrid"){
                 vector<float> alpha(n_parties, fl_param.alpha);
-                partition.hybrid_partition(dataset, n_parties, alpha, subsets);
+                partition.hybrid_partition(dataset, n_parties, alpha, subsets, feature_map);
             }
             else{
                 std::cout<<"not supported yet"<<std::endl;
                 exit(1);
             }
         }
+        else{
+            std::cout<<"not supported yet"<<std::endl;
+        }
         vector<Party> parties(n_parties);
         for(int i = 0; i < n_parties; i++){
-            parties[i].init(i, subsets[i], fl_param);
+            parties[i].init(i, subsets[i], fl_param, feature_map[i]);
         }
         Server server;
         FLtrainer trainer;
         if(fl_param.mode == "hybrid"){
             trainer.hybrid_fl_trainer(parties, server, fl_param);
+//            for(int i = 0; i < n_parties; i++){
+//                parties[i].gbdt.predict()
+//            }
         }
 //        parser.save_model("global_model", fl_param.gbdt_param, server.global_trees.trees, dataset);
     }

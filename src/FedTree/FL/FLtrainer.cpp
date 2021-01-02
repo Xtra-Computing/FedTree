@@ -49,6 +49,7 @@ void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FL
 
 void FLtrainer::vertical_fl_trainer(vector<Party> &parties, Server &server, FLParam &params){
 
+    /*
     // load dataset
     GBDTParam &model_param = params.gbdt_param;
     DataSet dataset;
@@ -103,6 +104,7 @@ void FLtrainer::vertical_fl_trainer(vector<Party> &parties, Server &server, FLPa
 //            }
 //        }
 //    }
+     */
 }
 
 
@@ -111,17 +113,34 @@ void FLtrainer::hybrid_fl_trainer(vector<Party> &parties, Server &server, FLPara
     int n_party = parties.size();
     Comm comm_helper;
     for(int i = 0; i < params.gbdt_param.n_trees; i++) {
-        #pragma omp parallel for
+        // There is already omp parallel inside boost
+//        #pragma omp parallel for
         for (int i = 0; i < n_party; i++) {
-            parties[i].booster.boost(parties[i].gbdt.trees);
+            parties[i].booster.boost_without_prediction(parties[i].gbdt.trees);
+//            obj->get_gradient(y, fbuilder->get_y_predict(), gradients);
             comm_helper.send_last_trees_to_server(parties[i], i, server);
         }
-        server.merge_trees();
+        server.hybrid_merge_trees();
         // todo: send the trees to the party to correct the trees and compute leaf values
-        #pragma omp parallel for
+//        #pragma omp parallel for
         for (int i = 0; i < n_party; i++) {
             comm_helper.send_last_global_trees_to_party(server, parties[i]);
+            parties[i].booster.fbuilder->build_tree_by_predefined_structure(parties[i].booster.gradients, parties[i].gbdt.trees.back());
         }
     }
+}
+
+void FLtrainer::ensemble_trainer(vector<Party> &parties, Server &server, FLParam &params){
+    int n_party = parties.size();
+    CHECK_EQ(params.gbdt_param.n_trees % n_party, 0);
+    int n_tree_each_party = params.gbdt_param.n_trees / n_party;
+    Comm comm_helper;
+//    #pragma omp parallel for
+    for(int i = 0; i < n_party; i++){
+        for(int i = 0; i < n_tree_each_party; i++)
+            parties[i].booster.boost(parties[i].gbdt.trees);
+        comm_helper.send_all_trees_to_server(parties[i], i, server);
+    }
+    server.ensemble_merge_trees();
 
 }

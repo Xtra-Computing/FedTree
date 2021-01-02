@@ -47,6 +47,7 @@ public:
         float_type gain;// gain of splitting this node
         float_type base_weight;
         int split_feature_id;
+        int pid;
         float_type split_value;
         unsigned char split_bid;
         bool default_right;
@@ -92,6 +93,9 @@ public:
     string dump(int depth) const;
 
     SyncArray<Tree::TreeNode> nodes;
+
+    //n_nodes_level[i+1] - n_nodes_level[i] stores the number of nodes in level i
+    vector<int> n_nodes_level;
 
     void prune_self(float_type gamma);
 

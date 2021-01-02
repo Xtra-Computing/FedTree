@@ -17,6 +17,8 @@ public:
 
     void find_split(int level) override;
 
+    void find_split_by_predefined_features(int level) override;
+
     void compute_histogram_in_a_level(int level, int n_max_splits, int n_bins, int n_nodes_in_level, int* hist_fid_data,
                                       SyncArray<GHPair> &missing_gh, SyncArray<GHPair> &hist);
 
@@ -52,8 +54,9 @@ public:
         return h;
     }
 
-private:
     HistCut cut;
+private:
+
     // MSyncArray<unsigned char> char_dense_bin_id;
     SyncArray<unsigned char> dense_bin_id;
     SyncArray<GHPair> last_hist;

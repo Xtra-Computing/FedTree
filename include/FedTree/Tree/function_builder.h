@@ -13,7 +13,7 @@
 
 class FunctionBuilder {
 public:
-    virtual vector<Tree> build_approximate(const SyncArray<GHPair> &gradients) = 0;
+    virtual vector<Tree> build_approximate(const SyncArray<GHPair> &gradients, bool update_y_predict = true) = 0;
 
     virtual void init(DataSet &dataset, const GBDTParam &param) {
         this->param = param;

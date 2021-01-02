@@ -19,7 +19,8 @@ public:
     void send_info(string info_type);
 //    void send_info(vector<Party> &parties, AdditivelyHE::PaillierPublicKey serverKey,vector<SplitCandidate>candidates);
     void sum_histograms();
-    void merge_trees();
+    void hybrid_merge_trees();
+    void ensemble_merge_trees();
     GBDT global_trees;
     vector<GBDT> local_trees;
     GBDTParam model_param;
@@ -39,7 +40,7 @@ public:
 
 private:
     DataSet dataset;
-    std::unique_ptr<TreeBuilder> fbuilder;
+//    std::unique_ptr<TreeBuilder> fbuilder;
     AdditivelyHE HE;
     DPnoises<double> DP;
     AdditivelyHE::PaillierPrivateKey privateKey;
