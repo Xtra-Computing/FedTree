@@ -80,16 +80,18 @@ Partition::hetero_partition(const DataSet &dataset, const int n_parties, const b
 
 
 void Partition::hybrid_partition(const DataSet &dataset, const int n_parties, vector<float> &alpha,
-                                 vector<SyncArray<bool>> &feature_map, vector<DataSet> &subsets){
+                                 vector<SyncArray<bool>> &feature_map, vector<DataSet> &train_subsets,
+                                 int part_length, int part_width){
 
     for(int i = 0; i < n_parties; i++){
         //todo: group label
-        subsets[i].n_features_ = dataset.n_features_;
-        subsets[i].y = dataset.y;
+        train_subsets[i].n_features_ = dataset.n_features_;
+        train_subsets[i].y = dataset.y;
     }
-    int ins_interval = dataset.n_instances() / n_parties;
-    int fea_interval = dataset.n_features() / n_parties;
-    int n_parts = n_parties * n_parties;
+//    int scale_parts = scale * n_parties;
+    int ins_interval = dataset.n_instances() / part_width;
+    int fea_interval = dataset.n_features() / part_length;
+    int n_parts = part_length * part_width;
 
     int seed = 42;
     std::mt19937 gen(seed);
@@ -99,9 +101,14 @@ void Partition::hybrid_partition(const DataSet &dataset, const int n_parties, ve
     vector<int> n_parts_each_party_accu(n_parties + 1, 0);
     for(int i = 1; i < n_parties; i++){
         n_parts_each_party_accu[i] = n_parts_each_party_accu[i-1];
-        n_parts_each_party_accu[i] += (int) (n_parts * dir_numbers[i]);
+        int n_parts_party = (int) (n_parts * dir_numbers[i-1]);
+        if(n_parts_party == 0){
+            std::cout<<"one party has no data!"<<std::endl;
+            exit(1);
+        }
+        n_parts_each_party_accu[i] += n_parts_party;
     }
-    n_parts_each_party_accu[n_parties+1] = n_parts;
+    n_parts_each_party_accu[n_parties] = n_parts;
     vector<int> idx(n_parts);
     thrust::sequence(thrust::host, idx.data(), idx.data()+n_parts, 0);
     std::shuffle(idx.data(), idx.data()+n_parts, gen);
@@ -114,9 +121,6 @@ void Partition::hybrid_partition(const DataSet &dataset, const int n_parties, ve
         }
 
     }
-
-//    vector<DataSet> subsets(n_parties);
-
     for(int i = 0; i < n_parties; i++) {
         feature_map[i].resize(dataset.n_features());
         auto feature_map_data = feature_map[i].host_data();
@@ -124,29 +128,36 @@ void Partition::hybrid_partition(const DataSet &dataset, const int n_parties, ve
             feature_map_data[j] = false;
         }
     }
+    for(int i = 0; i < n_parties; i++){
+        train_subsets[i].csr_row_ptr.push_back(0);
+    }
     for(int i = 0; i < dataset.csr_row_ptr.size()-1; i++){
-        vector<int> csr_row_sub(n_parties, 0);
-        auto feature_map_data = feature_map[i].host_data();
+        vector<int> train_csr_row_sub(n_parties, 0);
         for(int j = dataset.csr_row_ptr[i]; j < dataset.csr_row_ptr[i+1]; j++){
             float_type value = dataset.csr_val[j];
             int cid = dataset.csr_col_idx[j];
-            feature_map_data[cid]=true;
-            int part_id = std::min(i / ins_interval, n_parties - 1) * n_parties + std::min(cid / fea_interval, n_parties);
+            int part_id = std::min(i / ins_interval, part_width - 1) * part_length +
+                          std::min(cid / fea_interval, part_length - 1);
             int party_id = partid2party[part_id];
-            subsets[party_id].csr_val.push_back(value);
-            subsets[party_id].csr_col_idx.push_back(cid);
-            csr_row_sub[party_id]++;
+            feature_map[party_id].host_data()[cid]=true;
+            train_subsets[party_id].csr_val.push_back(value);
+            train_subsets[party_id].csr_col_idx.push_back(cid);
+            train_csr_row_sub[party_id]++;
         }
-        for(int i = 0; i < n_parties; i++)
-            subsets[i].csr_row_ptr.push_back(csr_row_sub[i]);
+//        LOG(INFO)<<"3.2";
+        for(int i = 0; i < n_parties; i++) {
+            train_subsets[i].csr_row_ptr.push_back(train_subsets[i].csr_row_ptr.back()+train_csr_row_sub[i]);
+        }
+//        LOG(INFO)<<"3.3";
     }
     return;
 }
 
 
 void Partition::hybrid_partition_with_test(const DataSet &dataset, const int n_parties, vector<float> &alpha,
-                                 vector<SyncArray<bool>> &feature_map, vector<DataSet> &train_subsets,
-                                 vector<DataSet> &test_subsets, float train_test_fraction){
+                                           vector<SyncArray<bool>> &feature_map, vector<DataSet> &train_subsets,
+                                           vector<DataSet> &test_subsets, int part_length, int part_width,
+                                           float train_test_fraction){
 
     for(int i = 0; i < n_parties; i++){
         //todo: group label
@@ -155,9 +166,10 @@ void Partition::hybrid_partition_with_test(const DataSet &dataset, const int n_p
         test_subsets[i].n_features_ = dataset.n_features_;
         test_subsets[i].y = dataset.y;
     }
-    int ins_interval = dataset.n_instances() / n_parties;
-    int fea_interval = dataset.n_features() / n_parties;
-    int n_parts = n_parties * n_parties;
+//    int scale_parts = scale * n_parties;
+    int ins_interval = dataset.n_instances() / part_width;
+    int fea_interval = dataset.n_features() / part_length;
+    int n_parts = part_length * part_width;
 
     int seed = 42;
     std::mt19937 gen(seed);
@@ -165,17 +177,22 @@ void Partition::hybrid_partition_with_test(const DataSet &dataset, const int n_p
     vector<float> dir_numbers = dir(gen);
     CHECK_EQ(dir_numbers.size(),n_parties);
     vector<int> n_parts_each_party_accu(n_parties + 1, 0);
+    std::cout<<"dir_numbers: "<<dir_numbers[0]<<std::endl;
     for(int i = 1; i < n_parties; i++){
         n_parts_each_party_accu[i] = n_parts_each_party_accu[i-1];
-        n_parts_each_party_accu[i] += (int) (n_parts * dir_numbers[i]);
+        int n_parts_party = (int) (n_parts * dir_numbers[i-1]);
+        if(n_parts_party == 0){
+            std::cout<<"one party has no data!"<<std::endl;
+            exit(1);
+        }
+        n_parts_each_party_accu[i] += n_parts_party;
     }
-    n_parts_each_party_accu[n_parties+1] = n_parts;
+    n_parts_each_party_accu[n_parties] = n_parts;
     vector<int> idx(n_parts);
     thrust::sequence(thrust::host, idx.data(), idx.data()+n_parts, 0);
     std::shuffle(idx.data(), idx.data()+n_parts, gen);
     vector<int> partid2party(n_parts);
     vector<bool> train_or_test(n_parts, true);
-
 //    vector<vector<int>> feature_list (n_parties);
     for(int i = 0; i < n_parties; i++){
         int train_n_parts = (int) ((n_parts_each_party_accu[i+1] - n_parts_each_party_accu[i]) * train_test_fraction);
@@ -187,7 +204,6 @@ void Partition::hybrid_partition_with_test(const DataSet &dataset, const int n_p
         }
 
     }
-
     for(int i = 0; i < n_parties; i++) {
         feature_map[i].resize(dataset.n_features());
         auto feature_map_data = feature_map[i].host_data();
@@ -195,16 +211,21 @@ void Partition::hybrid_partition_with_test(const DataSet &dataset, const int n_p
             feature_map_data[j] = false;
         }
     }
+    for(int i = 0; i < n_parties; i++){
+        train_subsets[i].csr_row_ptr.push_back(0);
+        test_subsets[i].csr_row_ptr.push_back(0);
+    }
     for(int i = 0; i < dataset.csr_row_ptr.size()-1; i++){
         vector<int> train_csr_row_sub(n_parties, 0);
         vector<int> test_csr_row_sub(n_parties, 0);
-        auto feature_map_data = feature_map[i].host_data();
         for(int j = dataset.csr_row_ptr[i]; j < dataset.csr_row_ptr[i+1]; j++){
             float_type value = dataset.csr_val[j];
             int cid = dataset.csr_col_idx[j];
-            feature_map_data[cid]=true;
-            int part_id = std::min(i / ins_interval, n_parties - 1) * n_parties + std::min(cid / fea_interval, n_parties);
+            int part_id = std::min(i / ins_interval, part_width - 1) * part_length +
+                    std::min(cid / fea_interval, part_length - 1);
             int party_id = partid2party[part_id];
+            feature_map[party_id].host_data()[cid]=true;
+//            LOG(INFO)<<"3.1";
             if(train_or_test[part_id]) {
                 train_subsets[party_id].csr_val.push_back(value);
                 train_subsets[party_id].csr_col_idx.push_back(cid);
@@ -216,10 +237,12 @@ void Partition::hybrid_partition_with_test(const DataSet &dataset, const int n_p
                 test_csr_row_sub[party_id]++;
             }
         }
+//        LOG(INFO)<<"3.2";
         for(int i = 0; i < n_parties; i++) {
-            train_subsets[i].csr_row_ptr.push_back(train_csr_row_sub[i]);
-            test_subsets[i].csr_row_ptr.push_back(test_csr_row_sub[i]);
+            train_subsets[i].csr_row_ptr.push_back(train_subsets[i].csr_row_ptr.back()+train_csr_row_sub[i]);
+            test_subsets[i].csr_row_ptr.push_back(test_subsets[i].csr_row_ptr.back()+test_csr_row_sub[i]);
         }
+//        LOG(INFO)<<"3.3";
     }
     return;
 }

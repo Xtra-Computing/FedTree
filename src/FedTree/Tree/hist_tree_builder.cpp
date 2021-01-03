@@ -12,6 +12,7 @@
 #include "thrust/binary_search.h"
 #include "thrust/execution_policy.h"
 #include "FedTree/util/multi_device.h"
+#include "FedTree/common.h"
 
 
 using namespace thrust;
@@ -32,6 +33,7 @@ void HistTreeBuilder::init(DataSet &dataset, const GBDTParam &param) {
 //        columns.csr2csc_gpu(dataset, v_columns);
 
     cut.get_cut_points_fast(sorted_dataset, param.max_num_bin, n_instances);
+    LOG(INFO)<<"after get cut points";
     last_hist.resize((2 << param.depth) * cut.cut_points_val.size());
     get_bin_ids();
 }
@@ -327,7 +329,6 @@ void HistTreeBuilder::find_split_by_predefined_features(int level){
                           hist.host_data(), hist.host_data());
     LOG(DEBUG) << hist;
 
-    // todo: here
     //    int n_partition = n_column * n_nodes_in_level;
     SyncArray<GHPair> missing_gh(n_nodes_in_level);
     const auto missing_gh_data = missing_gh.host_data();
@@ -336,7 +337,6 @@ void HistTreeBuilder::find_split_by_predefined_features(int level){
     #pragma omp parallel for
     for(int nid0 = 0; nid0 < n_nodes_in_level; nid0++){
         int nid = nid0 + nid_offset;
-        //            todo: check, ThunderGBM uses return;
         if (!nodes_data[nid].splittable()) continue;
         if (n_bins[nid0 + 1] != n_bins[nid0]) {
             GHPair node_gh = hist_data[n_bins[nid0 + 1]- 1];
@@ -752,7 +752,7 @@ void HistTreeBuilder::update_ins2node_id() {
     {
 //        TIMED_SCOPE(timerObj, "get new node id");
         auto nid_data = ins2node_id.host_data();
-        const Tree::TreeNode *nodes_data = trees.nodes.host_data();
+        Tree::TreeNode *nodes_data = trees.nodes.host_data();
         has_splittable.host_data()[0] = false;
         bool *h_s_data = has_splittable.host_data();
         int column_offset = 0;
@@ -775,9 +775,11 @@ void HistTreeBuilder::update_ins2node_id() {
                 if (to_left) {
                     //goes to left child
                     nid_data[iid] = node.lch_index;
+                    nodes_data[node.lch_index].n_instances++;
                 } else {
                     //right child
                     nid_data[iid] = node.rch_index;
+                    nodes_data[node.lch_index].n_instances++;
                 }
             }
         }

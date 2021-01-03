@@ -77,13 +77,14 @@ int main(int argc, char** argv){
         vector<DataSet> train_subsets(n_parties);
         vector<DataSet> test_subsets(n_parties);
         vector<SyncArray<bool>> feature_map(n_parties);
+        DataSet dataset;
         if(fl_param.partition == true){
-            DataSet dataset;
             dataset.load_from_file(model_param.path, fl_param);
             Partition partition;
             if(fl_param.mode == "hybrid"){
                 vector<float> alpha(n_parties, fl_param.alpha);
                 partition.hybrid_partition_with_test(dataset, n_parties, alpha, feature_map, train_subsets, test_subsets);
+                LOG(INFO)<<"after partition";
             }
             else{
                 std::cout<<"not supported yet"<<std::endl;
@@ -94,12 +95,16 @@ int main(int argc, char** argv){
             std::cout<<"not supported yet"<<std::endl;
         }
         vector<Party> parties(n_parties);
+        LOG(INFO)<<"initialize parties";
         for(int i = 0; i < n_parties; i++){
             parties[i].init(i, train_subsets[i], fl_param, feature_map[i]);
         }
+        LOG(INFO)<<"after party init";
         Server server;
+        server.init(fl_param, dataset.n_instances());
         FLtrainer trainer;
         if(fl_param.mode == "hybrid"){
+            LOG(INFO) << "start hybrid trainer";
             trainer.hybrid_fl_trainer(parties, server, fl_param);
             for(int i = 0; i < n_parties; i++){
                 parties[i].gbdt.predict(fl_param.gbdt_param, test_subsets[i]);

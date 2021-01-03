@@ -116,11 +116,15 @@ void FLtrainer::hybrid_fl_trainer(vector<Party> &parties, Server &server, FLPara
         // There is already omp parallel inside boost
 //        #pragma omp parallel for
         for (int i = 0; i < n_party; i++) {
+            LOG(INFO)<<"boost without prediction";
             parties[i].booster.boost_without_prediction(parties[i].gbdt.trees);
 //            obj->get_gradient(y, fbuilder->get_y_predict(), gradients);
+            LOG(INFO)<<"send last trees to server";
             comm_helper.send_last_trees_to_server(parties[i], i, server);
         }
+        LOG(INFO)<<"merge trees";
         server.hybrid_merge_trees();
+        LOG(INFO)<<"send back trees";
         // todo: send the trees to the party to correct the trees and compute leaf values
 //        #pragma omp parallel for
         for (int i = 0; i < n_party; i++) {

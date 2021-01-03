@@ -11,7 +11,10 @@
 class Comm {
 public:
     void send_last_trees_to_server(Party &party, int pid, Server &server){
-        server.local_trees[pid].trees[0] = party.gbdt.trees.back();
+        if(server.local_trees[pid].trees.size())
+            server.local_trees[pid].trees[0] = party.gbdt.trees.back();
+        else
+            server.local_trees[pid].trees.push_back(party.gbdt.trees.back());
     }
     void send_last_global_trees_to_party(Server &server, Party &party) {
         party.gbdt.trees.push_back(server.global_trees.trees.back());

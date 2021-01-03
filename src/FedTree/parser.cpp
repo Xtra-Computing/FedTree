@@ -18,6 +18,7 @@ void Parser::parse_param(FLParam &fl_param, int argc, char **argv) {
     fl_param.mode = "horizontal";
     fl_param.privacy_tech = "he";
     fl_param.partition= true;
+    fl_param.alpha = 0.5;
 
     GBDTParam *gbdt_param = &fl_param.gbdt_param;
 

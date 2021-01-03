@@ -17,11 +17,13 @@ public:
                      const vector<float> alpha = {});
 
     void hybrid_partition(const DataSet &dataset, const int n_parties, vector<float> &alpha,
-                          vector<SyncArray<bool>> &feature_map, vector<DataSet> &subsets);
+                          vector<SyncArray<bool>> &feature_map, vector<DataSet> &subsets,
+                          int part_length = 10, int part_width = 10);
 
     void hybrid_partition_with_test(const DataSet &dataset, const int n_parties, vector<float> &alpha,
                                     vector<SyncArray<bool>> &feature_map, vector<DataSet> &train_subsets,
-                                    vector<DataSet> &test_subsets, float train_test_fraction=0.75);
+                                    vector<DataSet> &test_subsets, int part_length=10, int part_width=10,
+                                    float train_test_fraction=0.75);
 
 };
 

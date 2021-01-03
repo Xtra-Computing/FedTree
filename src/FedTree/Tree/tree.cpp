@@ -24,6 +24,7 @@ void Tree::init_CPU(const SyncArray<GHPair> &gradients, const GBDTParam &param) 
     root_node.sum_gh_pair = sum_gh;
     root_node.is_valid = true;
     root_node.calc_weight(lambda);
+    root_node.n_instances = gradients.size();
 }
 
 void Tree::init_structure(int depth){

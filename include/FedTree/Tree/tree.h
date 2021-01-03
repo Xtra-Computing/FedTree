@@ -56,6 +56,7 @@ public:
         bool is_pruned;// pruned after pruning
 
         GHPair sum_gh_pair;
+        int n_instances = 0; // number of instances inside the node.
 
         friend std::ostream &operator<<(std::ostream &os,
                                         const TreeNode &node);
