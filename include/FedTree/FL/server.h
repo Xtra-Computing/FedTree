@@ -13,24 +13,36 @@
 
 // Todo: the server structure.
 
-class Server {
+class Server : public Party {
+public:
     void propose_split_candidates();
     void send_info(string info_type);
 //    void send_info(vector<Party> &parties, AdditivelyHE::PaillierPublicKey serverKey,vector<SplitCandidate>candidates);
     void sum_histograms();
     void merge_trees();
-public:
     GBDT global_trees;
     vector<GBDT> local_trees;
     GBDTParam model_param;
     int n_total_instances;
     vector<int> n_instance_per_party;
+    AdditivelyHE::PaillierPublicKey publicKey;
+
+    void send_key(Party &party){
+        party.serverKey = publicKey;
+    }
+
+    void homo_init() {
+        std::tuple<AdditivelyHE::PaillierPublicKey, AdditivelyHE::PaillierPrivateKey> keyPairs = this->HE.generate_key_pairs();
+        publicKey = std::get<0>(keyPairs);
+        privateKey = std::get<1>(keyPairs);
+    };
 
 private:
     DataSet dataset;
     std::unique_ptr<TreeBuilder> fbuilder;
     AdditivelyHE HE;
     DPnoises<double> DP;
+    AdditivelyHE::PaillierPrivateKey privateKey;
 };
 
 #endif //FEDTREE_SERVER_H

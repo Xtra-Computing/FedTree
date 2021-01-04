@@ -21,6 +21,8 @@ public:
 
     vector<Tree> build_approximate(const SyncArray<GHPair> &gradients) override;
 
+    void build_init(const SyncArray<GHPair> &gradients, int k) override;
+
     void init(DataSet &dataset, const GBDTParam &param) override;
 
     virtual void update_tree();
@@ -29,12 +31,6 @@ public:
 
 //    virtual void split_point_all_reduce(int depth);
     // Refer to ThunderGBM hist_tree_builder.cu find_split
-
-    void encrypt_gradients(AdditivelyHE::PaillierPublicKey pk) override;
-
-    SyncArray<GHPair> get_gradients() override;
-
-    void set_gradients(SyncArray<GHPair> &gh) override;
 
 //    void get_split(int level, int device_id);
 

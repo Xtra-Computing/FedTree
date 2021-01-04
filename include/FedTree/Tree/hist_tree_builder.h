@@ -15,19 +15,21 @@ public:
 
     void get_bin_ids();
 
+    void compute_hist(int level) override;
+
     void find_split(int level) override;
 
     void compute_histogram_in_a_level(int level, int n_max_splits, int n_bins, int n_nodes_in_level, int* hist_fid_data,
-                                      SyncArray<GHPair> &missing_gh);
+                                      SyncArray<GHPair> &missing_gh, SyncArray<GHPair> &hist);
 
     void compute_histogram_in_a_node(SyncArray<GHPair> &gradients, HistCut &cut, SyncArray<unsigned char> &dense_bin_id, bool enc);
 
     void compute_gain_in_a_level(SyncArray<float_type> &gain, int n_nodes_in_level, int n_bins, int* hist_fid_data,
-                                 SyncArray<GHPair> &missing_gh);
+                                 SyncArray<GHPair> &missing_gh, SyncArray<GHPair> &hist);
 
     void get_best_gain_in_a_level(SyncArray<float_type> &gain, SyncArray<int_float> &best_idx_gain, int n_nodes_in_level, int n_bins);
 
-    void get_split_points(SyncArray<int_float> &best_idx_gain, int level, int *hist_fid, SyncArray<GHPair> &missing_gh);
+    void get_split_points(SyncArray<int_float> &best_idx_gain, int level, int *hist_fid, SyncArray<GHPair> &missing_gh, SyncArray<GHPair> &hist);
 
 //    SyncArray<GHPair> compute_histogram(SyncArray<GHPair> &gradients, HistCut &cut,
 //                                        SyncArray<unsigned char> &dense_bin_id);
@@ -40,23 +42,43 @@ public:
 //support equal division or weighted division
     void propose_split_candidates();
 
-    void merge_histograms_server_propose(MSyncArray<GHPair> &histograms, bool enc);
+    void merge_histograms_server_propose();
 
-    void merge_histograms_client_propose(MSyncArray<GHPair> &histograms, vector<HistCut> &cuts, bool enc);
+    void merge_histograms_client_propose();
+
+    void concat_histograms() override;
 
     SyncArray<float_type> gain(Tree &tree, SyncArray<GHPair> &hist, int level, int n_split);
 
-    SyncArray<GHPair> get_hist() {
+    SyncArray<GHPair> get_hist() override{
         SyncArray<GHPair> h(last_hist.size());
         h.copy_from(last_hist);
         return h;
     }
 
+    void parties_hist_init(int party_size) override{
+        parties_hist = MSyncArray<GHPair>(party_size);
+        this->party_size = party_size;
+        party_idx = 0;
+    }
+
+    void append_hist(SyncArray<GHPair> &hist) override{
+        CHECK_LT(party_idx, party_size);
+        parties_hist[party_idx].resize(hist.size());
+        parties_hist[party_idx].copy_from(hist);
+        party_idx += 1;
+    }
+
+
 private:
     HistCut cut;
+    vector<HistCut> parties_cut;
     // MSyncArray<unsigned char> char_dense_bin_id;
     SyncArray<unsigned char> dense_bin_id;
     SyncArray<GHPair> last_hist;
+    MSyncArray<GHPair> parties_hist;
+    int party_idx = 0;
+    int party_size = 0;
 
     double build_hist_used_time = 0;
     int build_n_hist = 0;

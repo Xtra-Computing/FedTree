@@ -87,3 +87,9 @@ make -j
 # under 'build' directory
 ./src/test/FedTree-test
 ```
+
+# Run centralized training
+```bash
+# under 'build' directory
+./bin/FedTree-train ../dataset/machine.conf
+```

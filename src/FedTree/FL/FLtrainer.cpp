@@ -3,8 +3,10 @@
 //
 #include "FedTree/FL/FLtrainer.h"
 #include "FedTree/Encryption/HE.h"
+#include "FedTree/FL/partition.h"
+#include "FedTree/FL/comm_helper.h"
 
-void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FLParam &params){
+void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FLParam &params) {
 // Is propose_split_candidates implemented? Should it be a method of TreeBuilder, HistTreeBuilder or server? Shouldnt there be a vector of SplitCandidates returned
 //  vector<SplitCandidate> candidates = server.fbuilder.propose_split_candidates();
 //  std::tuple <AdditivelyHE::PaillierPublicKey, AdditivelyHE::PaillierPrivateKey> key_pair = server.HE.generate_key_pairs();
@@ -45,7 +47,55 @@ void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FL
 }
 
 
-void FLtrainer::vertical_fl_trainer(vector<Party> &parties, Server &server, FLParam &params){
+void FLtrainer::vertical_fl_trainer(vector<Party> &parties, Server &server, FLParam &params) {
+
+    // load dataset
+    GBDTParam &model_param = params.gbdt_param;
+    DataSet dataset;
+    dataset.load_from_file(model_param.path, params);
+
+    // partition dataset
+    int parties_size = parties.size() + 1;
+    vector<DataSet> subsets(parties_size);
+    Partition partition;
+    vector<float> alpha;
+    partition.hybrid_partition(dataset, parties_size, alpha, subsets);
+
+    // server and party initialization
+    server.init(0, subsets[0], params);
+    server.homo_init();
+    for (int i = 1; i < parties_size; i++) {
+        parties[i - 1].init(i, subsets[i], params);
+    }
+
+    // start training
+    // for each boosting round
+    for (int i = 0; i < params.gbdt_param.n_trees; i++) {
+        // Server update, encrypt and send gradients
+        server.booster.update_gradients();
+        server.booster.encrypt_gradients(server.publicKey);
+        for (int j = 0; j < parties.size(); j++) {
+            server.send_gradients(parties[j]);
+        }
+        // for each tree in a round
+        for (int k = 0; k < params.gbdt_param.tree_per_rounds; k++) {
+            // each party initialize ins2node_id, gradients, etc.
+            for (int j = 0; j < parties.size(); j++)
+                parties[j].booster.fbuilder->build_init(parties[j].booster.get_gradients(), k);
+            // server initialize hist container
+            server.booster.fbuilder->parties_hist_init(parties.size());
+            // for each level
+            for (int l = 0; l < params.gbdt_param.depth; l++) {
+                // each party compute hist, send hist to server
+                for (int j = 0; j < parties.size(); j++) {
+                    parties[j].booster.fbuilder->compute_hist(l);
+                    parties[j].send_hist(server);
+                }
+                // server concat histograms
+                server.booster.fbuilder->concat_histograms();
+            }
+        }
+    }
 //    parties[0].homo_init();
 //    parties[0].send_info();
 //    for (int i = 0; i < params.gbdt_param.n_trees; i++){
@@ -78,11 +128,19 @@ void FLtrainer::vertical_fl_trainer(vector<Party> &parties, Server &server, FLPa
 void FLtrainer::hybrid_fl_trainer(vector<Party> &parties, Server &server, FLParam &params){
     // todo: initialize parties and server
     int n_party = parties.size();
-//    for(int i = 0; i < n_party; i++){
-//        parties[i].booster.boost(parties[i].gbdt.trees[0]);
-//        parties[i].send_last_trees(server);
-//    }
-    
-
+    Comm comm_helper;
+    for(int i = 0; i < params.gbdt_param.n_trees; i++) {
+        #pragma omp parallel for
+        for (int i = 0; i < n_party; i++) {
+            parties[i].booster.boost(parties[i].gbdt.trees);
+            comm_helper.send_last_trees_to_server(parties[i], i, server);
+        }
+        server.merge_trees();
+        // todo: send the trees to the party to correct the trees and compute leaf values
+        #pragma omp parallel for
+        for (int i = 0; i < n_party; i++) {
+            comm_helper.send_last_global_trees_to_party(server, parties[i]);
+        }
+    }
 
 }

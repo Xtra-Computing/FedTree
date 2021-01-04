@@ -27,6 +27,27 @@ void Booster::init(DataSet &dataSet, const GBDTParam &param) {
     y.copy_from(dataSet.y.data(), dataSet.n_instances());
 }
 
+SyncArray<GHPair> Booster::get_gradients() {
+    SyncArray<GHPair> gh;
+    gh.resize(gradients.size());
+    gh.copy_from(gradients);
+    return gh;
+}
+
+void Booster::set_gradients(SyncArray<GHPair> &gh) {
+    gradients.resize(gh.size());
+    gradients.copy_from(gh);
+}
+
+void Booster::encrypt_gradients(AdditivelyHE::PaillierPublicKey pk) {
+    auto gradients_data = gradients.host_data();
+    for (int i = 0; i < gradients.size(); i++)
+        gradients_data[i].homo_encrypt(pk);
+}
+
+void Booster::update_gradients() {
+    obj->get_gradient(y, fbuilder->get_y_predict(), gradients);
+}
 
 void Booster::boost(vector<vector<Tree>> &boosted_model) {
     TIMED_FUNC(timerObj);
