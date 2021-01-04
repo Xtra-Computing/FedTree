@@ -51,6 +51,28 @@ int main(int argc, char** argv){
     Parser parser;
     parser.parse_param(fl_param, argc, argv);
     GBDTParam &model_param = fl_param.gbdt_param;
+
+    GBDTParam &param = fl_param.gbdt_param;
+    if (param.tree_method == "auto")
+        param.tree_method = "hist";
+    else if (param.tree_method != "hist"){
+        std::cout<<"FedTree only supports histogram-based training yet";
+        exit(1);
+    }
+
+    if(param.objective.find("multi:") != std::string::npos || param.objective.find("binary:") != std::string::npos) {
+        int num_class = dataset.label.size();
+        if (param.num_class != num_class) {
+            LOG(INFO) << "updating number of classes from " << param.num_class << " to " << num_class;
+            param.num_class = num_class;
+        }
+        if(param.num_class > 2)
+            param.tree_per_rounds = param.num_class;
+    }
+    else if(param.objective.find("reg:") != std::string::npos){
+        param.num_class = 1;
+    }
+
     if(model_param.verbose == 0) {
         el::Loggers::reconfigureAllLoggers(el::Level::Debug, el::ConfigurationType::Enabled, "false");
         el::Loggers::reconfigureAllLoggers(el::Level::Trace, el::ConfigurationType::Enabled, "false");
@@ -106,6 +128,7 @@ int main(int argc, char** argv){
     Server server;
     server.init(fl_param, dataset.n_instances());
     FLtrainer trainer;
+
     if(fl_param.mode == "hybrid"){
         LOG(INFO) << "start hybrid trainer";
         trainer.hybrid_fl_trainer(parties, server, fl_param);
