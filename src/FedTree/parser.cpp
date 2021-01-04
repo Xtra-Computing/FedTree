@@ -64,6 +64,8 @@ void Parser::parse_param(FLParam &fl_param, int argc, char **argv) {
                 fl_param.partition = atoi(val);
             else if (str_name.compare("partition_mode") == 0)
                 fl_param.partition_mode = val;
+            else if (str_name.compare("alpha") == 0)
+                fl_param.alpha = atof(val);
             // GBDT params
             else if ((str_name.compare("max_depth") == 0) || (str_name.compare("depth") == 0))
                 gbdt_param->depth = atoi(val);
