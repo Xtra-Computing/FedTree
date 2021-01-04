@@ -144,13 +144,18 @@ void HistTreeBuilder::find_split_by_predefined_features(int level){
     std::chrono::high_resolution_clock timer;
 //    int nid_offset = static_cast<int>(pow(2, level) - 1);
     int n_column = sorted_dataset.n_features();
+    LOG(INFO)<<"0.5";
+    std::cout<<"trees n_node_level 0:"<<trees.n_nodes_level[0]<<std::endl;
+    std::cout<<"trees.n_nodes_level 1:"<<trees.n_nodes_level[1]<<std::endl;
     int n_nodes_in_level = trees.n_nodes_level[level+1] - trees.n_nodes_level[level];
+    LOG(INFO)<<"0.6";
     int nid_offset = trees.n_nodes_level[level];
 
     auto nodes_data = trees.nodes.host_data();
     vector<int> n_bins(n_nodes_in_level + 1);
     n_bins[0] = 0;
     auto cut_col_ptr_data = cut.cut_col_ptr.host_data();
+    LOG(INFO)<<"1";
     #pragma omp parallel for
     for(int i = 0; i < n_nodes_in_level; i++){
         n_bins[i+1] = n_bins[i];
@@ -170,7 +175,7 @@ void HistTreeBuilder::find_split_by_predefined_features(int level){
         for(int j = n_bins[i]; j < n_bins[i+1]; j++)
             hist_fid_data[j] = nodes_data[nid_offset + i].split_feature_id;
 
-
+    LOG(INFO)<<"2";
 //    int n_split = n_nodes_in_level * n_bins;
 
     LOG(TRACE) << "start finding split";
@@ -199,7 +204,7 @@ void HistTreeBuilder::find_split_by_predefined_features(int level){
 //    int n_split = n_nodes_in_level * n_bins;
 
     LOG(TRACE) << "start finding split";
-
+    LOG(INFO)<<"3";
     {
         TIMED_SCOPE(timerObj, "build hist");
         if (n_nodes_in_level == 1){
@@ -230,28 +235,36 @@ void HistTreeBuilder::find_split_by_predefined_features(int level){
                     }
                 }
             }
+            LOG(INFO)<<"4";
         }
         else{
             auto t_dp_begin = timer.now();
             int n_nodes_in_level = trees.n_nodes_level[level];
             SyncArray<int> node_idx(n_instances);
             SyncArray<int> node_ptr(n_nodes_in_level + 1);
+            LOG(INFO)<<"3.1";
             {
                 TIMED_SCOPE(timerObj, "data partitioning");
                 SyncArray<int> nid4sort(n_instances);
-                nid4sort.copy_from(ins2node_id);
+                std::cout<<"n_instances: "<< n_instances<<std::endl;
+                std::cout<<"ins2node_id size: "<<ins2node_id.size()<<std::endl;
+                nid4sort.copy_from(ins2node_id.host_data(), n_instances);
+                LOG(INFO)<<"3.15";
                 sequence(thrust::host, node_idx.host_data(), node_idx.host_end(), 0);
-
+                LOG(INFO)<<"3.2";
                 thrust:sort_by_key(thrust::host, nid4sort.host_data(), nid4sort.host_end(), node_idx.host_data());
                 auto counting_iter = thrust::make_counting_iterator < int > (nid_offset);
+                LOG(INFO)<<"3.3";
                 node_ptr.host_data()[0] =
                         thrust::lower_bound(thrust::host, nid4sort.host_data(), nid4sort.host_end(), nid_offset) -
                         nid4sort.host_data();
-
+                LOG(INFO)<<"3.4";
                 thrust::upper_bound(thrust::host, nid4sort.host_data(), nid4sort.host_end(), counting_iter,
                                     counting_iter + n_nodes_in_level, node_ptr.host_data() + 1);
+                LOG(INFO)<<"3.5";
                 LOG(DEBUG) << "node ptr = " << node_ptr;
             }
+            LOG(INFO)<<"3.6";
             auto t_dp_end = timer.now();
             std::chrono::duration<double> dp_used_time = t_dp_end - t_dp_begin;
             this->total_dp_time += dp_used_time.count();
@@ -263,6 +276,7 @@ void HistTreeBuilder::find_split_by_predefined_features(int level){
             auto gh_data = gh_pair.host_data();
             auto dense_bin_id_data = dense_bin_id.host_data();
             auto max_num_bin = param.max_num_bin;
+            LOG(INFO)<<"3.4";
             for (int nid0_to_compute = 0; nid0_to_compute < n_nodes_in_level; ++nid0_to_compute) {
 
 //                int nid0_to_compute = i * 2;
@@ -323,7 +337,7 @@ void HistTreeBuilder::find_split_by_predefined_features(int level){
         }
         last_hist.copy_from(hist.host_data(), n_split);
     }
-
+    LOG(INFO)<<"5";
     this->build_n_hist++;
     inclusive_scan_by_key(thrust::host, hist_fid_data, hist_fid_data + n_split,
                           hist.host_data(), hist.host_data());
@@ -344,7 +358,7 @@ void HistTreeBuilder::find_split_by_predefined_features(int level){
         }
     }
     LOG(DEBUG) << missing_gh;
-
+    LOG(INFO)<<"6";
     auto compute_gain = []__host__(GHPair father, GHPair lch, GHPair rch, float_type min_child_weight,
             float_type lambda) -> float_type {
             if (lch.h >= min_child_weight && rch.h >= min_child_weight)
@@ -386,7 +400,7 @@ void HistTreeBuilder::find_split_by_predefined_features(int level){
             else gain_data[i] = 0;
         }
     }
-
+    LOG(INFO)<<"7";
     SyncArray<int_float> best_idx_gain(n_nodes_in_level);
     {
         TIMED_SCOPE(timerObj, "get best gain");
@@ -416,7 +430,7 @@ void HistTreeBuilder::find_split_by_predefined_features(int level){
         LOG(DEBUG) << n_split;
         LOG(DEBUG) << "best rank & gain = " << best_idx_gain;
     }
-
+    LOG(INFO)<<"8";
     const int_float *best_idx_gain_data = best_idx_gain.host_data();
     auto cut_val_data = cut.cut_points_val.host_data();
     sp.resize(n_nodes_in_level);
@@ -438,16 +452,22 @@ void HistTreeBuilder::find_split_by_predefined_features(int level){
         sp_data[i].split_fea_id = fid;
         sp_data[i].nid = i + nid_offset;
         sp_data[i].gain = fabsf(best_split_gain);
+        LOG(INFO)<<"8.5";
 //        int n_bins = cut.cut_points_val.size();
         int n_column = sorted_dataset.n_features();
+        LOG(INFO)<<"8.6";
         sp_data[i].fval = cut_val_data[cut_col_ptr_data[fid] + split_index - n_bins[i]];
         sp_data[i].split_bid = (unsigned char) (split_index - n_bins[i]);
+        LOG(INFO)<<"8.7";
 //        sp_data[i].fval = cut_val_data[split_index % n_bins];
 //        sp_data[i].split_bid = (unsigned char) (split_index % n_bins - cut_col_ptr_data[fid]);
-        sp_data[i].fea_missing_gh = missing_gh_data[i * n_column + hist_fid_data[split_index]];
+        sp_data[i].fea_missing_gh = missing_gh_data[i];
+        LOG(INFO)<<"8.8";
         sp_data[i].default_right = best_split_gain < 0;
+        LOG(INFO)<<"8.9";
         sp_data[i].rch_sum_gh = hist_data[split_index];
     }
+    LOG(INFO)<<"9";
     LOG(DEBUG) << "split points (gain/fea_id/nid): " << sp;
 }
 

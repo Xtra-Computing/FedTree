@@ -129,6 +129,7 @@ void FLtrainer::hybrid_fl_trainer(vector<Party> &parties, Server &server, FLPara
 //        #pragma omp parallel for
         for (int i = 0; i < n_party; i++) {
             comm_helper.send_last_global_trees_to_party(server, parties[i]);
+            LOG(INFO)<<"personalize trees";
             parties[i].booster.fbuilder->build_tree_by_predefined_structure(parties[i].booster.gradients, parties[i].gbdt.trees.back());
         }
     }

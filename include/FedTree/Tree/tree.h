@@ -76,11 +76,15 @@ public:
     Tree(const Tree &tree) {
         nodes.resize(tree.nodes.size());
         nodes.copy_from(tree.nodes);
+        n_nodes_level = tree.n_nodes_level;
+        final_depth = tree.final_depth;
     }
 
     Tree &operator=(const Tree &tree) {
         nodes.resize(tree.nodes.size());
         nodes.copy_from(tree.nodes);
+        n_nodes_level = tree.n_nodes_level;
+        final_depth = tree.final_depth;
         return *this;
     }
 
@@ -93,10 +97,14 @@ public:
 
     string dump(int depth) const;
 
-    SyncArray<Tree::TreeNode> nodes;
 
+    SyncArray<Tree::TreeNode> nodes;
     //n_nodes_level[i+1] - n_nodes_level[i] stores the number of nodes in level i
     vector<int> n_nodes_level;
+    int final_depth;
+
+
+
 
     void prune_self(float_type gamma);
 
