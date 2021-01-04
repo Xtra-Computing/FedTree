@@ -103,6 +103,7 @@ int main(int argc, char** argv){
 //        param.gbdt_param.num_class = label.size();
 //    }
 
+    GBDTParam &param = fl_param.gbdt_param;
     if(param.objective.find("multi:") != std::string::npos || param.objective.find("binary:") != std::string::npos) {
         for(int i = 0; i < n_parties; i++){
             train_subsets[i].group_label();
@@ -128,7 +129,6 @@ int main(int argc, char** argv){
     Server server;
     server.init(fl_param, dataset.n_instances());
     FLtrainer trainer;
-    GBDTParam &param = fl_param.gbdt_param;
     if (param.tree_method == "auto")
         param.tree_method = "hist";
     else if (param.tree_method != "hist"){
