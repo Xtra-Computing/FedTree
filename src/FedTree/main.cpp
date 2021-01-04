@@ -110,19 +110,19 @@ int main(int argc, char** argv){
         LOG(INFO) << "start hybrid trainer";
         trainer.hybrid_fl_trainer(parties, server, fl_param);
         for(int i = 0; i < n_parties; i++){
-            parties[i].gbdt.predict(fl_param.gbdt_param, test_subsets[i]);
+            parties[i].gbdt.predict(fl_param.gbdt_param, test_dataset);
         }
     }
     else if(fl_param.mode == "ensemble"){
         trainer.ensemble_trainer(parties, server, fl_param);
         for(int i = 0; i < n_parties; i++) {
-            server.global_trees.predict(fl_param.gbdt_param, test_subsets[i]);
+            server.global_trees.predict(fl_param.gbdt_param, test_dataset);
         }
     }
     else if(fl_param.mode == "solo"){
         trainer.solo_trainer(parties, fl_param);
         for(int i = 0; i < n_parties; i++){
-            parties[i].gbdt.predict(fl_param.gbdt_param, test_subsets[i]);
+            parties[i].gbdt.predict(fl_param.gbdt_param, test_dataset);
         }
     }
     else if(fl_param.mode == "centralized"){
