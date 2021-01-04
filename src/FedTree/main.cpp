@@ -97,6 +97,12 @@ int main(int argc, char** argv){
     }
     DataSet test_dataset;
     test_dataset.load_from_file(model_param.test_path, fl_param);
+
+//    if (ObjectiveFunction::need_group_label(param.gbdt_param.objective)) {
+//        group_label();
+//        param.gbdt_param.num_class = label.size();
+//    }
+
     vector<Party> parties(n_parties);
     LOG(INFO)<<"initialize parties";
     for(int i = 0; i < n_parties; i++){
@@ -115,6 +121,9 @@ int main(int argc, char** argv){
     }
 
     if(param.objective.find("multi:") != std::string::npos || param.objective.find("binary:") != std::string::npos) {
+        for(int i = 0; i < n_parties; i++){
+            train_subsets[i].group_label();
+        }
         int num_class = dataset.label.size();
         if (param.num_class != num_class) {
             LOG(INFO) << "updating number of classes from " << param.num_class << " to " << num_class;
