@@ -50,7 +50,12 @@ void HistTreeBuilder::get_bin_ids() {
     auto csc_val_data = &(sorted_dataset.csc_val[0]);
     std::cout<<"sorted dataset csc_val:"<<sorted_dataset.csc_val[0]<<" "<<sorted_dataset.csc_val[1]<<" "<<sorted_dataset.csc_val[2]<<std::endl;
     auto csc_col_ptr_data = &(sorted_dataset.csc_col_ptr[0]);
-    std::cout<<"csc_col_ptr_data:"<<csc_col_ptr_data[0]<<" "<<csc_col_ptr_data[1]<<std::endl;
+    std::cout<<"csc_col_ptr_data:";
+    for(int i = 0; i < sorted_dataset.csc_col_ptr.size(); i++){
+        std::cout<<csc_col_ptr_data[i]<<" ";
+    }
+    std::cout<<std::endl;
+//    std::cout<<"csc_col_ptr_data:"<<csc_col_ptr_data[0]<<" "<<csc_col_ptr_data[1]<<std::endl;
     SyncArray<unsigned char> bin_id;
     bin_id.resize(nnz);
     auto bin_id_data = bin_id.host_data();
@@ -157,15 +162,18 @@ void HistTreeBuilder::find_split_by_predefined_features(int level){
     n_bins[0] = 0;
     auto cut_col_ptr_data = cut.cut_col_ptr.host_data();
     LOG(INFO)<<"1";
-    #pragma omp parallel for
+//    #pragma omp parallel for
     for(int i = 0; i < n_nodes_in_level; i++){
         n_bins[i+1] = n_bins[i];
+        std::cout<<"split feature id:"<<nodes_data[nid_offset+i].split_feature_id<<std::endl;
         n_bins[i+1] += cut_col_ptr_data[nodes_data[nid_offset+i].split_feature_id+1] -
                 cut_col_ptr_data[nodes_data[nid_offset+i].split_feature_id];
+        std::cout<<"n_bins [i+1]:"<<n_bins[i+1]<<std::endl;
     }
 //    int n_max_nodes = 2 << param.depth;
 //    int n_split = thrust::reduce(thrust::host, n_bins.data(), n_bins.data() + n_bins.size());
     int n_split = n_bins[n_nodes_in_level];
+    //todo: n_split=0
 //    int n_max_splits = n_max_nodes * n_bins;
     auto cut_fid_data = cut.cut_fid.host_data();
 
@@ -175,7 +183,8 @@ void HistTreeBuilder::find_split_by_predefined_features(int level){
     for(int i = 0; i < n_nodes_in_level; i++)
         for(int j = n_bins[i]; j < n_bins[i+1]; j++)
             hist_fid_data[j] = nodes_data[nid_offset + i].split_feature_id;
-
+    LOG(INFO)<<"hist fid:"<<hist_fid;
+    std::cout<<"hist fid 256:"<<hist_fid_data[256]<<std::endl;
     LOG(INFO)<<"2";
 //    int n_split = n_nodes_in_level * n_bins;
 
@@ -186,7 +195,6 @@ void HistTreeBuilder::find_split_by_predefined_features(int level){
     //  thundergbm last_hist set to maximum possible size (i.e., n_max_splits), to use copy_from, hist is also set the n_max_splits
     SyncArray<GHPair> hist(n_split);
 
-    SyncArray<int> &nid = ins2node_id;
     SyncArray<GHPair> &gh_pair = gradients;
     Tree &tree = trees;
     SyncArray<SplitPoint> &sp = this->sp;
@@ -401,6 +409,8 @@ void HistTreeBuilder::find_split_by_predefined_features(int level){
             else gain_data[i] = 0;
         }
     }
+    std::cout<<"gain 0:"<<gain_data[0]<<std::endl;
+    std::cout<<"gain 256:"<<gain_data[256]<<std::endl;
     LOG(INFO)<<"7";
     SyncArray<int_float> best_idx_gain(n_nodes_in_level);
     {
@@ -429,44 +439,85 @@ void HistTreeBuilder::find_split_by_predefined_features(int level){
                 arg_abs_max
         );
         LOG(DEBUG) << n_split;
-        LOG(DEBUG) << "best rank & gain = " << best_idx_gain;
+        LOG(INFO) << "best rank & gain = " << best_idx_gain;
     }
     LOG(INFO)<<"8";
+    //note: the size of best_idx_gain may not be equal to n_nodes_in_level, since some nodes may not have bin.
     const int_float *best_idx_gain_data = best_idx_gain.host_data();
     auto cut_val_data = cut.cut_points_val.host_data();
     sp.resize(n_nodes_in_level);
     auto sp_data = sp.host_data();
 
-    #pragma omp parallel for
-    for(int i = 0; i < n_nodes_in_level; i++){
-        int_float bst = best_idx_gain_data[i];
-        float_type best_split_gain = get<1>(bst);
-        int split_index = get<0>(bst);
-        if (!nodes_data[i + nid_offset].is_valid) {
-            sp_data[i].split_fea_id = -1;
-            sp_data[i].nid = -1;
-            // todo: check, ThunderGBM uses return;
+    vector<int> best_idx_gain_idx(n_nodes_in_level);
+    int idx = 0;
+    for(int i = 0; i < best_idx_gain_idx.size(); i++){
+        if(n_bins[i+1] == n_bins[i]) {
+            best_idx_gain_idx[i] = -1;
             continue;
         }
-        int fid = hist_fid_data[split_index];
-        CHECK_EQ(fid, nodes_data[i].split_feature_id);
-        sp_data[i].split_fea_id = fid;
-        sp_data[i].nid = i + nid_offset;
-        sp_data[i].gain = fabsf(best_split_gain);
-        LOG(INFO)<<"8.5";
+        best_idx_gain_idx[i] = idx;
+        idx++;
+    }
+//    #pragma omp parallel for
+    for(int i = 0; i < n_nodes_in_level; i++){
+        if(n_bins[i+1] == n_bins[i]){
+            sp_data[i].split_bid = nodes_data[i + nid_offset].split_bid;
+            sp_data[i].fval = nodes_data[i + nid_offset].split_value;
+            sp_data[i].rch_sum_gh = nodes_data[i + nid_offset].sum_gh_pair;
+            sp_data[i].split_fea_id = nodes_data[i + nid_offset].split_feature_id;
+            sp_data[i].nid = i + nid_offset;
+            sp_data[i].gain = nodes_data[i + nid_offset].gain;
+            sp_data[i].fea_missing_gh = missing_gh_data[i];
+            sp_data[i].default_right = 0;
+        }
+        else {
+            int_float bst = best_idx_gain_data[best_idx_gain_idx[i]];
+            float_type best_split_gain = get<1>(bst);
+            int split_index = get<0>(bst);
+            if (!nodes_data[i + nid_offset].is_valid) {
+                sp_data[i].split_fea_id = -1;
+                sp_data[i].nid = -1;
+                // todo: check, ThunderGBM uses return;
+                continue;
+            }
+//        std::cout<<"split_index"<<std::endl;
+
+            int fid = hist_fid_data[split_index];
+            std::cout << "split index:" << split_index << std::endl;
+            std::cout << "hist fid 764:" << hist_fid_data[764] << std::endl;
+            int has_split_value = (n_bins[i + 1] != n_bins[i]);
+            std::cout << "n_bins[i+1]:" << n_bins[i + 1] << std::endl;
+            std::cout << "n_bins[i]:" << n_bins[i] << std::endl;
+            std::cout << "fid:" << fid << std::endl;
+            std::cout << "nodes_data[i + nid_offset].split_feature_id:" << nodes_data[i + nid_offset].split_feature_id
+                      << std::endl;
+
+            CHECK_EQ(fid, nodes_data[i + nid_offset].split_feature_id);
+            sp_data[i].split_fea_id = nodes_data[i + nid_offset].split_feature_id;
+            sp_data[i].nid = i + nid_offset;
+            sp_data[i].gain = fabsf(best_split_gain);
+            LOG(INFO) << "8.5";
 //        int n_bins = cut.cut_points_val.size();
-        int n_column = sorted_dataset.n_features();
-        LOG(INFO)<<"8.6";
-        sp_data[i].fval = cut_val_data[cut_col_ptr_data[fid] + split_index - n_bins[i]];
-        sp_data[i].split_bid = (unsigned char) (split_index - n_bins[i]);
-        LOG(INFO)<<"8.7";
+            int n_column = sorted_dataset.n_features();
+            LOG(INFO) << "8.6";
+            if (has_split_value) {
+                sp_data[i].split_bid = (unsigned char) (split_index - n_bins[i]);
+                sp_data[i].fval = cut_val_data[cut_col_ptr_data[fid] + split_index - n_bins[i]];
+                sp_data[i].rch_sum_gh = hist_data[split_index];
+            } else {
+                sp_data[i].split_bid = nodes_data[i + nid_offset].split_bid;
+                sp_data[i].fval = nodes_data[i + nid_offset].split_value;
+                sp_data[i].rch_sum_gh = nodes_data[i + nid_offset].sum_gh_pair;
+            }
+            LOG(INFO) << "8.7";
 //        sp_data[i].fval = cut_val_data[split_index % n_bins];
 //        sp_data[i].split_bid = (unsigned char) (split_index % n_bins - cut_col_ptr_data[fid]);
-        sp_data[i].fea_missing_gh = missing_gh_data[i];
-        LOG(INFO)<<"8.8";
-        sp_data[i].default_right = best_split_gain < 0;
-        LOG(INFO)<<"8.9";
-        sp_data[i].rch_sum_gh = hist_data[split_index];
+            sp_data[i].fea_missing_gh = missing_gh_data[i];
+            LOG(INFO) << "8.8";
+            sp_data[i].default_right = best_split_gain < 0;
+            LOG(INFO) << "8.9";
+        }
+
     }
     LOG(INFO)<<"9";
     LOG(DEBUG) << "split points (gain/fea_id/nid): " << sp;

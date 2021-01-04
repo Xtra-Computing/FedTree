@@ -43,8 +43,8 @@ public:
 //    vector<SplitCandidate> split_candidates;
     Booster booster;
     GBDT gbdt;
-private:
     DataSet dataset;
+private:
 //    AdditivelyHE HE;
 //    AdditivelyHE::PaillierPrivateKey privateKey;
     DPnoises<double> DP;

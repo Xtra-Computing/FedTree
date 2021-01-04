@@ -115,22 +115,23 @@ void FLtrainer::hybrid_fl_trainer(vector<Party> &parties, Server &server, FLPara
     for(int i = 0; i < params.gbdt_param.n_trees; i++) {
         // There is already omp parallel inside boost
 //        #pragma omp parallel for
-        for (int i = 0; i < n_party; i++) {
+        for (int pid = 0; pid < n_party; pid++) {
             LOG(INFO)<<"boost without prediction";
-            parties[i].booster.boost_without_prediction(parties[i].gbdt.trees);
+            parties[pid].booster.boost_without_prediction(parties[pid].gbdt.trees);
 //            obj->get_gradient(y, fbuilder->get_y_predict(), gradients);
             LOG(INFO)<<"send last trees to server";
-            comm_helper.send_last_trees_to_server(parties[i], i, server);
+            comm_helper.send_last_trees_to_server(parties[pid], pid, server);
         }
         LOG(INFO)<<"merge trees";
         server.hybrid_merge_trees();
         LOG(INFO)<<"send back trees";
         // todo: send the trees to the party to correct the trees and compute leaf values
 //        #pragma omp parallel for
-        for (int i = 0; i < n_party; i++) {
-            comm_helper.send_last_global_trees_to_party(server, parties[i]);
+        for (int pid = 0; pid < n_party; pid++) {
+            LOG(INFO)<<"in party:"<<pid;
+            comm_helper.send_last_global_trees_to_party(server, parties[pid]);
             LOG(INFO)<<"personalize trees";
-            parties[i].booster.fbuilder->build_tree_by_predefined_structure(parties[i].booster.gradients, parties[i].gbdt.trees.back());
+            parties[pid].booster.fbuilder->build_tree_by_predefined_structure(parties[pid].booster.gradients, parties[pid].gbdt.trees.back());
         }
     }
 }
@@ -142,7 +143,7 @@ void FLtrainer::ensemble_trainer(vector<Party> &parties, Server &server, FLParam
     Comm comm_helper;
 //    #pragma omp parallel for
     for(int i = 0; i < n_party; i++){
-        for(int i = 0; i < n_tree_each_party; i++)
+        for(int j = 0; j < n_tree_each_party; j++)
             parties[i].booster.boost(parties[i].gbdt.trees);
         comm_helper.send_all_trees_to_server(parties[i], i, server);
     }
@@ -153,7 +154,8 @@ void FLtrainer::solo_trainer(vector<Party> &parties, FLParam &params){
     int n_party = parties.size();
 //    #pragma omp parallel for
     for(int i = 0; i < n_party; i++){
-        for(int i = 0; i < params.gbdt_param.n_trees; i++)
+//        parties[i].gbdt.train(params.gbdt_param, parties[i].dataset);
+        for(int j = 0; j < params.gbdt_param.n_trees; j++)
             parties[i].booster.boost(parties[i].gbdt.trees);
     }
 }

@@ -15,6 +15,7 @@ public:
     bool partition; // input a single dataset for partitioning or input datasets for each party.
     float alpha; //the concentration parameter of Dir based partition approaches.
     string mode; // "horizontal", "vertical", "hybrid", or "centralized"
+    string partition_mode; // "horizontal", "vertical" or "hybrid"
     string privacy_tech; //"none" or "he" or "dp"
     GBDTParam gbdt_param; // parameters for the gbdt training
 };

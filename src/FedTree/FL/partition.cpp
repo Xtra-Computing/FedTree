@@ -154,10 +154,11 @@ void Partition::hybrid_partition(const DataSet &dataset, const int n_parties, ve
 }
 
 
+// todo: train_test split. should split the subset to train and test by the sample space.
 void Partition::hybrid_partition_with_test(const DataSet &dataset, const int n_parties, vector<float> &alpha,
                                            vector<SyncArray<bool>> &feature_map, vector<DataSet> &train_subsets,
-                                           vector<DataSet> &test_subsets, int part_length, int part_width,
-                                           float train_test_fraction){
+                                           vector<DataSet> &test_subsets, vector<DataSet> &subsets,
+                                           int part_length, int part_width, float train_test_fraction){
 
     for(int i = 0; i < n_parties; i++){
         //todo: group label
@@ -165,6 +166,8 @@ void Partition::hybrid_partition_with_test(const DataSet &dataset, const int n_p
         train_subsets[i].y = dataset.y;
         test_subsets[i].n_features_ = dataset.n_features_;
         test_subsets[i].y = dataset.y;
+        subsets[i].n_features_ = dataset.n_features_;
+        subsets[i].y = dataset.y;
     }
 //    int scale_parts = scale * n_parties;
     int ins_interval = dataset.n_instances() / part_width;
@@ -214,10 +217,12 @@ void Partition::hybrid_partition_with_test(const DataSet &dataset, const int n_p
     for(int i = 0; i < n_parties; i++){
         train_subsets[i].csr_row_ptr.push_back(0);
         test_subsets[i].csr_row_ptr.push_back(0);
+        subsets[i].csr_row_ptr.push_back(0);
     }
     for(int i = 0; i < dataset.csr_row_ptr.size()-1; i++){
         vector<int> train_csr_row_sub(n_parties, 0);
         vector<int> test_csr_row_sub(n_parties, 0);
+        vector<int> csr_row_sub(n_parties, 0);
         for(int j = dataset.csr_row_ptr[i]; j < dataset.csr_row_ptr[i+1]; j++){
             float_type value = dataset.csr_val[j];
             int cid = dataset.csr_col_idx[j];
@@ -236,11 +241,15 @@ void Partition::hybrid_partition_with_test(const DataSet &dataset, const int n_p
                 test_subsets[party_id].csr_col_idx.push_back(cid);
                 test_csr_row_sub[party_id]++;
             }
+            subsets[party_id].csr_val.push_back(value);
+            subsets[party_id].csr_col_idx.push_back(cid);
+            csr_row_sub[party_id]++;
         }
 //        LOG(INFO)<<"3.2";
         for(int i = 0; i < n_parties; i++) {
             train_subsets[i].csr_row_ptr.push_back(train_subsets[i].csr_row_ptr.back()+train_csr_row_sub[i]);
             test_subsets[i].csr_row_ptr.push_back(test_subsets[i].csr_row_ptr.back()+test_csr_row_sub[i]);
+            subsets[i].csr_row_ptr.push_back(subsets[i].csr_row_ptr.back()+csr_row_sub[i]);
         }
 //        LOG(INFO)<<"3.3";
     }

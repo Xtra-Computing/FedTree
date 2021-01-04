@@ -81,6 +81,7 @@ void Server::hybrid_merge_trees(){
             global_tree_node_data[nid].rch_index = nid * 2 + 2;
             global_tree_node_data[nid].parent_index = nid == 0 ? -1 : (nid - 1) / 2;
             global_tree_node_data[nid].final_id = nid;
+//            global_tree_node_data[nid].split_feature_id = node_max_gain_data.split_feature_id;
 
             treenode_candidates.pop_back();
             candidate_gains.pop_back();
