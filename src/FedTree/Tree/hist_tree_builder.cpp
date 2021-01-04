@@ -148,6 +148,7 @@ void HistTreeBuilder::find_split_by_predefined_features(int level){
     std::cout<<"trees n_node_level 0:"<<trees.n_nodes_level[0]<<std::endl;
     std::cout<<"trees.n_nodes_level 1:"<<trees.n_nodes_level[1]<<std::endl;
     int n_nodes_in_level = trees.n_nodes_level[level+1] - trees.n_nodes_level[level];
+    std::cout<<"n_nodes_in_level:"<<n_nodes_in_level<<std::endl;
     LOG(INFO)<<"0.6";
     int nid_offset = trees.n_nodes_level[level];
 
@@ -162,7 +163,7 @@ void HistTreeBuilder::find_split_by_predefined_features(int level){
         n_bins[i+1] += cut_col_ptr_data[nodes_data[nid_offset+i].split_feature_id+1] -
                 cut_col_ptr_data[nodes_data[nid_offset+i].split_feature_id];
     }
-    int n_max_nodes = 2 << param.depth;
+//    int n_max_nodes = 2 << param.depth;
 //    int n_split = thrust::reduce(thrust::host, n_bins.data(), n_bins.data() + n_bins.size());
     int n_split = n_bins[n_nodes_in_level];
 //    int n_max_splits = n_max_nodes * n_bins;
@@ -239,7 +240,7 @@ void HistTreeBuilder::find_split_by_predefined_features(int level){
         }
         else{
             auto t_dp_begin = timer.now();
-            int n_nodes_in_level = trees.n_nodes_level[level];
+//            int n_nodes_in_level = trees.n_nodes_level[level];
             SyncArray<int> node_idx(n_instances);
             SyncArray<int> node_ptr(n_nodes_in_level + 1);
             LOG(INFO)<<"3.1";
