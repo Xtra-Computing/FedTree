@@ -95,6 +95,7 @@ int main(int argc, char** argv){
     else{
         std::cout<<"not supported yet"<<std::endl;
     }
+
     DataSet test_dataset;
     test_dataset.load_from_file(model_param.test_path, fl_param);
 

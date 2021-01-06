@@ -178,8 +178,9 @@ void HistTreeBuilder::find_split_by_predefined_features(int level){
     auto cut_fid_data = cut.cut_fid.host_data();
 
     SyncArray<int> hist_fid(n_split);
+    //store the split feature id of each possible split
     auto hist_fid_data = hist_fid.host_data();
-    #pragma omp parallel for
+//    #pragma omp parallel for
     for(int i = 0; i < n_nodes_in_level; i++)
         for(int j = n_bins[i]; j < n_bins[i+1]; j++)
             hist_fid_data[j] = nodes_data[nid_offset + i].split_feature_id;
@@ -201,7 +202,7 @@ void HistTreeBuilder::find_split_by_predefined_features(int level){
 
     auto &dense_bin_id = this->dense_bin_id;
     auto &last_hist = this->last_hist;
-
+    std::cout<<"n_split:"<<n_split<<std::endl;
 //    TIMED_FUNC(timerObj);
 //    int n_nodes_in_level = static_cast<int>(pow(2, level));
 //    int nid_offset = static_cast<int>(pow(2, level) - 1);
@@ -224,22 +225,26 @@ void HistTreeBuilder::find_split_by_predefined_features(int level){
             auto max_num_bin = param.max_num_bin;
             auto n_instances = this->n_instances;
             int split_feature_id = nodes_data[0].split_feature_id;
-            #pragma omp parallel for
+//            #pragma omp parallel for
             for(int i = n_instances * split_feature_id; i < n_instances * (split_feature_id + 1); i++){
 //                int iid = i / n_column;
                 int iid = i % n_instances;
                 int fid = split_feature_id;
                 unsigned char bid = dense_bin_id_data[iid * n_column + fid];
+                // todo: check bid when n_bins = 0
+                if(n_split == 0){
+                    std::cout<<"bid:"<<bid;
+                }
                 if (bid != max_num_bin) {
                     int feature_offset = 0;
                     const GHPair src = gh_data[iid];
                     GHPair &dest = hist_data[feature_offset + bid];
                     if(src.h != 0) {
-                        #pragma omp atomic
+//                        #pragma omp atomic
                         dest.h += src.h;
                     }
                     if(src.g != 0) {
-                        #pragma omp atomic
+//                        #pragma omp atomic
                         dest.g += src.g;
                     }
                 }
@@ -249,11 +254,14 @@ void HistTreeBuilder::find_split_by_predefined_features(int level){
         else{
             auto t_dp_begin = timer.now();
 //            int n_nodes_in_level = trees.n_nodes_level[level];
+            // the instance ids sorted by the node id.
             SyncArray<int> node_idx(n_instances);
+            // store the offset of each node in current level in nid4sort
             SyncArray<int> node_ptr(n_nodes_in_level + 1);
             LOG(INFO)<<"3.1";
             {
                 TIMED_SCOPE(timerObj, "data partitioning");
+                // the sorted node ids of instances
                 SyncArray<int> nid4sort(n_instances);
                 std::cout<<"n_instances: "<< n_instances<<std::endl;
                 std::cout<<"ins2node_id size: "<<ins2node_id.size()<<std::endl;
@@ -301,15 +309,19 @@ void HistTreeBuilder::find_split_by_predefined_features(int level){
 //                for(int  = i*2; nid0_to_compute < i * 2 + 2; nid0_to_compute++)
                 {
                     int nid0 = nid0_to_compute;
+                    // the start position of instances in nid0
                     auto idx_begin = node_ptr.host_data()[nid0];
+                    // the end position of instances in nid0
                     auto idx_end = node_ptr.host_data()[nid0 + 1];
                     auto hist_data = hist.host_data() + n_bins[nid0];
                     this->total_hist_num++;
                     int split_fid = nodes_data[nid_offset + nid0].split_feature_id;
                     //                ThunderGBM: check size of histogram.
-                    #pragma omp parallel for
-                    for(int i = (idx_end - idx_begin) * split_fid; i < (idx_end - idx_begin) * (split_fid + 1); i++){
-                        int iid = node_idx_data[i % (idx_end - idx_begin) + idx_begin];
+                    // todo: zero instance in a node, idx_end - idx_begin = 0. because some previous nodes have no bin, then one child tree have no instance.
+                    std::cout<<"idx_end - idx_begin:"<<(idx_end - idx_begin)<<std::endl;
+//                    #pragma omp parallel for
+                    for(int i = 0; i < idx_end - idx_begin; i++){
+                        int iid = node_idx_data[i + idx_begin];
                         int fid = split_fid;
                         unsigned char bid = dense_bin_id_data[iid * n_column + fid];
                         if (bid != max_num_bin) {
@@ -317,11 +329,11 @@ void HistTreeBuilder::find_split_by_predefined_features(int level){
                             const GHPair src = gh_data[iid];
                             GHPair &dest = hist_data[feature_offset + bid];
                             if(src.h != 0) {
-                                #pragma omp atomic
+//                                #pragma omp atomic
                                 dest.h += src.h;
                             }
                             if(src.g != 0) {
-                                #pragma omp atomic
+//                                #pragma omp atomic
                                 dest.g += src.g;
                             }
                         }
@@ -353,11 +365,12 @@ void HistTreeBuilder::find_split_by_predefined_features(int level){
     LOG(DEBUG) << hist;
 
     //    int n_partition = n_column * n_nodes_in_level;
+    // missing gh for each node. If there is no bin inside a node, then the corresponding missing gh is not assigned.
     SyncArray<GHPair> missing_gh(n_nodes_in_level);
     const auto missing_gh_data = missing_gh.host_data();
     auto cut_col_ptr = cut.cut_col_ptr.host_data();
     auto hist_data = hist.host_data();
-    #pragma omp parallel for
+//    #pragma omp parallel for
     for(int nid0 = 0; nid0 < n_nodes_in_level; nid0++){
         int nid = nid0 + nid_offset;
         if (!nodes_data[nid].splittable()) continue;
@@ -378,6 +391,7 @@ void HistTreeBuilder::find_split_by_predefined_features(int level){
     };
 
     GHPair *gh_prefix_sum_data = hist.host_data();
+    //gain for each split
     SyncArray<float_type> gain(n_split);
     float_type *gain_data = gain.host_data();
 //    auto ignored_set_data = ignored_set.host_data();
@@ -388,7 +402,7 @@ void HistTreeBuilder::find_split_by_predefined_features(int level){
     // todo: change to one for loop, use binary search to find the node id, compare performance
     for(int nid0 = 0; nid0 < n_nodes_in_level; nid0++){
         int nid = nid0 + nid_offset;
-        #pragma omp parallel for
+//        #pragma omp parallel for
         for(int i = n_bins[nid0]; i < n_bins[nid0 + 1]; i++){
             int fid = hist_fid_data[i];
             if (nodes_data[nid].is_valid) {
@@ -412,6 +426,7 @@ void HistTreeBuilder::find_split_by_predefined_features(int level){
     std::cout<<"gain 0:"<<gain_data[0]<<std::endl;
     std::cout<<"gain 256:"<<gain_data[256]<<std::endl;
     LOG(INFO)<<"7";
+    //only have the best idx and gain for the nodes with bins
     SyncArray<int_float> best_idx_gain(n_nodes_in_level);
     {
         TIMED_SCOPE(timerObj, "get best gain");

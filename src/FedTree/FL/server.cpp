@@ -31,6 +31,7 @@ void Server::hybrid_merge_trees(){
     std::cout<<"n tree per round:"<<n_tree_per_round<<std::endl;
     vector<Tree> trees(n_tree_per_round);
     int n_max_internal_nodes_in_a_tree = pow(2, model_param.depth) - 1;
+    std::cout<<"n max internal nodes:"<<n_max_internal_nodes_in_a_tree<<std::endl;
     for (int tid = 0; tid < n_tree_per_round; tid++) {
         trees[tid].init_structure(model_param.depth);
         // maintain an array to store the current candidates and their gains. make node_gains sorted
@@ -88,7 +89,7 @@ void Server::hybrid_merge_trees(){
             // todo: modify, should scale by the number of instances inside the node
             //float scale_factor = 1.0 * n_total_instances / n_instance_per_party[pid_max_gain];
             int left_child = node_max_gain_data[nid_max_gain].lch_index;
-            if(!node_max_gain_data[left_child].is_leaf) {
+            if((!node_max_gain_data[left_child].is_leaf) and node_max_gain_data[left_child].is_valid) {
                 float scale_factor = 1.0 * n_total_instances / node_max_gain_data[left_child].n_instances;
                 float_type left_gain = node_max_gain_data[left_child].gain * scale_factor;
                 auto insert_pos = thrust::lower_bound(thrust::host, candidate_gains.data(),
@@ -108,7 +109,7 @@ void Server::hybrid_merge_trees(){
 //                }
             }
             int right_child = node_max_gain_data[nid_max_gain].rch_index;
-            if(!node_max_gain_data[right_child].is_leaf) {
+            if((!node_max_gain_data[right_child].is_leaf) and node_max_gain_data[right_child].is_valid){
                 float scale_factor = 1.0 * n_total_instances / node_max_gain_data[right_child].n_instances;
                 float_type right_gain = node_max_gain_data[right_child].gain * scale_factor;
                 auto insert_pos = thrust::lower_bound(thrust::host, candidate_gains.data(),
@@ -127,9 +128,9 @@ void Server::hybrid_merge_trees(){
 //                }
             }
         }
+        std::cout<<"merged tree n_nodes:"<<nid<<std::endl;
         int level = 0;
-        trees[tid].n_nodes_level.resize(1);
-        trees[tid].n_nodes_level[0]=0;
+        trees[tid].n_nodes_level.resize(1, 0);
         for(int i = 0; i < nid; ){
             if((i + (1<<level)) >= nid) {
                 trees[tid].final_depth = level;
@@ -140,6 +141,7 @@ void Server::hybrid_merge_trees(){
             i += (1<<level);
             level++;
         }
+        std::cout<<"tree final_depth:"<<trees[tid].final_depth<<std::endl;
         //todo: add feature id offset
     }
     global_trees.trees.push_back(trees);
