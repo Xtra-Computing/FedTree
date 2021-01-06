@@ -15,8 +15,6 @@ public:
 
     void get_bin_ids();
 
-    void compute_hist(int level) override;
-
     void find_split(int level) override;
 
     void compute_histogram_in_a_level(int level, int n_max_splits, int n_bins, int n_nodes_in_level, int* hist_fid_data,
@@ -49,6 +47,10 @@ public:
     void concat_histograms() override;
 
     SyncArray<float_type> gain(Tree &tree, SyncArray<GHPair> &hist, int level, int n_split);
+
+    HistCut get_cut() override{
+        return cut;
+    }
 
     SyncArray<GHPair> get_hist() override{
         SyncArray<GHPair> h(last_hist.size());

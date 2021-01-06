@@ -101,40 +101,6 @@ void HistTreeBuilder::get_bin_ids() {
     }
 }
 
-void HistTreeBuilder::compute_hist(int level) {
-    TIMED_FUNC(timerObj);
-    std::chrono::high_resolution_clock timer;
-    int n_nodes_in_level = 1 << level;
-//    int nid_offset = static_cast<int>(pow(2, level) - 1);
-    int n_column = dataset->n_features();
-    int n_partition = n_column * n_nodes_in_level;
-    int n_bins = cut.cut_points_val.size();
-    int n_max_nodes = 2 << param.depth;
-    int n_max_splits = n_max_nodes * n_bins;
-
-    auto cut_fid_data = cut.cut_fid.host_data();
-
-//    auto i2fid = [=] __host__(int i) { return cut_fid_data[i % n_bins]; };
-//    auto hist_fid = make_transform_iterator(counting_iterator<int>(0), i2fid);
-
-    SyncArray<int> hist_fid(n_nodes_in_level * n_bins);
-    auto hist_fid_data = hist_fid.host_data();
-
-#pragma omp parallel for
-    for (int i = 0; i < hist_fid.size(); i++)
-        hist_fid_data[i] = cut_fid_data[i % n_bins];
-
-
-    int n_split = n_nodes_in_level * n_bins;
-    SyncArray<GHPair> missing_gh(n_partition);
-    LOG(TRACE) << "start finding split";
-
-    auto t_build_start = timer.now();
-
-    SyncArray<GHPair> hist(n_max_splits);
-    compute_histogram_in_a_level(level, n_max_splits, n_bins, n_nodes_in_level, hist_fid_data, missing_gh, hist);
-}
-
 void HistTreeBuilder::find_split(int level) {
     TIMED_FUNC(timerObj);
     std::chrono::high_resolution_clock timer;
@@ -175,7 +141,8 @@ void HistTreeBuilder::find_split(int level) {
 }
 
 void HistTreeBuilder::compute_histogram_in_a_level(int level, int n_max_splits, int n_bins, int n_nodes_in_level,
-                                                   int* hist_fid, SyncArray<GHPair> &missing_gh, SyncArray<GHPair> &hist) {
+                                                   int *hist_fid, SyncArray<GHPair> &missing_gh,
+                                                   SyncArray<GHPair> &hist) {
     std::chrono::high_resolution_clock timer;
 
     SyncArray<int> &nid = ins2node_id;
@@ -348,8 +315,9 @@ void HistTreeBuilder::compute_histogram_in_a_level(int level, int n_max_splits, 
 }
 
 
-void HistTreeBuilder::compute_gain_in_a_level(SyncArray<float_type> &gain, int n_nodes_in_level, int n_bins, int* hist_fid,
-                                              SyncArray<GHPair> &missing_gh, SyncArray<GHPair> &hist){
+void
+HistTreeBuilder::compute_gain_in_a_level(SyncArray<float_type> &gain, int n_nodes_in_level, int n_bins, int *hist_fid,
+                                         SyncArray<GHPair> &missing_gh, SyncArray<GHPair> &hist) {
 //    SyncArray<float_type> gain(n_max_splits);
     int n_column = dataset->n_features();
     int n_split = n_nodes_in_level * n_bins;
@@ -428,7 +396,7 @@ void HistTreeBuilder::get_best_gain_in_a_level(SyncArray<float_type> &gain, Sync
 
 
 void HistTreeBuilder::get_split_points(SyncArray<int_float> &best_idx_gain, int n_nodes_in_level, int *hist_fid,
-                                       SyncArray<GHPair> &missing_gh, SyncArray<GHPair> &hist){
+                                       SyncArray<GHPair> &missing_gh, SyncArray<GHPair> &hist) {
 //    TIMED_SCOPE(timerObj, "get split points");
     int nid_offset = static_cast<int>(n_nodes_in_level - 1);
     const int_float *best_idx_gain_data = best_idx_gain.host_data();

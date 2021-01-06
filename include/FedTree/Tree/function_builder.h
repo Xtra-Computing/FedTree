@@ -10,6 +10,7 @@
 #include "FedTree/common.h"
 #include "FedTree/dataset.h"
 #include "FedTree/Encryption/HE.h"
+#include "FedTree/Tree/hist_cut.h"
 
 class FunctionBuilder {
 public:
@@ -17,7 +18,18 @@ public:
 
     virtual void build_init(const SyncArray<GHPair> &gradients, int k) = 0;
 
-    virtual void compute_hist(int level) = 0;
+    virtual void compute_histogram_in_a_level(int level, int n_max_splits, int n_bins, int n_nodes_in_level,
+                                              int *hist_fid_data, SyncArray<GHPair> &missing_gh,
+                                              SyncArray<GHPair> &hist) = 0;
+
+    virtual void compute_gain_in_a_level(SyncArray<float_type> &gain, int n_nodes_in_level, int n_bins,
+                                         int *hist_fid_data, SyncArray<GHPair> &missing_gh,
+                                         SyncArray<GHPair> &hist) = 0;
+
+    virtual void get_best_gain_in_a_level(SyncArray<float_type> &gain, SyncArray<int_float> &best_idx_gain,
+                                          int n_nodes_in_level, int n_bins) = 0;
+
+    virtual HistCut get_cut() = 0;
 
     virtual SyncArray<GHPair> get_hist() = 0;
 
