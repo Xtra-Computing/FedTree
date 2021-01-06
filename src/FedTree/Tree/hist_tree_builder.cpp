@@ -435,6 +435,42 @@ void HistTreeBuilder::get_split_points(SyncArray<int_float> &best_idx_gain, int 
     LOG(DEBUG) << "split points (gain/fea_id/nid): " << sp;
 }
 
+void HistTreeBuilder::get_split_points_in_a_node(int node_id, int best_idx, float best_gain, int n_nodes_in_level,
+                                                 int *hist_fid, SyncArray<GHPair> &missing_gh,
+                                                 SyncArray<GHPair> &hist) {
+//    TIMED_SCOPE(timerObj, "get split points");
+    int nid_offset = static_cast<int>(n_nodes_in_level - 1);
+    auto hist_data = hist.host_data();
+    const auto missing_gh_data = missing_gh.host_data();
+    auto cut_val_data = cut.cut_points_val.host_data();
+
+    sp.resize(n_nodes_in_level);
+    auto sp_data = sp.host_data();
+    auto nodes_data = trees.nodes.host_data();
+
+    auto cut_row_ptr_data = cut.cut_row_ptr.host_data();
+
+    if (!nodes_data[node_id + nid_offset].is_valid) {
+        sp_data[node_id].split_fea_id = -1;
+        sp_data[node_id].nid = -1;
+        // todo: check, ThunderGBM uses return;
+        return;
+    }
+    int fid = hist_fid[best_idx];
+    sp_data[node_id].split_fea_id = fid;
+    sp_data[node_id].nid = node_id + nid_offset;
+    sp_data[node_id].gain = fabsf(best_gain);
+    int n_bins = cut.cut_points_val.size();
+    int n_column = dataset->n_features();
+    sp_data[node_id].fval = cut_val_data[best_idx % n_bins];
+    sp_data[node_id].split_bid = (unsigned char) (best_idx % n_bins - cut_row_ptr_data[fid]);
+    sp_data[node_id].fea_missing_gh = missing_gh_data[node_id * n_column + hist_fid[best_idx]];
+    sp_data[node_id].default_right = best_gain < 0;
+    sp_data[node_id].rch_sum_gh = hist_data[best_idx];
+
+    LOG(DEBUG) << "split points (gain/fea_id/nid): " << sp;
+}
+
 void HistTreeBuilder::update_ins2node_id() {
     TIMED_FUNC(timerObj);
     SyncArray<bool> has_splittable(1);

@@ -13,6 +13,7 @@
 #include "FedTree/common.h"
 #include "FedTree/syncarray.h"
 #include "FedTree/Tree/tree.h"
+#include "FedTree/DP/noises.h"
 
 
 //#include "row_sampler.h"
@@ -28,6 +29,8 @@ public:
     void set_gradients(SyncArray<GHPair> &gh);
 
     void encrypt_gradients(AdditivelyHE::PaillierPublicKey pk);
+
+    void add_noise_to_gradients(float variance);
 
     void update_gradients();
 

@@ -5,6 +5,9 @@
 #include "FedTree/Encryption/HE.h"
 #include "FedTree/FL/partition.h"
 #include "FedTree/FL/comm_helper.h"
+#include "thrust/sequence.h"
+
+using namespace thrust;
 
 void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FLParam &params) {
 // Is propose_split_candidates implemented? Should it be a method of TreeBuilder, HistTreeBuilder or server? Shouldnt there be a vector of SplitCandidates returned
@@ -74,7 +77,10 @@ void FLtrainer::vertical_fl_trainer(vector<Party> &parties, Server &server, FLPa
 
         // Server update, encrypt and send gradients
         server.booster.update_gradients();
-        server.booster.encrypt_gradients(server.publicKey);
+        if (params.privacy_tech == "he")
+            server.booster.encrypt_gradients(server.publicKey);
+        else if (params.privacy_tech == "dp")
+            server.booster.add_noise_to_gradients(params.variance);
         for (int j = 0; j < parties.size(); j++) {
             server.send_gradients(parties[j]);
         }
@@ -140,52 +146,30 @@ void FLtrainer::vertical_fl_trainer(vector<Party> &parties, Server &server, FLPa
                 server.booster.fbuilder->get_best_gain_in_a_level(gain, best_idx_gain, n_nodes_in_level, n_bins);
                 auto best_idx_data = best_idx_gain.host_data();
 
-                // server convert the global best index to party id & its local index
+                // parties who propose the best candidate update their trees accordingly
                 for (int node = 0; node < best_idx_gain.size(); node++) {
-                    int idx = best_idx_data[node].head;
+
+                    // convert the global best index to party id & its local index
+                    int idx = get < 0 > (best_idx_data[node]);
+                    float gain = get < 1 > (best_idx_data[node]);
                     int party_id = idx / n_max_splits;
                     int local_idx = idx % n_max_splits;
-                }
 
-//                SyncArray<int_float> indices = server.booster.fbuilder->find_best_idx(l);
-//                best_party_id, local_indices = convert_indices(indices);
-//                parties[best_party_id].get_split_points(...);
-//                parties[best_party_id].update_tree();
-//                parties[best_party_id].update_ins2node_id();
-//                for (int j = 0; j < parties_size; j++) {
-//                    if (j != best_party_id) {
-//                        parties[best_party_id].send_tree(parties[j]);
-//                    }
-//                }
+                    // party get local split point
+                    parties[party_id].booster.fbuilder->get_split_points_in_a_node(node, local_idx, gain,
+                                                                                   n_nodes_in_level, hist_fid_data,
+                                                                                   missing_gh, hist);
+
+                    // party update itself
+//                    parties[party_id].update_tree();
+//                    parties[party_id].update_ins2node_id();
+
+                    // party broadcast new instance space to others
+//                    parties[party_id].broadcast_tree();
+                }
             }
         }
     }
-//    parties[0].homo_init();
-//    parties[0].send_info();
-//    for (int i = 0; i < params.gbdt_param.n_trees; i++){
-//        parties[0].update_gradients();
-//        parties[0].DP.add_gaussian_noise();
-//        parties[0].send_info();
-//        for (int j = 0; j < params.gbdt_param.depth; j++){
-//            if (j != params.gbdt_param.depth - 1){
-//                for (int k = 0; k < parties.size(); k++){
-//                    parties[k].fbuilder.propose_split_candidates();
-//                    parties[k].fbuilder.compute_histogram();
-//                    parties[k].HE.encrypt();
-//                }
-//                parties[0].decrypt();
-//                parties[0].compute_gain();
-//                parties[0].get_best_split();
-//                parties[0].send_info();
-//                parties[z].fbuilder.update_tree();
-//                parties[z].send_info()
-//            }
-//            else{
-//                parties[0].fbuilder.compute_leaf_value();
-//                parties[0].DP.add_gaussian_noise();
-//            }
-//        }
-//    }
 }
 
 template<class T>
