@@ -28,10 +28,8 @@ void Server::hybrid_merge_trees(){
 //    LOG(INFO)<<"tree 0 nodes"<<local_trees[0].trees[0][0].nodes;
 //    LOG(INFO)<<"tree 1 nodes"<<local_trees[1].trees[0][0].nodes;
     int n_tree_per_round = local_trees[0].trees[0].size();
-    std::cout<<"n tree per round:"<<n_tree_per_round<<std::endl;
     vector<Tree> trees(n_tree_per_round);
     int n_max_internal_nodes_in_a_tree = pow(2, model_param.depth) - 1;
-    std::cout<<"n max internal nodes:"<<n_max_internal_nodes_in_a_tree<<std::endl;
     for (int tid = 0; tid < n_tree_per_round; tid++) {
         trees[tid].init_structure(model_param.depth);
         // maintain an array to store the current candidates and their gains. make node_gains sorted
@@ -103,7 +101,7 @@ void Server::hybrid_merge_trees(){
 //                else {
                 auto gain_insert_pos = candidate_gains.begin() + insert_offset;
                 auto node_insert_pos = treenode_candidates.begin() + insert_offset;
-                candidate_gains.insert(gain_insert_pos, node_max_gain_data[left_child].gain);
+                candidate_gains.insert(gain_insert_pos, left_gain);
                 treenode_candidates.insert(node_insert_pos,
                                            pid_max_gain * n_max_internal_nodes_in_a_tree + left_child);
 //                }
@@ -122,13 +120,12 @@ void Server::hybrid_merge_trees(){
 //                else {
                 auto gain_insert_pos = candidate_gains.begin() + insert_offset;
                 auto node_insert_pos = treenode_candidates.begin() + insert_offset;
-                candidate_gains.insert(gain_insert_pos, node_max_gain_data[right_child].gain);
+                candidate_gains.insert(gain_insert_pos, right_gain);
                 treenode_candidates.insert(node_insert_pos,
                                            pid_max_gain * n_max_internal_nodes_in_a_tree + right_child);
 //                }
             }
         }
-        std::cout<<"merged tree n_nodes:"<<nid<<std::endl;
         int level = 0;
         trees[tid].n_nodes_level.resize(1, 0);
         for(int i = 0; i < nid; ){
@@ -141,7 +138,6 @@ void Server::hybrid_merge_trees(){
             i += (1<<level);
             level++;
         }
-        std::cout<<"tree final_depth:"<<trees[tid].final_depth<<std::endl;
         //todo: add feature id offset
     }
     global_trees.trees.push_back(trees);

@@ -154,6 +154,17 @@ void Partition::hybrid_partition(const DataSet &dataset, const int n_parties, ve
 }
 
 
+//void Partition::horizontal_labeldir_partition(const DataSet &dataset, const int n_parties, vector<float> &alpha,
+//                                              vector<DataSet> &subsets){
+//
+//}
+//
+//
+//void Partition::horizontal_vertical_partition(const DataSet &dataset, const int n_parties, vector<float> &alpha,
+//                                              vector<SyncArray<bool>> &feature_map, vector<DataSet> &train_subsets){
+//
+//}
+
 // todo: train_test split. should split the subset to train and test by the sample space.
 void Partition::hybrid_partition_with_test(const DataSet &dataset, const int n_parties, vector<float> &alpha,
                                            vector<SyncArray<bool>> &feature_map, vector<DataSet> &train_subsets,

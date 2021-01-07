@@ -129,14 +129,11 @@ void TreeBuilder::build_tree_by_predefined_structure(const SyncArray<GHPair> &gr
 
     for (int k = 0; k < param.tree_per_rounds; ++k) {
         Tree &tree = trees[k];
-
         this->ins2node_id.resize(n_instances);
         this->gradients.set_host_data(const_cast<GHPair *>(gradients.host_data() + k * n_instances));
         this->trees = tree;
-        std::cout<<"trees n_node_level 0:"<<this->trees.n_nodes_level[0]<<std::endl;
         for (int level = 0; level < tree.final_depth; ++level) {
             LOG(INFO)<<"find split";
-            std::cout<<"in depth:"<<tree.final_depth<<std::endl;
             find_split_by_predefined_features(level);
 //            split_point_all_reduce(level);
             {
