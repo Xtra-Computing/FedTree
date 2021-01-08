@@ -153,19 +153,107 @@ void Partition::hybrid_partition(const DataSet &dataset, const int n_parties, ve
     return;
 }
 
+//
+//
+void Partition::horizontal_vertical_dir_partition(const DataSet &dataset, const int n_parties, float alpha,
+                                                  vector<SyncArray<bool>> &feature_map, vector<DataSet> &subsets,
+                                                  int n_hori, int n_verti){
+    CHECK_EQ(n_parties, n_hori*n_verti);
+    int n_ins = dataset.n_instances();
+    vector<int> idxs(n_ins);
+    thrust::sequence(thrust::host, idxs.data(), idxs.data()+idxs.size(), 0);
+    std::random_shuffle(idxs.begin(), idxs.end());
 
-//void Partition::horizontal_labeldir_partition(const DataSet &dataset, const int n_parties, vector<float> &alpha,
-//                                              vector<DataSet> &subsets){
-//
-//}
-//
-//
-//void Partition::horizontal_vertical_partition(const DataSet &dataset, const int n_parties, vector<float> &alpha,
-//                                              vector<SyncArray<bool>> &feature_map, vector<DataSet> &train_subsets){
-//
-//}
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    vector<float> alpha_vec(n_hori, alpha);
+    dirichlet_distribution<std::mt19937> dir(alpha_vec);
+    vector<float> dir_numbers = dir(gen);
+    LOG(INFO)<<"dir number:"<<dir_numbers;
+    CHECK_EQ(dir_numbers.size(), n_hori);
+    vector<int> n_ins_each_hori(n_hori + 1);
+    n_ins_each_hori[0] = 0;
+    for(int i = 1; i < n_hori; i++){
+        n_ins_each_hori[i] = n_ins_each_hori[i-1];
+        n_ins_each_hori[i] += dir_numbers[i-1] * n_ins;
+    }
+    n_ins_each_hori[n_hori] = n_ins;
 
-// todo: train_test split. should split the subset to train and test by the sample space.
+    vector<int> ins2partyid(n_ins);
+    #pragma omp parallel for
+    for(int i = 0; i < n_hori; i++){
+        for(int idx = n_ins_each_hori[i]; idx < n_ins_each_hori[i+1]; idx++){
+            ins2partyid[idxs[idx]] = i;
+        }
+    }
+
+    vector<vector<int>> fea2partyid(n_hori);
+    alpha_vec.resize(n_verti, alpha);
+    int n_fea = dataset.n_features();
+    for(int hori_id = 0; hori_id < n_hori; hori_id++){
+        dirichlet_distribution<std::mt19937> dir(alpha_vec);
+        vector<float> dir_numbers = dir(gen);
+        LOG(INFO)<<"dir_numbers:"<<dir_numbers;
+        vector<int> n_fea_each_verti(n_verti + 1);
+        n_fea_each_verti[0] = 0;
+        for(int i = 1; i < n_verti; i++){
+            n_fea_each_verti[i] = n_fea_each_verti[i-1];
+            n_fea_each_verti[i] += dir_numbers[i-1] * n_fea;
+        }
+        n_fea_each_verti[n_verti] = n_fea;
+        LOG(INFO)<<"n_fea_each_verti:"<<n_fea_each_verti;
+        fea2partyid[hori_id].resize(n_fea);
+        vector<int> idxs(n_fea);
+        thrust::sequence(thrust::host, idxs.data(), idxs.data()+n_fea, 0);
+        std::random_shuffle(idxs.begin(), idxs.end());
+        LOG(INFO)<<"idxs:"<<idxs;
+        #pragma omp parallel for
+        for(int i = 0; i < n_verti; i++){
+            for(int idx = n_fea_each_verti[i]; idx < n_fea_each_verti[i+1]; idx++){
+                fea2partyid[hori_id][idxs[idx]] = i;
+            }
+        }
+    }
+    for(int i = 0; i < n_parties; i++){
+        subsets[i].csr_row_ptr.push_back(0);
+    }
+    for(int i = 0; i < n_parties; i++) {
+        // todo: change n_features to the real number of features
+        subsets[i].n_features_ = dataset.n_features_;
+        feature_map[i].resize(dataset.n_features());
+        auto feature_map_data = feature_map[i].host_data();
+        for(int j = 0; j < feature_map[i].size(); j++){
+            feature_map_data[j] = false;
+        }
+    }
+//    vector<int> y_idx(n_parties, 0);
+    for(int i = 0; i < n_ins; i++){
+        int hori_id = ins2partyid[i];
+        for(int party_id = hori_id * n_verti; party_id < (hori_id + 1) * n_verti; party_id++){
+            subsets[party_id].y.push_back(dataset.y[i]);
+        }
+    }
+    for(int i = 0; i < dataset.csr_row_ptr.size()-1; i++){
+        vector<int> train_csr_row_sub(n_parties, 0);
+        for(int j = dataset.csr_row_ptr[i]; j < dataset.csr_row_ptr[i+1]; j++){
+            float_type value = dataset.csr_val[j];
+            int cid = dataset.csr_col_idx[j];
+            int hori_id = ins2partyid[i];
+            int verti_id = fea2partyid[hori_id][cid];
+            int party_id = hori_id * n_verti + verti_id;
+//            if(party_id == 1)
+//                std::cout<<"party_id:"<<party_id<<std::endl;
+            feature_map[party_id].host_data()[cid]=true;
+            subsets[party_id].csr_val.push_back(value);
+            subsets[party_id].csr_col_idx.push_back(cid);
+            train_csr_row_sub[party_id]++;
+        }
+        for(int i = 0; i < n_parties; i++) {
+            subsets[i].csr_row_ptr.push_back(subsets[i].csr_row_ptr.back()+train_csr_row_sub[i]);
+        }
+    }
+}
+
 void Partition::hybrid_partition_with_test(const DataSet &dataset, const int n_parties, vector<float> &alpha,
                                            vector<SyncArray<bool>> &feature_map, vector<DataSet> &train_subsets,
                                            vector<DataSet> &test_subsets, vector<DataSet> &subsets,
@@ -265,4 +353,58 @@ void Partition::hybrid_partition_with_test(const DataSet &dataset, const int n_p
 //        LOG(INFO)<<"3.3";
     }
     return;
+}
+
+void Partition::train_test_split(DataSet &dataset, DataSet &train_dataset, DataSet &test_dataset, float train_portion){
+    int n_instances = dataset.n_instances();
+    int n_train = n_instances * train_portion;
+    int n_test = n_instances - n_test;
+    vector<int> idxs(n_instances);
+    LOG(INFO)<<"1";
+    thrust::sequence(thrust::host, idxs.data(), idxs.data()+n_instances, 0);
+    std::random_shuffle(idxs.begin(), idxs.end());
+    vector<bool> idx2train(n_instances, true);
+    for(int i = n_train; i < n_instances; i++){
+        idx2train[idxs[i]] = false;
+    }
+    LOG(INFO)<<"2";
+    train_dataset.csr_row_ptr.push_back(0);
+    test_dataset.csr_row_ptr.push_back(0);
+    train_dataset.n_features_ = dataset.n_features_;
+    test_dataset.n_features_ = dataset.n_features_;
+    int train_idx = 0;
+    int test_idx = 0;
+    train_dataset.y.resize(n_train);
+    test_dataset.y.resize(n_test);
+    for(int i = 0; i < n_instances; i++){
+        if(idx2train[i]) {
+            train_dataset.y[train_idx] = dataset.y[i];
+            train_idx++;
+        }
+        else{
+            test_dataset.y[test_idx] = dataset.y[i];
+            test_idx++;
+        }
+    }
+    LOG(INFO)<<"3";
+    for(int i = 0; i < dataset.csr_row_ptr.size()-1; i++){
+        int train_csr_row_sub = 0;
+        int test_csr_row_sub = 0;
+        for(int j = dataset.csr_row_ptr[i]; j < dataset.csr_row_ptr[i+1]; j++){
+            float_type value = dataset.csr_val[j];
+            int cid = dataset.csr_col_idx[j];
+            if(idx2train[i]){
+                train_dataset.csr_val.push_back(value);
+                train_dataset.csr_col_idx.push_back(cid);
+                train_csr_row_sub++;
+            }
+            else{
+                test_dataset.csr_val.push_back(value);
+                test_dataset.csr_col_idx.push_back(cid);
+                test_csr_row_sub++;
+            }
+        }
+        train_dataset.csr_row_ptr.push_back(train_dataset.csr_row_ptr.back()+train_csr_row_sub);
+        test_dataset.csr_row_ptr.push_back(test_dataset.csr_row_ptr.back()+test_csr_row_sub);
+    }
 }

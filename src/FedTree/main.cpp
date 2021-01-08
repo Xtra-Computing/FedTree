@@ -77,15 +77,34 @@ int main(int argc, char** argv){
     vector<DataSet> train_subsets(n_parties);
     vector<DataSet> test_subsets(n_parties);
     vector<DataSet> subsets(n_parties);
+    LOG(INFO)<<"subset0 csr_row_ptr"<<subsets[0].csr_row_ptr;
+    LOG(INFO)<<"subset0 csr_val:"<<subsets[0].csr_val;
+    LOG(INFO)<<"subset0 y"<<subsets[0].y;
     vector<SyncArray<bool>> feature_map(n_parties);
     DataSet dataset;
     if(fl_param.partition == true){
         dataset.load_from_file(model_param.path, fl_param);
         Partition partition;
         if(fl_param.partition_mode == "hybrid"){
-            vector<float> alpha(n_parties, fl_param.alpha);
-            partition.hybrid_partition_with_test(dataset, n_parties, alpha, feature_map, train_subsets, test_subsets, subsets);
-            LOG(INFO)<<"after partition";
+            LOG(INFO)<<"horizontal vertical dir";
+            LOG(INFO)<<"subset0 csr_row_ptr"<<subsets[0].csr_row_ptr;
+            LOG(INFO)<<"subset0 csr_val:"<<subsets[0].csr_val;
+            LOG(INFO)<<"subset0 y"<<subsets[0].y;
+            partition.horizontal_vertical_dir_partition(dataset, n_parties, fl_param.alpha, feature_map, subsets, 2, 2);
+            std::cout<<"subsets[1].n_instances:"<<subsets[1].n_instances()<<std::endl;
+            std::cout<<"subsets[1].nnz:"<<subsets[1].csr_val.size()<<std::endl;
+            LOG(INFO)<<"train test split";
+            for(int i = 0; i < n_parties; i++) {
+                partition.train_test_split(subsets[i], train_subsets[i], test_subsets[i]);
+            }
+            std::cout<<"train_subsets[0].n_instances:"<<train_subsets[0].n_instances()<<std::endl;
+            std::cout<<"train_subsets[0].nnz:"<<train_subsets[0].csr_val.size()<<std::endl;
+            std::cout<<"train_subsets[1].n_instances:"<<train_subsets[1].n_instances()<<std::endl;
+            std::cout<<"train_subsets[1].nnz:"<<train_subsets[1].csr_val.size()<<std::endl;
+            std::cout<<"train_subsets[2].n_instances:"<<train_subsets[2].n_instances()<<std::endl;
+            std::cout<<"train_subsets[2].nnz:"<<train_subsets[2].csr_val.size()<<std::endl;
+            std::cout<<"train_subsets[3].n_instances:"<<train_subsets[3].n_instances()<<std::endl;
+            std::cout<<"train_subsets[3].nnz:"<<train_subsets[3].csr_val.size()<<std::endl;
         }
         else{
             std::cout<<"not supported yet"<<std::endl;
@@ -95,9 +114,11 @@ int main(int argc, char** argv){
     else{
         std::cout<<"not supported yet"<<std::endl;
     }
-
+    bool use_global_test_set = !model_param.test_path.empty();
     DataSet test_dataset;
-    test_dataset.load_from_file(model_param.test_path, fl_param);
+    LOG(INFO)<<"global test";
+    if(use_global_test_set)
+        test_dataset.load_from_file(model_param.test_path, fl_param);
 
 //    if (ObjectiveFunction::need_group_label(param.gbdt_param.objective)) {
 //        group_label();
@@ -137,30 +158,44 @@ int main(int argc, char** argv){
         exit(1);
     }
 
-
     if(fl_param.mode == "hybrid"){
         LOG(INFO) << "start hybrid trainer";
         trainer.hybrid_fl_trainer(parties, server, fl_param);
         for(int i = 0; i < n_parties; i++){
-            parties[i].gbdt.predict(fl_param.gbdt_param, test_dataset);
+            if(use_global_test_set)
+                parties[i].gbdt.predict(fl_param.gbdt_param, test_dataset);
+            else
+                parties[i].gbdt.predict(fl_param.gbdt_param, test_subsets[i]);
         }
     }
     else if(fl_param.mode == "ensemble"){
         trainer.ensemble_trainer(parties, server, fl_param);
-        for(int i = 0; i < n_parties; i++) {
+        if(use_global_test_set)
             server.global_trees.predict(fl_param.gbdt_param, test_dataset);
-        }
+        else
+            for(int i = 0; i < n_parties; i++) {
+                server.global_trees.predict(fl_param.gbdt_param, test_subsets[i]);
+            }
     }
     else if(fl_param.mode == "solo"){
         trainer.solo_trainer(parties, fl_param);
         for(int i = 0; i < n_parties; i++){
-            parties[i].gbdt.predict(fl_param.gbdt_param, test_dataset);
+            if(use_global_test_set)
+                parties[i].gbdt.predict(fl_param.gbdt_param, test_dataset);
+            else
+                parties[i].gbdt.predict(fl_param.gbdt_param, test_subsets[i]);
         }
     }
     else if(fl_param.mode == "centralized"){
         GBDT gbdt;
         gbdt.train(fl_param.gbdt_param, dataset);
-        gbdt.predict(fl_param.gbdt_param, test_dataset);
+        if(use_global_test_set)
+            gbdt.predict(fl_param.gbdt_param, test_dataset);
+        else {
+            for(int i = 0; i < n_parties; i++) {
+                gbdt.predict(fl_param.gbdt_param, test_subsets[i]);
+            }
+        }
     }
 
 //        parser.save_model("global_model", fl_param.gbdt_param, server.global_trees.trees, dataset);

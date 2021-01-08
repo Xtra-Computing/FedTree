@@ -40,7 +40,7 @@ void Server::hybrid_merge_trees(){
             //store the root nodes of all local trees
             //the new node id: party_id * n_max_internal_nodes_in_a_tree + node_id
             treenode_candidates.push_back(pid * n_max_internal_nodes_in_a_tree);
-//            float scale_factor = 1.0 * n_total_instances / n_instance_per_party[pid];
+            //float scale_factor = 1.0 * n_total_instances / n_instance_per_party[pid];
             float scale_factor = 1.0;
             candidate_gains.push_back(local_trees[pid].trees[0][tid].nodes.host_data()[0].gain * scale_factor);
             //check the node id after prune.

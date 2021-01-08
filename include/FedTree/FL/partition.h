@@ -25,6 +25,11 @@ public:
                                     vector<DataSet> &test_subsets, vector<DataSet> &subsets,
                                     int part_length=10, int part_width=10, float train_test_fraction=0.75);
 
+    void horizontal_vertical_dir_partition(const DataSet &dataset, const int n_parties, float alpha,
+                                           vector<SyncArray<bool>> &feature_map, vector<DataSet> &subsets,
+                                           int n_hori = 2, int n_verti = 2);
+
+    void train_test_split(DataSet &dataset, DataSet &train_dataset, DataSet &test_dataset, float train_portion = 0.75);
 };
 
 #endif //FEDTREE_PARTITION_H
