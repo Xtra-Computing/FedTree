@@ -21,10 +21,13 @@ public:
     float_type fval;//split on this feature value (for exact)
     unsigned char split_bid;//split on this bin id (for hist)
 
+    bool is_change;
+
     SplitPoint() {
         nid = -1;
         split_fea_id = -1;
         gain = 0;
+        is_change=true;
     }
 
     friend std::ostream &operator<<(std::ostream &output, const SplitPoint &sp) {

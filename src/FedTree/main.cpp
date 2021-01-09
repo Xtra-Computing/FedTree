@@ -77,9 +77,6 @@ int main(int argc, char** argv){
     vector<DataSet> train_subsets(n_parties);
     vector<DataSet> test_subsets(n_parties);
     vector<DataSet> subsets(n_parties);
-    LOG(INFO)<<"subset0 csr_row_ptr"<<subsets[0].csr_row_ptr;
-    LOG(INFO)<<"subset0 csr_val:"<<subsets[0].csr_val;
-    LOG(INFO)<<"subset0 y"<<subsets[0].y;
     vector<SyncArray<bool>> feature_map(n_parties);
     DataSet dataset;
     if(fl_param.partition == true){
@@ -87,24 +84,19 @@ int main(int argc, char** argv){
         Partition partition;
         if(fl_param.partition_mode == "hybrid"){
             LOG(INFO)<<"horizontal vertical dir";
-            LOG(INFO)<<"subset0 csr_row_ptr"<<subsets[0].csr_row_ptr;
-            LOG(INFO)<<"subset0 csr_val:"<<subsets[0].csr_val;
-            LOG(INFO)<<"subset0 y"<<subsets[0].y;
             partition.horizontal_vertical_dir_partition(dataset, n_parties, fl_param.alpha, feature_map, subsets, 2, 2);
-            std::cout<<"subsets[1].n_instances:"<<subsets[1].n_instances()<<std::endl;
-            std::cout<<"subsets[1].nnz:"<<subsets[1].csr_val.size()<<std::endl;
+//            std::cout<<"subsets[0].n_instances:"<<subsets[0].n_instances()<<std::endl;
+//            std::cout<<"subsets[0].nnz:"<<subsets[0].csr_val.size()<<std::endl;
+//            std::cout<<"subsets[1].n_instances:"<<subsets[1].n_instances()<<std::endl;
+//            std::cout<<"subsets[1].nnz:"<<subsets[1].csr_val.size()<<std::endl;
+//            std::cout<<"subsets[2].n_instances:"<<subsets[2].n_instances()<<std::endl;
+//            std::cout<<"subsets[2].nnz:"<<subsets[2].csr_val.size()<<std::endl;
+//            std::cout<<"subsets[3].n_instances:"<<subsets[3].n_instances()<<std::endl;
+//            std::cout<<"subsets[3].nnz:"<<subsets[3].csr_val.size()<<std::endl;
             LOG(INFO)<<"train test split";
             for(int i = 0; i < n_parties; i++) {
                 partition.train_test_split(subsets[i], train_subsets[i], test_subsets[i]);
             }
-            std::cout<<"train_subsets[0].n_instances:"<<train_subsets[0].n_instances()<<std::endl;
-            std::cout<<"train_subsets[0].nnz:"<<train_subsets[0].csr_val.size()<<std::endl;
-            std::cout<<"train_subsets[1].n_instances:"<<train_subsets[1].n_instances()<<std::endl;
-            std::cout<<"train_subsets[1].nnz:"<<train_subsets[1].csr_val.size()<<std::endl;
-            std::cout<<"train_subsets[2].n_instances:"<<train_subsets[2].n_instances()<<std::endl;
-            std::cout<<"train_subsets[2].nnz:"<<train_subsets[2].csr_val.size()<<std::endl;
-            std::cout<<"train_subsets[3].n_instances:"<<train_subsets[3].n_instances()<<std::endl;
-            std::cout<<"train_subsets[3].nnz:"<<train_subsets[3].csr_val.size()<<std::endl;
         }
         else{
             std::cout<<"not supported yet"<<std::endl;

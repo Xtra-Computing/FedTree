@@ -157,8 +157,15 @@ void HistTreeBuilder::find_split_by_predefined_features(int level){
 //    int n_max_nodes = 2 << param.depth;
 //    int n_split = thrust::reduce(thrust::host, n_bins.data(), n_bins.data() + n_bins.size());
     int n_split = n_bins[n_nodes_in_level];
+    sp.resize(n_nodes_in_level);
+    auto sp_data = sp.host_data();
     if(n_split == 0){
-        exit(0);
+        for(int i = 0; i < n_nodes_in_level; i++) {
+            sp_data[i].is_change=false;
+        }
+        return;
+//        std::cout<<"0 n_split"<<std::endl;
+//        exit(0);
     }
     //todo: n_split=0
 //    int n_max_splits = n_max_nodes * n_bins;
@@ -426,8 +433,7 @@ void HistTreeBuilder::find_split_by_predefined_features(int level){
     //note: the size of best_idx_gain may not be equal to n_nodes_in_level, since some nodes may not have bin.
     const int_float *best_idx_gain_data = best_idx_gain.host_data();
     auto cut_val_data = cut.cut_points_val.host_data();
-    sp.resize(n_nodes_in_level);
-    auto sp_data = sp.host_data();
+
 
     vector<int> best_idx_gain_idx(n_nodes_in_level);
     int idx = 0;
@@ -442,14 +448,15 @@ void HistTreeBuilder::find_split_by_predefined_features(int level){
     #pragma omp parallel for
     for(int i = 0; i < n_nodes_in_level; i++){
         if(n_bins[i+1] == n_bins[i]){
-            sp_data[i].split_bid = nodes_data[i + nid_offset].split_bid;
-            sp_data[i].fval = nodes_data[i + nid_offset].split_value;
-            sp_data[i].rch_sum_gh = nodes_data[i + nid_offset].sum_gh_pair;
-            sp_data[i].split_fea_id = nodes_data[i + nid_offset].split_feature_id;
-            sp_data[i].nid = i + nid_offset;
-            sp_data[i].gain = nodes_data[i + nid_offset].gain;
-            sp_data[i].fea_missing_gh = missing_gh_data[i];
-            sp_data[i].default_right = 0;
+//            sp_data[i].split_bid = nodes_data[i + nid_offset].split_bid;
+//            sp_data[i].fval = nodes_data[i + nid_offset].split_value;
+//            sp_data[i].rch_sum_gh = nodes_data[i + nid_offset].sum_gh_pair;
+//            sp_data[i].split_fea_id = nodes_data[i + nid_offset].split_feature_id;
+//            sp_data[i].nid = i + nid_offset;
+//            sp_data[i].gain = nodes_data[i + nid_offset].gain;
+//            sp_data[i].fea_missing_gh = missing_gh_data[i];
+//            sp_data[i].default_right = 0;
+            sp_data[i].is_change=false;
         }
         else {
             int_float bst = best_idx_gain_data[best_idx_gain_idx[i]];

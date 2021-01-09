@@ -219,6 +219,7 @@ void TreeBuilder::update_tree() {
             //do split
             //todo: check, thundergbm uses return
             if (sp_data[i].nid == -1) continue;
+            if (!sp_data[i].is_change) continue;
             int nid = sp_data[i].nid;
             Tree::TreeNode &node = nodes_data[nid];
             node.gain = best_split_gain;

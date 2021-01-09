@@ -160,12 +160,13 @@ void Partition::horizontal_vertical_dir_partition(const DataSet &dataset, const 
                                                   int n_hori, int n_verti){
     CHECK_EQ(n_parties, n_hori*n_verti);
     int n_ins = dataset.n_instances();
+    int seed = 42;
+    std::mt19937 gen(seed);
     vector<int> idxs(n_ins);
     thrust::sequence(thrust::host, idxs.data(), idxs.data()+idxs.size(), 0);
-    std::random_shuffle(idxs.begin(), idxs.end());
+    std::shuffle(idxs.data(), idxs.data()+n_ins, gen);
 
-    std::random_device rd;
-    std::mt19937 gen(rd());
+
     vector<float> alpha_vec(n_hori, alpha);
     dirichlet_distribution<std::mt19937> dir(alpha_vec);
     vector<float> dir_numbers = dir(gen);
@@ -205,7 +206,7 @@ void Partition::horizontal_vertical_dir_partition(const DataSet &dataset, const 
         fea2partyid[hori_id].resize(n_fea);
         vector<int> idxs(n_fea);
         thrust::sequence(thrust::host, idxs.data(), idxs.data()+n_fea, 0);
-        std::random_shuffle(idxs.begin(), idxs.end());
+        std::shuffle(idxs.data(), idxs.data()+n_fea, gen);
         LOG(INFO)<<"idxs:"<<idxs;
         #pragma omp parallel for
         for(int i = 0; i < n_verti; i++){
@@ -249,7 +250,8 @@ void Partition::horizontal_vertical_dir_partition(const DataSet &dataset, const 
             train_csr_row_sub[party_id]++;
         }
         for(int i = 0; i < n_parties; i++) {
-            subsets[i].csr_row_ptr.push_back(subsets[i].csr_row_ptr.back()+train_csr_row_sub[i]);
+            if(train_csr_row_sub[i])
+                subsets[i].csr_row_ptr.push_back(subsets[i].csr_row_ptr.back()+train_csr_row_sub[i]);
         }
     }
 }
@@ -358,11 +360,16 @@ void Partition::hybrid_partition_with_test(const DataSet &dataset, const int n_p
 void Partition::train_test_split(DataSet &dataset, DataSet &train_dataset, DataSet &test_dataset, float train_portion){
     int n_instances = dataset.n_instances();
     int n_train = n_instances * train_portion;
-    int n_test = n_instances - n_test;
+    int n_test = n_instances - n_train;
     vector<int> idxs(n_instances);
+    std::cout<<"n_instances:"<<n_instances<<std::endl;
+    CHECK_EQ(dataset.csr_row_ptr.size() - 1, n_instances);
     LOG(INFO)<<"1";
     thrust::sequence(thrust::host, idxs.data(), idxs.data()+n_instances, 0);
-    std::random_shuffle(idxs.begin(), idxs.end());
+    int seed = 42;
+    std::mt19937 gen(seed);
+    std::shuffle(idxs.data(), idxs.data()+n_instances, gen);
+    LOG(INFO)<<"train_test_split idxs:"<<idxs;
     vector<bool> idx2train(n_instances, true);
     for(int i = n_train; i < n_instances; i++){
         idx2train[idxs[i]] = false;
@@ -386,25 +393,30 @@ void Partition::train_test_split(DataSet &dataset, DataSet &train_dataset, DataS
             test_idx++;
         }
     }
+    CHECK_EQ(train_idx, n_train);
+    CHECK_EQ(test_idx, n_test);
     LOG(INFO)<<"3";
+
     for(int i = 0; i < dataset.csr_row_ptr.size()-1; i++){
-        int train_csr_row_sub = 0;
-        int test_csr_row_sub = 0;
+//        int train_csr_row_sub = 0;
+//        int test_csr_row_sub = 0;
         for(int j = dataset.csr_row_ptr[i]; j < dataset.csr_row_ptr[i+1]; j++){
             float_type value = dataset.csr_val[j];
             int cid = dataset.csr_col_idx[j];
             if(idx2train[i]){
                 train_dataset.csr_val.push_back(value);
                 train_dataset.csr_col_idx.push_back(cid);
-                train_csr_row_sub++;
+//                train_csr_row_sub++;
             }
             else{
                 test_dataset.csr_val.push_back(value);
                 test_dataset.csr_col_idx.push_back(cid);
-                test_csr_row_sub++;
+//                test_csr_row_sub++;
             }
         }
-        train_dataset.csr_row_ptr.push_back(train_dataset.csr_row_ptr.back()+train_csr_row_sub);
-        test_dataset.csr_row_ptr.push_back(test_dataset.csr_row_ptr.back()+test_csr_row_sub);
+        if(idx2train[i])
+            train_dataset.csr_row_ptr.push_back(train_dataset.csr_row_ptr.back() + dataset.csr_row_ptr[i+1] - dataset.csr_row_ptr[i]);
+        else
+            test_dataset.csr_row_ptr.push_back(test_dataset.csr_row_ptr.back() + dataset.csr_row_ptr[i+1] - dataset.csr_row_ptr[i]);
     }
 }
