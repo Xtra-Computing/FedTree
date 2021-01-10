@@ -79,6 +79,7 @@ int main(int argc, char** argv){
     vector<DataSet> subsets(n_parties);
     vector<SyncArray<bool>> feature_map(n_parties);
     DataSet dataset;
+    bool use_global_test_set = !model_param.test_path.empty();
     if(fl_param.partition == true){
         dataset.load_from_file(model_param.path, fl_param);
         Partition partition;
@@ -93,9 +94,16 @@ int main(int argc, char** argv){
 //            std::cout<<"subsets[2].nnz:"<<subsets[2].csr_val.size()<<std::endl;
 //            std::cout<<"subsets[3].n_instances:"<<subsets[3].n_instances()<<std::endl;
 //            std::cout<<"subsets[3].nnz:"<<subsets[3].csr_val.size()<<std::endl;
-            LOG(INFO)<<"train test split";
-            for(int i = 0; i < n_parties; i++) {
-                partition.train_test_split(subsets[i], train_subsets[i], test_subsets[i]);
+            if(!use_global_test_set) {
+                LOG(INFO) << "train test split";
+                for (int i = 0; i < n_parties; i++) {
+                    partition.train_test_split(subsets[i], train_subsets[i], test_subsets[i]);
+                }
+            }
+            else{
+                for (int i = 0; i < n_parties; i++) {
+                    train_subsets[i] = subsets[i];
+                }
             }
         }
         else{
@@ -106,7 +114,7 @@ int main(int argc, char** argv){
     else{
         std::cout<<"not supported yet"<<std::endl;
     }
-    bool use_global_test_set = !model_param.test_path.empty();
+
     DataSet test_dataset;
     LOG(INFO)<<"global test";
     if(use_global_test_set)
