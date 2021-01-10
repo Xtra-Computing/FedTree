@@ -788,6 +788,7 @@ void HistTreeBuilder::get_split_points(SyncArray<int_float> &best_idx_gain, int 
         sp_data[i].fea_missing_gh = missing_gh_data[i * n_column + hist_fid[split_index]];
         sp_data[i].default_right = best_split_gain < 0;
         sp_data[i].rch_sum_gh = hist_data[split_index];
+        sp_data[i].is_change=1;
     }
     LOG(DEBUG) << "split points (gain/fea_id/nid): " << sp;
 }
