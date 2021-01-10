@@ -236,10 +236,10 @@ void Partition::horizontal_vertical_dir_partition(const DataSet &dataset, const 
     }
     for(int i = 0; i < dataset.csr_row_ptr.size()-1; i++){
         vector<int> train_csr_row_sub(n_parties, 0);
+        int hori_id = ins2partyid[i];
         for(int j = dataset.csr_row_ptr[i]; j < dataset.csr_row_ptr[i+1]; j++){
             float_type value = dataset.csr_val[j];
             int cid = dataset.csr_col_idx[j];
-            int hori_id = ins2partyid[i];
             int verti_id = fea2partyid[hori_id][cid];
             int party_id = hori_id * n_verti + verti_id;
 //            if(party_id == 1)
@@ -249,10 +249,13 @@ void Partition::horizontal_vertical_dir_partition(const DataSet &dataset, const 
             subsets[party_id].csr_col_idx.push_back(cid);
             train_csr_row_sub[party_id]++;
         }
-        for(int i = 0; i < n_parties; i++) {
-            if(train_csr_row_sub[i])
-                subsets[i].csr_row_ptr.push_back(subsets[i].csr_row_ptr.back()+train_csr_row_sub[i]);
+        for(int pid = hori_id * n_verti; pid< (hori_id + 1) * n_verti; pid++){
+            subsets[pid].csr_row_ptr.push_back(subsets[pid].csr_row_ptr.back()+train_csr_row_sub[pid]);
         }
+//        for(int i = 0; i < n_parties; i++) {
+//            if(train_csr_row_sub[i])
+//                subsets[i].csr_row_ptr.push_back(subsets[i].csr_row_ptr.back()+train_csr_row_sub[i]);
+//        }
     }
 }
 
@@ -363,6 +366,7 @@ void Partition::train_test_split(DataSet &dataset, DataSet &train_dataset, DataS
     int n_test = n_instances - n_train;
     vector<int> idxs(n_instances);
     std::cout<<"n_instances:"<<n_instances<<std::endl;
+    std::cout<<"dataset.csr_row_ptr.size:"<<dataset.csr_row_ptr.size()<<std::endl;
     CHECK_EQ(dataset.csr_row_ptr.size() - 1, n_instances);
     LOG(INFO)<<"1";
     thrust::sequence(thrust::host, idxs.data(), idxs.data()+n_instances, 0);

@@ -121,6 +121,7 @@ int main(int argc, char** argv){
     if(param.objective.find("multi:") != std::string::npos || param.objective.find("binary:") != std::string::npos) {
         for(int i = 0; i < n_parties; i++){
             train_subsets[i].group_label();
+            test_subsets[i].group_label();
         }
         int num_class = dataset.label.size();
         if (param.num_class != num_class) {
