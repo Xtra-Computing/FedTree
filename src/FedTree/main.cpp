@@ -158,47 +158,72 @@ int main(int argc, char** argv){
         std::cout<<"FedTree only supports histogram-based training yet";
         exit(1);
     }
-
+    std::vector<float_type> scores;
     if(fl_param.mode == "hybrid"){
         LOG(INFO) << "start hybrid trainer";
         trainer.hybrid_fl_trainer(parties, server, fl_param);
         for(int i = 0; i < n_parties; i++){
+            float_type score;
             if(use_global_test_set)
-                parties[i].gbdt.predict(fl_param.gbdt_param, test_dataset);
+                score = parties[i].gbdt.predict_score(fl_param.gbdt_param, test_dataset);
             else
-                parties[i].gbdt.predict(fl_param.gbdt_param, test_subsets[i]);
+                score = parties[i].gbdt.predict_score(fl_param.gbdt_param, test_subsets[i]);
+            scores.push_back(score);
         }
     }
     else if(fl_param.mode == "ensemble"){
         trainer.ensemble_trainer(parties, server, fl_param);
-        if(use_global_test_set)
-            server.global_trees.predict(fl_param.gbdt_param, test_dataset);
+        float_type score;
+        if(use_global_test_set) {
+            score = server.global_trees.predict_score(fl_param.gbdt_param, test_dataset);
+            scores.push_back(score);
+        }
         else
             for(int i = 0; i < n_parties; i++) {
-                server.global_trees.predict(fl_param.gbdt_param, test_subsets[i]);
+                score = server.global_trees.predict_score(fl_param.gbdt_param, test_subsets[i]);
+                scores.push_back(score);
             }
     }
     else if(fl_param.mode == "solo"){
         trainer.solo_trainer(parties, fl_param);
+        float_type score;
         for(int i = 0; i < n_parties; i++){
             if(use_global_test_set)
-                parties[i].gbdt.predict(fl_param.gbdt_param, test_dataset);
+                score = parties[i].gbdt.predict_score(fl_param.gbdt_param, test_dataset);
             else
-                parties[i].gbdt.predict(fl_param.gbdt_param, test_subsets[i]);
+                score = parties[i].gbdt.predict_score(fl_param.gbdt_param, test_subsets[i]);
+            scores.push_back(score);
         }
     }
     else if(fl_param.mode == "centralized"){
         GBDT gbdt;
         gbdt.train(fl_param.gbdt_param, dataset);
-        if(use_global_test_set)
-            gbdt.predict(fl_param.gbdt_param, test_dataset);
+        float_type score;
+        if(use_global_test_set) {
+            score = gbdt.predict_score(fl_param.gbdt_param, test_dataset);
+            scores.push_back(score);
+        }
         else {
             for(int i = 0; i < n_parties; i++) {
-                gbdt.predict(fl_param.gbdt_param, test_subsets[i]);
+                score = gbdt.predict_score(fl_param.gbdt_param, test_subsets[i]);
+                scores.push_back(score);
             }
         }
     }
 
+    float_type mean = 0;
+    for(int i = 0; i < scores.size(); i++){
+        mean += scores[i];
+    }
+    mean /= scores.size();
+    std::cout<<"mean score:"<<mean<<std::endl;
+    float_type var = 0;
+    for(int i = 0; i < scores.size(); i++){
+        var += (scores[i] - mean) * (scores[i] - mean);
+    }
+    var /= scores.size();
+    float_type std = sqrt(var);
+    std::cout<<"std:"<<std<<std::endl;
 //        parser.save_model("global_model", fl_param.gbdt_param, server.global_trees.trees, dataset);
 //    }
     return 0;

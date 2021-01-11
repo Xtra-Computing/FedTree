@@ -59,6 +59,21 @@ vector<float_type> GBDT::predict(const GBDTParam &model_param, const DataSet &da
     return y_pred_vec;
 }
 
+float_type GBDT::predict_score(const GBDTParam &model_param, const DataSet &dataSet) {
+    SyncArray<float_type> y_predict;
+    predict_raw(model_param, dataSet, y_predict);
+    //convert the aggregated values to labels, probabilities or ranking scores.
+    std::unique_ptr<ObjectiveFunction> obj;
+    obj.reset(ObjectiveFunction::create(model_param.objective));
+    obj->configure(model_param, dataSet);
+
+    //compute metric
+    std::unique_ptr<Metric> metric;
+    metric.reset(Metric::create(obj->default_metric_name()));
+    metric->configure(model_param, dataSet);
+    return metric->get_score(y_predict);
+}
+
 
 void GBDT::predict_raw(const GBDTParam &model_param, const DataSet &dataSet, SyncArray<float_type> &y_predict) {
     TIMED_SCOPE(timerObj, "predict");
