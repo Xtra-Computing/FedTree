@@ -88,7 +88,8 @@ void Server::hybrid_merge_trees(){
             //float scale_factor = 1.0 * n_total_instances / n_instance_per_party[pid_max_gain];
             int left_child = node_max_gain_data[nid_max_gain].lch_index;
             if((!node_max_gain_data[left_child].is_leaf) and node_max_gain_data[left_child].is_valid) {
-                float scale_factor = 1.0 * n_total_instances / node_max_gain_data[left_child].n_instances;
+                //float scale_factor = 1.0 * n_total_instances / node_max_gain_data[left_child].n_instances;
+                float scale_factor = 1.0;
                 float_type left_gain = node_max_gain_data[left_child].gain * scale_factor;
                 auto insert_pos = thrust::lower_bound(thrust::host, candidate_gains.data(),
                                                       candidate_gains.data() + candidate_gains.size(), left_gain);
@@ -108,7 +109,8 @@ void Server::hybrid_merge_trees(){
             }
             int right_child = node_max_gain_data[nid_max_gain].rch_index;
             if((!node_max_gain_data[right_child].is_leaf) and node_max_gain_data[right_child].is_valid){
-                float scale_factor = 1.0 * n_total_instances / node_max_gain_data[right_child].n_instances;
+                //float scale_factor = 1.0 * n_total_instances / node_max_gain_data[right_child].n_instances;
+                float scale_factor = 1.0;
                 float_type right_gain = node_max_gain_data[right_child].gain * scale_factor;
                 auto insert_pos = thrust::lower_bound(thrust::host, candidate_gains.data(),
                                                  candidate_gains.data() + candidate_gains.size(), right_gain);
