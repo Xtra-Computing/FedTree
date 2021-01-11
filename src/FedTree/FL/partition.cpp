@@ -35,14 +35,24 @@ Partition::homo_partition(const DataSet &dataset, const int n_parties, const boo
 }
 
 //Todo add hetero partition according to the labels
-std::map<int, vector<int>>
-Partition::hetero_partition(const DataSet &dataset, const int n_parties, const bool is_horizontal,
+void Partition::hetero_partition(const DataSet &dataset, const int n_parties, const bool is_horizontal, vector<DataSet> &subsets,
                             vector<float> alpha) {
     int n;
     if (is_horizontal)
         n = dataset.n_instances();
     else
         n = dataset.n_features();
+
+    // initialize subsets
+    for(int i = 0; i < n_parties; i++) {
+        if(is_horizontal) {
+            subsets[i].n_features_ = dataset.n_features();
+        } else {
+            // TODO: setup n_instances value
+            // subsets[i].n_instances_ = dataset.n_instances();
+        }
+    }
+
     vector<int> idxs;
     for (int i = 0; i < n; i++) {
         idxs.push_back(i);
@@ -67,15 +77,41 @@ Partition::hetero_partition(const DataSet &dataset, const int n_parties, const b
     for (auto &x : dirichlet_samples)
         LOG(INFO) << "dirichlet_samples " << x;
 
-    std::map<int, vector<int>> batch_idxs;
+    vector<int> part2party(n);
     for (int i = 0; i < n_parties; i++) {
-        if (i == 0)
-            batch_idxs[i] = vector<int>(idxs.begin(), idxs.begin() + int(dirichlet_samples[i]));
-        else
-            batch_idxs[i] = vector<int>(idxs.begin() + int(dirichlet_samples[i - 1]),
+        if (i == 0) {
+            vector<int> party_indexes = vector<int>(idxs.begin(), idxs.begin() + int(dirichlet_samples[i]));
+            for(int i = 0; i < party_indexes.size(); i ++) {
+                int index = party_indexes[i];
+                part2party[index] = 0;
+            }
+        }
+            
+        else {
+            vector<int> party_indexes = vector<int>(idxs.begin() + int(dirichlet_samples[i - 1]),
                                         idxs.begin() + int(dirichlet_samples[i]));
+            for(int i= 0; i < party_indexes.size(); i ++) {
+                int index = party_indexes[i];
+                part2party[index] = i;
+            }
+        }
     }
-    return batch_idxs;
+
+    if(is_horizontal) {
+        for(int i = 0; i < dataset.csr_row_ptr.size()-1; i ++) {
+            vector<int> csr_row_sub(n_parties, 0);
+            for(int j = dataset.csr_row_ptr[i]; j < dataset.csr_row_ptr[i+1]; j ++) {
+                float_type value = dataset.csr_val[j];
+//                int cid = dataset.csr_col_inx[j];
+//                int part_id =
+//                int party_id = part2party[part_id];
+            }
+        }
+    } else {
+
+    }
+
+    return;
 }
 
 

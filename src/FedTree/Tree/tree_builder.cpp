@@ -157,6 +157,8 @@ void TreeBuilder::find_split (SyncArray<SplitPoint> &sp, int n_nodes_in_level, T
     }
 }
 
+//TODO: implement update_tree_to_node() function
+
 void TreeBuilder::update_tree() {
     TIMED_FUNC(timerObj);
     auto& sp = this->sp;
