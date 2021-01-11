@@ -27,6 +27,8 @@ public:
 
     virtual void update_tree();
 
+    void update_tree_to_node(int node_id);
+
     void predict_in_training(int k);
 
 //    virtual void split_point_all_reduce(int depth);

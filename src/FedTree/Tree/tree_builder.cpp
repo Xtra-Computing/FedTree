@@ -157,8 +157,6 @@ void TreeBuilder::find_split (SyncArray<SplitPoint> &sp, int n_nodes_in_level, T
     }
 }
 
-//TODO: implement update_tree_to_node() function
-
 void TreeBuilder::update_tree() {
     TIMED_FUNC(timerObj);
     auto& sp = this->sp;
@@ -209,6 +207,61 @@ void TreeBuilder::update_tree() {
             nodes_data[node.lch_index].is_valid = false;
             nodes_data[node.rch_index].is_valid = false;
         }
+    }
+    LOG(DEBUG) << tree.nodes;
+}
+
+/**
+ *
+ * @param node_id: the index of node in sp
+ */
+void TreeBuilder::update_tree_to_node(int node_id) {
+    TIMED_FUNC(timerObj);
+    auto& sp = this->sp;
+    auto& tree = this->trees;
+    auto sp_data = sp.host_data();
+    LOG(DEBUG) << sp;
+//    int n_nodes_in_level = sp.size();
+
+    Tree::TreeNode *nodes_data = tree.nodes.host_data();
+    float_type rt_eps = param.rt_eps;
+    float_type lambda = param.lambda;
+
+    float_type best_split_gain = sp_data[node_id].gain;
+    if (best_split_gain > rt_eps) {
+        //do split
+        //todo: check, update_tree() uses continue
+        if (sp_data[node_id].nid == -1) return;
+        int nid = sp_data[node_id].nid;
+        Tree::TreeNode &node = nodes_data[nid];
+        node.gain = best_split_gain;
+
+        Tree::TreeNode &lch = nodes_data[node.lch_index];//left child
+        Tree::TreeNode &rch = nodes_data[node.rch_index];//right child
+        lch.is_valid = true;
+        rch.is_valid = true;
+        node.split_feature_id = sp_data[node_id].split_fea_id;
+        GHPair p_missing_gh = sp_data[node_id].fea_missing_gh;
+        //todo process begin
+        node.split_value = sp_data[node_id].fval;
+        node.split_bid = sp_data[node_id].split_bid;
+        rch.sum_gh_pair = sp_data[node_id].rch_sum_gh;
+        if (sp_data[node_id].default_right) {
+            rch.sum_gh_pair = rch.sum_gh_pair + p_missing_gh;
+            node.default_right = true;
+        }
+        lch.sum_gh_pair = node.sum_gh_pair - rch.sum_gh_pair;
+        lch.calc_weight(lambda);
+        rch.calc_weight(lambda);
+    } else {
+        //set leaf
+        //todo: check, update_tree uses continue()
+        if (sp_data[node_id].nid == -1) return;
+        int nid = sp_data[node_id].nid;
+        Tree::TreeNode &node = nodes_data[nid];
+        node.is_leaf = true;
+        nodes_data[node.lch_index].is_valid = false;
+        nodes_data[node.rch_index].is_valid = false;
     }
     LOG(DEBUG) << tree.nodes;
 }
