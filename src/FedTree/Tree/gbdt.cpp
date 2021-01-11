@@ -71,7 +71,9 @@ float_type GBDT::predict_score(const GBDTParam &model_param, const DataSet &data
     std::unique_ptr<Metric> metric;
     metric.reset(Metric::create(obj->default_metric_name()));
     metric->configure(model_param, dataSet);
-    return metric->get_score(y_predict);
+    float_type score = metric->get_score(y_predict);
+    LOG(INFO) << metric->get_name().c_str() << " = " << score;
+    return score;
 }
 
 
