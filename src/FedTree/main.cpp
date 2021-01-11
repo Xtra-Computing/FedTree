@@ -144,13 +144,16 @@ int main(int argc, char** argv){
     }
     
     vector<Party> parties(n_parties);
+    vector<int> n_instances_per_party(n_parties);
     LOG(INFO)<<"initialize parties";
     for(int i = 0; i < n_parties; i++){
         parties[i].init(i, train_subsets[i], fl_param, feature_map[i]);
+        n_instances_per_party[i] = train_subsets[i].n_instances();
     }
     LOG(INFO)<<"after party init";
+
     Server server;
-    server.init(fl_param, dataset.n_instances());
+    server.init(fl_param, dataset.n_instances(), n_instances_per_party);
     FLtrainer trainer;
     if (param.tree_method == "auto")
         param.tree_method = "hist";

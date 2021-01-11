@@ -15,7 +15,7 @@
 
 class Server : public Party {
 public:
-    void init(FLParam &param, int n_total_instances);
+    void init(FLParam &param, int n_total_instances, vector<int> &n_instances_per_party);
     void propose_split_candidates();
     void send_info(string info_type);
 //    void send_info(vector<Party> &parties, AdditivelyHE::PaillierPublicKey serverKey,vector<SplitCandidate>candidates);
@@ -26,6 +26,7 @@ public:
     vector<GBDT> local_trees;
     GBDTParam model_param;
     int n_total_instances;
+    vector<int> n_instances_per_party;
 
     AdditivelyHE::PaillierPublicKey publicKey;
 

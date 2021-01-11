@@ -16,10 +16,11 @@
 //}
 
 
-void Server::init(FLParam &param, int n_total_instances){
+void Server::init(FLParam &param, int n_total_instances, vector<int> &n_instances_per_party){
     this->local_trees.resize(param.n_parties);
     this->model_param = param.gbdt_param;
     this->n_total_instances = n_total_instances;
+    this->n_instances_per_party = n_instances_per_party;
     this->global_trees.trees.clear();
 }
 
