@@ -93,6 +93,7 @@ vector<Tree> TreeBuilder::build_approximate(const SyncArray<GHPair> &gradients, 
         this->trees.init_CPU(this->gradients, param);
 
         for (int level = 0; level < param.depth; ++level) {
+            LOG(INFO)<<"in level:"<<level;
                 find_split(level);
 //            split_point_all_reduce(level);
             {
@@ -132,6 +133,17 @@ void TreeBuilder::build_tree_by_predefined_structure(const SyncArray<GHPair> &gr
         this->ins2node_id.resize(n_instances);
         this->gradients.set_host_data(const_cast<GHPair *>(gradients.host_data() + k * n_instances));
         this->trees = tree;
+
+        GHPair sum_gh = thrust::reduce(thrust::host, this->gradients.host_data(), this->gradients.host_end());
+
+        float_type lambda = param.lambda;
+        auto node_data = this->trees.nodes.host_data();
+        Tree::TreeNode &root_node = node_data[0];
+        root_node.sum_gh_pair = sum_gh;
+        root_node.is_valid = true;
+        root_node.calc_weight(lambda);
+        root_node.n_instances = gradients.size();
+
         for (int level = 0; level < tree.final_depth; ++level) {
             LOG(INFO)<<"find split";
             find_split_by_predefined_features(level);
@@ -139,7 +151,7 @@ void TreeBuilder::build_tree_by_predefined_structure(const SyncArray<GHPair> &gr
             {
                 TIMED_SCOPE(timerObj, "apply sp");
                 LOG(INFO)<<"update tree";
-                update_tree();
+                update_tree_by_sp_values();
                 LOG(INFO)<<"update ins2node_id";
                 update_ins2node_id();
                 {
@@ -219,7 +231,6 @@ void TreeBuilder::update_tree() {
             //do split
             //todo: check, thundergbm uses return
             if (sp_data[i].nid == -1) continue;
-            if (!sp_data[i].is_change) continue;
             int nid = sp_data[i].nid;
             Tree::TreeNode &node = nodes_data[nid];
             node.gain = best_split_gain;
@@ -254,6 +265,81 @@ void TreeBuilder::update_tree() {
     }
     LOG(DEBUG) << tree.nodes;
 }
+
+
+void TreeBuilder::update_tree_by_sp_values() {
+    TIMED_FUNC(timerObj);
+    auto& sp = this->sp;
+    auto& tree = this->trees;
+    auto sp_data = sp.host_data();
+    LOG(DEBUG) << sp;
+    int n_nodes_in_level = sp.size();
+
+    Tree::TreeNode *nodes_data = tree.nodes.host_data();
+    float_type rt_eps = param.rt_eps;
+    float_type lambda = param.lambda;
+
+    #pragma omp parallel for
+    for(int i = 0; i < n_nodes_in_level; i++){
+        if(sp_data[i].no_split_value_update){
+            int nid = sp_data[i].nid;
+            Tree::TreeNode &node = nodes_data[nid];
+            Tree::TreeNode &lch = nodes_data[node.lch_index];//left child
+            Tree::TreeNode &rch = nodes_data[node.rch_index];//right child
+
+            GHPair p_missing_gh = sp_data[i].fea_missing_gh;
+            //todo process begin
+
+            rch.sum_gh_pair = sp_data[i].rch_sum_gh;
+            if (sp_data[i].default_right) {
+                rch.sum_gh_pair = rch.sum_gh_pair + p_missing_gh;
+                node.default_right = true;
+            }
+            lch.sum_gh_pair = node.sum_gh_pair - rch.sum_gh_pair;
+            lch.calc_weight(lambda);
+            rch.calc_weight(lambda);
+        }
+        else {
+            float_type best_split_gain = sp_data[i].gain;
+            if (best_split_gain > rt_eps) {
+                //do split
+                //todo: check, thundergbm uses return
+                if (sp_data[i].nid == -1) continue;
+                int nid = sp_data[i].nid;
+                Tree::TreeNode &node = nodes_data[nid];
+                node.gain = best_split_gain;
+
+                Tree::TreeNode &lch = nodes_data[node.lch_index];//left child
+                Tree::TreeNode &rch = nodes_data[node.rch_index];//right child
+
+                node.split_feature_id = sp_data[i].split_fea_id;
+                GHPair p_missing_gh = sp_data[i].fea_missing_gh;
+                //todo process begin
+                node.split_value = sp_data[i].fval;
+                node.split_bid = sp_data[i].split_bid;
+                rch.sum_gh_pair = sp_data[i].rch_sum_gh;
+                if (sp_data[i].default_right) {
+                    rch.sum_gh_pair = rch.sum_gh_pair + p_missing_gh;
+                    node.default_right = true;
+                }
+                lch.sum_gh_pair = node.sum_gh_pair - rch.sum_gh_pair;
+                lch.calc_weight(lambda);
+                rch.calc_weight(lambda);
+            } else {
+                //set leaf
+                //todo: check, thundergbm uses return
+                if (sp_data[i].nid == -1) continue;
+                int nid = sp_data[i].nid;
+                Tree::TreeNode &node = nodes_data[nid];
+                node.is_leaf = true;
+                nodes_data[node.lch_index].is_valid = false;
+                nodes_data[node.rch_index].is_valid = false;
+            }
+        }
+    }
+    LOG(DEBUG) << tree.nodes;
+}
+
 
 void TreeBuilder::encrypt_gradients(AdditivelyHE::PaillierPublicKey pk) {
     auto gradients_data = gradients.host_data();

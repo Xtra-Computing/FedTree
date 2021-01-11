@@ -45,9 +45,11 @@ void Server::hybrid_merge_trees(){
             candidate_gains.push_back(local_trees[pid].trees[0][tid].nodes.host_data()[0].gain * scale_factor);
             //check the node id after prune.
         }
+        LOG(INFO)<<"candidate gains:"<<candidate_gains;
         // sort the gain and the corresponding node ids
         thrust::stable_sort_by_key(thrust::host, candidate_gains.data(), candidate_gains.data() + candidate_gains.size(),
                                    treenode_candidates.data());
+        auto global_tree_node_data = trees[tid].nodes.host_data();
         int nid = 0;
         for(; nid < n_max_internal_nodes_in_a_tree; nid++) {
 //            std::cout<<"n_max_internal_nodes"<<n_max_internal_nodes_in_a_tree<<std::endl;
@@ -70,7 +72,7 @@ void Server::hybrid_merge_trees(){
                 break;
             int id_with_max_gain = treenode_candidates.back();
             float_type max_gain = candidate_gains.back();
-            auto global_tree_node_data = trees[tid].nodes.host_data();
+
             int pid_max_gain = id_with_max_gain / n_max_internal_nodes_in_a_tree;
             int nid_max_gain = id_with_max_gain % n_max_internal_nodes_in_a_tree;
             auto node_max_gain_data = local_trees[pid_max_gain].trees[0][tid].nodes.host_data();
@@ -80,7 +82,7 @@ void Server::hybrid_merge_trees(){
             global_tree_node_data[nid].rch_index = nid * 2 + 2;
             global_tree_node_data[nid].parent_index = nid == 0 ? -1 : (nid - 1) / 2;
             global_tree_node_data[nid].final_id = nid;
-//            global_tree_node_data[nid].split_feature_id = node_max_gain_data.split_feature_id;
+//            global_tree_node_dright_childata[nid].split_feature_id = node_max_gain_data.split_feature_id;
 
             treenode_candidates.pop_back();
             candidate_gains.pop_back();
@@ -128,11 +130,16 @@ void Server::hybrid_merge_trees(){
 //                }
             }
         }
+
+        for(int i = nid; i < n_max_internal_nodes_in_a_tree; i++){
+            global_tree_node_data[i].is_valid = false;
+        }
+
         int level = 0;
         trees[tid].n_nodes_level.resize(1, 0);
         for(int i = 0; i < nid; ){
             if((i + (1<<level)) >= nid) {
-                trees[tid].final_depth = level;
+                trees[tid].final_depth = level + 1;
                 trees[tid].n_nodes_level.push_back(trees[tid].n_nodes_level.back()+nid - i);
                 break;
             }
@@ -142,6 +149,7 @@ void Server::hybrid_merge_trees(){
         }
         //todo: add feature id offset
     }
+    //todo: no need to save previous trees in the current design
     global_trees.trees.push_back(trees);
 }
 

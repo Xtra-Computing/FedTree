@@ -161,7 +161,10 @@ void HistTreeBuilder::find_split_by_predefined_features(int level){
     auto sp_data = sp.host_data();
     if(n_split == 0){
         for(int i = 0; i < n_nodes_in_level; i++) {
-            sp_data[i].is_change=false;
+            sp_data[i].nid = i + nid_offset;
+            sp_data[i].no_split_value_update=true;
+            sp_data[i].fea_missing_gh = nodes_data[nid_offset + i].sum_gh_pair;
+            sp_data[i].rch_sum_gh = 0;
         }
         return;
 //        std::cout<<"0 n_split"<<std::endl;
@@ -456,7 +459,10 @@ void HistTreeBuilder::find_split_by_predefined_features(int level){
 //            sp_data[i].gain = nodes_data[i + nid_offset].gain;
 //            sp_data[i].fea_missing_gh = missing_gh_data[i];
 //            sp_data[i].default_right = 0;
-            sp_data[i].is_change=false;
+            sp_data[i].nid = i + nid_offset;
+            sp_data[i].no_split_value_update=true;
+            sp_data[i].fea_missing_gh = nodes_data[nid_offset + i].sum_gh_pair;
+            sp_data[i].rch_sum_gh = 0;
         }
         else {
             int_float bst = best_idx_gain_data[best_idx_gain_idx[i]];
@@ -788,7 +794,7 @@ void HistTreeBuilder::get_split_points(SyncArray<int_float> &best_idx_gain, int 
         sp_data[i].fea_missing_gh = missing_gh_data[i * n_column + hist_fid[split_index]];
         sp_data[i].default_right = best_split_gain < 0;
         sp_data[i].rch_sum_gh = hist_data[split_index];
-        sp_data[i].is_change=1;
+        sp_data[i].no_split_value_update=0;
     }
     LOG(DEBUG) << "split points (gain/fea_id/nid): " << sp;
 }

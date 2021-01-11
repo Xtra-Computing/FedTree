@@ -121,6 +121,7 @@ void FLtrainer::hybrid_fl_trainer(vector<Party> &parties, Server &server, FLPara
 //            obj->get_gradient(y, fbuilder->get_y_predict(), gradients);
             LOG(INFO)<<"send last trees to server";
             comm_helper.send_last_trees_to_server(parties[pid], pid, server);
+            parties[pid].gbdt.trees.pop_back();
         }
         LOG(INFO)<<"merge trees";
         server.hybrid_merge_trees();
@@ -131,6 +132,8 @@ void FLtrainer::hybrid_fl_trainer(vector<Party> &parties, Server &server, FLPara
             LOG(INFO)<<"in party:"<<pid;
             comm_helper.send_last_global_trees_to_party(server, parties[pid]);
             LOG(INFO)<<"personalize trees";
+            //LOG(INFO)<<"gradients before correct sps"<<parties[pid].booster.gradients;
+            // todo: prune the tree, if n_bin is 0, then a half of the child tree is useless.
             parties[pid].booster.fbuilder->build_tree_by_predefined_structure(parties[pid].booster.gradients, parties[pid].gbdt.trees.back());
         }
     }

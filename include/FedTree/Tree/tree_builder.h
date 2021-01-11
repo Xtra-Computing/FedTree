@@ -29,6 +29,8 @@ public:
 
     virtual void update_tree();
 
+    virtual void update_tree_by_sp_values();
+
     void predict_in_training(int k);
 
 //    virtual void split_point_all_reduce(int depth);
