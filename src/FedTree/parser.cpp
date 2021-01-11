@@ -19,6 +19,8 @@ void Parser::parse_param(FLParam &fl_param, int argc, char **argv) {
     fl_param.privacy_tech = "he";
     fl_param.partition= true;
     fl_param.alpha = 100;
+    fl_param.n_hori = 2;
+    fl_param.n_verti = 2;
 
     GBDTParam *gbdt_param = &fl_param.gbdt_param;
 
@@ -66,6 +68,10 @@ void Parser::parse_param(FLParam &fl_param, int argc, char **argv) {
                 fl_param.partition_mode = val;
             else if (str_name.compare("alpha") == 0)
                 fl_param.alpha = atof(val);
+            else if (str_name.compare("n_hori") == 0)
+                fl_param.n_hori = atoi(val);
+            else if (str_name.compare("n_verti") == 0)
+                fl_param.n_verti = atoi(val);
             // GBDT params
             else if ((str_name.compare("max_depth") == 0) || (str_name.compare("depth") == 0))
                 gbdt_param->depth = atoi(val);
