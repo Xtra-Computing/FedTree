@@ -513,6 +513,53 @@ void HistTreeBuilder::update_ins2node_id() {
     has_split = has_splittable.host_data()[0];
 }
 
+void HistTreeBuilder::update_ins2node_id_in_a_node(int node_id) {
+    TIMED_FUNC(timerObj);
+    SyncArray<bool> has_splittable(1);
+//    auto &columns = shards.columns;
+    //set new node id for each instance
+    {
+//        TIMED_SCOPE(timerObj, "get new node id");
+        auto nid_data = ins2node_id.host_data();
+        const Tree::TreeNode *nodes_data = trees.nodes.host_data();
+        has_splittable.host_data()[0] = false;
+        bool *h_s_data = has_splittable.host_data();
+        int column_offset = 0;
+
+        int n_column = dataset->n_features();
+        auto dense_bin_id_data = dense_bin_id.host_data();
+        int max_num_bin = param.max_num_bin;
+        vector<int> instances = {};
+        const Tree::TreeNode &node = nodes_data[node_id];
+#pragma omp parallel for
+        for (int iid = 0; iid < n_instances; iid++)
+            if (nid_data[iid] == node_id)
+                instances.push_back(iid);
+#pragma omp parallel for
+        for (int idx = 0; idx < instances.size(); idx++) {
+            int iid = instances[idx];
+            int split_fid = node.split_feature_id;
+            if (node.splittable() && ((split_fid - column_offset < n_column) && (split_fid >= column_offset))) {
+                h_s_data[0] = true;
+                unsigned char split_bid = node.split_bid;
+                unsigned char bid = dense_bin_id_data[iid * n_column + split_fid - column_offset];
+                bool to_left = true;
+                if ((bid == max_num_bin && node.default_right) || (bid <= split_bid))
+                    to_left = false;
+                if (to_left) {
+                    //goes to left child
+                    nid_data[iid] = node.lch_index;
+                } else {
+                    //right child
+                    nid_data[iid] = node.rch_index;
+                }
+            }
+        }
+    }
+    LOG(DEBUG) << "new tree_id = " << ins2node_id;
+    has_split = has_splittable.host_data()[0];
+}
+
 //for each node
 void HistTreeBuilder::compute_histogram_in_a_node(SyncArray<GHPair> &gradients, HistCut &cut,
                                                   SyncArray<unsigned char> &dense_bin_id, bool enc) {

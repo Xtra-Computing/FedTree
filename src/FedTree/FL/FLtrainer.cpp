@@ -147,7 +147,7 @@ void FLtrainer::vertical_fl_trainer(vector<Party> &parties, Server &server, FLPa
                 auto best_idx_data = best_idx_gain.host_data();
 
                 // parties who propose the best candidate update their trees accordingly
-                for (int node = 0; node < best_idx_gain.size(); node++) {
+                for (int node = 0; node < n_nodes_in_level; node++) {
 
                     // convert the global best index to party id & its local index
                     int idx = get < 0 > (best_idx_data[node]);
@@ -161,8 +161,8 @@ void FLtrainer::vertical_fl_trainer(vector<Party> &parties, Server &server, FLPa
                                                                                    missing_gh, hist);
 
                     // party update itself
-//                    parties[party_id].update_tree();
-//                    parties[party_id].update_ins2node_id();
+//                    parties[party_id].booster.fbuilder->update_tree_in_a_node(node);
+                    parties[party_id].booster.fbuilder->update_ins2node_id_in_a_node(node);
 
                     // party broadcast new instance space to others
 //                    parties[party_id].broadcast_tree();

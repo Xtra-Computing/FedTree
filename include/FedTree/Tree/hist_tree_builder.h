@@ -39,6 +39,8 @@ public:
 
     void update_ins2node_id() override;
 
+    void update_ins2node_id_in_a_node(int node_id) override;
+
 //support equal division or weighted division
     void propose_split_candidates();
 
