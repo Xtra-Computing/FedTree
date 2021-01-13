@@ -88,7 +88,10 @@ make -j
 ./src/test/FedTree-test
 ```
 
-# Run centralized training
+# Paramters
+`mode`: `centralized` or `ensemble`.
+
+# Run training
 ```bash
 # under 'build' directory
 ./bin/FedTree-train ../dataset/machine.conf

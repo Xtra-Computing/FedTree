@@ -24,6 +24,8 @@ public:
     vector<float_type> predict(const GBDTParam &model_param, const DataSet &dataSet);
 
     void predict_raw(const GBDTParam &model_param, const DataSet &dataSet, SyncArray<float_type> &y_predict);
+
+    float_type predict_score(const GBDTParam &model_param, const DataSet &dataSet);
 };
 
 #endif //FEDTREE_GBDT_H

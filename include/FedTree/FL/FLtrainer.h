@@ -17,5 +17,11 @@ public:
 
     void hybrid_fl_trainer(vector<Party> &parties, Server &server, FLParam &params);
 
+    void ensemble_trainer(vector<Party> &parties, Server &server, FLParam &params);
+
+    void solo_trainer(vector<Party> &parties, FLParam &params);
+
+
+    template<class T> SyncArray<T> concat_msyncarray(MSyncArray<T> &arrays);
 };
 #endif //FEDTREE_FLTRAINER_H

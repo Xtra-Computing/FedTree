@@ -17,6 +17,10 @@ void Parser::parse_param(FLParam &fl_param, int argc, char **argv) {
     fl_param.n_parties = 2; // TODO: validate the default fl values
     fl_param.mode = "horizontal";
     fl_param.privacy_tech = "he";
+    fl_param.partition= true;
+    fl_param.alpha = 100;
+    fl_param.n_hori = 2;
+    fl_param.n_verti = 2;
 
     GBDTParam *gbdt_param = &fl_param.gbdt_param;
 
@@ -58,7 +62,16 @@ void Parser::parse_param(FLParam &fl_param, int argc, char **argv) {
                 fl_param.mode = val;
             else if ((str_name.compare("privacy") == 0) || (str_name.compare("privacy_tech") == 0))
                 fl_param.privacy_tech = atoi(val);
-
+            else if (str_name.compare("partition") == 0)
+                fl_param.partition = atoi(val);
+            else if (str_name.compare("partition_mode") == 0)
+                fl_param.partition_mode = val;
+            else if (str_name.compare("alpha") == 0)
+                fl_param.alpha = atof(val);
+            else if (str_name.compare("n_hori") == 0)
+                fl_param.n_hori = atoi(val);
+            else if (str_name.compare("n_verti") == 0)
+                fl_param.n_verti = atoi(val);
             // GBDT params
             else if ((str_name.compare("max_depth") == 0) || (str_name.compare("depth") == 0))
                 gbdt_param->depth = atoi(val);
@@ -72,6 +85,8 @@ void Parser::parse_param(FLParam &fl_param, int argc, char **argv) {
                 gbdt_param->profiling = atoi(val);
             else if (str_name.compare("data") == 0)
                 gbdt_param->path = val;
+            else if (str_name.compare("test_data") == 0)
+                gbdt_param->test_path = val;
             else if ((str_name.compare("max_bin") == 0) || (str_name.compare("max_num_bin") == 0))
                 gbdt_param->max_num_bin = atoi(val);
             else if ((str_name.compare("colsample") == 0) || (str_name.compare("column_sampling_rate") == 0))
