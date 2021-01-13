@@ -25,8 +25,13 @@ public:
     };
 
     void send_gradients(Party &party){
-        SyncArray<GHPair> gh = booster.fbuilder->get_gradients();
-        party.booster.fbuilder->set_gradients(gh);
+        SyncArray<GHPair> gh = booster.get_gradients();
+        party.booster.set_gradients(gh);
+    }
+
+    void send_hist(Party &party){
+        SyncArray<GHPair> hist = booster.fbuilder->get_hist();
+        party.booster.fbuilder->append_hist(hist);
     }
 
 

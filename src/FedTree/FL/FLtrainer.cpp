@@ -5,8 +5,11 @@
 #include "FedTree/Encryption/HE.h"
 #include "FedTree/FL/partition.h"
 #include "FedTree/FL/comm_helper.h"
+#include "thrust/sequence.h"
 
-void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FLParam &params){
+using namespace thrust;
+
+void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FLParam &params) {
 // Is propose_split_candidates implemented? Should it be a method of TreeBuilder, HistTreeBuilder or server? Shouldnt there be a vector of SplitCandidates returned
 //  vector<SplitCandidate> candidates = server.fbuilder.propose_split_candidates();
 //  std::tuple <AdditivelyHE::PaillierPublicKey, AdditivelyHE::PaillierPrivateKey> key_pair = server.HE.generate_key_pairs();
@@ -19,16 +22,16 @@ void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FL
 //            for (int k = 0; k < parties.size(); k++) {
 //                SyncArray<GHPair> hist = parties[j].fbuilder->compute_histogram();
 //                if (params.privacy_tech == "he") {
-                    // Should HE be a public member of Party?
+    // Should HE be a public member of Party?
 //                    parties[k].HE.encryption();
 //                }
 //                if (params.privacy_tech == "dp") {
-                    // Should DP be public member of Party?
+    // Should DP be public member of Party?
 //                    parties[k].DP.add_gaussian_noise();
 //                }
 //                parties[k].send_info(hist);
 //            }
-            // merge_histograms in tree_builder?
+    // merge_histograms in tree_builder?
 //            server.sum_histograms(); // or on Party 1 if using homo encryption
 //            server.HE.decrption();
 //            if (j != params.gbdt_param.depth - 1) {
@@ -47,7 +50,7 @@ void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FL
 }
 
 
-void FLtrainer::vertical_fl_trainer(vector<Party> &parties, Server &server, FLParam &params){
+void FLtrainer::vertical_fl_trainer(vector<Party> &parties, Server &server, FLParam &params) {
 
     /*
     // load dataset
@@ -56,26 +59,116 @@ void FLtrainer::vertical_fl_trainer(vector<Party> &parties, Server &server, FLPa
     dataset.load_from_file(model_param.path, params);
 
     // partition dataset
-    int parties_size = parties.size() + 1;
-    vector<DataSet> subsets(parties_size);
+    int participants_size = parties.size() + 1;
+    vector<DataSet> subsets(participants_size);
     Partition partition;
     vector<float> alpha;
-    partition.hybrid_partition(dataset, parties_size, alpha, subsets);
+    partition.hybrid_partition(dataset, participants_size, alpha, subsets);
 
     // server and party initialization
     server.init(0, subsets[0], params);
     server.homo_init();
-    for (int i = 1; i < parties_size; i++) {
+    for (int i = 1; i < participants_size; i++) {
         parties[i - 1].init(i, subsets[i], params);
     }
 
     // start training
+    // for each boosting round
     for (int i = 0; i < params.gbdt_param.n_trees; i++) {
+
         // Server update, encrypt and send gradients
         server.booster.update_gradients();
-        server.booster.fbuilder->encrypt_gradients(server.publicKey);
-        for (int m = 0; m < parties.size(); m++) {
-            server.send_gradients(parties[m]);
+        if (params.privacy_tech == "he")
+            server.booster.encrypt_gradients(server.publicKey);
+        else if (params.privacy_tech == "dp")
+            server.booster.add_noise_to_gradients(params.variance);
+        for (int j = 0; j < parties.size(); j++) {
+            server.send_gradients(parties[j]);
+        }
+
+        // for each tree in a round
+        for (int k = 0; k < params.gbdt_param.tree_per_rounds; k++) {
+
+            // each party initialize ins2node_id, gradients, etc.
+            for (int j = 0; j < parties.size(); j++)
+                parties[j].booster.fbuilder->build_init(parties[j].booster.get_gradients(), k);
+
+            // for each level
+            for (int l = 0; l < params.gbdt_param.depth; l++) {
+
+                // initialize level parameters
+                int n_nodes_in_level = 1 << l;
+                int n_bins = model_param.max_num_bin;
+                int n_max_nodes = 2 << model_param.depth;
+                int n_max_splits = n_max_nodes * n_bins;
+                MSyncArray<GHPair> parties_missing_gh(parties.size());
+                MSyncArray<int> parties_hist_fid(parties.size());
+                MSyncArray<GHPair> parties_hist(parties.size());
+
+                // each party compute hist, send hist to server
+                for (int j = 0; j < parties.size(); j++) {
+                    int n_column = subsets[j + 1].n_features();
+                    int n_partition = n_column * n_nodes_in_level;
+                    HistCut cut = parties[j].booster.fbuilder->get_cut();
+                    auto cut_fid_data = cut.cut_fid.host_data();
+
+                    SyncArray<int> hist_fid(n_nodes_in_level * n_bins);
+                    auto hist_fid_data = hist_fid.host_data();
+
+#pragma omp parallel for
+                    for (int i = 0; i < hist_fid.size(); i++)
+                        hist_fid_data[i] = cut_fid_data[i % n_bins];
+
+                    parties_hist_fid[j].resize(n_nodes_in_level * n_bins);
+                    parties_hist_fid[j].copy_from(hist_fid);
+
+                    SyncArray<GHPair> missing_gh(n_partition);
+                    SyncArray<GHPair> hist(n_max_splits);
+                    parties[j].booster.fbuilder->compute_histogram_in_a_level(l, n_max_splits, n_bins, n_nodes_in_level,
+                                                                              hist_fid_data, missing_gh, hist);
+                    parties_missing_gh[j].resize(n_partition);
+                    parties_missing_gh[j].copy_from(missing_gh);
+                    parties_hist[j].resize(n_max_splits);
+                    parties_hist[j].copy_from(hist);
+                }
+
+                // server concat hist_fid_data, missing_gh & histograms
+                SyncArray<int> hist_fid = concat_msyncarray(parties_hist_fid);
+                SyncArray<GHPair> missing_gh = concat_msyncarray(parties_missing_gh);
+                SyncArray<GHPair> hist = concat_msyncarray(parties_hist);
+
+                // server compute gain
+                SyncArray<float_type> gain(n_max_splits * parties.size());
+                auto hist_fid_data = hist_fid.host_data();
+                server.booster.fbuilder->compute_gain_in_a_level(gain, n_nodes_in_level, n_bins, hist_fid_data,
+                                                                 missing_gh, hist);
+                // server find the best gain and its index
+                SyncArray<int_float> best_idx_gain(n_nodes_in_level);
+                server.booster.fbuilder->get_best_gain_in_a_level(gain, best_idx_gain, n_nodes_in_level, n_bins);
+                auto best_idx_data = best_idx_gain.host_data();
+
+                // parties who propose the best candidate update their trees accordingly
+                for (int node = 0; node < n_nodes_in_level; node++) {
+
+                    // convert the global best index to party id & its local index
+                    int idx = get < 0 > (best_idx_data[node]);
+                    float gain = get < 1 > (best_idx_data[node]);
+                    int party_id = idx / n_max_splits;
+                    int local_idx = idx % n_max_splits;
+
+                    // party get local split point
+                    parties[party_id].booster.fbuilder->get_split_points_in_a_node(node, local_idx, gain,
+                                                                                   n_nodes_in_level, hist_fid_data,
+                                                                                   missing_gh, hist);
+
+                    // party update itself
+//                    parties[party_id].booster.fbuilder->update_tree_in_a_node(node);
+                    parties[party_id].booster.fbuilder->update_ins2node_id_in_a_node(node);
+
+                    // party broadcast new instance space to others
+//                    parties[party_id].broadcast_tree();
+                }
+            }
         }
     }
 //    parties[0].homo_init();
@@ -107,8 +200,28 @@ void FLtrainer::vertical_fl_trainer(vector<Party> &parties, Server &server, FLPa
      */
 }
 
+template<class T>
+SyncArray<T> FLtrainer::concat_msyncarray(MSyncArray<T> &arrays) {
+    int total_size = 0;
+    vector<int> ptr = {0};
+    for (int i = 0; i < arrays.size(); i++) {
+        total_size += arrays[i].size();
+        ptr.push_back(ptr.back() + total_size);
+    }
+    SyncArray<T> concat_array(total_size);
+    auto concat_array_data = concat_array.host_data();
 
-void FLtrainer::hybrid_fl_trainer(vector<Party> &parties, Server &server, FLParam &params){
+    for (int i = 0; i < arrays.size(); i++) {
+        auto array_data = arrays[i].host_data();
+        for (int j = 0; j < arrays[i].size(); j++) {
+            concat_array_data[ptr[i] + j] = array_data[j];
+        }
+    }
+    return concat_array;
+}
+
+
+void FLtrainer::hybrid_fl_trainer(vector<Party> &parties, Server &server, FLParam &params) {
     // todo: initialize parties and server
     int n_party = parties.size();
     Comm comm_helper;
