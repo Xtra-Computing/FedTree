@@ -85,6 +85,10 @@ int main(int argc, char** argv){
         Partition partition;
         if(fl_param.partition_mode == "hybrid"){
             LOG(INFO)<<"horizontal vertical dir";
+            if(fl_param.mode == "horizontal")
+                CHECK_EQ(fl_param.n_verti, 1);
+            else if(fl_param.mode == "vertical")
+                CHECK_EQ(fl_param.n_hori, 1);
             partition.horizontal_vertical_dir_partition(dataset, n_parties, fl_param.alpha, feature_map, subsets, fl_param.n_hori, fl_param.n_verti);
 //            std::cout<<"subsets[0].n_instances:"<<subsets[0].n_instances()<<std::endl;
 //            std::cout<<"subsets[0].nnz:"<<subsets[0].csr_val.size()<<std::endl;
@@ -212,6 +216,9 @@ int main(int argc, char** argv){
                 scores.push_back(score);
             }
         }
+    }
+    else if(fl_param.mode == "vertical"){
+        trainer.vertical_fl_trainer(parties, server, fl_param);
     }
 
     float_type mean = 0;
