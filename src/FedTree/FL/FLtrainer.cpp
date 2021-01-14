@@ -190,6 +190,20 @@ void FLtrainer::hybrid_fl_trainer(vector<Party> &parties, Server &server, FLPara
     }
 }
 
+void FLtrainer::ensemble_trainer(vector<Party> &parties, Server &server, FLParam &params) {
+    int n_party = parties.size();
+    CHECK_EQ(params.gbdt_param.n_trees % n_party, 0);
+    int n_tree_each_party = params.gbdt_param.n_trees / n_party;
+    Comm comm_helper;
+//    #pragma omp parallel for
+    for (int i = 0; i < n_party; i++) {
+        for (int j = 0; j < n_tree_each_party; j++)
+            parties[i].booster.boost(parties[i].gbdt.trees);
+        comm_helper.send_all_trees_to_server(parties[i], i, server);
+    }
+    server.ensemble_merge_trees();
+}
+
 void FLtrainer::solo_trainer(vector<Party> &parties, FLParam &params) {
     int n_party = parties.size();
 //    #pragma omp parallel for
