@@ -297,11 +297,18 @@ void TreeBuilder::update_tree_by_sp_values() {
             //todo process begin
 
             rch.sum_gh_pair = sp_data[i].rch_sum_gh;
-            if (sp_data[i].default_right) {
+            if(param.random_split){
                 rch.sum_gh_pair = rch.sum_gh_pair + p_missing_gh;
-                node.default_right = true;
+                lch.sum_gh_pair = rch.sum_gh_pair;
+                node.random_direction = 1;
             }
-            lch.sum_gh_pair = node.sum_gh_pair - rch.sum_gh_pair;
+            else {
+                if (sp_data[i].default_right) {
+                    rch.sum_gh_pair = rch.sum_gh_pair + p_missing_gh;
+                    node.default_right = true;
+                }
+                lch.sum_gh_pair = node.sum_gh_pair - rch.sum_gh_pair;
+            }
             lch.calc_weight(lambda);
             rch.calc_weight(lambda);
         }

@@ -43,6 +43,7 @@ void Parser::parse_param(FLParam &fl_param, int argc, char **argv) {
     gbdt_param->path = "../dataset/test_dataset.txt";
     gbdt_param->tree_method = "hist";
     gbdt_param->tree_per_rounds = 1; // # tree of each round, depends on # class
+    gbdt_param->random_split = true;
 
     if (argc < 2) {
         printf("Usage: <config>\n");
@@ -109,6 +110,8 @@ void Parser::parse_param(FLParam &fl_param, int argc, char **argv) {
                 gbdt_param->gamma = atof(val);
             else if (str_name.compare("tree_method") == 0)
                 gbdt_param->tree_method = val;
+            else if (str_name.compare("random_split") == 0)
+                gbdt_param->random_split = atoi(val);
             else
                 LOG(INFO) << "\"" << name << "\" is unknown option!";
         } else {

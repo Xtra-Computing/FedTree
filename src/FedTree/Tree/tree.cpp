@@ -38,6 +38,7 @@ void Tree::init_structure(int depth){
         node_data[i].is_valid = false;
         node_data[i].parent_index = i == 0 ? -1 : (i - 1) / 2;
         node_data[i].n_instances = 0;
+        node_data[i].random_direction = 0;
         if (i < n_max_nodes / 2) {
             node_data[i].is_leaf = false;
             node_data[i].lch_index = i * 2 + 1;

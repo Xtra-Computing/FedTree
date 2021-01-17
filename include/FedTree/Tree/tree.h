@@ -57,6 +57,7 @@ public:
 
         GHPair sum_gh_pair;
         int n_instances = 0; // number of instances inside the node.
+        bool random_direction = 0; // randomly choose a direction if the feature is missing.
 
         friend std::ostream &operator<<(std::ostream &os,
                                         const TreeNode &node);

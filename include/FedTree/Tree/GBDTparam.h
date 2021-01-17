@@ -34,6 +34,8 @@ struct GBDTParam {
     int n_device;
 
     std::string tree_method;
+
+    bool random_split; // whether or not use random split for empth feature node.
 };
 
 #endif //FEDTREE_GBDTPARAM_H
