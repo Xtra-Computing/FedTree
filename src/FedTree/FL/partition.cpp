@@ -81,7 +81,7 @@ Partition::hetero_partition(const DataSet &dataset, const int n_parties, const b
 
 void Partition::hybrid_partition(const DataSet &dataset, const int n_parties, vector<float> &alpha,
                                  vector<SyncArray<bool>> &feature_map, vector<DataSet> &train_subsets,
-                                 int part_length, int part_width){
+                                 int part_length, int part_width, int seed){
 
     for(int i = 0; i < n_parties; i++){
         //todo: group label
@@ -93,7 +93,6 @@ void Partition::hybrid_partition(const DataSet &dataset, const int n_parties, ve
     int fea_interval = dataset.n_features() / part_length;
     int n_parts = part_length * part_width;
 
-    int seed = 42;
     std::mt19937 gen(seed);
     dirichlet_distribution<std::mt19937> dir(alpha);
     vector<float> dir_numbers = dir(gen);
@@ -157,10 +156,9 @@ void Partition::hybrid_partition(const DataSet &dataset, const int n_parties, ve
 //
 void Partition::horizontal_vertical_dir_partition(const DataSet &dataset, const int n_parties, float alpha,
                                                   vector<SyncArray<bool>> &feature_map, vector<DataSet> &subsets,
-                                                  int n_hori, int n_verti){
+                                                  int n_hori, int n_verti, int seed){
     CHECK_EQ(n_parties, n_hori*n_verti);
     int n_ins = dataset.n_instances();
-    int seed = 42;
     std::mt19937 gen(seed);
     vector<int> idxs(n_ins);
     thrust::sequence(thrust::host, idxs.data(), idxs.data()+idxs.size(), 0);
@@ -262,7 +260,7 @@ void Partition::horizontal_vertical_dir_partition(const DataSet &dataset, const 
 void Partition::hybrid_partition_with_test(const DataSet &dataset, const int n_parties, vector<float> &alpha,
                                            vector<SyncArray<bool>> &feature_map, vector<DataSet> &train_subsets,
                                            vector<DataSet> &test_subsets, vector<DataSet> &subsets,
-                                           int part_length, int part_width, float train_test_fraction){
+                                           int part_length, int part_width, float train_test_fraction, int seed){
 
     for(int i = 0; i < n_parties; i++){
         //todo: group label
@@ -278,7 +276,6 @@ void Partition::hybrid_partition_with_test(const DataSet &dataset, const int n_p
     int fea_interval = dataset.n_features() / part_length;
     int n_parts = part_length * part_width;
 
-    int seed = 42;
     std::mt19937 gen(seed);
     dirichlet_distribution<std::mt19937> dir(alpha);
     vector<float> dir_numbers = dir(gen);
@@ -360,7 +357,7 @@ void Partition::hybrid_partition_with_test(const DataSet &dataset, const int n_p
     return;
 }
 
-void Partition::train_test_split(DataSet &dataset, DataSet &train_dataset, DataSet &test_dataset, float train_portion){
+void Partition::train_test_split(DataSet &dataset, DataSet &train_dataset, DataSet &test_dataset, float train_portion, int split_seed){
     int n_instances = dataset.n_instances();
     int n_train = n_instances * train_portion;
     int n_test = n_instances - n_train;
@@ -370,8 +367,7 @@ void Partition::train_test_split(DataSet &dataset, DataSet &train_dataset, DataS
     CHECK_EQ(dataset.csr_row_ptr.size() - 1, n_instances);
     LOG(INFO)<<"1";
     thrust::sequence(thrust::host, idxs.data(), idxs.data()+n_instances, 0);
-    int seed = 42;
-    std::mt19937 gen(seed);
+    std::mt19937 gen(split_seed);
     std::shuffle(idxs.data(), idxs.data()+n_instances, gen);
     LOG(INFO)<<"train_test_split idxs:"<<idxs;
     vector<bool> idx2train(n_instances, true);

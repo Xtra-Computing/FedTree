@@ -36,6 +36,7 @@ struct GBDTParam {
     std::string tree_method;
 
     bool random_split; // whether or not use random split for empth feature node.
+    int seed; // seed for random numbers;
 };
 
 #endif //FEDTREE_GBDTPARAM_H

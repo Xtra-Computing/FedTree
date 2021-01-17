@@ -166,8 +166,7 @@ void GBDT::predict_raw(const GBDTParam &model_param, const DataSet &dataSet, Syn
                     if (!is_missing)
                         cur_nid = get_next_child(curNode, fval);
                     else if (curNode.random_direction){
-                        int seed=42;
-                        std::mt19937 gen(seed);
+                        std::mt19937 gen(model_param.seed);
                         std::uniform_real_distribution<> dist(0,1);
                         float rand = dist(gen);
                         if(rand > 0.5)
