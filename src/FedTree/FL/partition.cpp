@@ -47,10 +47,7 @@ void Partition::hetero_partition(const DataSet &dataset, const int n_parties, co
     for(int i = 0; i < n_parties; i++) {
         if(is_horizontal) {
             subsets[i].n_features_ = dataset.n_features();
-        } else {
-            // TODO: setup n_instances value
-            // subsets[i].n_instances_ = dataset.n_instances();
-        }
+        } // n_instances is from y.size(), not a constant
     }
 
     vector<int> idxs;
@@ -80,18 +77,18 @@ void Partition::hetero_partition(const DataSet &dataset, const int n_parties, co
     vector<int> part2party(n);
     for (int i = 0; i < n_parties; i++) {
         if (i == 0) {
-            vector<int> party_indexes = vector<int>(idxs.begin(), idxs.begin() + int(dirichlet_samples[i]));
-            for(int i = 0; i < party_indexes.size(); i ++) {
-                int index = party_indexes[i];
+            vector<int> part_indexes = vector<int>(idxs.begin(), idxs.begin() + int(dirichlet_samples[i]));
+            for(int j = 0; j < part_indexes.size(); j ++) {
+                int index = part_indexes[j];
                 part2party[index] = 0;
             }
         }
             
         else {
-            vector<int> party_indexes = vector<int>(idxs.begin() + int(dirichlet_samples[i - 1]),
+            vector<int> part_indexes = vector<int>(idxs.begin() + int(dirichlet_samples[i - 1]),
                                         idxs.begin() + int(dirichlet_samples[i]));
-            for(int i= 0; i < party_indexes.size(); i ++) {
-                int index = party_indexes[i];
+            for(int j = 0; j < part_indexes.size(); j ++) {
+                int index = part_indexes[j];
                 part2party[index] = i;
             }
         }
@@ -150,7 +147,7 @@ void Partition::hybrid_partition(const DataSet &dataset, const int n_parties, ve
     for(int i = 0; i < dataset.csr_row_ptr.size()-1; i++){
         vector<int> csr_row_sub(n_parties, 0);
         for(int j = dataset.csr_row_ptr[i]; j < dataset.csr_row_ptr[i+1]; j++){
-            float_type value = dataset.csr_val[j];
+            float_type value = dataset.csr_val[j];               
             int cid = dataset.csr_col_idx[j];
             int part_id = std::min(i / ins_interval, n_parties - 1) * n_parties + std::min(cid / fea_interval, n_parties);
             int party_id = partid2party[part_id];
