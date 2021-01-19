@@ -59,9 +59,9 @@ TEST_F(TreeBuilderTest, compute_histogram) {
     gradients.copy_from(&gradients_vec[0], gradients_vec.size());
 
     HistCut cut;
-    cut.cut_row_ptr = SyncArray<int>(3);
-    const vector<int> cut_row_ptr_vec = {0, 1, 3};
-    cut.cut_row_ptr.copy_from(&cut_row_ptr_vec[0], cut_row_ptr_vec.size());
+    cut.cut_col_ptr = SyncArray<int>(3);
+    const vector<int> cut_col_ptr_vec = {0, 1, 3};
+    cut.cut_col_ptr.copy_from(&cut_col_ptr_vec[0], cut_col_ptr_vec.size());
 
     SyncArray<unsigned char> dense_bin_id(8);
     const vector<unsigned char> bin_vec = {0, 0, 0, 1, 1, 1, 1, 2};
@@ -138,12 +138,12 @@ TEST_F(TreeBuilderTest, merge_histogram_clients) {
     const vector<int> cut_ptr_vec2 = {0, 3, 5, 7, 10};
 
     vector<HistCut> cuts(2);
-    cuts[0].cut_row_ptr = SyncArray<int>(5);
-    cuts[0].cut_row_ptr.copy_from(&cut_ptr_vec1[0], cut_ptr_vec1.size());
+    cuts[0].cut_col_ptr = SyncArray<int>(5);
+    cuts[0].cut_col_ptr.copy_from(&cut_ptr_vec1[0], cut_ptr_vec1.size());
     cuts[0].cut_points_val = SyncArray<float_type>(10);
     cuts[0].cut_points_val.copy_from(&cut_points_val_vec1[0], cut_points_val_vec1.size());
-    cuts[1].cut_row_ptr = SyncArray<int>(5);
-    cuts[1].cut_row_ptr.copy_from(&cut_ptr_vec2[0], cut_ptr_vec2.size());
+    cuts[1].cut_col_ptr = SyncArray<int>(5);
+    cuts[1].cut_col_ptr.copy_from(&cut_ptr_vec2[0], cut_ptr_vec2.size());
     cuts[1].cut_points_val = SyncArray<float_type>(10);
     cuts[1].cut_points_val.copy_from(&cut_points_val_vec2[0], cut_points_val_vec2.size());
 

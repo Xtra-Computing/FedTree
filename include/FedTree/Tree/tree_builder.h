@@ -17,9 +17,13 @@ class TreeBuilder : public FunctionBuilder{
 public:
     virtual void find_split(int level) = 0;
 
+    virtual void find_split_by_predefined_features(int level) = 0;
+
     virtual void update_ins2node_id() = 0;
 
-    vector<Tree> build_approximate(const SyncArray<GHPair> &gradients) override;
+    vector<Tree> build_approximate(const SyncArray<GHPair> &gradients, bool update_y_predict = true) override;
+
+    void build_tree_by_predefined_structure(const SyncArray<GHPair> &gradients, vector<Tree> &trees);
 
     void build_init(const SyncArray<GHPair> &gradients, int k) override;
 
@@ -27,7 +31,7 @@ public:
 
     virtual void update_tree();
 
-    void update_tree_to_node(int node_id);
+    virtual void update_tree_by_sp_values();
 
     void predict_in_training(int k);
 
@@ -59,15 +63,17 @@ public:
 
     virtual ~TreeBuilder(){};
 
+    SyncArray<GHPair> gradients;
+
 protected:
     int n_instances;
     Tree trees;
     SyncArray<int> ins2node_id;
     SyncArray<SplitPoint> sp;
-    SyncArray<GHPair> gradients;
     bool has_split;
 //    vector<Shard> shards;
-    DataSet* dataset;
+//    DataSet* dataset;
+    DataSet sorted_dataset;
 };
 
 #endif //FEDTREE_TREE_BUILDER_H

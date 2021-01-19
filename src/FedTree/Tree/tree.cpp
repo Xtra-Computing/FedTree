@@ -24,18 +24,20 @@ void Tree::init_CPU(const SyncArray<GHPair> &gradients, const GBDTParam &param) 
     root_node.sum_gh_pair = sum_gh;
     root_node.is_valid = true;
     root_node.calc_weight(lambda);
+    root_node.n_instances = gradients.size();
 }
 
 void Tree::init_structure(int depth){
     int n_max_nodes = static_cast<int>(pow(2, depth + 1) - 1);
     nodes = SyncArray<TreeNode>(n_max_nodes);
     auto node_data = nodes.host_data();
-#pragma omp parallel for
+    #pragma omp parallel for
     for (int i = 0; i < n_max_nodes; i ++) {
         node_data[i].final_id = i;
         node_data[i].split_feature_id = -1;
         node_data[i].is_valid = false;
         node_data[i].parent_index = i == 0 ? -1 : (i - 1) / 2;
+        node_data[i].n_instances = 0;
         if (i < n_max_nodes / 2) {
             node_data[i].is_leaf = false;
             node_data[i].lch_index = i * 2 + 1;
@@ -121,8 +123,8 @@ void Tree::preorder_traversal(int nid, int max_depth, int depth, string &s) cons
 }
 
 std::ostream &operator<<(std::ostream &os, const Tree::TreeNode &node) {
-    os << string_format("\nnid:%d,l:%d,v:%d,split_feature_id:%d,f:%f,gain:%f,r:%d,w:%f,", node.final_id, node.is_leaf,
-                        node.is_valid,
+    os << string_format("\nnid:%d,l:%d,v:%d,p:%d,lch:%d,rch:%d,split_feature_id:%d,f:%f,gain:%f,r:%d,w:%f,", node.final_id, node.is_leaf,
+                        node.is_valid, node.is_pruned, node.lch_index, node.rch_index,
                         node.split_feature_id, node.split_value, node.gain, node.default_right, node.base_weight);
     os << "g/h:" << node.sum_gh_pair;
     return os;

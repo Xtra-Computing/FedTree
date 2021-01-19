@@ -10,15 +10,15 @@
 template <typename T>
 class DPnoises {
 public:
-    void add_gaussian_noise(T& data, float variance){
+    static void add_gaussian_noise(T& data, float variance){
         std::default_random_engine generator;
         std::normal_distribution<double> distribution(0.0, variance);
 
         double noise = distribution(generator);
-        *data += noise;
+        data += noise;
     }
 
-    void add_laplacian_noise(T& data, float variance) {
+    static void add_laplacian_noise(T& data, float variance) {
         // a r.v. following Laplace(0, b) is equivalent to the difference of 2 i.i.d Exp(1/b) r.v.
         double b = sqrt(variance/2);
         std::default_random_engine generator;

@@ -9,10 +9,12 @@
 #include <FedTree/metric/metric.h>
 // function_builder
 #include <FedTree/Tree/tree_builder.h>
+#include <FedTree/Tree/hist_tree_builder.h>
 #include <FedTree/util/multi_device.h>
 #include "FedTree/common.h"
 #include "FedTree/syncarray.h"
 #include "FedTree/Tree/tree.h"
+#include "FedTree/DP/noises.h"
 
 
 //#include "row_sampler.h"
@@ -29,13 +31,18 @@ public:
 
     void encrypt_gradients(AdditivelyHE::PaillierPublicKey pk);
 
+    void add_noise_to_gradients(float variance);
+
     void update_gradients();
 
     void boost(vector<vector<Tree>> &boosted_model);
 
-    std::unique_ptr<FunctionBuilder> fbuilder;
-private:
+    void boost_without_prediction(vector<vector<Tree>> &boosted_model);
+
+    std::unique_ptr<HistTreeBuilder> fbuilder;
     SyncArray<GHPair> gradients;
+private:
+
     std::unique_ptr<ObjectiveFunction> obj;
     std::unique_ptr<Metric> metric;
     SyncArray<float_type> y;
@@ -43,5 +50,8 @@ private:
     GBDTParam param;
     int n_devices;
 };
+
+
+
 
 #endif //FEDTREE_BOOSTER_H
