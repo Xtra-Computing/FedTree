@@ -21,7 +21,11 @@ public:
         privateKey = std::get<1>(keyPairs);
     };
 
-    void propose_split_candidates();
+    void send_split_candidates(vector<Party> &parties) {
+        for (Party p : parties) {
+            p.histCut = histCut;
+        }
+    }
     void send_public_key(vector<Party> &parties) {
         for (Party p : parties) {
             p.publicKey = publicKey;
@@ -36,6 +40,7 @@ private:
     AdditivelyHE HE;
     AdditivelyHE::PaillierPrivateKey privateKey;
     DPnoises<double> DP;
+    MSyncArray<GHPair> histograms;
 };
 
 #endif //FEDTREE_SERVER_H

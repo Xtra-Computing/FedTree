@@ -33,10 +33,20 @@ public:
         party.overwrite_gradients(fbuilder->get_gradients());
     }
 
+    void send_histogram(Server server) {
+        server.merge_histogram()
+    }
+
+    void send_histogram(Party leader) {
+        leader.merge_histgoram()
+    }
+
     int pid;
     AdditivelyHE::PaillierPublicKey publicKey;
     AdditivelyHE::PaillierPublicKey serverKey;
     std::unique_ptr<TreeBuilder> fbuilder;
+    HistCut histCut;
+    SyncArray<GHPair> histogram;
 //    vector<SplitCandidate> split_candidates;
 
 private:
@@ -44,7 +54,7 @@ private:
     AdditivelyHE HE;
     AdditivelyHE::PaillierPrivateKey privateKey;
     DPnoises<double> DP;
-
+    MSyncArray<GHPair> histograms;
 };
 
 #endif //FEDTREE_PARTY_H
