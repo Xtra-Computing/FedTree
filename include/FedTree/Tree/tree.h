@@ -47,6 +47,7 @@ public:
         float_type gain;// gain of splitting this node
         float_type base_weight;
         int split_feature_id;
+        int pid;
         float_type split_value;
         unsigned char split_bid;
         bool default_right;
@@ -55,6 +56,7 @@ public:
         bool is_pruned;// pruned after pruning
 
         GHPair sum_gh_pair;
+        int n_instances = 0; // number of instances inside the node.
 
         friend std::ostream &operator<<(std::ostream &os,
                                         const TreeNode &node);
@@ -74,22 +76,35 @@ public:
     Tree(const Tree &tree) {
         nodes.resize(tree.nodes.size());
         nodes.copy_from(tree.nodes);
+        n_nodes_level = tree.n_nodes_level;
+        final_depth = tree.final_depth;
     }
 
     Tree &operator=(const Tree &tree) {
         nodes.resize(tree.nodes.size());
         nodes.copy_from(tree.nodes);
+        n_nodes_level = tree.n_nodes_level;
+        final_depth = tree.final_depth;
         return *this;
     }
 
     void init_CPU(const SyncArray<GHPair> &gradients, const GBDTParam &param);
+
+    void init_structure(int depth);
 
     // TODO: GPU initialization 
     // void init2(const SyncArray<GHPair> &gradients, const GBDTParam &param);
 
     string dump(int depth) const;
 
+
     SyncArray<Tree::TreeNode> nodes;
+    //n_nodes_level[i+1] - n_nodes_level[i] stores the number of nodes in level i
+    vector<int> n_nodes_level;
+    int final_depth;
+
+
+
 
     void prune_self(float_type gamma);
 

@@ -302,6 +302,10 @@ void DataSet::load_from_file(string file_name, FLParam &param) {
 //        this->use_cpu = true;
 }
 
+//void DataSet::load_from_file_dense(string file_name, FLParam &param){
+//
+//}
+
 //void DataSet::load_from_file(const string &file_name, FLParam &param) {
 //    LOG(INFO) << "loading LIBSVM dataset from file \"" << file_name << "\"";
 //    std::chrono::high_resolution_clock timer;
@@ -637,10 +641,10 @@ void DataSet::csr_to_csc(){
         csc_col_ptr[i] = 0;
     }
 
-#pragma omp parallel for // about 5s
+    #pragma omp parallel for // about 5s
     for (int i = 0; i < nnz; ++i) {
         int idx = csr_col_idx[i] + 1;
-#pragma omp atomic
+        #pragma omp atomic
         csc_col_ptr[idx] += 1;
     }
 

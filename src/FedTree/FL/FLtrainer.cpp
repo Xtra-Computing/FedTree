@@ -3,6 +3,11 @@
 //
 #include "FedTree/FL/FLtrainer.h"
 #include "FedTree/Encryption/HE.h"
+#include "FedTree/FL/partition.h"
+#include "FedTree/FL/comm_helper.h"
+#include "thrust/sequence.h"
+
+using namespace thrust;
 
 void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FLParam &params){
 // Is propose_split_candidates implemented? Should it be a method of TreeBuilder, HistTreeBuilder or server? Shouldnt there be a vector of SplitCandidates returned

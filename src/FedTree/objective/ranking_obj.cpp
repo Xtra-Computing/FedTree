@@ -4,9 +4,9 @@
 
 #include <FedTree/objective/ranking_obj.h>
 #include "FedTree/metric/ranking_metric.h"
-#ifndef _WIN32
-#include <parallel/algorithm>
-#endif
+//#ifndef _WIN32
+//#include <parallel/algorithm>
+//#endif
 #include <random>
 
 void LambdaRank::configure(GBDTParam param, const DataSet &dataset) {

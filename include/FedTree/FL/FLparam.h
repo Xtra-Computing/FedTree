@@ -12,8 +12,14 @@
 class FLParam {
 public:
     int n_parties; // number of parties
-    string mode; // "horizontal" or "vertical"
+    bool partition; // input a single dataset for partitioning or input datasets for each party.
+    float alpha; //the concentration parameter of Dir based partition approaches.
+    int n_hori; //the number of horizontal partitioning subsets in hybrid partition.
+    int n_verti; //the number of vertical partitioning subsets in hybrid partition.
+    string mode; // "horizontal", "vertical", "hybrid", or "centralized"
+    string partition_mode; // "horizontal", "vertical" or "hybrid"
     string privacy_tech; //"none" or "he" or "dp"
+    float variance; // variance of dp noise if privacy_tech=="dp"
     string propose_split; // "server" or "client"
     string merge_histogram; // "server" or "client"
     GBDTParam gbdt_param; // parameters for the gbdt training

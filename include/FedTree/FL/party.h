@@ -13,9 +13,12 @@
 // Todo: the party structure
 class Party {
 public:
-    void init(int pid, const DataSet &dataSet) {
+    void init(int pid, DataSet &dataset, FLParam &param, SyncArray<bool> &feature_map) {
         this->pid = pid;
         this->dataset = dataset;
+        this->feature_map.resize(feature_map.size());
+        this->feature_map.copy_from(feature_map.host_data(), feature_map.size());
+        booster.init(dataset, param.gbdt_param);
     };
 
     void homo_init() {
@@ -25,36 +28,34 @@ public:
         fbuilder->encrypt_gradients(publicKey);
     };
 
-    void overwrite_gradients(SyncArray<GHPair> gh){
-        fbuilder->set_gradients(gh);
-    };
-
     void send_gradients(Party &party){
-        party.overwrite_gradients(fbuilder->get_gradients());
+        yncArray<GHPair> gh = booster.get_gradients();
+        party.booster.set_gradients(gh);
     }
 
-    void send_histogram(Server server) {
-        server.merge_histogram()
+    void send_hist(Party &party){
+        SyncArray<GHPair> hist = booster.fbuilder->get_hist();
+        party.booster.fbuilder->append_hist(hist);
     }
 
-    void send_histogram(Party leader) {
-        leader.merge_histgoram()
-    }
+    //for hybrid fl, the parties correct the merged trees.
+    void correct_trees();
+
+    void update_tree_info();
+    void compute_leaf_values();
 
     int pid;
-    AdditivelyHE::PaillierPublicKey publicKey;
+
     AdditivelyHE::PaillierPublicKey serverKey;
-    std::unique_ptr<TreeBuilder> fbuilder;
-    HistCut histCut;
-    SyncArray<GHPair> histogram;
+//    std::unique_ptr<TreeBuilder> fbuilder;
 //    vector<SplitCandidate> split_candidates;
 
 private:
     DataSet dataset;
     AdditivelyHE HE;
     AdditivelyHE::PaillierPrivateKey privateKey;
+    SyncArray<bool> feature_map;
     DPnoises<double> DP;
-    MSyncArray<GHPair> histograms;
 };
 
 #endif //FEDTREE_PARTY_H
