@@ -975,6 +975,7 @@ void HistTreeBuilder::merge_histograms_server_propose() {
     int n_bins = parties_hist[0].size();
     SyncArray<GHPair> merged_hist(n_bins);
     auto merged_hist_data = merged_hist.host_data();
+
 //    if (enc) {
 //        AdditivelyHE::PaillierPublicKey pk = histograms[0].host_data()[0].pk;
 //        for (int i = 0; i < n_bins; i++) {
@@ -987,11 +988,17 @@ void HistTreeBuilder::merge_histograms_server_propose() {
         for (int j = 0; j < n_bins; j++) {
             GHPair &src = hist_data[j];
             GHPair &dest = merged_hist_data[j];
+
+            if (src.encrypted)
+                dest = dest.homo_add(src);
+            else
+                dest = dest + src;
+
 //            if (enc)
 //                dest = dest.homo_add(src);
 //            else
 //                dest = dest + src;
-            dest = dest + src;
+//            dest = dest + src;
         }
     }
 

@@ -56,10 +56,17 @@ struct GHPair {
     AdditivelyHE::EncryptedNumber g_enc;
     AdditivelyHE::EncryptedNumber h_enc;
     AdditivelyHE::PaillierPublicKey pk;
+    bool encrypted = false;
+
+    HOST_DEVICE void decrypt(AdditivelyHE::PaillierPrivateKey privateKey) {
+        g = AdditivelyHE::decrypt(pk, g_enc);
+        h = AdditivelyHE::decrypt(pk, h_enc);
+    }
 
     HOST_DEVICE void homo_encrypt(AdditivelyHE::PaillierPublicKey pk) {
         g_enc = AdditivelyHE::encrypt(pk, g);
         h_enc = AdditivelyHE::encrypt(pk, h);
+        encrypted = true;
         this->pk = pk;
         g = 0;
         h = 0;

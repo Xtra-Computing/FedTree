@@ -86,6 +86,7 @@ void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FL
 
                     // Each party now has its own histogram
                     // Send it to party leader / server based on param
+                    // TODO: merge histogram now doesn't work with HE
                     if (param.merge_histogram == 'server')
                         server.booster.fbuilder -> parties_hist_init(parties.size());
                         for (j = 0; j < parties.size(); j++)
@@ -111,8 +112,10 @@ void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FL
                     SyncArray<float_type> gain(n_max_splits * parties.size());
                     auto hist_fid_data = hist_fid.host_data();
                     hist = server.booster.fbuilder->get_last_hist();
-                    // TODO: if privacy tech == 'he', decrypt histogram
 
+                    // if privacy tech == 'he', decrypt histogram
+                    if (params.privacy_tech == 'he')
+                        server.booster.fbuilder->decrypt_hist(hist);
                     server.booster.fbuilder->compute_gain_in_a_level(gain, n_nodes_in_level, n_bins, hist_fid_data,
                                                                      missing_gh, hist);
                     // server find the best gain and its index

@@ -94,6 +94,13 @@ public:
         return last_hist;
     }
 
+    void decrypt_histogram(SyncArray<GHPair> &hist, AdditivelyHE::PaillierPrivateKey privateKey) {
+        auto hist_data = hist.host_data();
+        for (int i = 0; i < hist_data.size(); i++) {
+            hist_data[i].decrypt(privateKey);
+        }
+    }
+
 
 private:
     vector<HistCut> parties_cut;
