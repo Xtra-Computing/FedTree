@@ -39,12 +39,7 @@ public:
         privateKey = std::get<1>(keyPairs);
     };
 
-    void send_split_candidates(vector<Party> &parties) {
-        for (Party p : parties) {
-            p.histCut = histCut;
-        }
-    }
-    void send_public_key(vector<Party> &parties) {
+    void send_public_key(Party party) {
         for (Party p : parties) {
             p.publicKey = publicKey;
         }

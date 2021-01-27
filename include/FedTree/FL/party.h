@@ -21,15 +21,8 @@ public:
         booster.init(dataset, param.gbdt_param);
     };
 
-    void homo_init() {
-        std::tuple<AdditivelyHE::PaillierPublicKey, AdditivelyHE::PaillierPrivateKey> keyPairs = this->HE.generate_key_pairs();
-        publicKey = std::get<0>(keyPairs);
-        privateKey = std::get<1>(keyPairs);
-        fbuilder->encrypt_gradients(publicKey);
-    };
-
     void send_gradients(Party &party){
-        yncArray<GHPair> gh = booster.get_gradients();
+        SyncArray<GHPair> gh = booster.get_gradients();
         party.booster.set_gradients(gh);
     }
 
@@ -37,6 +30,7 @@ public:
         SyncArray<GHPair> hist = booster.fbuilder->get_hist();
         party.booster.fbuilder->append_hist(hist);
     }
+
 
     //for hybrid fl, the parties correct the merged trees.
     void correct_trees();
@@ -46,9 +40,7 @@ public:
 
     int pid;
 
-    AdditivelyHE::PaillierPublicKey serverKey;
-//    std::unique_ptr<TreeBuilder> fbuilder;
-//    vector<SplitCandidate> split_candidates;
+    AdditivelyHE::PaillierPublicKey publicKey;
 
 private:
     DataSet dataset;

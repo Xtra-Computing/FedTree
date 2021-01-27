@@ -78,6 +78,22 @@ public:
         party_idx += 1;
     }
 
+    MSyncArray<GHPair> get_parties_hist() {
+        return parties_hist;
+    }
+
+    void set_cut (HisCut commonCut) {
+        cut = commonCut;
+    }
+
+    void set_last_hist(SyncArray<GHPair> last_hist_input) {
+        last_hist = last_hist_input;
+    }
+
+    SyncArray<GHPair> get_last_hist () {
+        return last_hist;
+    }
+
 
 private:
     vector<HistCut> parties_cut;

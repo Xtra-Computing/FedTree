@@ -65,6 +65,14 @@ public:
 
     SyncArray<GHPair> gradients;
 
+    Tree get_trees() {
+        return trees;
+    }
+
+    void update_trees(Tree trees_updated) {
+        trees = trees_updated;
+    }
+
 protected:
     int n_instances;
     Tree trees;
