@@ -10,7 +10,77 @@
 using namespace thrust;
 
 void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FLParam &params) {
-// Is propose_split_candidates implemented? Should it be a method of TreeBuilder, HistTreeBuilder or server? Shouldnt there be a vector of SplitCandidates returned
+    // load dataset
+    GBDTParam &model_param = params.gbdt_param;
+    DataSet dataset;
+    dataset.load_from_file(model_param.path, params);
+
+    int parties_size = params.n_parties;
+    // partition dataset
+    vector<DataSet> subsets(parties_size);
+    Partition partition;
+    vector<float> alpha;
+    if (params.partition) {
+        partition.hybrid_partition(dataset, parties_size, alpha, subsets);
+    }
+    vector<int> n_instances_per_party = vector<int>();
+    for(const DataSet& ds: subsets) {
+        n_instances_per_party.push_back(ds.n_instances());
+    }
+
+    // server and party initialization
+    server.init(params, dataset.n_instances(), n_instances_per_party);
+    if (params.privacy_tech == "he") {
+        server.homo_init();
+    }
+    for (int i = 1; i < parties_size; i++) {
+        parties[i - 1].init(i, subsets[i], params);
+    }
+
+    vector<vector<Tree>> trees(params.gbdt_param.n_trees);
+    for (int i = 0; i < params.gbdt_param.n_trees; i++) {
+        for (int j = 0; j < parties_size; j++) {
+            parties[j].booster.update_gradients();
+        }
+        vector<Tree> trees_per_round(params.gbdt_param.tree_per_rounds);
+        for(int l = 0; l < params.gbdt_param.tree_per_rounds; l++) {
+            Tree &tree = trees_per_round[l];
+            Tree* partial_tree;
+            for (int j = 0; j < params.gbdt_param.depth; j++) {
+                // send histograms from party to server
+                for (int k = 1; k < parties.size(); k++) {
+                    parties[k].send_gradients(server);
+                }
+                partial_tree = server.booster.fbuilder->build_tree_level_approximate(j, l);
+                // NULL pointer indicates that tree nodes cannot be further split.
+                if(!partial_tree) {
+                    break;
+                }
+                for(int k = 1; k < parties.size(); k ++) {
+                    server.send_trees(parties[k]);
+                }
+            }
+            server.booster.fbuilder->get_tree().prune_self(params.gbdt_param.gamma);
+            server.booster.fbuilder->set_y_predict(l);
+            tree.nodes.resize(server.booster.fbuilder->get_tree().nodes.size());
+            tree.nodes.copy_from(server.booster.fbuilder->get_tree().nodes);
+        }
+//          server.booster.boost(trees);
+        trees.push_back(trees_per_round);
+    }
+    for (int j = 0; j < parties_size; j++) {
+        parties[j].gbdt.trees = trees;
+    }
+}
+
+//for (int j = 0; j < params.gbdt_param.depth; j++) {
+//for (int k = 0; k < parties.size(); k++) {
+//parties[j].send_gradients(server);
+//}
+//}
+
+
+//void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FLParam &params) {
 //  vector<SplitCandidate> candidates = server.fbuilder.propose_split_candidates();
 //  std::tuple <AdditivelyHE::PaillierPublicKey, AdditivelyHE::PaillierPrivateKey> key_pair = server.HE.generate_key_pairs();
 //    server.send_info(parties, std::get<0>(keyPairs), candidates);
@@ -32,6 +102,7 @@ void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FL
 //                parties[k].send_info(hist);
 //            }
     // merge_histograms in tree_builder?
+
 //            server.sum_histograms(); // or on Party 1 if using homo encryption
 //            server.HE.decrption();
 //            if (j != params.gbdt_param.depth - 1) {
@@ -47,8 +118,6 @@ void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FL
 //            }
 //        }
 //    }
-}
-
 
 void FLtrainer::vertical_fl_trainer(vector<Party> &parties, Server &server, FLParam &params) {
 

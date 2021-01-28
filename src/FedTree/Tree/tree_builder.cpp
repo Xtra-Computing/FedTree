@@ -67,6 +67,9 @@ void TreeBuilder::init(DataSet &dataSet, const GBDTParam &param) {
 //    LOG(DEBUG) << "global best split point = " << sp;
 //}
 
+void TreeBuilder::set_y_predict(int k){
+    predict_in_training(k);
+}
 void TreeBuilder::predict_in_training(int k) {
     auto y_predict_data = y_predict.host_data() + k * n_instances;
     auto nid_data = ins2node_id.host_data();

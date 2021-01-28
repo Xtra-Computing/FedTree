@@ -15,6 +15,8 @@ public:
 
     void get_bin_ids();
 
+    Tree* build_tree_level_approximate(int level, int round) override;
+
     void find_split(int level) override;
 
     void find_split_by_predefined_features(int level) override;
@@ -31,7 +33,12 @@ public:
 
     void get_split_points(SyncArray<int_float> &best_idx_gain, int level, int *hist_fid, SyncArray<GHPair> &missing_gh, SyncArray<GHPair> &hist);
 
+    SyncArray<GHPair> get_gradients();
+
+    void set_gradients(SyncArray<GHPair> &gh);
+
     void get_split_points_in_a_node(int node_id, int best_idx, float best_gain, int n_nodes_in_level, int *hist_fid, SyncArray<GHPair> &missing_gh, SyncArray<GHPair> &hist) override;
+
 
 //    SyncArray<GHPair> compute_histogram(SyncArray<GHPair> &gradients, HistCut &cut,
 //                                        SyncArray<unsigned char> &dense_bin_id);
@@ -93,6 +100,7 @@ private:
     int total_hist_num = 0;
     double total_dp_time = 0;
     double total_copy_time = 0;
+
 };
 
 #endif //FEDTREE_HIST_TREE_BUILDER_H
