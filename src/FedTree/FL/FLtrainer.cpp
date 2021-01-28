@@ -52,25 +52,9 @@ void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FL
 
 void FLtrainer::vertical_fl_trainer(vector<Party> &parties, Server &server, FLParam &params) {
 
-    /*
     // load dataset
     GBDTParam &model_param = params.gbdt_param;
-    DataSet dataset;
-    dataset.load_from_file(model_param.path, params);
-
-    // partition dataset
-    int participants_size = parties.size() + 1;
-    vector<DataSet> subsets(participants_size);
-    Partition partition;
-    vector<float> alpha;
-    partition.hybrid_partition(dataset, participants_size, alpha, subsets);
-
-    // server and party initialization
-    server.init(0, subsets[0], params);
-    server.homo_init();
-    for (int i = 1; i < participants_size; i++) {
-        parties[i - 1].init(i, subsets[i], params);
-    }
+    Comm comm_helper;
 
     // start training
     // for each boosting round
@@ -107,7 +91,7 @@ void FLtrainer::vertical_fl_trainer(vector<Party> &parties, Server &server, FLPa
 
                 // each party compute hist, send hist to server
                 for (int j = 0; j < parties.size(); j++) {
-                    int n_column = subsets[j + 1].n_features();
+                    int n_column = parties[j].dataset.n_features();
                     int n_partition = n_column * n_nodes_in_level;
                     HistCut cut = parties[j].booster.fbuilder->get_cut();
                     auto cut_fid_data = cut.cut_fid.host_data();
@@ -133,9 +117,9 @@ void FLtrainer::vertical_fl_trainer(vector<Party> &parties, Server &server, FLPa
                 }
 
                 // server concat hist_fid_data, missing_gh & histograms
-                SyncArray<int> hist_fid = concat_msyncarray(parties_hist_fid);
-                SyncArray<GHPair> missing_gh = concat_msyncarray(parties_missing_gh);
-                SyncArray<GHPair> hist = concat_msyncarray(parties_hist);
+                SyncArray<int> hist_fid = comm_helper.concat_msyncarray(parties_hist_fid);
+                SyncArray<GHPair> missing_gh = comm_helper.concat_msyncarray(parties_missing_gh);
+                SyncArray<GHPair> hist = comm_helper.concat_msyncarray(parties_hist);
 
                 // server compute gain
                 SyncArray<float_type> gain(n_max_splits * parties.size());
@@ -171,53 +155,6 @@ void FLtrainer::vertical_fl_trainer(vector<Party> &parties, Server &server, FLPa
             }
         }
     }
-//    parties[0].homo_init();
-//    parties[0].send_info();
-//    for (int i = 0; i < params.gbdt_param.n_trees; i++){
-//        parties[0].update_gradients();
-//        parties[0].DP.add_gaussian_noise();
-//        parties[0].send_info();
-//        for (int j = 0; j < params.gbdt_param.depth; j++){
-//            if (j != params.gbdt_param.depth - 1){
-//                for (int k = 0; k < parties.size(); k++){
-//                    parties[k].fbuilder.propose_split_candidates();
-//                    parties[k].fbuilder.compute_histogram();
-//                    parties[k].HE.encrypt();
-//                }
-//                parties[0].decrypt();
-//                parties[0].compute_gain();
-//                parties[0].get_best_split();
-//                parties[0].send_info();
-//                parties[z].fbuilder.update_tree();
-//                parties[z].send_info()
-//            }
-//            else{
-//                parties[0].fbuilder.compute_leaf_value();
-//                parties[0].DP.add_gaussian_noise();
-//            }
-//        }
-//    }
-     */
-}
-
-template<class T>
-SyncArray<T> FLtrainer::concat_msyncarray(MSyncArray<T> &arrays) {
-    int total_size = 0;
-    vector<int> ptr = {0};
-    for (int i = 0; i < arrays.size(); i++) {
-        total_size += arrays[i].size();
-        ptr.push_back(ptr.back() + total_size);
-    }
-    SyncArray<T> concat_array(total_size);
-    auto concat_array_data = concat_array.host_data();
-
-    for (int i = 0; i < arrays.size(); i++) {
-        auto array_data = arrays[i].host_data();
-        for (int j = 0; j < arrays[i].size(); j++) {
-            concat_array_data[ptr[i] + j] = array_data[j];
-        }
-    }
-    return concat_array;
 }
 
 
@@ -225,53 +162,54 @@ void FLtrainer::hybrid_fl_trainer(vector<Party> &parties, Server &server, FLPara
     // todo: initialize parties and server
     int n_party = parties.size();
     Comm comm_helper;
-    for(int i = 0; i < params.gbdt_param.n_trees; i++) {
+    for (int i = 0; i < params.gbdt_param.n_trees; i++) {
         // There is already omp parallel inside boost
 //        #pragma omp parallel for
         for (int pid = 0; pid < n_party; pid++) {
-            LOG(INFO)<<"boost without prediction";
+            LOG(INFO) << "boost without prediction";
             parties[pid].booster.boost_without_prediction(parties[pid].gbdt.trees);
 //            obj->get_gradient(y, fbuilder->get_y_predict(), gradients);
-            LOG(INFO)<<"send last trees to server";
+            LOG(INFO) << "send last trees to server";
             comm_helper.send_last_trees_to_server(parties[pid], pid, server);
             parties[pid].gbdt.trees.pop_back();
         }
-        LOG(INFO)<<"merge trees";
+        LOG(INFO) << "merge trees";
         server.hybrid_merge_trees();
-        LOG(INFO)<<"send back trees";
+        LOG(INFO) << "send back trees";
         // todo: send the trees to the party to correct the trees and compute leaf values
 //        #pragma omp parallel for
         for (int pid = 0; pid < n_party; pid++) {
-            LOG(INFO)<<"in party:"<<pid;
+            LOG(INFO) << "in party:" << pid;
             comm_helper.send_last_global_trees_to_party(server, parties[pid]);
-            LOG(INFO)<<"personalize trees";
+            LOG(INFO) << "personalize trees";
             //LOG(INFO)<<"gradients before correct sps"<<parties[pid].booster.gradients;
             // todo: prune the tree, if n_bin is 0, then a half of the child tree is useless.
-            parties[pid].booster.fbuilder->build_tree_by_predefined_structure(parties[pid].booster.gradients, parties[pid].gbdt.trees.back());
+            parties[pid].booster.fbuilder->build_tree_by_predefined_structure(parties[pid].booster.gradients,
+                                                                              parties[pid].gbdt.trees.back());
         }
     }
 }
 
-void FLtrainer::ensemble_trainer(vector<Party> &parties, Server &server, FLParam &params){
+void FLtrainer::ensemble_trainer(vector<Party> &parties, Server &server, FLParam &params) {
     int n_party = parties.size();
     CHECK_EQ(params.gbdt_param.n_trees % n_party, 0);
     int n_tree_each_party = params.gbdt_param.n_trees / n_party;
     Comm comm_helper;
 //    #pragma omp parallel for
-    for(int i = 0; i < n_party; i++){
-        for(int j = 0; j < n_tree_each_party; j++)
+    for (int i = 0; i < n_party; i++) {
+        for (int j = 0; j < n_tree_each_party; j++)
             parties[i].booster.boost(parties[i].gbdt.trees);
         comm_helper.send_all_trees_to_server(parties[i], i, server);
     }
     server.ensemble_merge_trees();
 }
 
-void FLtrainer::solo_trainer(vector<Party> &parties, FLParam &params){
+void FLtrainer::solo_trainer(vector<Party> &parties, FLParam &params) {
     int n_party = parties.size();
 //    #pragma omp parallel for
-    for(int i = 0; i < n_party; i++){
+    for (int i = 0; i < n_party; i++) {
 //        parties[i].gbdt.train(params.gbdt_param, parties[i].dataset);
-        for(int j = 0; j < params.gbdt_param.n_trees; j++)
+        for (int j = 0; j < params.gbdt_param.n_trees; j++)
             parties[i].booster.boost(parties[i].gbdt.trees);
     }
 }

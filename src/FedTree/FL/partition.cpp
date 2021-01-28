@@ -7,13 +7,20 @@
 #include "thrust/execution_policy.h"
 #include <cassert>
 
-std::map<int, vector<int>>
-Partition::homo_partition(const DataSet &dataset, const int n_parties, const bool is_horizontal) {
+
+void Partition::homo_partition(const DataSet &dataset, const int n_parties, const bool is_horizontal, vector<DataSet> &subsets) {
     int n;
     if (is_horizontal)
         n = dataset.n_instances();
     else
         n = dataset.n_features();
+
+    for(int i = 0; i < n_parties; i++) {
+        if(is_horizontal) {
+            subsets[i].n_features_ = dataset.n_features();
+        }
+    }
+
     vector<int> idxs;
     for (int i = 0; i < n; i++) {
         idxs.push_back(i);
@@ -31,18 +38,85 @@ Partition::homo_partition(const DataSet &dataset, const int n_parties, const boo
     for (int i = 0; i < n % n_parties; i++) {
         batch_idxs[i].push_back(idxs[n_parties * stride + i]);
     }
-    return batch_idxs;
+
+    vector<int> part2party(n);
+    for(int i = 0; i < n_parties; i ++) {
+        vector<int> part_indexes = batch_idxs[i];
+        for(auto& x : part_indexes) {
+            part2party[x] = i;
+        }
+    }
+
+    if(is_horizontal) {
+        // TODO: verify whether to modify feature map
+
+        for(int i = 0; i < n_parties; i++) {
+            subsets[i].csr_row_ptr.push_back(0);
+        }
+
+        for(int i = 0; i < dataset.csr_row_ptr.size()-1; i ++) { // for each row
+            vector<int> csr_row_sub(n_parties, 0);
+            for(int j = dataset.csr_row_ptr[i]; j < dataset.csr_row_ptr[i+1]; j ++) { // for each element in the row
+                float_type value = dataset.csr_val[j];
+                int cid = dataset.csr_col_idx[j];
+                int part_id = i;
+                int party_id = part2party[part_id];
+
+                subsets[party_id].csr_val.push_back(value);
+                subsets[party_id].csr_col_idx.push_back(cid);
+                csr_row_sub[party_id]++;
+            }
+            for(int i = 0; i < n_parties; i++) {
+                subsets[i].csr_row_ptr.push_back(subsets[i].csr_row_ptr.back() + csr_row_sub[i]);
+            }
+        }
+    } else {
+        for(int i = 0; i < n_parties; i++) {
+            subsets[i].csc_col_ptr.push_back(0);
+        }
+
+        assert(dataset.has_csc);
+        // TODO: check the reason why dataset is a const param
+//        if(!dataset.has_csc) {
+//            dataset.csr_to_csc();
+//        }
+        for(int i = 0; i < dataset.csc_col_ptr.size()-1; i++) {
+            vector<int> csc_col_sub(n_parties, 0);
+            for(int j = dataset.csc_col_ptr[i]; j < dataset.csc_col_ptr[i+1]; j ++) {
+                float_type value = dataset.csc_val[j];
+                int row_id = dataset.csc_row_idx[j];
+                int part_id = i;
+                int party_id = part2party[part_id];
+
+                subsets[party_id].csc_val.push_back(value);
+                subsets[party_id].csc_row_idx.push_back(row_id);
+                csc_col_sub[party_id]++;
+            }
+            for(int i = 0; i < n_parties; i ++) {
+                subsets[i].csc_col_ptr.push_back(subsets[i].csc_col_ptr.back() + csc_col_sub[i]);
+            }
+        }
+    }
+
+    return;
 }
 
 //Todo add hetero partition according to the labels
-std::map<int, vector<int>>
-Partition::hetero_partition(const DataSet &dataset, const int n_parties, const bool is_horizontal,
+void Partition::hetero_partition(const DataSet &dataset, const int n_parties, const bool is_horizontal, vector<DataSet> &subsets,
                             vector<float> alpha) {
     int n;
     if (is_horizontal)
         n = dataset.n_instances();
     else
         n = dataset.n_features();
+
+    // initialize subsets
+    for(int i = 0; i < n_parties; i++) {
+        if(is_horizontal) {
+            subsets[i].n_features_ = dataset.n_features();
+        } // n_instances is from y.size(), not a constant
+    }
+
     vector<int> idxs;
     for (int i = 0; i < n; i++) {
         idxs.push_back(i);
@@ -67,15 +141,78 @@ Partition::hetero_partition(const DataSet &dataset, const int n_parties, const b
     for (auto &x : dirichlet_samples)
         LOG(INFO) << "dirichlet_samples " << x;
 
-    std::map<int, vector<int>> batch_idxs;
+    vector<int> part2party(n);
     for (int i = 0; i < n_parties; i++) {
-        if (i == 0)
-            batch_idxs[i] = vector<int>(idxs.begin(), idxs.begin() + int(dirichlet_samples[i]));
-        else
-            batch_idxs[i] = vector<int>(idxs.begin() + int(dirichlet_samples[i - 1]),
+        if (i == 0) {
+            vector<int> part_indexes = vector<int>(idxs.begin(), idxs.begin() + int(dirichlet_samples[i]));
+            for(int j = 0; j < part_indexes.size(); j ++) {
+                int index = part_indexes[j];
+                part2party[index] = 0;
+            }
+        }
+            
+        else {
+            vector<int> part_indexes = vector<int>(idxs.begin() + int(dirichlet_samples[i - 1]),
                                         idxs.begin() + int(dirichlet_samples[i]));
+            for(int j = 0; j < part_indexes.size(); j ++) {
+                int index = part_indexes[j];
+                part2party[index] = i;
+            }
+        }
     }
-    return batch_idxs;
+
+    if(is_horizontal) {
+        // TODO: verify whether to modify feature map
+
+        for(int i = 0; i < n_parties; i++) {
+            subsets[i].csr_row_ptr.push_back(0);
+        }
+
+        for(int i = 0; i < dataset.csr_row_ptr.size()-1; i ++) { // for each row
+            vector<int> csr_row_sub(n_parties, 0);
+            for(int j = dataset.csr_row_ptr[i]; j < dataset.csr_row_ptr[i+1]; j ++) { // for each element in the row
+                float_type value = dataset.csr_val[j];
+                int cid = dataset.csr_col_idx[j];
+                int part_id = i;
+                int party_id = part2party[part_id];
+
+                subsets[party_id].csr_val.push_back(value);
+                subsets[party_id].csr_col_idx.push_back(cid);
+                csr_row_sub[party_id]++;
+            }
+            for(int i = 0; i < n_parties; i++) {
+                subsets[i].csr_row_ptr.push_back(subsets[i].csr_row_ptr.back() + csr_row_sub[i]);
+            }
+        }
+    } else {
+        for(int i = 0; i < n_parties; i++) {
+            subsets[i].csc_col_ptr.push_back(0);
+        }
+
+        assert(dataset.has_csc);
+        // TODO: check the reason why dataset is a const param
+//        if(!dataset.has_csc) {
+//            dataset.csr_to_csc();
+//        }
+        for(int i = 0; i < dataset.csc_col_ptr.size()-1; i++) {
+            vector<int> csc_col_sub(n_parties, 0);
+            for(int j = dataset.csc_col_ptr[i]; j < dataset.csc_col_ptr[i+1]; j ++) {
+                float_type value = dataset.csc_val[j];
+                int row_id = dataset.csc_row_idx[j];
+                int part_id = i;
+                int party_id = part2party[part_id];
+
+                subsets[party_id].csc_val.push_back(value);
+                subsets[party_id].csc_row_idx.push_back(row_id);
+                csc_col_sub[party_id]++;
+            }
+            for(int i = 0; i < n_parties; i ++) {
+                subsets[i].csc_col_ptr.push_back(subsets[i].csc_col_ptr.back() + csc_col_sub[i]);
+            }
+        }
+    }
+
+    return;
 }
 
 
@@ -325,7 +462,7 @@ void Partition::hybrid_partition_with_test(const DataSet &dataset, const int n_p
         vector<int> test_csr_row_sub(n_parties, 0);
         vector<int> csr_row_sub(n_parties, 0);
         for(int j = dataset.csr_row_ptr[i]; j < dataset.csr_row_ptr[i+1]; j++){
-            float_type value = dataset.csr_val[j];
+            float_type value = dataset.csr_val[j];               
             int cid = dataset.csr_col_idx[j];
             int part_id = std::min(i / ins_interval, part_width - 1) * part_length +
                     std::min(cid / fea_interval, part_length - 1);

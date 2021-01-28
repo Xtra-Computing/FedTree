@@ -72,7 +72,7 @@ protected:
     SyncArray<SplitPoint> sp;
     bool has_split;
 //    vector<Shard> shards;
-    DataSet* dataset;
+//    DataSet* dataset;
     DataSet sorted_dataset;
 };
 

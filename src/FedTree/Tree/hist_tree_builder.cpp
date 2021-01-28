@@ -827,7 +827,7 @@ void HistTreeBuilder::get_split_points_in_a_node(int node_id, int best_idx, floa
     sp_data[node_id].nid = node_id + nid_offset;
     sp_data[node_id].gain = fabsf(best_gain);
     int n_bins = cut.cut_points_val.size();
-    int n_column = dataset->n_features();
+    int n_column = sorted_dataset.n_features();
     sp_data[node_id].fval = cut_val_data[best_idx % n_bins];
     sp_data[node_id].split_bid = (unsigned char) (best_idx % n_bins - cut_col_ptr_data[fid]);
     sp_data[node_id].fea_missing_gh = missing_gh_data[node_id * n_column + hist_fid[best_idx]];
@@ -896,7 +896,7 @@ void HistTreeBuilder::update_ins2node_id_in_a_node(int node_id) {
         bool *h_s_data = has_splittable.host_data();
         int column_offset = 0;
 
-        int n_column = dataset->n_features();
+        int n_column = sorted_dataset.n_features();
         auto dense_bin_id_data = dense_bin_id.host_data();
         int max_num_bin = param.max_num_bin;
         vector<int> instances = {};
