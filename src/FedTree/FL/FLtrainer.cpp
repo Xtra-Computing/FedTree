@@ -10,6 +10,7 @@
 using namespace thrust;
 
 void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FLParam &params) {
+    /*
     // load dataset
     GBDTParam &model_param = params.gbdt_param;
     DataSet dataset;
@@ -21,7 +22,7 @@ void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FL
     Partition partition;
     vector<float> alpha;
     if (params.partition) {
-        partition.hybrid_partition(dataset, parties_size, alpha, subsets);
+        partition.hetero_partition(dataset, parties_size, true, subsets, alpha);
     }
     vector<int> n_instances_per_party = vector<int>();
     for(const DataSet& ds: subsets) {
@@ -71,6 +72,7 @@ void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FL
     for (int j = 0; j < parties_size; j++) {
         parties[j].gbdt.trees = trees;
     }
+     */
 }
 
 //for (int j = 0; j < params.gbdt_param.depth; j++) {
