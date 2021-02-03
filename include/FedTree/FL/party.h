@@ -34,6 +34,27 @@ public:
         party.booster.fbuilder->append_hist(hist);
     }
 
+    void send_node(int node_id, Party &party){
+        Tree::TreeNode *receiver_nodes_data = party.booster.fbuilder->trees.nodes.host_data();
+        Tree::TreeNode *sender_nodes_data = booster.fbuilder->trees.nodes.host_data();
+        auto& receiver_sp = party.booster.fbuilder->sp;
+        auto& sender_sp = booster.fbuilder->sp;
+        auto receiver_sp_data = receiver_sp.host_data();
+        auto sender_sp_data = sender_sp.host_data();
+        auto& receiver_ins2node_id = party.booster.fbuilder->ins2node_id;
+        auto& sender_ins2node_id = booster.fbuilder->ins2node_id;
+        auto receiver_ins2node_id_data = receiver_ins2node_id.host_data();
+        auto sender_ins2node_id_data = sender_ins2node_id.host_data();
+        int n_instances = party.booster.fbuilder->n_instances;
+
+        receiver_nodes_data[node_id] = sender_nodes_data[node_id];
+        receiver_sp_data[node_id] = sender_sp_data[node_id];
+
+        for (int iid = 0; iid < n_instances; iid++)
+            if (receiver_ins2node_id_data[iid] == node_id)
+                receiver_ins2node_id_data[iid] = sender_ins2node_id_data[iid];
+    }
+
 
     //for hybrid fl, the parties correct the merged trees.
     void correct_trees();

@@ -21,10 +21,11 @@ void TreeBuilder::init(DataSet &dataSet, const GBDTParam &param) {
     FunctionBuilder::init(dataSet, param);
 
 
-    if (!dataSet.has_csc)
+    if (!dataSet.has_csc and dataSet.csr_row_ptr.size() > 1)
         dataSet.csr_to_csc();
     this->sorted_dataset = dataSet;
-    seg_sort_by_key_cpu(sorted_dataset.csc_val, sorted_dataset.csc_row_idx, sorted_dataset.csc_col_ptr);
+    if (dataSet.csc_col_ptr.size() > 1)
+        seg_sort_by_key_cpu(sorted_dataset.csc_val, sorted_dataset.csc_row_idx, sorted_dataset.csc_col_ptr);
     this->n_instances = sorted_dataset.n_instances();
 //    trees = vector<Tree>(1);
     ins2node_id = SyncArray<int>(n_instances);
@@ -33,7 +34,6 @@ void TreeBuilder::init(DataSet &dataSet, const GBDTParam &param) {
     int n_outputs = param.num_class * n_instances;
     y_predict = SyncArray<float_type>(n_outputs);
     gradients = SyncArray<GHPair>(n_instances);
-
 }
 
 //void TreeBuilder::split_point_all_reduce(int depth) {
@@ -72,7 +72,7 @@ void TreeBuilder::predict_in_training(int k) {
     auto nid_data = ins2node_id.host_data();
     const Tree::TreeNode *nodes_data = trees.nodes.host_data();
     auto lr = param.learning_rate;
-    #pragma omp parallel for
+//    #pragma omp parallel for
     for(int i = 0; i < n_instances; i++){
         int nid = nid_data[i];
         while (nid != -1 && (nodes_data[nid].is_pruned)) nid = nodes_data[nid].parent_index;
@@ -81,7 +81,7 @@ void TreeBuilder::predict_in_training(int k) {
 }
 
 void TreeBuilder::build_init(const SyncArray<GHPair> &gradients, int k) {
-    this->ins2node_id.resize(n_instances);
+    this->ins2node_id.resize(n_instances); // initialize n_instances here
     this->gradients.set_host_data(const_cast<GHPair *>(gradients.host_data() + k * n_instances));
     this->trees.init_CPU(this->gradients, param);
 }
@@ -269,6 +269,58 @@ void TreeBuilder::update_tree() {
             nodes_data[node.rch_index].is_valid = false;
         }
     }
+    LOG(DEBUG) << tree.nodes;
+}
+
+void TreeBuilder::update_tree_in_a_node(int node_id) {
+    TIMED_FUNC(timerObj);
+    auto& sp = this->sp;
+    auto& tree = this->trees;
+    auto sp_data = sp.host_data();
+    LOG(DEBUG) << sp;
+    int n_nodes_in_level = sp.size();
+
+    Tree::TreeNode *nodes_data = tree.nodes.host_data();
+    float_type rt_eps = param.rt_eps;
+    float_type lambda = param.lambda;
+
+    float_type best_split_gain = sp_data[node_id].gain;
+    if (best_split_gain > rt_eps) {
+        //do split
+        //todo: check, thundergbm uses return
+        if (sp_data[node_id].nid == -1) return;
+        int nid = sp_data[node_id].nid;
+        Tree::TreeNode &node = nodes_data[nid];
+        node.gain = best_split_gain;
+
+        Tree::TreeNode &lch = nodes_data[node.lch_index];//left child
+        Tree::TreeNode &rch = nodes_data[node.rch_index];//right child
+        lch.is_valid = true;
+        rch.is_valid = true;
+        node.split_feature_id = sp_data[node_id].split_fea_id;
+        GHPair p_missing_gh = sp_data[node_id].fea_missing_gh;
+        //todo process begin
+        node.split_value = sp_data[node_id].fval;
+        node.split_bid = sp_data[node_id].split_bid;
+        rch.sum_gh_pair = sp_data[node_id].rch_sum_gh;
+        if (sp_data[node_id].default_right) {
+            rch.sum_gh_pair = rch.sum_gh_pair + p_missing_gh;
+            node.default_right = true;
+        }
+        lch.sum_gh_pair = node.sum_gh_pair - rch.sum_gh_pair;
+        lch.calc_weight(lambda);
+        rch.calc_weight(lambda);
+    } else {
+        //set leaf
+        //todo: check, thundergbm uses return
+        if (sp_data[node_id].nid == -1) return;
+        int nid = sp_data[node_id].nid;
+        Tree::TreeNode &node = nodes_data[nid];
+        node.is_leaf = true;
+        nodes_data[node.lch_index].is_valid = false;
+        nodes_data[node.rch_index].is_valid = false;
+    }
+
     LOG(DEBUG) << tree.nodes;
 }
 

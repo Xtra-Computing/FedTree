@@ -29,7 +29,9 @@ public:
 
     void init(DataSet &dataset, const GBDTParam &param) override;
 
-    virtual void update_tree();
+    void update_tree();
+
+    void update_tree_in_a_node(int node_id);
 
     virtual void update_tree_by_sp_values();
 
@@ -49,6 +51,8 @@ public:
     void update_gradients(SyncArray<GHPair> &gradients, SyncArray<float_type> &y, SyncArray<float_type> &y_p);
 
 
+
+
 //    virtual void init(const DataSet &dataset, const GBDTParam &param) {
 //        this->param = param;
 //    };
@@ -65,12 +69,13 @@ public:
 
     SyncArray<GHPair> gradients;
 
-protected:
     int n_instances;
     Tree trees;
     SyncArray<int> ins2node_id;
     SyncArray<SplitPoint> sp;
     bool has_split;
+
+protected:
 //    vector<Shard> shards;
 //    DataSet* dataset;
     DataSet sorted_dataset;

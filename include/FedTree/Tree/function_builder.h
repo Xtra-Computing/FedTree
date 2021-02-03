@@ -24,7 +24,7 @@ public:
 
     virtual void compute_gain_in_a_level(SyncArray<float_type> &gain, int n_nodes_in_level, int n_bins,
                                          int *hist_fid_data, SyncArray<GHPair> &missing_gh,
-                                         SyncArray<GHPair> &hist) = 0;
+                                         SyncArray<GHPair> &hist, int n_column) = 0;
 
     virtual void get_best_gain_in_a_level(SyncArray<float_type> &gain, SyncArray<int_float> &best_idx_gain,
                                           int n_nodes_in_level, int n_bins) = 0;
