@@ -16,6 +16,14 @@ class FunctionBuilder {
 public:
     virtual vector<Tree> build_approximate(const SyncArray<GHPair> &gradients, bool update_y_predict = true) = 0;
 
+    virtual Tree* build_tree_level_approximate(int level, int round) = 0;
+
+    virtual Tree get_tree()= 0;
+
+    virtual void set_tree(Tree tree) = 0;
+
+    virtual void set_y_predict(int k) = 0;
+
     virtual void build_init(const SyncArray<GHPair> &gradients, int k) = 0;
 
     virtual void compute_histogram_in_a_level(int level, int n_max_splits, int n_bins, int n_nodes_in_level,

@@ -33,6 +33,16 @@ public:
 
     void update_tree_in_a_node(int node_id);
 
+    Tree get_tree() override {
+        return this->trees;
+    }
+
+    void set_tree(Tree tree) override {
+       trees = Tree(tree);
+    }
+
+    void set_y_predict(int k) override;
+
     virtual void update_tree_by_sp_values();
 
     void predict_in_training(int k);
@@ -43,8 +53,6 @@ public:
 //    void get_split(int level, int device_id);
 
     void find_split (SyncArray<SplitPoint> &sp, int n_nodes_in_level, Tree tree, SyncArray<int_float> best_idx_gain, int nid_offset, HistCut cut, SyncArray<GHPair> hist, int n_bins);
-
-
 
     void merge_histograms();
 
@@ -57,11 +65,8 @@ public:
 //        this->param = param;
 //    };
 
-
 //for multi-device
 //    virtual void ins2node_id_all_reduce(int depth);
-
-
 
 //    virtual void split_point_all_reduce(int depth);
 
