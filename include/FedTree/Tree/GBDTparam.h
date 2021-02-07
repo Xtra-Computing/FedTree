@@ -37,6 +37,7 @@ struct GBDTParam {
 
     bool random_split; // whether or not use random split for empth feature node.
     int seed; // seed for random numbers;
+    int global_depth; // the depth of the global tree using in hybrid fl.
 };
 
 #endif //FEDTREE_GBDTPARAM_H

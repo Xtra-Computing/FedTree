@@ -30,9 +30,9 @@ void Server::hybrid_merge_trees(){
 //    LOG(INFO)<<"tree 1 nodes"<<local_trees[1].trees[0][0].nodes;
     int n_tree_per_round = local_trees[0].trees[0].size();
     vector<Tree> trees(n_tree_per_round);
-    int n_max_internal_nodes_in_a_tree = pow(2, model_param.depth) - 1;
+    int n_max_internal_nodes_in_a_tree = pow(2, model_param.global_depth) - 1;
     for (int tid = 0; tid < n_tree_per_round; tid++) {
-        trees[tid].init_structure(model_param.depth);
+        trees[tid].init_structure(model_param.global_depth);
         // maintain an array to store the current candidates and their gains. make node_gains sorted
         // and choose the last one each time.
         vector<int> treenode_candidates;
@@ -55,6 +55,7 @@ void Server::hybrid_merge_trees(){
         for(; nid < n_max_internal_nodes_in_a_tree; nid++) {
 //            std::cout<<"n_max_internal_nodes"<<n_max_internal_nodes_in_a_tree<<std::endl;
 //            std::cout<<"tree 0 n_nodes:"<<local_trees[0].trees[0][tid].nodes.size()<<std::endl;
+
 //            int n_internal_nodes = 0;
 //            for(int i = 0; i < local_trees[0].trees[0][tid].nodes.size(); i++){
 //                if(!local_trees[0].trees[0][tid].nodes.host_data()[i].is_leaf and (local_trees[0].trees[0][tid].nodes.host_data()[i].is_valid))

@@ -114,6 +114,8 @@ void Parser::parse_param(FLParam &fl_param, int argc, char **argv) {
                 gbdt_param->random_split = atoi(val);
             else if (str_name.compare("seed") == 0)
                 gbdt_param->seed = atoi(val);
+            else if (str_name.compare("global_depth") == 0)
+                gbdt_param->global_depth = atoi(val);
             else
                 LOG(INFO) << "\"" << name << "\" is unknown option!";
         } else {

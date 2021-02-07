@@ -186,8 +186,8 @@ void HistTreeBuilder::find_split_by_predefined_features(int level){
     LOG(TRACE) << "start finding split";
 
     auto t_build_start = timer.now();
-    // todo: thundergbm use n_max_splits size for hist and gain. don't know why. possible reason:
-    //  thundergbm last_hist set to maximum possible size (i.e., n_max_splits), to use copy_from, hist is also set the n_max_splits
+    // thundergbm use n_max_splits size for hist and gain. don't know why. possible reason:
+    // thundergbm last_hist set to maximum possible size (i.e., n_max_splits), to use copy_from, hist is also set the n_max_splits
     SyncArray<GHPair> hist(n_split);
 
     SyncArray<GHPair> &gh_pair = gradients;
