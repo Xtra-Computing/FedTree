@@ -47,14 +47,17 @@ void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FL
 
                 // Generate HistCut by server or each party
                 if (params.propose_split == 'server')
-                    server.booster.fbuilder -> get_cut_points_by_data_range(dataset, n_bins, dataset.n_instances);
+                    // TODO: aggregate dataset of all parties?
+                    // TODO: change it to feature range
+                    // TODO: Assume party can send feature range to server
+                    server.booster.fbuilder -> get_cut_points_by_feature_range(dataset, n_bins, dataset.n_instances);
                     // Send HisCut to parties
                     for (int p = 0; p < parties.size(); p++) {
                         parties[p].booster.fbuilder->set_cut(server.booster.fbuilder->get_cut());
                     }
                 else if (params.propose_split == 'client')
                     for (int p = 0; p < parties.size(); p++) {
-                        parties[p].booster.fbuider->get_cut_points_fast(dataset, n_bins, dataset.n_instances);
+                        parties[p].booster.fbuider->get_cut_points_fast(dataset, n_bins, parties[p].dataset.n_instances);
                     }
 
                 // Each Party Compute Histogram
@@ -97,7 +100,7 @@ void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FL
                         else
                             server.booster.fbuilder->merge_histograms_client_propose(server.booster.fbuilder->get_parties_hist());
                     else if (param.merge_histogram == 'client')
-                        server.booster.fbuilder -> parties_hist_init(parties.size());
+                        parties[0].booster.fbuilder -> parties_hist_init(parties.size());
                         for (j = 1; j < parties.size(); j++)
                             // send histogram from parties to leader
                             parties[0].booster.fbuilder->append_hist(parties[j].booster.fbuilder -> get_hist());
@@ -130,7 +133,7 @@ void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FL
 
                     // TODO: globally update trees of every party
                     for (int j = 0; j < parties.size();j++) {
-                        parties[0].booster.fbuilder->update_trees(server.booster.fbuilder->get_trees());
+                        parties[j].booster.fbuilder->update_trees(server.booster.fbuilder->get_trees());
                     }
                 }
 

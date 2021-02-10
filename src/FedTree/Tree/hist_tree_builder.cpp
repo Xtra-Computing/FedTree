@@ -989,16 +989,16 @@ void HistTreeBuilder::merge_histograms_server_propose() {
             GHPair &src = hist_data[j];
             GHPair &dest = merged_hist_data[j];
 
-            if (src.encrypted)
-                dest = dest.homo_add(src);
-            else
-                dest = dest + src;
+//            if (src.encrypted)
+//                dest = dest.homo_add(src);
+//            else
+//                dest = dest + src;
 
 //            if (enc)
 //                dest = dest.homo_add(src);
 //            else
 //                dest = dest + src;
-//            dest = dest + src;
+            dest = dest + src;
         }
     }
 
