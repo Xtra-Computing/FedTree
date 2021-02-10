@@ -44,9 +44,9 @@ public:
 private:
 
     std::unique_ptr<ObjectiveFunction> obj;
-    std::unique_ptr<Metric> metric;
     SyncArray<float_type> y;
 //    RowSampler rowSampler;
+    std::unique_ptr<Metric> metric;
     GBDTParam param;
     int n_devices;
 };

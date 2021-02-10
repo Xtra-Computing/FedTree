@@ -7,3 +7,4 @@ build.sh
 test.sh
 .idea/
 tgbm.model
+.gradle

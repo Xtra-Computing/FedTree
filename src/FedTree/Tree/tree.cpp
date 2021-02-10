@@ -31,7 +31,7 @@ void Tree::init_structure(int depth){
     int n_max_nodes = static_cast<int>(pow(2, depth + 1) - 1);
     nodes = SyncArray<TreeNode>(n_max_nodes);
     auto node_data = nodes.host_data();
-    #pragma omp parallel for
+//    #pragma omp parallel for
     for (int i = 0; i < n_max_nodes; i ++) {
         node_data[i].final_id = i;
         node_data[i].split_feature_id = -1;

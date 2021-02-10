@@ -29,7 +29,19 @@ public:
 
     void init(DataSet &dataset, const GBDTParam &param) override;
 
-    virtual void update_tree();
+    void update_tree();
+
+    void update_tree_in_a_node(int node_id);
+
+    Tree get_tree() override {
+        return this->trees;
+    }
+
+    void set_tree(Tree tree) override {
+       trees = Tree(tree);
+    }
+
+    void set_y_predict(int k) override;
 
     virtual void update_tree_by_sp_values();
 
@@ -42,22 +54,19 @@ public:
 
     void find_split (SyncArray<SplitPoint> &sp, int n_nodes_in_level, Tree tree, SyncArray<int_float> best_idx_gain, int nid_offset, HistCut cut, SyncArray<GHPair> hist, int n_bins);
 
-
-
     void merge_histograms();
 
     void update_gradients(SyncArray<GHPair> &gradients, SyncArray<float_type> &y, SyncArray<float_type> &y_p);
+
+
 
 
 //    virtual void init(const DataSet &dataset, const GBDTParam &param) {
 //        this->param = param;
 //    };
 
-
 //for multi-device
 //    virtual void ins2node_id_all_reduce(int depth);
-
-
 
 //    virtual void split_point_all_reduce(int depth);
 
@@ -65,20 +74,13 @@ public:
 
     SyncArray<GHPair> gradients;
 
-    Tree get_trees() {
-        return trees;
-    }
-
-    void update_trees(Tree trees_updated) {
-        trees = trees_updated;
-    }
-
-protected:
     int n_instances;
     Tree trees;
     SyncArray<int> ins2node_id;
     SyncArray<SplitPoint> sp;
     bool has_split;
+
+protected:
 //    vector<Shard> shards;
 //    DataSet* dataset;
     DataSet sorted_dataset;

@@ -157,7 +157,13 @@ int main(int argc, char** argv){
     LOG(INFO)<<"after party init";
 
     Server server;
+    if (fl_param.mode == "vertical"){
+        DataSet server_dataset;
+        server_dataset.y = dataset.y;
+        server.vertical_init(fl_param, dataset.n_instances(), n_instances_per_party, server_dataset);
+    }
     server.init(fl_param, dataset.n_instances(), n_instances_per_party);
+
     FLtrainer trainer;
     if (param.tree_method == "auto")
         param.tree_method = "hist";
@@ -219,6 +225,12 @@ int main(int argc, char** argv){
     }
     else if(fl_param.mode == "vertical"){
         trainer.vertical_fl_trainer(parties, server, fl_param);
+        float_type score;
+        if(use_global_test_set)
+            score = parties[0].gbdt.predict_score(fl_param.gbdt_param, test_dataset);
+        else
+            score = parties[0].gbdt.predict_score(fl_param.gbdt_param, test_subsets[0]);
+        scores.push_back(score);
     }
 
     float_type mean = 0;
