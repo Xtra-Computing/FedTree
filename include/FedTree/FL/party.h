@@ -12,6 +12,7 @@
 #include "FLparam.h"
 #include "FedTree/booster.h"
 #include "FedTree/Tree/gbdt.h"
+#include <algorithm>
 
 // Todo: the party structure
 class Party {
@@ -67,6 +68,50 @@ public:
         for (int iid = 0; iid < n_instances; iid++)
             if (receiver_ins2node_id_data[iid] == node_id)
                 receiver_ins2node_id_data[iid] = sender_ins2node_id_data[iid];
+    }
+
+    vector<float> slicing_value(vector<float> &val, int X, int Y) {
+        auto start = arr.begin() + X;
+        auto end = arr.begin() + Y + 1;
+        vector<int> result(Y - X + 1);
+        copy(start, end, result.begin());
+        return result;
+    }
+
+    int get_num_feature () {
+        return dataset.n_features();
+    }
+
+    // handle zero values
+    float determine_min(int num_of_values, int num_of_instances, float min) {
+        if (num_of_values == dataset.n_instances()) {
+            return min;
+        } else if (min < 0) {
+            return min;
+        } else return 0;
+    }
+
+    vector<float> get_feature_range_by_feature_index (int index) {
+        vector<float> feature_range(2);
+        vector<float> temp;
+
+        if (index == 0) {
+            int num_of_values = dataset.csc_col_ptr[0];
+            if (num_of_values > 0) {
+                temp = slicing_value(csc_val, 0, num_of_values - 1);
+                // find max and min from temp
+                auto minmax = std::minmax_element(temp);
+                feature_range[1] = *minmax.second;
+                feature_range[0] = determine_min(num_of_values, dataset.n_instances(), *minimax.first);
+            }
+        } else {
+            int num_of_values = dataset.csc_col_ptr[index] - dataset.csc_col_ptr[index - 1];
+            vector<float> temp = slicing_value(csc_val, dataset.csc_col_ptr[index-1], dataset.csc_col_ptr[index] - 1);
+            // find max and min from temp
+            auto minmax = std::minmax_element(temp);
+            feature_range[1] = *minmax.second;
+            feature_range[0] = determine_min(num_of_values, dataset.n_instances(), *minimax.first);
+        }return feature_range;
     }
 
 

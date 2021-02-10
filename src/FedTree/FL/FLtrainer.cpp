@@ -6,6 +6,7 @@
 #include "FedTree/FL/partition.h"
 #include "FedTree/FL/comm_helper.h"
 #include "thrust/sequence.h"
+#include <limits>
 
 using namespace thrust;
 
@@ -47,14 +48,29 @@ void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FL
 
                 // Generate HistCut by server or each party
                 if (params.propose_split == 'server')
-                    // TODO: aggregate dataset of all parties?
-                    // TODO: change it to feature range
                     // TODO: Assume party can send feature range to server
-                    server.booster.fbuilder -> get_cut_points_by_feature_range(dataset, n_bins, dataset.n_instances);
-                // Send HisCut to parties
-                for (int p = 0; p < parties.size(); p++) {
-                    parties[p].booster.fbuilder->set_cut(server.booster.fbuilder->get_cut());
-                }
+                    // loop through all party to find max and min for each feature
+                    float inf = std::numeric_limits<float>::infinity();
+                    vector<vector<float>> feature_range(parties[0].get_num_feature());
+                    for (int n = 0; n < parties[0].get_num_feature(); n++) {
+                        vector<float> min_max(2) = {inf, -inf};
+                        for (int p = 0; n < parties.size(); p++) {
+                            vector<float> temp = p.get_feature_range_by_n_feature(n);
+                            if (temp[0] <= min_max[0]):
+                                min_max[0] = temp[0];
+                            if (temp[1] >= min_max[1]):
+                                min_max[1] = temp[1];
+                        }
+                        // add min_max to feature_range
+                        feature_range[n] = min_max;
+                    }
+                    // once we have feature_range, we can generate cut points
+                    server.booster.fbuilder -> get_cut_points_by_feature_range(feature_range, num_bins);
+                    // Send HisCut to parties
+                    for (int p = 0; p < parties.size(); p++) {
+                        parties[p].booster.fbuilder->set_cut(server.booster.fbuilder->get_cut());
+                    }
+            }
                 else if (params.propose_split == 'client')
                     for (int p = 0; p < parties.size(); p++) {
                         parties[p].booster.fbuider->get_cut_points_fast(dataset, n_bins, parties[p].dataset.n_instances);
