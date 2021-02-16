@@ -418,6 +418,7 @@ void Partition::hybrid_partition_practical(const DataSet &dataset, const int n_p
     vector<vector<int>> party_fea_idx(n_parties);
     for(int i = 0; i < n_parties; i++){
         subsets[i].csr_row_ptr.push_back(0);
+        subsets[i].n_features_ = dataset.n_features_;
         std::shuffle(ins_idxs.data(), ins_idxs.data()+n_ins, gen);
         std::shuffle(fea_idxs.data(), fea_idxs.data()+n_fea, gen);
 	    int n_ins_party = (int) (ins_gau(generator) * n_ins);
