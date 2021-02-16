@@ -440,7 +440,7 @@ void Partition::hybrid_partition_practical(const DataSet &dataset, const int n_p
 
     for(int i = 0; i < n_ins; i++) {
         for (int pid = 0; pid < n_parties; pid++) {
-            if (thrust::binary_search(thrust::host, party_ins_idx.data(),party_ins_idx.data() + party_ins_idx.size(), i)) {
+            if (thrust::binary_search(thrust::host, party_ins_idx[pid].data(),party_ins_idx[pid].data() + party_ins_idx[pid].size(), i)) {
                 subsets[pid].y.push_back(dataset.y[i]);
             }
         }
@@ -452,8 +452,8 @@ void Partition::hybrid_partition_practical(const DataSet &dataset, const int n_p
             float_type value = dataset.csr_val[j];
             int cid = dataset.csr_col_idx[j];
             for(int pid = 0; pid < n_parties; pid++){
-                if(thrust::binary_search(thrust::host, party_ins_idx.data(), party_ins_idx.data() + party_ins_idx.size(), i)
-                &&  thrust::binary_search(thrust::host, party_fea_idx.data(), party_fea_idx.data() + party_fea_idx.size(), cid)){
+                if(thrust::binary_search(thrust::host, party_ins_idx[pid].data(), party_ins_idx[pid].data() + party_ins_idx[pid].size(), i)
+                &&  thrust::binary_search(thrust::host, party_fea_idx[pid].data(), party_fea_idx[pid].data() + party_fea_idx[pid].size(), cid)){
                     subsets[pid].csr_val.push_back(value);
                     subsets[pid].csr_col_idx.push_back(cid);
                     train_csr_row_sub[pid]++;
