@@ -100,7 +100,7 @@ vector<Tree> TreeBuilder::build_approximate(const SyncArray<GHPair> &gradients, 
 
         for (int level = 0; level < param.depth; ++level) {
             //LOG(INFO)<<"in level:"<<level;
-                find_split(level);
+            find_split(level);
             //split_point_all_reduce(level);
             {
                 TIMED_SCOPE(timerObj, "apply sp");

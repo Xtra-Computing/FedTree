@@ -5,6 +5,7 @@
 #include "FedTree/util/dirichlet.h"
 #include "thrust/sequence.h"
 #include "thrust/execution_policy.h"
+#include "thrust/binary_search.h"
 #include <cassert>
 
 
@@ -391,6 +392,79 @@ void Partition::horizontal_vertical_dir_partition(const DataSet &dataset, const 
 //            if(train_csr_row_sub[i])
 //                subsets[i].csr_row_ptr.push_back(subsets[i].csr_row_ptr.back()+train_csr_row_sub[i]);
 //        }
+    }
+}
+
+
+//1. each party randomly samples some instances with Gau(n_ins/n_party, sigma)
+//2. each party randomly samples some features with Gua(n_fea/2(or n_party), sigma)
+
+void Partition::hybrid_partition_practical(const DataSet &dataset, const int n_parties,
+                                           vector<SyncArray<bool>> &feature_map, vector<DataSet> &subsets,
+                                           int ins_gau_mean_factor, int ins_gau_sigma,
+                                           int fea_gau_mean_factor, int fea_gau_sigma, int seed){
+    int n_ins = dataset.n_instances();
+    int n_fea = dataset.n_features();
+    std::mt19937 gen(seed);
+    vector<int> ins_idxs(n_ins);
+    thrust::sequence(thrust::host, ins_idxs.data(), ins_idxs.data()+ins_idxs.size(), 0);
+    vector<int> fea_idxs(n_fea);
+    thrust::sequence(thrust::host, fea_idxs.data(), fea_idxs.data()+fea_idxs.size(), 0);
+    std::default_random_engine generator(seed);
+    std::normal_distribution<double> ins_gau(n_ins / ins_gau_mean_factor, ins_gau_sigma);
+    std::normal_distribution<double> fea_gau(n_fea / fea_gau_mean_factor, fea_gau_sigma);
+    vector<vector<int>> party_ins_idx(n_parties);
+    vector<vector<int>> party_fea_idx(n_parties);
+    for(int i = 0; i < n_parties; i++){
+        std::shuffle(ins_idxs.data(), ins_idxs.data()+n_ins, gen);
+        std::shuffle(fea_idxs.data(), fea_idxs.data()+n_fea, gen);
+        int n_ins_party = ins_gau(generator) * n_ins;
+        int n_fea_party = fea_gau(generator) * n_fea;
+        for(int j = 0; j < n_ins_party; j++){
+            party_ins_idx[i].push_back(ins_idxs[j]);
+        }
+        feature_map[i].resize(n_fea);
+        auto feature_map_data = feature_map[i].host_data();
+        for(int j = 0; j < feature_map[i].size(); j++){
+            feature_map_data[j] = false;
+        }
+        for(int j = 0; j < n_fea_party; j++){
+            party_fea_idx[i].push_back(fea_idxs[j]);
+            feature_map_data[fea_idxs[j]] = true;
+        }
+    }
+    for(int pid = 0; pid < n_parties; pid++){
+        thrust::sort(thrust::host, party_ins_idx[pid].data(), party_ins_idx[pid].data()+party_ins_idx[pid].size());
+        thrust::sort(thrust::host, party_fea_idx[pid].data(), party_fea_idx[pid].data()+party_fea_idx[pid].size());
+    }
+
+    for(int i = 0; i < n_ins; i++) {
+        for (int pid = 0; pid < n_parties; pid++) {
+            if (thrust::binary_search(thrust::host, party_ins_idx.data(),party_ins_idx.data() + party_ins_idx.size(), i)) {
+                subsets[pid].y.push_back(dataset.y[i]);
+            }
+        }
+    }
+
+    for(int i = 0; i < dataset.csr_row_ptr.size()-1; i++){
+        vector<int> train_csr_row_sub(n_parties, 0);
+        for(int j = dataset.csr_row_ptr[i]; j < dataset.csr_row_ptr[i+1]; j++){
+            float_type value = dataset.csr_val[j];
+            int cid = dataset.csr_col_idx[j];
+            for(int pid = 0; pid < n_parties; pid++){
+                if(thrust::binary_search(thrust::host, party_ins_idx.data(), party_ins_idx.data() + party_ins_idx.size(), i)
+                &&  thrust::binary_search(thrust::host, party_fea_idx.data(), party_fea_idx.data() + party_fea_idx.size(), cid)){
+                    subsets[pid].csr_val.push_back(value);
+                    subsets[pid].csr_col_idx.push_back(cid);
+                    train_csr_row_sub[pid]++;
+                }
+            }
+        }
+        for(int pid = 0; pid < n_parties; pid++){
+            if(train_csr_row_sub[pid]){
+                subsets[pid].csr_row_ptr.push_back(subsets[pid].csr_row_ptr.back()+train_csr_row_sub[pid]);
+            }
+        }
     }
 }
 

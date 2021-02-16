@@ -30,6 +30,11 @@ public:
 
     void train_test_split(DataSet &dataset, DataSet &train_dataset, DataSet &test_dataset, float train_portion = 0.75,
                           int split_seed = 42);
+
+    void hybrid_partition_practical(const DataSet &dataset, const int n_parties,
+                                    vector<SyncArray<bool>> &feature_map, vector<DataSet> &subsets,
+                                    int ins_gau_mean_factor, int ins_gau_sigma,
+                                    int fea_gau_mean_factor, int fea_gau_sigma, int seed = 42);
 };
 
 #endif //FEDTREE_PARTITION_H
