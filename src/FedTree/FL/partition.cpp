@@ -411,18 +411,30 @@ void Partition::hybrid_partition_practical(const DataSet &dataset, const int n_p
     vector<int> fea_idxs(n_fea);
     thrust::sequence(thrust::host, fea_idxs.data(), fea_idxs.data()+fea_idxs.size(), 0);
     std::default_random_engine generator(seed);
-    std::normal_distribution<double> ins_gau(n_ins / ins_gau_mean_factor, ins_gau_sigma);
-    std::normal_distribution<double> fea_gau(n_fea / fea_gau_mean_factor, fea_gau_sigma);
+    std::normal_distribution<double> ins_gau(1.0 / ins_gau_mean_factor, ins_gau_sigma);
+    std::normal_distribution<double> fea_gau(1.0 / fea_gau_mean_factor, fea_gau_sigma);
+    LOG(INFO)<<"1";
     vector<vector<int>> party_ins_idx(n_parties);
     vector<vector<int>> party_fea_idx(n_parties);
     for(int i = 0; i < n_parties; i++){
+        subsets[i].csr_row_ptr.push_back(0);
         std::shuffle(ins_idxs.data(), ins_idxs.data()+n_ins, gen);
         std::shuffle(fea_idxs.data(), fea_idxs.data()+n_fea, gen);
-        int n_ins_party = ins_gau(generator) * n_ins;
-        int n_fea_party = fea_gau(generator) * n_fea;
+	    int n_ins_party = (int) (ins_gau(generator) * n_ins);
+	    if(n_ins_party > n_ins)
+            n_ins_party = n_ins;
+        else if(n_ins_party <= 0)
+            n_ins_party = 1;
+        std::cout<<"n_ins_party:"<<n_ins_party<<std::endl;
+        int n_fea_party = (int) (fea_gau(generator) * n_fea);
+	    if(n_fea_party > n_fea)
+            n_fea_party = n_fea;
+        else if(n_fea_party < 0)
+            n_fea_party = 1;
         for(int j = 0; j < n_ins_party; j++){
             party_ins_idx[i].push_back(ins_idxs[j]);
         }
+	    LOG(INFO)<<"2";
         feature_map[i].resize(n_fea);
         auto feature_map_data = feature_map[i].host_data();
         for(int j = 0; j < feature_map[i].size(); j++){
@@ -433,11 +445,12 @@ void Partition::hybrid_partition_practical(const DataSet &dataset, const int n_p
             feature_map_data[fea_idxs[j]] = true;
         }
     }
+    LOG(INFO)<<"3";
     for(int pid = 0; pid < n_parties; pid++){
         thrust::sort(thrust::host, party_ins_idx[pid].data(), party_ins_idx[pid].data()+party_ins_idx[pid].size());
         thrust::sort(thrust::host, party_fea_idx[pid].data(), party_fea_idx[pid].data()+party_fea_idx[pid].size());
     }
-
+    LOG(INFO)<<"4";
     for(int i = 0; i < n_ins; i++) {
         for (int pid = 0; pid < n_parties; pid++) {
             if (thrust::binary_search(thrust::host, party_ins_idx[pid].data(),party_ins_idx[pid].data() + party_ins_idx[pid].size(), i)) {
@@ -445,7 +458,7 @@ void Partition::hybrid_partition_practical(const DataSet &dataset, const int n_p
             }
         }
     }
-
+    LOG(INFO)<<"5";
     for(int i = 0; i < dataset.csr_row_ptr.size()-1; i++){
         vector<int> train_csr_row_sub(n_parties, 0);
         for(int j = dataset.csr_row_ptr[i]; j < dataset.csr_row_ptr[i+1]; j++){
