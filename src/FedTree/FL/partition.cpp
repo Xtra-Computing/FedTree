@@ -428,13 +428,13 @@ void Partition::hybrid_partition_practical(const DataSet &dataset, const int n_p
 	    int n_ins_party = (int) (ins_gau(generator) * n_ins);
 	    if(n_ins_party > n_ins)
             n_ins_party = n_ins;
-        else if(n_ins_party <= 0)
-            n_ins_party = 1;
+        else if(n_ins_party < 10)
+            n_ins_party = 10;
         std::cout<<"n_ins_party:"<<n_ins_party<<std::endl;
         int n_fea_party = (int) (fea_gau(generator) * n_fea);
 	    if(n_fea_party > n_fea)
             n_fea_party = n_fea;
-        else if(n_fea_party < 0)
+        else if(n_fea_party < 1)
             n_fea_party = 1;
         for(int j = 0; j < n_ins_party; j++){
             party_ins_idx[i].push_back(ins_idxs[j]);
@@ -457,13 +457,13 @@ void Partition::hybrid_partition_practical(const DataSet &dataset, const int n_p
         thrust::sort(thrust::host, party_fea_idx[pid].data(), party_fea_idx[pid].data()+party_fea_idx[pid].size());
     }
     LOG(INFO)<<"4";
-    for(int i = 0; i < n_ins; i++) {
-        for (int pid = 0; pid < n_parties; pid++) {
-            if (thrust::binary_search(thrust::host, party_ins_idx[pid].data(),party_ins_idx[pid].data() + party_ins_idx[pid].size(), i)) {
-                subsets[pid].y.push_back(dataset.y[i]);
-            }
-        }
-    }
+    //for(int i = 0; i < n_ins; i++) {
+    //    for (int pid = 0; pid < n_parties; pid++) {
+    //        if (thrust::binary_search(thrust::host, party_ins_idx[pid].data(),party_ins_idx[pid].data() + party_ins_idx[pid].size(), i)) {
+    //            subsets[pid].y.push_back(dataset.y[i]);
+    //        }
+    //    }
+    //}
     LOG(INFO)<<"5";
     for(int i = 0; i < dataset.csr_row_ptr.size()-1; i++){
         vector<int> train_csr_row_sub(n_parties, 0);
@@ -481,6 +481,7 @@ void Partition::hybrid_partition_practical(const DataSet &dataset, const int n_p
         }
         for(int pid = 0; pid < n_parties; pid++){
             if(train_csr_row_sub[pid]){
+                subsets[pid].y.push_back(dataset.y[i]);
                 subsets[pid].csr_row_ptr.push_back(subsets[pid].csr_row_ptr.back()+train_csr_row_sub[pid]);
             }
         }
@@ -589,6 +590,7 @@ void Partition::hybrid_partition_with_test(const DataSet &dataset, const int n_p
 
 void Partition::train_test_split(DataSet &dataset, DataSet &train_dataset, DataSet &test_dataset, float train_portion, int split_seed){
     int n_instances = dataset.n_instances();
+    CHECK_EQ(n_instances, dataset.csr_row_ptr.size()-1);
     int n_train = n_instances * train_portion;
     int n_test = n_instances - n_train;
     vector<int> idxs(n_instances);
