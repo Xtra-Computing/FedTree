@@ -696,7 +696,7 @@ void DataSet::load_from_files(vector<string> file_names, FLParam &param) {
 }
 
 // merge from multiple subsets which have the same feature space.
-void DataSet::merge_from_subsets(vector<DataSet> &subsets){
+void DataSet::merge_from_subsets(vector<DataSet> &subsets, FLParam &param){
     y.clear();
     csr_val.clear();
     csr_col_idx.clear();
@@ -712,5 +712,10 @@ void DataSet::merge_from_subsets(vector<DataSet> &subsets){
             csr_row_ptr.push_back(prev_csr_row_ptr + subsets[i].csr_row_ptr[j]);
         }
         prev_csr_row_ptr += subsets[i].csr_row_ptr.back();
+    }
+    if (ObjectiveFunction::need_load_group_file(param.gbdt_param.objective)) load_group_file(file_name + ".group");
+    if (ObjectiveFunction::need_group_label(param.gbdt_param.objective)) {
+        group_label();
+        param.gbdt_param.num_class = label.size();
     }
 }

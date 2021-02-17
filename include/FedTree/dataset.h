@@ -23,7 +23,7 @@ class DataSet{
 
     void load_csc_from_file(string file_name, FLParam &param, int const nfeatures=500);
     void csr_to_csc();
-    void merge_from_subsets(vector<DataSet> &subsets);
+    void merge_from_subsets(vector<DataSet> &subsets, FLParam &param);
 
     size_t n_features() const;
 
