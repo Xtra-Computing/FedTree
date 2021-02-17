@@ -111,6 +111,8 @@ public:
 
     void compute_leaf_value();
 
+    void save_to_file(string file_path);
+
     private:
     void preorder_traversal(int nid, int max_depth, int depth, string &s) const;
 

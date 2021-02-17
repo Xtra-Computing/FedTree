@@ -21,6 +21,7 @@ public:
     string privacy_tech; //"none" or "he" or "dp"
     float variance; // variance of dp noise if privacy_tech=="dp"
     GBDTParam gbdt_param; // parameters for the gbdt training
+    string tree_file_path;
 };
 
 

@@ -124,9 +124,9 @@ void Tree::preorder_traversal(int nid, int max_depth, int depth, string &s) cons
 }
 
 std::ostream &operator<<(std::ostream &os, const Tree::TreeNode &node) {
-    os << string_format("\nnid:%d,l:%d,v:%d,p:%d,lch:%d,rch:%d,split_feature_id:%d,f:%f,gain:%f,r:%d,w:%f,", node.final_id, node.is_leaf,
+    os << string_format("\nnid:%d,l:%d,v:%d,p:%d,lch:%d,rch:%d,split_feature_id:%d,f:%f,split_bin_id:%d,gain:%f,r:%d,w:%f,", node.final_id, node.is_leaf,
                         node.is_valid, node.is_pruned, node.lch_index, node.rch_index,
-                        node.split_feature_id, node.split_value, node.gain, node.default_right, node.base_weight);
+                        node.split_feature_id, node.split_value, node.split_bid, node.gain, node.default_right, node.base_weight);
     os << "g/h:" << node.sum_gh_pair;
     return os;
 }
@@ -185,4 +185,13 @@ void Tree::prune_self(float_type gamma) {
     }
     LOG(DEBUG) << string_format("%d nodes are pruned", n_pruned);
     reorder_nid();
+}
+
+void Tree::save_to_file(string file_path){
+    std::ofstream outfile;
+    outfile.open(file_path, std::ios::app);
+    Tree::TreeNode *nodes_data = nodes.host_data();
+    for(int i = 0; i < nodes.size(); ++i){
+        outfile<<nodes_data[i]<<std::endl;
+    }
 }

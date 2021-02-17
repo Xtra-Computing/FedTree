@@ -21,6 +21,7 @@ void Parser::parse_param(FLParam &fl_param, int argc, char **argv) {
     fl_param.alpha = 100;
     fl_param.n_hori = 2;
     fl_param.n_verti = 2;
+    fl_param.tree_file_path = "tree.txt";
 
     GBDTParam *gbdt_param = &fl_param.gbdt_param;
 
@@ -73,6 +74,8 @@ void Parser::parse_param(FLParam &fl_param, int argc, char **argv) {
                 fl_param.n_hori = atoi(val);
             else if (str_name.compare("n_verti") == 0)
                 fl_param.n_verti = atoi(val);
+            else if (str_name.compare("tree_file_path") == 0)
+                fl_param.tree_file_path = val;
             // GBDT params
             else if ((str_name.compare("max_depth") == 0) || (str_name.compare("depth") == 0))
                 gbdt_param->depth = atoi(val);
@@ -144,7 +147,7 @@ void Parser::parse_param(FLParam &fl_param, int argc, char **argv) {
 }
 
 // TODO: implement Tree and DataSet; check data structure compatibility
-void Parser::load_model(string model_path, GBDTParam &model_param, vector<vector<Tree>> &boosted_model, DataSet & dataset) {
+void Parser::load_model(string model_path, GBDTParam &model_param, vector<vector<Tree>> &boosted_model, DataSet &dataset) {
     ifstream ifs(model_path, ios::binary);
     CHECK_EQ(ifs.is_open(), true);
     int length;

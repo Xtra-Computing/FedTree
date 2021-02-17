@@ -170,6 +170,10 @@ void FLtrainer::hybrid_fl_trainer(vector<Party> &parties, Server &server, FLPara
             parties[pid].booster.boost_without_prediction(parties[pid].gbdt.trees);
 //            obj->get_gradient(y, fbuilder->get_y_predict(), gradients);
             LOG(INFO) << "send last trees to server";
+            vector<Tree> &trees = parties[pid].gbdt.trees.back();
+            for(int i = 0; i < trees.size(); i++){
+                trees[i].save_to_file(params.tree_file_path);
+            }
             comm_helper.send_last_trees_to_server(parties[pid], pid, server);
             parties[pid].gbdt.trees.pop_back();
         }
