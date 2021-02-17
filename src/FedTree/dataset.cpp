@@ -713,7 +713,6 @@ void DataSet::merge_from_subsets(vector<DataSet> &subsets, FLParam &param){
         }
         prev_csr_row_ptr += subsets[i].csr_row_ptr.back();
     }
-    if (ObjectiveFunction::need_load_group_file(param.gbdt_param.objective)) load_group_file(file_name + ".group");
     if (ObjectiveFunction::need_group_label(param.gbdt_param.objective)) {
         group_label();
         param.gbdt_param.num_class = label.size();

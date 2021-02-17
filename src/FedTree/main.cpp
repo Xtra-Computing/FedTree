@@ -218,7 +218,7 @@ int main(int argc, char** argv){
         }
         else {
             DataSet train_dataset;
-            train_dataset.merge_from_subsets(train_subsets);
+            train_dataset.merge_from_subsets(train_subsets, fl_param);
             gbdt.train(fl_param.gbdt_param, train_dataset);
             for(int i = 0; i < n_parties; i++) {
                 score = gbdt.predict_score(fl_param.gbdt_param, test_subsets[i]);
