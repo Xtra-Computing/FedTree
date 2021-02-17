@@ -11,6 +11,18 @@
 // Todo: FLParams structure
 class FLParam {
 public:
+    FLParam() {
+        n_parties = 2;
+        partition = 1;
+        alpha = 100;
+        n_hori = 2;
+        n_verti = 1;
+        mode = "hybrid";
+        partition_mode = "hybrid2";
+        privacy_tech = "none";
+        variance = 0;
+        tree_file_path = "trees.txt";
+    }
     int n_parties; // number of parties
     bool partition; // input a single dataset for partitioning or input datasets for each party.
     float alpha; //the concentration parameter of Dir based partition approaches.
