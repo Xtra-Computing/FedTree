@@ -694,3 +694,23 @@ void DataSet::load_from_files(vector<string> file_names, FLParam &param) {
         prev_csr_row_ptr += next.n_instances();
     }
 }
+
+// merge from multiple subsets which have the same feature space.
+void DataSet::merge_from_subsets(vector<DataSet> &subsets){
+    y.clear();
+    csr_val.clear();
+    csr_col_idx.clear();
+    csr_row_ptr.resize(1, 0);
+    n_features_ = subsets[0].n_features_;
+
+    int prev_csr_row_ptr = 0;
+    for(int i = 0; i < subsets.size(); i++){
+        y.insert(y.end(), subsets[i].y.begin(), subsets[i].y.end());
+        csr_val.insert(csr_val.end(), subsets[i].csr_val.begin(), subsets[i].csr_val.end());
+        csr_col_idx.insert(csr_col_idx.end(), subsets[i].csr_col_idx.begin(), subsets[i].csr_col_idx.end());
+        for(int j = 1; j < subsets[i].csr_row_ptr.size(); j++){
+            csr_row_ptr.push_back(prev_csr_row_ptr + subsets[i].csr_row_ptr[j]);
+        }
+        prev_csr_row_ptr += subsets[i].csr_row_ptr.back();
+    }
+}

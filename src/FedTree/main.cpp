@@ -210,13 +210,16 @@ int main(int argc, char** argv){
     }
     else if(fl_param.mode == "centralized"){
         GBDT gbdt;
-        gbdt.train(fl_param.gbdt_param, dataset);
         float_type score;
         if(use_global_test_set) {
+            gbdt.train(fl_param.gbdt_param, dataset);
             score = gbdt.predict_score(fl_param.gbdt_param, test_dataset);
             scores.push_back(score);
         }
         else {
+            DataSet train_dataset;
+            train_dataset.merge_from_subsets(train_subsets);
+            gbdt.train(fl_param.gbdt_param, train_dataset);
             for(int i = 0; i < n_parties; i++) {
                 score = gbdt.predict_score(fl_param.gbdt_param, test_subsets[i]);
                 scores.push_back(score);
