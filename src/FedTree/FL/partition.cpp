@@ -397,12 +397,12 @@ void Partition::horizontal_vertical_dir_partition(const DataSet &dataset, const 
 
 
 //1. each party randomly samples some instances with Gau(n_ins/n_party, sigma)
-//2. each party randomly samples some features with Gua(n_fea/2(or n_party), sigma)
+//2. each party randomly samples some features with Gau(n_fea/2(or n_party), sigma)
 
 void Partition::hybrid_partition_practical(const DataSet &dataset, const int n_parties,
                                            vector<SyncArray<bool>> &feature_map, vector<DataSet> &subsets,
-                                           int ins_gau_mean_factor, int ins_gau_sigma,
-                                           int fea_gau_mean_factor, int fea_gau_sigma, int seed){
+                                           int ins_gau_mean_factor, float ins_gau_sigma,
+                                           int fea_gau_mean_factor, float fea_gau_sigma, int seed){
     int n_ins = dataset.n_instances();
     int n_fea = dataset.n_features();
     std::mt19937 gen(seed);
@@ -413,6 +413,10 @@ void Partition::hybrid_partition_practical(const DataSet &dataset, const int n_p
     std::default_random_engine generator(seed);
     std::normal_distribution<double> ins_gau(1.0 / ins_gau_mean_factor, ins_gau_sigma);
     std::normal_distribution<double> fea_gau(1.0 / fea_gau_mean_factor, fea_gau_sigma);
+    std::cout<<"test gaussian:";
+    for(int i = 0; i < 100; i++){
+        std::cout<<ins_gau(generator)<<" ";
+    }
     LOG(INFO)<<"1";
     vector<vector<int>> party_ins_idx(n_parties);
     vector<vector<int>> party_fea_idx(n_parties);
@@ -435,7 +439,8 @@ void Partition::hybrid_partition_practical(const DataSet &dataset, const int n_p
         for(int j = 0; j < n_ins_party; j++){
             party_ins_idx[i].push_back(ins_idxs[j]);
         }
-	    LOG(INFO)<<"2";
+        std::cout<<"n_fea_party:"<<n_fea_party<<std::endl;
+        LOG(INFO)<<"2";
         feature_map[i].resize(n_fea);
         auto feature_map_data = feature_map[i].host_data();
         for(int j = 0; j < feature_map[i].size(); j++){
