@@ -79,9 +79,12 @@ void Server::hybrid_merge_trees(){
             int nid_max_gain = id_with_max_gain % n_max_internal_nodes_in_a_tree;
             auto node_max_gain_data = local_trees[pid_max_gain].trees[0][tid].nodes.host_data();
             global_tree_node_data[nid] = node_max_gain_data[nid_max_gain];
+            global_tree_node_data[nid].is_leaf = false;
             global_tree_node_data[nid].gain = max_gain;
             global_tree_node_data[nid].lch_index = nid * 2 + 1;
+            global_tree_node_data[nid * 2 + 1].is_leaf = true;
             global_tree_node_data[nid].rch_index = nid * 2 + 2;
+            global_tree_node_data[nid * 2 + 2].is_leaf = true;
             global_tree_node_data[nid].parent_index = nid == 0 ? -1 : (nid - 1) / 2;
             global_tree_node_data[nid].final_id = nid;
 //            global_tree_node_dright_childata[nid].split_feature_id = node_max_gain_data.split_feature_id;
