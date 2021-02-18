@@ -194,5 +194,6 @@ void Tree::save_to_file(string file_path){
     for(int i = 0; i < nodes.size(); ++i){
         outfile<<nodes_data[i];
     }
+    outfile<<std::endl;
     outfile.close();
 }

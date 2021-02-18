@@ -92,7 +92,7 @@ int main(int argc, char** argv){
             if(fl_param.partition_mode == "hybrid")
                 partition.horizontal_vertical_dir_partition(dataset, n_parties, fl_param.alpha, feature_map, subsets, fl_param.n_hori, fl_param.n_verti);
             else if(fl_param.partition_mode == "hybrid2")
-                partition.hybrid_partition_practical(dataset, n_parties, feature_map, subsets, n_parties, 0.005, 2, 0.05);
+                partition.hybrid_partition_practical(dataset, n_parties, feature_map, subsets, n_parties, 0.05, 2, 0.05);
 	        LOG(INFO)<<"finish partition";
 //            std::cout<<"subsets[0].n_instances:"<<subsets[0].n_instances()<<std::endl;
 //            std::cout<<"subsets[0].nnz:"<<subsets[0].csr_val.size()<<std::endl;
@@ -219,8 +219,10 @@ int main(int argc, char** argv){
         else {
             DataSet train_dataset;
             train_dataset.merge_from_subsets(train_subsets, fl_param);
+            train_dataset.label = train_subsets[0].label;
             gbdt.train(fl_param.gbdt_param, train_dataset);
             for(int i = 0; i < n_parties; i++) {
+                //test_subsets[i].label = train_dataset.label;
                 score = gbdt.predict_score(fl_param.gbdt_param, test_subsets[i]);
                 scores.push_back(score);
             }

@@ -20,7 +20,8 @@ public:
         rt_eps = 1e-6;
         column_sampling_rate = 1;
         path = "../dataset/test_dataset.txt";
-        test_path = "../dataset/test_dataset.txt";
+        //test_path = "../dataset/test_dataset.txt";
+        test_path = "";
         verbose = 1;
         profiling = false;
         bagging = false;
