@@ -185,7 +185,7 @@ void FLtrainer::hybrid_fl_trainer(vector<Party> &parties, Server &server, FLPara
             parties[pid].gbdt.trees.pop_back();
         }
         LOG(INFO) << "merge trees";
-        server.hybrid_merge_trees();
+        server.hybrid_merge_trees(params.scale_gain);
         LOG(INFO) << "send back trees";
         // todo: send the trees to the party to correct the trees and compute leaf values
 //        #pragma omp parallel for

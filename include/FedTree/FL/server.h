@@ -20,7 +20,7 @@ public:
     void send_info(string info_type);
 //    void send_info(vector<Party> &parties, AdditivelyHE::PaillierPublicKey serverKey,vector<SplitCandidate>candidates);
     void sum_histograms();
-    void hybrid_merge_trees();
+    void hybrid_merge_trees(bool scale_gain);
     void ensemble_merge_trees();
     GBDT global_trees;
     vector<GBDT> local_trees;

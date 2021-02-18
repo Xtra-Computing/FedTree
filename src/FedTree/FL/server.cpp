@@ -25,7 +25,7 @@ void Server::init(FLParam &param, int n_total_instances, vector<int> &n_instance
 }
 
 
-void Server::hybrid_merge_trees(){
+void Server::hybrid_merge_trees(bool scale_gain){
 //    LOG(INFO)<<"tree 0 nodes"<<local_trees[0].trees[0][0].nodes;
 //    LOG(INFO)<<"tree 1 nodes"<<local_trees[1].trees[0][0].nodes;
     int n_tree_per_round = local_trees[0].trees[0].size();
@@ -41,7 +41,9 @@ void Server::hybrid_merge_trees(){
             //store the root nodes of all local trees
             //the new node id: party_id * n_max_internal_nodes_in_a_tree + node_id
             treenode_candidates.push_back(pid * n_max_internal_nodes_in_a_tree);
-            float scale_factor = 1.0 * n_total_instances / n_instances_per_party[pid];
+            float scale_factor = 1.0;
+            if(scale_gain)
+                scale_factor = 1.0 * n_total_instances / n_instances_per_party[pid];
             //float scale_factor = 1.0;
             candidate_gains.push_back(local_trees[pid].trees[0][tid].nodes.host_data()[0].gain * scale_factor);
             //check the node id after prune.
@@ -95,7 +97,9 @@ void Server::hybrid_merge_trees(){
             //float scale_factor = 1.0 * n_total_instances / n_instance_per_party[pid_max_gain];
             int left_child = node_max_gain_data[nid_max_gain].lch_index;
             if((!node_max_gain_data[left_child].is_leaf) and node_max_gain_data[left_child].is_valid) {
-                float scale_factor = 1.0 * n_total_instances / node_max_gain_data[left_child].n_instances;
+                float scale_factor = 1.0;
+                if(scale_gain)
+                    scale_factor = 1.0 * n_total_instances / node_max_gain_data[left_child].n_instances;
                 //float scale_factor = 1.0;
                 float_type left_gain = node_max_gain_data[left_child].gain * scale_factor;
                 auto insert_pos = thrust::lower_bound(thrust::host, candidate_gains.data(),
@@ -116,7 +120,9 @@ void Server::hybrid_merge_trees(){
             }
             int right_child = node_max_gain_data[nid_max_gain].rch_index;
             if((!node_max_gain_data[right_child].is_leaf) and node_max_gain_data[right_child].is_valid){
-                float scale_factor = 1.0 * n_total_instances / node_max_gain_data[right_child].n_instances;
+                float scale_factor = 1.0;
+                if(scale_gain)
+                    scale_factor = 1.0 * n_total_instances / node_max_gain_data[right_child].n_instances;
                 //float scale_factor = 1.0;
                 float_type right_gain = node_max_gain_data[right_child].gain * scale_factor;
                 auto insert_pos = thrust::lower_bound(thrust::host, candidate_gains.data(),

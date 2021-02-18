@@ -22,6 +22,7 @@ void Parser::parse_param(FLParam &fl_param, int argc, char **argv) {
     fl_param.n_hori = 2;
     fl_param.n_verti = 2;
     fl_param.tree_file_path = "tree.txt";
+    fl_param.scale_gain = 1;
 
     GBDTParam *gbdt_param = &fl_param.gbdt_param;
 
@@ -76,6 +77,8 @@ void Parser::parse_param(FLParam &fl_param, int argc, char **argv) {
                 fl_param.n_verti = atoi(val);
             else if (str_name.compare("tree_file_path") == 0)
                 fl_param.tree_file_path = val;
+            else if (str_name.compare("scale_gain") == 0)
+                fl_param.scale_gain = atoi(val);
             // GBDT params
             else if ((str_name.compare("max_depth") == 0) || (str_name.compare("depth") == 0))
                 gbdt_param->depth = atoi(val);
