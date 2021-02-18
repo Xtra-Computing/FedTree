@@ -173,9 +173,12 @@ void FLtrainer::hybrid_fl_trainer(vector<Party> &parties, Server &server, FLPara
             vector<Tree> &trees = parties[pid].gbdt.trees.back();
             std::ofstream outfile;
             outfile.open(params.tree_file_path, std::ios::app);
-            outfile<<"Party "<<pid;
+            outfile<<"Party "<<pid<<std::endl;
+            outfile.close();
             for(int i = 0; i < trees.size(); i++){
-                outfile<<"Tree "<<i;
+                outfile.open(params.tree_file_path, std::ios::app);
+                outfile<<"Tree "<<i<<std::endl;
+                outfile.close();
                 trees[i].save_to_file(params.tree_file_path);
             }
             comm_helper.send_last_trees_to_server(parties[pid], pid, server);
