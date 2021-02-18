@@ -192,6 +192,7 @@ void Tree::save_to_file(string file_path){
     outfile.open(file_path, std::ios::app);
     Tree::TreeNode *nodes_data = nodes.host_data();
     for(int i = 0; i < nodes.size(); ++i){
-        outfile<<nodes_data[i]<<std::endl;
+        outfile<<nodes_data[i];
     }
+    outfile.close();
 }

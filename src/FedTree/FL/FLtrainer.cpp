@@ -171,7 +171,11 @@ void FLtrainer::hybrid_fl_trainer(vector<Party> &parties, Server &server, FLPara
 //            obj->get_gradient(y, fbuilder->get_y_predict(), gradients);
             LOG(INFO) << "send last trees to server";
             vector<Tree> &trees = parties[pid].gbdt.trees.back();
+            std::ofstream outfile;
+            outfile.open(params.tree_file_path, std::ios::app);
+            outfile<<"Party "<<pid;
             for(int i = 0; i < trees.size(); i++){
+                outfile<<"Tree "<<i;
                 trees[i].save_to_file(params.tree_file_path);
             }
             comm_helper.send_last_trees_to_server(parties[pid], pid, server);

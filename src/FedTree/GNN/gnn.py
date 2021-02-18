@@ -2,9 +2,10 @@ import torch
 from torch_geometric.data import Data
 
 
+tree_file = open("tree.txt", "r")
 
-
-edge_index = load_
+for tree_node in tree_file:
+    
 
 
 
