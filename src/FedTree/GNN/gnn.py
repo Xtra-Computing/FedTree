@@ -6,7 +6,7 @@ from torch_geometric.data import Data
 tree_file = open("tree.txt", "r")
 
 # graphs = []
-edges_all_graphs = {}
+edges_all_graphs = []
 edges = []
 x = []
 y = []
@@ -15,7 +15,9 @@ nodes_labels = {}
 level = {}
 
 for tree_node in tree_file:
-    if "Party" or "Tree" in tree_node:
+    if tree_node == "" or tree_node == "\n":
+        continue
+    if ("Party" in tree_node) or ("Tree" in tree_node):
         if edges != []:
             edges_all_graphs.append(edges)
             features = []
@@ -25,6 +27,7 @@ for tree_node in tree_file:
             y.append([nodes_labels[i] for i in range(len(nodes_labels))])
 
         values = re.findall(r"[-+]?\d*\.\d+|\d+", tree_node)
+        #print("values:", values)
         if "Party" in tree_node:
             pid = values[0]
         else:
@@ -36,11 +39,14 @@ for tree_node in tree_file:
         continue
     #     use comma to partition the string. then process each string.
     features = tree_node.split(',')
+    #print("features:", features)
     for feature in features:
+        #print("feature:", feature)
         values = re.findall(r"[-+]?\d*\.\d+|\d+", feature)
-        value = values[0]
+        #print("values:", values)
+        value = float(values[0])
         if feature.find("nid:") == 0:
-            nid = value
+            nid = int(value)
         elif feature.find("l:") == 0:
             l = value
         elif feature.find("v:") == 0:
@@ -67,16 +73,20 @@ for tree_node in tree_file:
             g = values[0]
             h = values[1]
         elif feature.find("left_nid:") == 0:
-            left_nid = value
+            left_nid = int(value)
         elif feature.find("right_nid:") == 0:
-            right_nid = value
+            right_nid = int(value)
     if v == 1:
         if nid not in level.keys():
             level[nid] = 0
-            level[left_nid] = 0
-            level[right_nid] = 0
-        level[left_nid] += 1
-        level[right_nid] += 1
+            level[left_nid] = 1
+            level[right_nid] = 1
+        if left_nid not in level.keys():
+            level[left_nid] = level[nid] + 1
+        if right_nid not in level.keys():
+            level[right_nid] = level[nid] + 1
+        #level[left_nid] += 1
+        #level[right_nid] += 1
         edges.append([nid, left_nid])
         edges.append([nid, right_nid])
     if (l == 1) or (v == 0):
@@ -94,7 +104,12 @@ for nid in range(len(nodes_features)):
 x.append(features)
 y.append([nodes_labels[i] for i in range(len(nodes_labels))])
 
-
+#print("edges_all_graphs:", edges_all_graphs)
+#print("x:", x)
+#print("y:", y)
+print("len edges_all_graphs:", len(edges_all_graphs))
+print("len x:", len(x))
+print("len y:", len(y))
     # [int(s) for s in str.split() if s.isdigit()]
     # tree_node.partition("nid:")[2]
 
