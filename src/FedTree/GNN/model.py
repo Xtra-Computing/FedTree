@@ -3,7 +3,7 @@ import torch.nn.functional as F
 from torch_geometric.nn import GCNConv, ChebConv  # noqa
 
 
-class Net(torch.nn.Module):
+class GCN(torch.nn.Module):
     def __init__(self):
         super(Net, self).__init__()
         self.conv1 = GCNConv(dataset.num_features, 16, cached=True,
