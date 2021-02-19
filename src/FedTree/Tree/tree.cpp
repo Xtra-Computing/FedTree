@@ -192,7 +192,11 @@ void Tree::save_to_file(string file_path){
     outfile.open(file_path, std::ios::app);
     Tree::TreeNode *nodes_data = nodes.host_data();
     for(int i = 0; i < nodes.size(); ++i){
-        outfile<<nodes_data[i];
+        if(nodes_data[i].is_valid and !nodes_data[i].is_pruned) {
+            outfile << nodes_data[i];
+            outfile << ",left_nid:" << nodes_data[nodes_data[i].lch].final_id;
+            outfile << ",right_nid:" << nodes_data[nodes_data[i].rch].final_id;
+        }
     }
     outfile<<std::endl;
     outfile.close();

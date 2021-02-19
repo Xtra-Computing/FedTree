@@ -10,7 +10,10 @@ edges_all_graphs = []
 edges = []
 x = []
 level = {}
+n_node = 0
 for tree_node in tree_file:
+    if "nid:" in tree_node:
+        n_node += 1
     if "Party" or "Tree" in tree_node:
         edges = []
         x = []
