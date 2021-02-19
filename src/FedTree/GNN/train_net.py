@@ -110,7 +110,14 @@ y.append([nodes_labels[i] for i in range(len(nodes_labels))])
 print("len edges_all_graphs:", len(edges_all_graphs))
 print("len x:", len(x))
 print("len y:", len(y))
-    # [int(s) for s in str.split() if s.isdigit()]
-    # tree_node.partition("nid:")[2]
 
+graph_datasets=[]
+for graph_id in range(len(edges_all_graphs)):
+    edge_index = torch.tensor(edges_all_graphs[graph_id], dtype=torch.long).t().contiguous()
+    x = torch.tensor(x[graph_id], dtype=torch.float)
+    y = torch.tensor(y[graph_id], dtype=torch.long)
+    data = Data(x=x, edge_index=edge_index, y=y)
+    graph_datasets.append(data)
+
+    
 
