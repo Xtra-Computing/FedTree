@@ -174,3 +174,10 @@ void Server::ensemble_merge_trees(){
             global_trees.trees.push_back(local_trees[i].trees[j]);
     }
 }
+
+void Srever::train_gnn(){
+    int n_tree_per_round = local_trees[0].trees[0].size();
+    for(int i = 0; i < n_tree_per_round; i++){
+        python_gnn();
+    }
+}

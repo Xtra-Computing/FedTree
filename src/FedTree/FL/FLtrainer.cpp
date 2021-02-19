@@ -160,43 +160,65 @@ void FLtrainer::vertical_fl_trainer(vector<Party> &parties, Server &server, FLPa
 
 void FLtrainer::hybrid_fl_trainer(vector<Party> &parties, Server &server, FLParam &params) {
     // todo: initialize parties and server
-    int n_party = parties.size();
-    Comm comm_helper;
-    for (int i = 0; i < params.gbdt_param.n_trees; i++) {
-        // There is already omp parallel inside boost
+    if (params.hybrid_approach == "naive") {
+        int n_party = parties.size();
+        Comm comm_helper;
+        for (int i = 0; i < params.gbdt_param.n_trees; i++) {
+            // There is already omp parallel inside boost
 //        #pragma omp parallel for
-        for (int pid = 0; pid < n_party; pid++) {
-            LOG(INFO) << "boost without prediction";
-            parties[pid].booster.boost_without_prediction(parties[pid].gbdt.trees);
+            for (int pid = 0; pid < n_party; pid++) {
+                LOG(INFO) << "boost without prediction";
+                parties[pid].booster.boost_without_prediction(parties[pid].gbdt.trees);
 //            obj->get_gradient(y, fbuilder->get_y_predict(), gradients);
-            LOG(INFO) << "send last trees to server";
-            vector<Tree> &trees = parties[pid].gbdt.trees.back();
-            std::ofstream outfile;
-            outfile.open(params.tree_file_path, std::ios::app);
-            outfile<<"Party "<<pid<<std::endl;
-            outfile.close();
-            for(int i = 0; i < trees.size(); i++){
-                outfile.open(params.tree_file_path, std::ios::app);
-                outfile<<"Tree "<<i<<std::endl;
-                outfile.close();
-                trees[i].save_to_file(params.tree_file_path);
+                LOG(INFO) << "send last trees to server";
+                vector<Tree> &trees = parties[pid].gbdt.trees.back();
+                comm_helper.send_last_trees_to_server(parties[pid], pid, server);
+                parties[pid].gbdt.trees.pop_back();
             }
-            comm_helper.send_last_trees_to_server(parties[pid], pid, server);
-            parties[pid].gbdt.trees.pop_back();
-        }
-        LOG(INFO) << "merge trees";
-        server.hybrid_merge_trees(params.scale_gain);
-        LOG(INFO) << "send back trees";
-        // todo: send the trees to the party to correct the trees and compute leaf values
+
+            LOG(INFO) << "merge trees";
+            server.hybrid_merge_trees(params.scale_gain);
+            LOG(INFO) << "send back trees";
+            // todo: send the trees to the party to correct the trees and compute leaf values
 //        #pragma omp parallel for
-        for (int pid = 0; pid < n_party; pid++) {
-            LOG(INFO) << "in party:" << pid;
-            comm_helper.send_last_global_trees_to_party(server, parties[pid]);
-            LOG(INFO) << "personalize trees";
-            //LOG(INFO)<<"gradients before correct sps"<<parties[pid].booster.gradients;
-            // todo: prune the tree, if n_bin is 0, then a half of the child tree is useless.
-            parties[pid].booster.fbuilder->build_tree_by_predefined_structure(parties[pid].booster.gradients,
-                                                                              parties[pid].gbdt.trees.back());
+            for (int pid = 0; pid < n_party; pid++) {
+                LOG(INFO) << "in party:" << pid;
+                comm_helper.send_last_global_trees_to_party(server, parties[pid]);
+                LOG(INFO) << "personalize trees";
+                //LOG(INFO)<<"gradients before correct sps"<<parties[pid].booster.gradients;
+                // todo: prune the tree, if n_bin is 0, then a half of the child tree is useless.
+                parties[pid].booster.fbuilder->build_tree_by_predefined_structure(parties[pid].booster.gradients,
+                                                                                  parties[pid].gbdt.trees.back());
+            }
+        }
+    }
+    else if (params.hybrid_approach == "gnn"){
+        int n_party = parties.size();
+        Comm comm_helper;
+        for (int i = 0; i < params.gbdt_param.n_trees; i++) {
+            // There is already omp parallel inside boost
+//        #pragma omp parallel for
+            for (int pid = 0; pid < n_party; pid++) {
+                LOG(INFO) << "boost without prediction";
+                parties[pid].booster.boost(parties[pid].gbdt.trees);
+//            obj->get_gradient(y, fbuilder->get_y_predict(), gradients);
+                LOG(INFO) << "send last trees to server";
+                vector<Tree> &trees = parties[pid].gbdt.trees.back();
+                std::ofstream outfile;
+                outfile.open(params.tree_file_path, std::ios::app);
+                outfile << "Party " << pid << std::endl;
+                outfile.close();
+                for (int i = 0; i < trees.size(); i++) {
+                    outfile.open(params.tree_file_path, std::ios::app);
+                    outfile << "Tree " << i << std::endl;
+                    outfile.close();
+                    trees[i].save_to_file(params.tree_file_path);
+                }
+                parties[pid].gnn_predict(trees);
+                comm_helper.send_last_trees_to_server(parties[pid], pid, server);
+//                parties[pid].gbdt.trees.pop_back();
+            }
+            server.train_gnn();
         }
     }
 }

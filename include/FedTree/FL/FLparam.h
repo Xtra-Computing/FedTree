@@ -23,6 +23,7 @@ public:
         variance = 0;
         tree_file_path = "trees.txt";
         scale_gain = 1;
+        hybrid_approach = "naive";
     }
     int n_parties; // number of parties
     bool partition; // input a single dataset for partitioning or input datasets for each party.
@@ -35,6 +36,7 @@ public:
     float variance; // variance of dp noise if privacy_tech=="dp"
     string tree_file_path; // file path to store the local trees in hybrid fl
     bool scale_gain; // whether scale the gain or not in hybrid fl
+    string hybrid_approach;
     GBDTParam gbdt_param; // parameters for the gbdt training
 };
 
