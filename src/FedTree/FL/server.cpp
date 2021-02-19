@@ -85,10 +85,14 @@ void Server::hybrid_merge_trees(bool scale_gain){
             global_tree_node_data[nid].gain = max_gain;
             global_tree_node_data[nid].lch_index = nid * 2 + 1;
             global_tree_node_data[nid * 2 + 1].is_leaf = true;
+            global_tree_node_data[nid * 2 + 1].is_valid = true;
             global_tree_node_data[nid].rch_index = nid * 2 + 2;
             global_tree_node_data[nid * 2 + 2].is_leaf = true;
+            global_tree_node_data[nid * 2 + 2].is_valid = true;
             global_tree_node_data[nid].parent_index = nid == 0 ? -1 : (nid - 1) / 2;
             global_tree_node_data[nid].final_id = nid;
+            global_tree_node_data[nid].is_valid = true;
+            global_tree_node_data[nid].is_pruned = false;
 //            global_tree_node_dright_childata[nid].split_feature_id = node_max_gain_data.split_feature_id;
 
             treenode_candidates.pop_back();
