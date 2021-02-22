@@ -21,7 +21,7 @@ def get_args():
     parser.add_argument('--reg', type=float, default=1e-5, help="L2 regularization strength")
     parser.add_argument('--logdir', type=str, required=False, default="./logs/", help='Log directory path')
     parser.add_argument('--modeldir', type=str, required=False, default="./models/", help='Model directory path')
-    parser.add_argument('--device', type=str, default='cuda:0', help='The device to run the program')
+    parser.add_argument('--device', type=str, default='cpu', help='The device to run the program')
     parser.add_argument('--log_file_name', type=str, default=None, help='The log file name')
     parser.add_argument('--optimizer', type=str, default='sgd', help='the optimizer')
     parser.add_argument('--gnn_model_path', type=str, default='model', help='the file path to the saved GNN model')
@@ -52,7 +52,7 @@ if __name__ == '__main__':
         epoch_loss_collector = []
         for data in graph_datasets:
             data = data.to(device)
-            print("data:", data)
+            #print("data:", data)
             optimizer.zero_grad()
 
             out = net(data)

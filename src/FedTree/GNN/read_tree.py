@@ -78,7 +78,7 @@ def read_data(file_path):
                 left_nid = int(value)
             elif feature.find("right_nid:") == 0:
                 right_nid = int(value)
-        if v == 1:
+        if v == 1 and l != 1:
             if nid not in level.keys():
                 level[nid] = 0
                 level[left_nid] = 1
