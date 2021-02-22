@@ -6,6 +6,9 @@
 #include "FedTree/FL/partition.h"
 #include "FedTree/FL/comm_helper.h"
 #include "thrust/sequence.h"
+#include <Python.h>
+
+
 
 using namespace thrust;
 
@@ -193,9 +196,15 @@ void FLtrainer::hybrid_fl_trainer(vector<Party> &parties, Server &server, FLPara
         }
     }
     else if (params.hybrid_approach == "gnn"){
+        // todo: same cut points for all parties
+        Py_Initialize();
+        FILE* fp;
+        string predict_tree_path = "../src/FedTree/GNN/predict_tree.py";
+        string train_gnn_path = "../src/FedTree/GNN/train_net.py";
         int n_party = parties.size();
         Comm comm_helper;
         for (int i = 0; i < params.gbdt_param.n_trees; i++) {
+            string local_trees_path = "tree_t" + std::to_string(i) + ".txt";
             // There is already omp parallel inside boost
 //        #pragma omp parallel for
             for (int pid = 0; pid < n_party; pid++) {
@@ -212,14 +221,38 @@ void FLtrainer::hybrid_fl_trainer(vector<Party> &parties, Server &server, FLPara
                     outfile.open(params.tree_file_path, std::ios::app);
                     outfile << "Tree " << i << std::endl;
                     outfile.close();
-                    trees[i].save_to_file(params.tree_file_path);
+                    string tree_path = "tree_p"+ std::to_string(pid) + "_t" + std::to_string(i) + ".txt";
+                    trees[i].save_to_file(tree_path);
+                    trees[i].save_to_file(local_trees_path);
+                    if (i) {
+                        char *argv[2];
+                        argv[0] = &predict_tree_path[0];
+                        argv[1] = &("--tree_model_path " + tree_path)[0];
+                        wchar_t *wargv[2];
+                        wargv[0] = charToWChar(argv[0]);
+                        wargv[1] = charToWChar(argv[1]);
+                        PySys_SetArgv(2, wargv);
+                        delete []wargv[0];
+                        delete []wargv[1];
+                        fp = _Py_fopen(predict_tree_path.c_str(), "r");
+                        PyRun_SimpleFile(fp, predict_tree_path.c_str());
+                    }
                 }
-                parties[pid].gnn_predict(trees);
+//                parties[pid].gnn_predict(trees);
                 comm_helper.send_last_trees_to_server(parties[pid], pid, server);
 //                parties[pid].gbdt.trees.pop_back();
             }
-            server.train_gnn();
+            char *argv[2];
+            argv[0] = &train_gnn_path[0];
+            argv[1] = &("--tree_model_path " + local_trees_path)[0];
+            wchar_t *wargv[2];
+            wargv[0] = charToWChar(argv[0]);
+            wargv[1] = charToWChar(argv[1]);
+            PySys_SetArgv(2, wargv);
+            PyRun_SimpleFile(fp, train_gnn_path.c_str());
+//            server.train_gnn();
         }
+        Py_Finalize();
     }
 }
 

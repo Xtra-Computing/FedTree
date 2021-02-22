@@ -114,4 +114,12 @@ typedef thrust::tuple<int, float_type> int_float;
 std::ostream &operator<<(std::ostream &os, const int_float &rhs);
 
 
+static wchar_t* charToWChar(const char* text)
+{
+    const size_t size = strlen(text) + 1;
+    wchar_t* wText = new wchar_t[size];
+    mbstowcs(wText, text, size);
+    return wText;
+}
+
 #endif //FEDTREE_COMMON_H

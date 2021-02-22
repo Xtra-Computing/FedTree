@@ -1,9 +1,11 @@
 import torch
+import re
+from torch_geometric.data import Data
 
 
 def read_data(file_path):
 
-    tree_file = open("tree.txt", "r")
+    tree_file = open(file_path, "r")
 
     # graphs = []
     edges_all_graphs = []

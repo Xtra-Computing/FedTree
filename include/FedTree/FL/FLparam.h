@@ -21,7 +21,7 @@ public:
         partition_mode = "hybrid2";
         privacy_tech = "none";
         variance = 0;
-        tree_file_path = "trees.txt";
+        tree_file_path = "../trees.txt";
         scale_gain = 1;
         hybrid_approach = "naive";
     }
