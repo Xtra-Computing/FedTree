@@ -4,8 +4,10 @@ from torch_geometric.data import Data
 import torch_geometric.transforms as T
 import torch.nn.functional as F
 import argparse
-from model import GCN
+import sys
+sys.path.append('../src/FedTree/GNN/')
 from read_tree import read_data
+from model import GCN
 
 def get_args():
     parser = argparse.ArgumentParser()
@@ -29,8 +31,9 @@ def get_args():
 
 if __name__ == '__main__':
     # torch.set_printoptions(profile="full")
+    print("in python training")
     args = get_args()
-    graph_datasets = read_data(tree_model_path)
+    graph_datasets = read_data(args.tree_model_path)
 
     # for graph_data in graph_datasets:
         # T.NormalizeFeatures()

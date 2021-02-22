@@ -9,7 +9,6 @@
 #include <Python.h>
 
 
-
 using namespace thrust;
 
 void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FLParam &params) {
@@ -197,9 +196,13 @@ void FLtrainer::hybrid_fl_trainer(vector<Party> &parties, Server &server, FLPara
     }
     else if (params.hybrid_approach == "gnn"){
         // todo: same cut points for all parties
+        //wchar_t *path;
+        //path = Py_DecodeLocale("../src/FedTree/GNN/", NULL);
+        //Py_SetPath(path);
         Py_Initialize();
         FILE* fp;
         string predict_tree_path = "../src/FedTree/GNN/predict_tree.py";
+        //string train_gnn_path = "/home/qinbin/FedTree/src/FedTree/GNN/train_net.py";
         string train_gnn_path = "../src/FedTree/GNN/train_net.py";
         int n_party = parties.size();
         Comm comm_helper;
@@ -214,14 +217,17 @@ void FLtrainer::hybrid_fl_trainer(vector<Party> &parties, Server &server, FLPara
                 LOG(INFO) << "send last trees to server";
                 vector<Tree> &trees = parties[pid].gbdt.trees.back();
                 std::ofstream outfile;
-                outfile.open(params.tree_file_path, std::ios::app);
+                outfile.open(local_trees_path, std::ios::app);
                 outfile << "Party " << pid << std::endl;
                 outfile.close();
                 for (int i = 0; i < trees.size(); i++) {
-                    outfile.open(params.tree_file_path, std::ios::app);
+                    string tree_path = "tree_p"+ std::to_string(pid) + "_t" + std::to_string(i) + ".txt";
+                    outfile.open(local_trees_path, std::ios::app);
                     outfile << "Tree " << i << std::endl;
                     outfile.close();
-                    string tree_path = "tree_p"+ std::to_string(pid) + "_t" + std::to_string(i) + ".txt";
+                    outfile.open(tree_path, std::ios::app);
+                    outfile << "Tree " << i << std::endl;
+                    outfile.close();
                     trees[i].save_to_file(tree_path);
                     trees[i].save_to_file(local_trees_path);
                     if (i) {
@@ -229,12 +235,16 @@ void FLtrainer::hybrid_fl_trainer(vector<Party> &parties, Server &server, FLPara
                         argv[0] = &predict_tree_path[0];
                         argv[1] = &("--tree_model_path " + tree_path)[0];
                         wchar_t *wargv[2];
-                        wargv[0] = charToWChar(argv[0]);
-                        wargv[1] = charToWChar(argv[1]);
+                        //wargv[0] = charToWChar(argv[0]);
+                        //wargv[1] = charToWChar(argv[1]);
+                        wargv[0] = Py_DecodeLocale(argv[0], NULL);
+                        wargv[1] = Py_DecodeLocale(argv[1], NULL);
+                        std::cout<<"before set argv"<<std::endl;
                         PySys_SetArgv(2, wargv);
-                        delete []wargv[0];
-                        delete []wargv[1];
+                        delete []wargv;
+                        std::cout<<"before open py file"<<std::endl;
                         fp = _Py_fopen(predict_tree_path.c_str(), "r");
+                        std::cout<<"run python"<<std::endl;
                         PyRun_SimpleFile(fp, predict_tree_path.c_str());
                     }
                 }
@@ -242,15 +252,26 @@ void FLtrainer::hybrid_fl_trainer(vector<Party> &parties, Server &server, FLPara
                 comm_helper.send_last_trees_to_server(parties[pid], pid, server);
 //                parties[pid].gbdt.trees.pop_back();
             }
-            char *argv[2];
+            char *argv[3];
             argv[0] = &train_gnn_path[0];
-            argv[1] = &("--tree_model_path " + local_trees_path)[0];
-            wchar_t *wargv[2];
-            wargv[0] = charToWChar(argv[0]);
-            wargv[1] = charToWChar(argv[1]);
-            PySys_SetArgv(2, wargv);
+            //argv[1] = &("--tree_model_path " + local_trees_path)[0];
+            argv[1] = "--tree_model_path";
+            argv[2] = &local_trees_path[0];
+            wchar_t *wargv[3];
+            //wargv[0] = charToWChar(argv[0]);
+            //wargv[1] = charToWChar(argv[1]);
+            wargv[0] = Py_DecodeLocale(argv[0], NULL);
+            wargv[1] = Py_DecodeLocale(argv[1], NULL);
+            wargv[2] = Py_DecodeLocale(argv[2], NULL);
+            std::cout<<"set argv"<<std::endl;
+            PySys_SetArgv(3, wargv);
+            //PySys_SetArgv(1, wargv);
+            std::cout<<"open py file"<<std::endl;
+            fp = _Py_fopen(train_gnn_path.c_str(), "rb");
+            std::cout<<"run python train"<<std::endl;
             PyRun_SimpleFile(fp, train_gnn_path.c_str());
-//            server.train_gnn();
+            delete []wargv;
+            //            server.train_gnn();
         }
         Py_Finalize();
     }
