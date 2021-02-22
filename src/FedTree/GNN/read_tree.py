@@ -15,7 +15,7 @@ def read_data(file_path):
     nodes_features = {}
     nodes_labels = {}
     level = {}
-
+    max_y = 0
     for tree_node in tree_file:
         if tree_node == "" or tree_node == "\n":
             continue
@@ -72,8 +72,8 @@ def read_data(file_path):
             elif feature.find("w:") == 0:
                 w = value
             elif feature.find("g/h:") == 0:
-                g = values[0]
-                h = values[1]
+                g = float(values[0])
+                h = float(values[1])
             elif feature.find("left_nid:") == 0:
                 left_nid = int(value)
             elif feature.find("right_nid:") == 0:
@@ -95,10 +95,11 @@ def read_data(file_path):
             for edge in edges:
                 if nid in edge:
                     edges.remove(edge)
-        node_feature = [sp_f_id, gain, r, w, g, h, level]
+        node_feature = [sp_f_id, gain, r, w, g, h, level[nid]]
         nodes_features[nid] = node_feature
         nodes_labels[nid] = sp_bin_id
-
+        if sp_bin_id > max_y:
+            max_y = int(sp_bin_id)
     edges_all_graphs.append(edges)
     features = []
     for nid in range(len(nodes_features)):
@@ -112,13 +113,16 @@ def read_data(file_path):
     print("len edges_all_graphs:", len(edges_all_graphs))
     print("len x:", len(x))
     print("len y:", len(y))
-
+    print("max_y:", max_y)
+    #print("x:", x)
     graph_datasets = []
     for graph_id in range(len(edges_all_graphs)):
         edge_index = torch.tensor(edges_all_graphs[graph_id], dtype=torch.long).t().contiguous()
-        x = torch.tensor(x[graph_id], dtype=torch.float)
-        y = torch.tensor(y[graph_id], dtype=torch.long)
-        data = Data(x=x, edge_index=edge_index, y=y)
+        #print("x[graph_id]:", x[graph_id])
+        x_tensor = torch.tensor(x[graph_id], dtype=torch.float)
+        y_tensor = torch.tensor(y[graph_id], dtype=torch.long)
+        data = Data(x=x_tensor, edge_index=edge_index, y=y_tensor)
+        data.num_classes = max_y+1
         graph_datasets.append(data)
 
     return graph_datasets

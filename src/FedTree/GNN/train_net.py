@@ -1,4 +1,5 @@
 import torch
+import torch.optim as optim
 import re
 from torch_geometric.data import Data
 import torch_geometric.transforms as T
@@ -40,22 +41,22 @@ if __name__ == '__main__':
 
     # device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     device = args.device
-    net = GCN().to(device)
+    net = GCN(graph_datasets[0].num_features, graph_datasets[0].num_classes).to(device)
     # data = data.to(device)
     if args.optimizer == 'sgd':
         optimizer = optim.SGD(filter(lambda p: p.requires_grad, net.parameters()), lr=args.lr, momentum=0.9,
                                     weight_decay=args.reg)
-    criterion = F.nll_loss().to(device)
+    #criterion = F.nll_loss().to(device)
 
     for epoch in range(args.epochs):
         epoch_loss_collector = []
         for data in graph_datasets:
             data = data.to(device)
-
+            print("data:", data)
             optimizer.zero_grad()
 
             out = net(data)
-            loss = criterion(out, data.y)
+            loss = F.nll_loss(out, data.y)
 
             loss.backward()
             optimizer.step()
