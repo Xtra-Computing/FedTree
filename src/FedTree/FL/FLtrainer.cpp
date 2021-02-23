@@ -220,28 +220,33 @@ void FLtrainer::hybrid_fl_trainer(vector<Party> &parties, Server &server, FLPara
                 outfile.open(local_trees_path, std::ios::app);
                 outfile << "Party " << pid << std::endl;
                 outfile.close();
-                for (int i = 0; i < trees.size(); i++) {
-                    string tree_path = "tree_p"+ std::to_string(pid) + "_t" + std::to_string(i) + ".txt";
+                for (int tid  = 0; tid < trees.size(); tid++) {
+                    string tree_path = "tree_t" + std::to_string(i) + "_p"+ std::to_string(pid) + "_c" + std::to_string(tid) + ".txt";
                     outfile.open(local_trees_path, std::ios::app);
-                    outfile << "Tree " << i << std::endl;
+                    outfile << "Tree " << tid << std::endl;
                     outfile.close();
                     outfile.open(tree_path, std::ios::app);
-                    outfile << "Tree " << i << std::endl;
+                    outfile << "Tree " << tid << std::endl;
                     outfile.close();
-                    trees[i].save_to_file(tree_path);
-                    trees[i].save_to_file(local_trees_path);
+                    trees[tid].save_to_file(tree_path);
+                    trees[tid].save_to_file(local_trees_path);
                     if (i) {
-                        char *argv[2];
+                        std::cout<<"in predict"<<std::endl;
+                        char *argv[3];
                         argv[0] = &predict_tree_path[0];
-                        argv[1] = &("--tree_model_path " + tree_path)[0];
-                        wchar_t *wargv[2];
+                        argv[1] = "--tree_model_path";
+                        argv[2] = &tree_path[0];
+                        wchar_t *wargv[3];
                         //wargv[0] = charToWChar(argv[0]);
                         //wargv[1] = charToWChar(argv[1]);
                         wargv[0] = Py_DecodeLocale(argv[0], NULL);
                         wargv[1] = Py_DecodeLocale(argv[1], NULL);
+                        wargv[2] = Py_DecodeLocale(argv[2], NULL);
                         std::cout<<"before set argv"<<std::endl;
-                        PySys_SetArgv(2, wargv);
-                        delete []wargv;
+                        PySys_SetArgv(3, wargv);
+                        delete []wargv[0];
+                        delete []wargv[1];
+                        delete []wargv[2];
                         std::cout<<"before open py file"<<std::endl;
                         fp = _Py_fopen(predict_tree_path.c_str(), "r");
                         std::cout<<"run python"<<std::endl;
@@ -270,7 +275,13 @@ void FLtrainer::hybrid_fl_trainer(vector<Party> &parties, Server &server, FLPara
             fp = _Py_fopen(train_gnn_path.c_str(), "rb");
             std::cout<<"run python train"<<std::endl;
             PyRun_SimpleFile(fp, train_gnn_path.c_str());
-            delete []wargv;
+            delete []wargv[0];
+            delete []wargv[1];
+            delete []wargv[2];
+            if(i == 2){
+                std::cout<<"in round 2"<<std::endl;
+                exit(1);
+            }
             //            server.train_gnn();
         }
         Py_Finalize();

@@ -7,6 +7,7 @@ import torch.nn.functional as F
 import argparse
 import sys
 sys.path.append('../src/FedTree/GNN/')
+import os
 from read_tree import read_data
 from model import GCN
 
@@ -24,8 +25,9 @@ def get_args():
     parser.add_argument('--device', type=str, default='cpu', help='The device to run the program')
     parser.add_argument('--log_file_name', type=str, default=None, help='The log file name')
     parser.add_argument('--optimizer', type=str, default='sgd', help='the optimizer')
-    parser.add_argument('--gnn_model_path', type=str, default='model', help='the file path to the saved GNN model')
+    parser.add_argument('--gnn_model_path', type=str, default='gnn_model.pt', help='the file path to the saved GNN model')
     parser.add_argument('--tree_model_path', type=str, default='../../../tree.txt', help='the file path to the saved tree models')
+    parser.add_argument('--n_classes', type=int, default=256, help='the number of classes (bin ids)')
     args = parser.parse_args()
     return args
 
@@ -41,7 +43,11 @@ if __name__ == '__main__':
 
     # device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     device = args.device
-    net = GCN(graph_datasets[0].num_features, graph_datasets[0].num_classes).to(device)
+    print("n_features:", graph_datasets[0].num_features)
+    net = GCN(graph_datasets[0].num_features, args.n_classes).to(device)
+    if os.path.isfile(args.gnn_model_path):
+        net.load_state_dict(torch.load(args.gnn_model_path))
+    net.train()
     # data = data.to(device)
     if args.optimizer == 'sgd':
         optimizer = optim.SGD(filter(lambda p: p.requires_grad, net.parameters()), lr=args.lr, momentum=0.9,

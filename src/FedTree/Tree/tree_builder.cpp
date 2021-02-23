@@ -229,11 +229,15 @@ void TreeBuilder::update_tree() {
     Tree::TreeNode *nodes_data = tree.nodes.host_data();
     float_type rt_eps = param.rt_eps;
     float_type lambda = param.lambda;
-
-    #pragma omp parallel for
+//    std::cout<<"n_nodes_in_level:"<<n_nodes_in_level<<std::endl;
+//    #pragma omp parallel for
     for(int i = 0; i < n_nodes_in_level; i++){
         float_type best_split_gain = sp_data[i].gain;
+        int temp_nid = sp_data[i].nid;
+//        std::cout<<"nid:"<<temp_nid<<std::endl;
         if (best_split_gain > rt_eps) {
+//            if(temp_nid == 12)
+//                std::cout<<"in nid 12: gain > eps"<<std::endl;
             //do split
             //todo: check, thundergbm uses return
             if (sp_data[i].nid == -1) continue;
@@ -259,6 +263,8 @@ void TreeBuilder::update_tree() {
             lch.calc_weight(lambda);
             rch.calc_weight(lambda);
         } else {
+//            if(temp_nid == 12)
+//                std::cout<<"in nid 12: gain <= eps"<<std::endl;
             //set leaf
             //todo: check, thundergbm uses return
             if (sp_data[i].nid == -1) continue;

@@ -12,27 +12,28 @@ def get_args():
     parser.add_argument('--reg', type=float, default=1e-5, help="L2 regularization strength")
     parser.add_argument('--logdir', type=str, required=False, default="./logs/", help='Log directory path')
     parser.add_argument('--modeldir', type=str, required=False, default="./models/", help='Model directory path')
-    parser.add_argument('--device', type=str, default='cuda:0', help='The device to run the program')
+    parser.add_argument('--device', type=str, default='cpu', help='The device to run the program')
     parser.add_argument('--log_file_name', type=str, default=None, help='The log file name')
     parser.add_argument('--optimizer', type=str, default='sgd', help='the optimizer')
-    parser.add_argument('--gnn_model_path', type=str, default='model', help='the file path to the saved GNN model')
+    parser.add_argument('--gnn_model_path', type=str, default='gnn_model.pt', help='the file path to the saved GNN model')
     parser.add_argument('--tree_model_path', type=str, default='../../../tree.txt', help='the file path to the saved tree models')
-    parser.add_argument('--label_file_path', type=str, default='../../../predict_labels.txt', help='the file path to save predicted labels')
+    parser.add_argument('--label_file_path', type=str, default='predict_labels.txt', help='the file path to save predicted labels')
+    parser.add_argument('--n_classes', type=int, default=256, help='the number of classes (bin ids)')
     args = parser.parse_args()
     return args
 
 
 if __name__ == '__main__':
     # torch.set_printoptions(profile="full")
+    print("in prediction")
     args = get_args()
-
-    net = GCN()
-    net.load_state_dict(torch.load(gnn_model_path))
-
-    graph_datasets = read_data(tree_model_path)
+    graph_datasets = read_data(args.tree_model_path)
+    print("graph datasets[0]:", graph_datasets[0])
+    net = GCN(graph_datasets[0].num_features, args.n_classes).to(device)
+    net.load_state_dict(torch.load(args.gnn_model_path))
 
     device = args.device
-    net = GCN().to(device)
+    #net = GCN().to(device)
     # data = data.to(device)
 
     was_training = False
@@ -52,10 +53,13 @@ if __name__ == '__main__':
 
 
     # write predict labels to file.
-    f = open(args.label_file_path, "a")
+    f = open(args.label_file_path, "a+")
     for labels in pred_labels:
+        #print("labels:", labels)
         for label in labels:
-            f.write(str(label))
+            #print("label:", label)
+            f.write(str(label.tolist()) + " ")
+    f.write("\n")
     f.close()
 
 
