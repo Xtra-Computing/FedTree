@@ -37,7 +37,7 @@ if __name__ == '__main__':
     print("in python training")
     args = get_args()
     graph_datasets = read_data(args.tree_model_path)
-
+    print("graph datasets:", graph_datasets)
     # for graph_data in graph_datasets:
         # T.NormalizeFeatures()
 
@@ -58,7 +58,6 @@ if __name__ == '__main__':
         epoch_loss_collector = []
         for data in graph_datasets:
             data = data.to(device)
-            #print("data:", data)
             optimizer.zero_grad()
 
             out = net(data)

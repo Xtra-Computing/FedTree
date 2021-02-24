@@ -278,10 +278,10 @@ void FLtrainer::hybrid_fl_trainer(vector<Party> &parties, Server &server, FLPara
             delete []wargv[0];
             delete []wargv[1];
             delete []wargv[2];
-            if(i == 2){
-                std::cout<<"in round 2"<<std::endl;
-                exit(1);
-            }
+            //if(i == 2){
+            //    std::cout<<"in round 2"<<std::endl;
+            //    exit(1);
+            //}
             //            server.train_gnn();
         }
         Py_Finalize();

@@ -119,7 +119,7 @@ def read_data(file_path):
         if (v == 1) and (l != 1):
             node_feature = [sp_f_id, gain, r, w, g, h, level[nid]]
             nodes_features[nid] = node_feature
-            nodes_labels[nid] = sp_bin_id
+            nodes_labels[nid] = int(sp_bin_id)
         if sp_bin_id > max_y:
             max_y = int(sp_bin_id)
     leaf_nodes_graphs.append(leaf_nodes)
@@ -132,9 +132,12 @@ def read_data(file_path):
         leaf_nodes = leaf_nodes_graphs[i]
         print("leaf_nodes:", leaf_nodes)
         for edge in edges:
-            for nid in edge:
+            for idx in range(len(edge)):
+                nid = edge[idx]
+                # print("edge nid:", nid)
                 pos = bisect(leaf_nodes, nid)
-                nid -= pos
+                # print("pos:", pos)
+                edge[idx] -= pos
     print("edges after reorder:", edges_all_graphs)
 
     features = []
@@ -147,9 +150,9 @@ def read_data(file_path):
     #print("edges_all_graphs:", edges_all_graphs)
     #print("x:", x)
     #print("y:", y)
-    print("len edges_all_graphs:", len(edges_all_graphs))
-    print("len x:", len(x))
-    print("len y:", len(y))
+    # print("len edges_all_graphs:", len(edges_all_graphs))
+    # print("len x:", len(x))
+    # print("len y:", len(y))
     print("max_y:", max_y)
     #print("x:", x)
     graph_datasets = []
@@ -161,5 +164,7 @@ def read_data(file_path):
         data = Data(x=x_tensor, edge_index=edge_index, y=y_tensor)
         #data.num_classes = max_y+1
         graph_datasets.append(data)
-    print("graph datasets 0:", graph_datasets[0])
+        #print("data:", data)
+    # print("graph datasets 0:", graph_datasets[0])
+    # print("graph datasets 1:", graph_datasets[1])
     return graph_datasets
