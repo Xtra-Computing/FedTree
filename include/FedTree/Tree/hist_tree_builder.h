@@ -81,24 +81,34 @@ public:
     }
 
     MSyncArray<GHPair> get_parties_hist() {
-        return parties_hist;
+        MSyncArray<GHPair> hist(parties_hist.size());
+        for (int i = 0; i < parties_hist.size(); i++) {
+            hist[i].copy_from(parties_hist[i]);
+        }
+
+        return hist;
     }
 
-    void set_cut (HisCut commonCut) {
-        cut = commonCut;
+    void set_cut (HistCut commonCut) {
+        cut.cut_points_val.copy_from(commonCut.cut_points_val);
+        cut.cut_col_ptr.copy_from(commonCut.cut_col_ptr);
     }
 
-    void set_last_hist(SyncArray<GHPair> last_hist_input) {
-        last_hist = last_hist_input;
+    void set_last_hist(SyncArray<GHPair> &last_hist_input) {
+        last_hist.resize(last_hist_input.size());
+        last_hist.copy_from(last_hist_input);
     }
 
     SyncArray<GHPair> get_last_hist () {
-        return last_hist;
+        SyncArray<GHPair> hist(last_hist.size());
+        hist.copy_from(last_hist);
+        return hist;
     }
 
     void decrypt_histogram(SyncArray<GHPair> &hist, AdditivelyHE::PaillierPrivateKey privateKey) {
+        int size = hist.size();
         auto hist_data = hist.host_data();
-        for (int i = 0; i < hist_data.size(); i++) {
+        for (int i = 0; i < size; i++) {
             hist_data[i].decrypt(privateKey);
         }
     }

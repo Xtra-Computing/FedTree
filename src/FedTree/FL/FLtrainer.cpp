@@ -12,23 +12,24 @@ using namespace thrust;
 
 void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FLParam &params) {
 
-    // TODO: Load Dataset
-    Dataset &dataset;
+    auto model_param = params.gbdt_param;
 
-    if (params.gbdt_param == 'he')
+    if (params.privacy_tech == "he")
         // server generate public key and private key
         server.homo_init();
     // server distribute public key to rest of parties
-    server.send_public_key(parties);
+    for (int i = 0; i < parties.size(); i++) {
+        parties[i].publicKey = server.publicKey;
+    }
 
     for (int i = 0; i < params.gbdt_param.n_trees; i++) {
 
         // update gradients for all parties
         for (int j = 0; j < parties.size(); j++) {
             parties[j].booster.update_gradients();
-            if (params.privacy_tech == 'he')
+            if (params.privacy_tech == "he")
                 parties[i].booster.encrypt_gradients(parties[i].publicKey);
-            else if (params.privacy_tech == 'dp')
+            else if (params.privacy_tech == "dp")
                 parties[i].booster.add_noise_to_gradients(params.variance);
         }
 
@@ -39,41 +40,41 @@ void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FL
             for (int d = 0; d < params.gbdt_param.depth; d++) {
 
                 // initialize level parameters
-                int n_nodes_in_level = 1 << l;
+                int n_nodes_in_level = 1 << d;
                 int n_bins = model_param.max_num_bin;
                 int n_max_nodes = 2 << model_param.depth;
                 int n_max_splits = n_max_nodes * n_bins;
-                MSyncArray<GHPair> parties_missing_gh(parties.size());
+                MSyncArray <GHPair> parties_missing_gh(parties.size());
                 MSyncArray<int> parties_hist_fid(parties.size());
+                MSyncArray <GHPair> parties_hist(parties.size());
 
                 // Generate HistCut by server or each party
-                if (params.propose_split == 'server')
+                if (params.propose_split == "server") {
                     // TODO: Assume party can send feature range to server
                     // loop through all party to find max and min for each feature
                     float inf = std::numeric_limits<float>::infinity();
-                    vector<vector<float>> feature_range(parties[0].get_num_feature());
+                    vector <vector<float>> feature_range(parties[0].get_num_feature());
                     for (int n = 0; n < parties[0].get_num_feature(); n++) {
-                        vector<float> min_max(2) = {inf, -inf};
+                        vector<float> min_max = {inf, -inf};
                         for (int p = 0; n < parties.size(); p++) {
-                            vector<float> temp = p.get_feature_range_by_n_feature(n);
-                            if (temp[0] <= min_max[0]):
+                            vector<float> temp = parties[p].get_feature_range_by_feature_index(n);
+                            if (temp[0] <= min_max[0])
                                 min_max[0] = temp[0];
-                            if (temp[1] >= min_max[1]):
+                            if (temp[1] >= min_max[1])
                                 min_max[1] = temp[1];
                         }
                         // add min_max to feature_range
                         feature_range[n] = min_max;
                     }
                     // once we have feature_range, we can generate cut points
-                    server.booster.fbuilder -> get_cut_points_by_feature_range(feature_range, num_bins);
-                    // Send HisCut to parties
                     for (int p = 0; p < parties.size(); p++) {
-                        parties[p].booster.fbuilder->set_cut(server.booster.fbuilder->get_cut());
+                        parties[p].booster.fbuilder->cut.get_cut_points_by_feature_range(feature_range, n_bins);
                     }
-            }
-                else if (params.propose_split == 'client')
+                } else if (params.propose_split == "client")
+
                     for (int p = 0; p < parties.size(); p++) {
-                        parties[p].booster.fbuider->get_cut_points_fast(dataset, n_bins, parties[p].dataset.n_instances);
+                        auto dataset = parties[p].dataset;
+                        parties[p].booster.fbuilder->cut.get_cut_points_fast(dataset, n_bins, dataset.n_instances());
                     }
 
                 // Each Party Compute Histogram
@@ -94,9 +95,9 @@ void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FL
                     parties_hist_fid[j].resize(n_nodes_in_level * n_bins);
                     parties_hist_fid[j].copy_from(hist_fid);
 
-                    SyncArray<GHPair> missing_gh(n_partition);
-                    SyncArray<GHPair> hist(n_max_splits);
-                    parties[j].booster.fbuilder->compute_histogram_in_a_level(l, n_max_splits, n_bins, n_nodes_in_level,
+                    SyncArray <GHPair> missing_gh(n_partition);
+                    SyncArray <GHPair> hist(n_max_splits);
+                    parties[j].booster.fbuilder->compute_histogram_in_a_level(d, n_max_splits, n_bins, n_nodes_in_level,
                                                                               hist_fid_data, missing_gh, hist);
                     parties_missing_gh[j].resize(n_partition);
                     parties_missing_gh[j].copy_from(missing_gh);
@@ -106,50 +107,55 @@ void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FL
                     // Each party now has its own histogram
                     // Send it to party leader / server based on param
                     // TODO: merge histogram now doesn't work with HE
-                    if (param.merge_histogram == 'server')
-                        server.booster.fbuilder -> parties_hist_init(parties.size());
+                    if (params.merge_histogram == "server")
+                        server.booster.fbuilder->parties_hist_init(parties.size());
                     for (j = 0; j < parties.size(); j++)
                         // send histogram from parties to server
-                        server.booster.fbuilder->append_hist(parties[j].booster.fbuilder -> get_hist());
-                    if (param.propose_split == 'server')
-                        server.booster.fbuilder->merge_histograms_server_propose(server.booster.fbuilder->get_parties_hist());
+                        SyncArray<GHPair> hist = parties[j].booster.fbuilder->get_hist();
+                        server.booster.fbuilder->append_hist(hist);
+                    if (params.propose_split == "server")
+                        server.booster.fbuilder->merge_histograms_server_propose();
                     else
-                        server.booster.fbuilder->merge_histograms_client_propose(server.booster.fbuilder->get_parties_hist());
-                    else if (param.merge_histogram == 'client')
-                        parties[0].booster.fbuilder -> parties_hist_init(parties.size());
+                        server.booster.fbuilder->merge_histograms_client_propose();
+                    if (params.merge_histogram == "client")
+                        parties[0].booster.fbuilder->parties_hist_init(parties.size());
                     for (j = 1; j < parties.size(); j++)
                         // send histogram from parties to leader
-                        parties[0].booster.fbuilder->append_hist(parties[j].booster.fbuilder -> get_hist());
-                    if (param.propose_split == 'server')
-                        parties[0].booster.fbuilder->merge_histograms_server_propose(parties[0].booster.fbuilder->get_parties_hist());
+                        SyncArray<GHPair> hist = parties[j].booster.fbuilder->get_hist();
+                        parties[0].booster.fbuilder->append_hist(hist);
+                    if (params.propose_split == "server")
+                        parties[0].booster.fbuilder->merge_histograms_server_propose();
                     else
-                        parties[0].booster.fbuilder->merge_histograms_client_propose(parties[0].booster.fbuilder->get_parties_hist());
+                        parties[0].booster.fbuilder->merge_histograms_client_propose();
                     // send merged histogram to server
-                    server.booster.fbuilder->set_last_hist(parties[0].booster.fbuilder->get_last_hist());
+                    SyncArray<GHPair> last_hist = parties[0].booster.fbuilder->get_last_hist();
+                    server.booster.fbuilder->set_last_hist(last_hist);
 
                     // server compute gain
-                    SyncArray<float_type> gain(n_max_splits * parties.size());
-                    auto hist_fid_data = hist_fid.host_data();
-                    hist = server.booster.fbuilder->get_last_hist();
+                    SyncArray <float_type> gain(n_max_splits * parties.size());
+                    SyncArray<GHPair> histogram = server.booster.fbuilder->get_last_hist();
 
                     // if privacy tech == 'he', decrypt histogram
-                    if (params.privacy_tech == 'he')
-                        server.booster.fbuilder->decrypt_hist(hist);
+                    if (params.privacy_tech == "he")
+                        server.decrypt_histogram(histogram);
                     server.booster.fbuilder->compute_gain_in_a_level(gain, n_nodes_in_level, n_bins, hist_fid_data,
                                                                      missing_gh, hist);
                     // server find the best gain and its index
-                    SyncArray<int_float> best_idx_gain(n_nodes_in_level);
+                    SyncArray <int_float> best_idx_gain(n_nodes_in_level);
                     server.booster.fbuilder->get_best_gain_in_a_level(gain, best_idx_gain, n_nodes_in_level, n_bins);
                     auto best_idx_data = best_idx_gain.host_data();
 
-                    //TODO: server find split point and update tree
-                    SyncArray<SplitPoint> sp;
-                    server.booster.fbuilder->get_split_points(best_idx_gain, n_nodes_in_level, hist_fid, missing_gh, hist);
+                    server.booster.fbuilder->get_split_points(best_idx_gain, n_nodes_in_level, hist_fid_data, missing_gh,
+                                                              hist);
                     server.booster.fbuilder->update_tree();
 
-                    // TODO: globally update trees of every party
-                    for (int j = 0; j < parties.size();j++) {
-                        parties[j].booster.fbuilder->update_trees(server.booster.fbuilder->get_trees());
+                    //  TODO: Update Split Point of Parties
+                    SyncArray<SplitPoint> split = server.booster.fbuilder->get_split();
+
+                    // TODO: Update trees of every party
+                    for (int j = 0; j < parties.size(); j++) {
+                        parties[j].booster.fbuilder->set_split(split);
+                        parties[j].booster.fbuilder->update_tree();
                     }
                 }
 
@@ -158,6 +164,7 @@ void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FL
         }
 
     }
+}
 
 
     void FLtrainer::vertical_fl_trainer(vector<Party> &parties, Server &server, FLParam &params) {

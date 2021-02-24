@@ -31,7 +31,7 @@ public:
     AdditivelyHE::PaillierPublicKey publicKey;
 
     void send_key(Party &party){
-        party.serverKey = publicKey;
+        party.publicKey = publicKey;
     }
 
     void homo_init() {
@@ -40,11 +40,9 @@ public:
         privateKey = std::get<1>(keyPairs);
     };
 
-    void send_public_key(Party party) {
-        for (Party p : parties) {
-            p.publicKey = publicKey;
-        }
-    };
+    void decrypt_histogram(SyncArray<GHPair> &hist) {
+        booster.fbuilder->decrypt_histogram(hist, privateKey);
+    }
 
 private:
 //    std::unique_ptr<TreeBuilder> fbuilder;

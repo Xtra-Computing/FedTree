@@ -71,9 +71,9 @@ public:
     }
 
     vector<float> slicing_value(vector<float> &val, int X, int Y) {
-        auto start = arr.begin() + X;
-        auto end = arr.begin() + Y + 1;
-        vector<int> result(Y - X + 1);
+        auto start = val.begin() + X;
+        auto end = val.begin() + Y + 1;
+        vector<float> result(Y - X + 1);
         copy(start, end, result.begin());
         return result;
     }
@@ -98,19 +98,19 @@ public:
         if (index == 0) {
             int num_of_values = dataset.csc_col_ptr[0];
             if (num_of_values > 0) {
-                temp = slicing_value(csc_val, 0, num_of_values - 1);
+                temp = slicing_value(dataset.csc_val, 0, num_of_values - 1);
                 // find max and min from temp
-                auto minmax = std::minmax_element(temp);
+                auto minmax = std::minmax_element(begin(temp), end(temp));
                 feature_range[1] = *minmax.second;
-                feature_range[0] = determine_min(num_of_values, dataset.n_instances(), *minimax.first);
+                feature_range[0] = determine_min(num_of_values, dataset.n_instances(), *minmax.first);
             }
         } else {
             int num_of_values = dataset.csc_col_ptr[index] - dataset.csc_col_ptr[index - 1];
-            vector<float> temp = slicing_value(csc_val, dataset.csc_col_ptr[index-1], dataset.csc_col_ptr[index] - 1);
+            vector<float> temp = slicing_value(dataset.csc_val, dataset.csc_col_ptr[index-1], dataset.csc_col_ptr[index] - 1);
             // find max and min from temp
-            auto minmax = std::minmax_element(temp);
+            auto minmax = std::minmax_element(begin(temp), end(temp));
             feature_range[1] = *minmax.second;
-            feature_range[0] = determine_min(num_of_values, dataset.n_instances(), *minimax.first);
+            feature_range[0] = determine_min(num_of_values, dataset.n_instances(), *minmax.first);
         }return feature_range;
     }
 
@@ -122,8 +122,7 @@ public:
     void compute_leaf_values();
 
     int pid;
-    AdditivelyHE::PaillierPublicKey serverKey;
-
+    AdditivelyHE::PaillierPublicKey publicKey;
     Booster booster;
     GBDT gbdt;
     DataSet dataset;

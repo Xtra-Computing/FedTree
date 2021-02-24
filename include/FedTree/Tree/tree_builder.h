@@ -41,6 +41,17 @@ public:
        trees = Tree(tree);
     }
 
+    SyncArray<SplitPoint> get_split() {
+        SyncArray<SplitPoint> split(sp.size());
+        split.copy_from(sp);
+        return split;
+    }
+
+     void set_split(SyncArray<SplitPoint> &split) {
+        sp.resize(split.size());
+        sp.copy_from(split);
+    }
+
     void set_y_predict(int k) override;
 
     virtual void update_tree_by_sp_values();
