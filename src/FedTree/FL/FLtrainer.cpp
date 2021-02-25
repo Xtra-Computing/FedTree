@@ -56,21 +56,19 @@ void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FL
 
                 // Generate HistCut by server or each party
                 if (params.propose_split == "server") {
-                    // TODO: Assume party can send feature range to server
+
                     // loop through all party to find max and min for each feature
-                    LOG(INFO) << "Start Sending Feature Range";
                     float inf = std::numeric_limits<float>::infinity();
                     vector <vector<float>> feature_range(parties[0].get_num_feature());
                     for (int n = 0; n < parties[0].get_num_feature(); n++) {
                         vector<float> min_max = {inf, -inf};
-                        for (int p = 0; n < parties.size(); p++) {
+                        for (int p = 0; p < parties.size(); p++) {
                             vector<float> temp = parties[p].get_feature_range_by_feature_index(n);
                             if (temp[0] <= min_max[0])
                                 min_max[0] = temp[0];
                             if (temp[1] >= min_max[1])
                                 min_max[1] = temp[1];
                         }
-                        // add min_max to feature_range
                         feature_range[n] = min_max;
                     }
                     LOG(INFO) << "Feature range: " << feature_range;
@@ -78,7 +76,6 @@ void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FL
                     for (int p = 0; p < parties.size(); p++) {
                         parties[p].booster.fbuilder->cut.get_cut_points_by_feature_range(feature_range, n_bins);
                     }
-                    LOG(INFO) << "Generate Cut Points" ;
                 } else if (params.propose_split == "client") {
 
                     for (int p = 0; p < parties.size(); p++) {
@@ -86,12 +83,15 @@ void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FL
                         parties[p].booster.fbuilder->cut.get_cut_points_fast(dataset, n_bins, dataset.n_instances());
                     }
                 }
+                LOG(INFO) << "Finish Generate Cut Points";
 
                 // Each Party Compute Histogram
                 // each party compute hist, send hist to server or party
                 LOG(INFO) << "Start Compute Histogram";
                 Party &aggregator = (params.merge_histogram == "client")? parties[0] : server;
+                LOG(INFO) << "Init Parties Hist, " << aggregator.booster.fbuilder;
                 aggregator.booster.fbuilder->parties_hist_init(parties.size());
+                LOG(INFO) << "Finish Parties Hist Init";
 
                 for (int j = 0; j < parties.size(); j++) {
                     int n_column = parties[j].dataset.n_features();

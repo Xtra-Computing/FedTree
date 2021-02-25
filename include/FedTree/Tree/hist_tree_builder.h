@@ -68,9 +68,9 @@ public:
 
     HistCut cut;
     void parties_hist_init(int party_size) override{
-        parties_hist = MSyncArray<GHPair>(party_size);
-        parties_missing_gh = MSyncArray<GHPair>(party_size);
+        LOG(INFO) << "Party size";
         this->party_size = party_size;
+        LOG(INFO) << "DOne";
         party_idx = 0;
     }
 
@@ -120,7 +120,6 @@ public:
             hist_data[i].decrypt(privateKey);
         }
     }
-
 
 private:
     vector<HistCut> parties_cut;

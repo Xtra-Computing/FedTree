@@ -25,7 +25,7 @@ public:
     GBDT global_trees;
     vector<GBDT> local_trees;
     GBDTParam model_param;
-    int n_total_instances;
+//    int n_total_instances;
     vector<int> n_instances_per_party;
 
     AdditivelyHE::PaillierPublicKey publicKey;

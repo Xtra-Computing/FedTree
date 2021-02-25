@@ -41,14 +41,15 @@ public:
 
     std::unique_ptr<HistTreeBuilder> fbuilder;
     SyncArray<GHPair> gradients;
+
     std::unique_ptr<Metric> metric;
 private:
-
+    int n_devices;
     std::unique_ptr<ObjectiveFunction> obj;
     SyncArray<float_type> y;
 //    RowSampler rowSampler;
     GBDTParam param;
-    int n_devices;
+
 };
 
 

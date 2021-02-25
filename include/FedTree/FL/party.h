@@ -19,11 +19,11 @@ class Party {
 public:
     void init(int pid, DataSet &dataset, FLParam &param, SyncArray<bool> &feature_map) {
         this->pid = pid;
-        this->dataset = dataset;
         this->param = param;
         this->feature_map.resize(feature_map.size());
         this->feature_map.copy_from(feature_map.host_data(), feature_map.size());
         booster.init(dataset, param.gbdt_param);
+        this->dataset = dataset;
     };
 
     void send_gradients(Party &party){
@@ -70,48 +70,30 @@ public:
                 receiver_ins2node_id_data[iid] = sender_ins2node_id_data[iid];
     }
 
-    vector<float> slicing_value(vector<float> &val, int X, int Y) {
-        auto start = val.begin() + X;
-        auto end = val.begin() + Y + 1;
-        vector<float> result(Y - X + 1);
-        copy(start, end, result.begin());
-        return result;
-    }
-
     int get_num_feature () {
         return dataset.n_features();
     }
 
-    // handle zero values
-    float determine_min(int num_of_values, int num_of_instances, float min) {
-        if (num_of_values == dataset.n_instances()) {
-            return min;
-        } else if (min < 0) {
-            return min;
-        } else return 0;
-    }
-
     vector<float> get_feature_range_by_feature_index (int index) {
+        float inf = std::numeric_limits<float>::infinity();
         vector<float> feature_range(2);
-        vector<float> temp;
+        int column_start = dataset.csc_col_ptr[index];
+        int column_end = dataset.csc_col_ptr[index+1] + 1;
 
-        if (index == 0) {
-            int num_of_values = dataset.csc_col_ptr[0];
-            if (num_of_values > 0) {
-                temp = slicing_value(dataset.csc_val, 0, num_of_values - 1);
-                // find max and min from temp
-                auto minmax = std::minmax_element(begin(temp), end(temp));
-                feature_range[1] = *minmax.second;
-                feature_range[0] = determine_min(num_of_values, dataset.n_instances(), *minmax.first);
-            }
-        } else {
-            int num_of_values = dataset.csc_col_ptr[index] - dataset.csc_col_ptr[index - 1];
-            vector<float> temp = slicing_value(dataset.csc_val, dataset.csc_col_ptr[index-1], dataset.csc_col_ptr[index] - 1);
-            // find max and min from temp
+        int num_of_values = column_end - column_start;
+
+        if (num_of_values > 0) {
+            vector<float> temp(num_of_values);
+            copy(dataset.csc_val.begin() + column_start, dataset.csc_val.begin() + column_end, temp.begin());
             auto minmax = std::minmax_element(begin(temp), end(temp));
             feature_range[1] = *minmax.second;
-            feature_range[0] = determine_min(num_of_values, dataset.n_instances(), *minmax.first);
-        }return feature_range;
+            feature_range[0] = *minmax.first;
+        }else{
+            feature_range[0] = inf;
+            feature_range[1] = -inf;
+        }
+
+        return feature_range;
     }
 
     //for hybrid fl, the parties correct the merged trees.
@@ -127,6 +109,7 @@ public:
     DataSet dataset;
     DPnoises<double> DP;
     FLParam param;
+    int n_total_instances;
 
 private:
 //    AdditivelyHE HE;

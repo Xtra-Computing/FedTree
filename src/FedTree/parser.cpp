@@ -61,7 +61,7 @@ void Parser::parse_param(FLParam &fl_param, int argc, char **argv) {
             else if (str_name.compare("mode") == 0)
                 fl_param.mode = val;
             else if ((str_name.compare("privacy") == 0) || (str_name.compare("privacy_tech") == 0))
-                fl_param.privacy_tech = atoi(val);
+                fl_param.privacy_tech = val;
             else if (str_name.compare("partition") == 0)
                 fl_param.partition = atoi(val);
             else if (str_name.compare("partition_mode") == 0)
@@ -73,9 +73,9 @@ void Parser::parse_param(FLParam &fl_param, int argc, char **argv) {
             else if (str_name.compare("n_verti") == 0)
                 fl_param.n_verti = atoi(val);
             else if (str_name.compare("merge_histogram") == 0)
-                fl_param.merge_histogram = atoi(val);
+                fl_param.merge_histogram = val;
             else if (str_name.compare("propose_split") == 0)
-                fl_param.propose_split = atoi(val);
+                fl_param.propose_split = val;
             // GBDT params
             else if ((str_name.compare("max_depth") == 0) || (str_name.compare("depth") == 0))
                 gbdt_param->depth = atoi(val);
