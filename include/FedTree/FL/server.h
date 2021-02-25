@@ -40,8 +40,8 @@ public:
         privateKey = std::get<1>(keyPairs);
     };
 
-    void decrypt_histogram(SyncArray<GHPair> &hist) {
-        booster.fbuilder->decrypt_histogram(hist, privateKey);
+    void decrypt_histogram() {
+        booster.fbuilder->decrypt_histogram(privateKey);
     }
 
 private:

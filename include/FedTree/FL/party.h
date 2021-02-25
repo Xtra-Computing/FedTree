@@ -43,11 +43,11 @@ public:
         party.booster.fbuilder->set_tree(tree);
     }
 
-
-    void send_hist(Party &party){
-        SyncArray<GHPair> hist = booster.fbuilder->get_hist();
-        party.booster.fbuilder->append_hist(hist);
-    }
+//
+//    void send_hist(Party &party){
+//        SyncArray<GHPair> hist = booster.fbuilder->get_hist();
+//        party.booster.fbuilder->append_hist(hist);
+//    }
 
     void send_node(int node_id, Party &party){
         Tree::TreeNode *receiver_nodes_data = party.booster.fbuilder->trees.nodes.host_data();
@@ -113,7 +113,6 @@ public:
             feature_range[0] = determine_min(num_of_values, dataset.n_instances(), *minmax.first);
         }return feature_range;
     }
-
 
     //for hybrid fl, the parties correct the merged trees.
     void correct_trees();

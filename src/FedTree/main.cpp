@@ -46,7 +46,6 @@ int main(int argc, char** argv){
     acc = model.predict(test_dataset);
 */
 
-//centralized training test
     FLParam fl_param;
     Parser parser;
     parser.parse_param(fl_param, argc, argv);
@@ -156,6 +155,7 @@ int main(int argc, char** argv){
     }
     LOG(INFO)<<"after party init";
 
+    LOG(INFO)<<"Initialize Server";
     Server server;
     if (fl_param.mode == "vertical"){
         DataSet server_dataset;
@@ -163,6 +163,7 @@ int main(int argc, char** argv){
         server.vertical_init(fl_param, dataset.n_instances(), n_instances_per_party, server_dataset);
     }
     server.init(fl_param, dataset.n_instances(), n_instances_per_party);
+    LOG(INFO)<<"after server init";
 
     FLtrainer trainer;
     if (param.tree_method == "auto")
@@ -225,6 +226,16 @@ int main(int argc, char** argv){
     }
     else if(fl_param.mode == "vertical"){
         trainer.vertical_fl_trainer(parties, server, fl_param);
+        float_type score;
+        if(use_global_test_set)
+            score = parties[0].gbdt.predict_score(fl_param.gbdt_param, test_dataset);
+        else
+            score = parties[0].gbdt.predict_score(fl_param.gbdt_param, test_subsets[0]);
+        scores.push_back(score);
+    }else if (fl_param.mode == "horizontal") {
+        LOG(INFO)<<"start training";
+        trainer.horizontal_fl_trainer(parties, server, fl_param);
+        LOG(INFO)<<"end training";
         float_type score;
         if(use_global_test_set)
             score = parties[0].gbdt.predict_score(fl_param.gbdt_param, test_dataset);

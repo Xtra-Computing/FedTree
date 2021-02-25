@@ -72,6 +72,10 @@ void Parser::parse_param(FLParam &fl_param, int argc, char **argv) {
                 fl_param.n_hori = atoi(val);
             else if (str_name.compare("n_verti") == 0)
                 fl_param.n_verti = atoi(val);
+            else if (str_name.compare("merge_histogram") == 0)
+                fl_param.merge_histogram = atoi(val);
+            else if (str_name.compare("propose_split") == 0)
+                fl_param.propose_split = atoi(val);
             // GBDT params
             else if ((str_name.compare("max_depth") == 0) || (str_name.compare("depth") == 0))
                 gbdt_param->depth = atoi(val);

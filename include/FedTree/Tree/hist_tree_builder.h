@@ -69,24 +69,26 @@ public:
     HistCut cut;
     void parties_hist_init(int party_size) override{
         parties_hist = MSyncArray<GHPair>(party_size);
+        parties_missing_gh = MSyncArray<GHPair>(party_size);
         this->party_size = party_size;
         party_idx = 0;
     }
 
-    void append_hist(SyncArray<GHPair> &hist) override{
+    void append_hist(SyncArray<GHPair> &hist) override {
         CHECK_LT(party_idx, party_size);
         parties_hist[party_idx].resize(hist.size());
         parties_hist[party_idx].copy_from(hist);
         party_idx += 1;
     }
 
-    MSyncArray<GHPair> get_parties_hist() {
-        MSyncArray<GHPair> hist(parties_hist.size());
-        for (int i = 0; i < parties_hist.size(); i++) {
-            hist[i].copy_from(parties_hist[i]);
-        }
 
-        return hist;
+    void append_hist(SyncArray<GHPair> &hist, SyncArray<GHPair> &missing_gh,int n_partition, int n_max_splits) override{
+        CHECK_LT(party_idx, party_size);
+        parties_missing_gh[party_idx].resize(n_partition);
+        parties_missing_gh[party_idx].copy_from(missing_gh);
+        parties_hist[party_idx].resize(n_max_splits);
+        parties_hist[party_idx].copy_from(hist);
+        party_idx += 1;
     }
 
     void set_cut (HistCut commonCut) {
@@ -99,15 +101,21 @@ public:
         last_hist.copy_from(last_hist_input);
     }
 
-    SyncArray<GHPair> get_last_hist () {
-        SyncArray<GHPair> hist(last_hist.size());
-        hist.copy_from(last_hist);
-        return hist;
+    SyncArray<GHPair> get_last_hist() {
+        SyncArray<GHPair> last_hist_return(last_hist.size());
+        last_hist_return.copy_from(last_hist);
+        return last_hist_return;
     }
 
-    void decrypt_histogram(SyncArray<GHPair> &hist, AdditivelyHE::PaillierPrivateKey privateKey) {
-        int size = hist.size();
-        auto hist_data = hist.host_data();
+    SyncArray<GHPair> get_last_missing_gh() {
+        SyncArray<GHPair> last_missing_gh_return(last_missing_gh.size());
+        last_missing_gh_return.copy_from(last_missing_gh);
+        return last_missing_gh_return;
+    }
+
+    void decrypt_histogram(AdditivelyHE::PaillierPrivateKey privateKey) {
+        int size = last_hist.size();
+        auto hist_data = last_hist.host_data();
         for (int i = 0; i < size; i++) {
             hist_data[i].decrypt(privateKey);
         }
@@ -119,7 +127,10 @@ private:
     // MSyncArray<unsigned char> char_dense_bin_id;
     SyncArray<unsigned char> dense_bin_id;
     SyncArray<GHPair> last_hist;
+    SyncArray<GHPair> last_missing_gh;
     MSyncArray<GHPair> parties_hist;
+    MSyncArray<GHPair> parties_missing_gh;
+
     int party_idx = 0;
     int party_size = 0;
 

@@ -83,8 +83,13 @@ struct GHPair {
 
     HOST_DEVICE GHPair operator+(const GHPair &rhs) const {
         GHPair res;
-        res.g = this->g + rhs.g;
-        res.h = this->h + rhs.h;
+        if (res.encrypted) {
+            res.g_enc = AdditivelyHE::aggregate(this->g_enc, res.g_enc);
+            res.h_enc = AdditivelyHE::aggregate(this->h_enc, res.h_enc);
+        }else {
+            res.g = this->g + rhs.g;
+            res.h = this->h + rhs.h;
+        }
         return res;
     }
 

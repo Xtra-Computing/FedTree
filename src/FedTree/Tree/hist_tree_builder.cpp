@@ -1012,27 +1012,29 @@ void HistTreeBuilder::compute_histogram_in_a_node(SyncArray<GHPair> &gradients, 
 //assumption: GHPairs in the histograms of all clients are arranged in the same order
 
 void HistTreeBuilder::merge_histograms_server_propose() {
-
     int n_bins = parties_hist[0].size();
+    int n_size = parties_missing_gh[0].size();
     SyncArray<GHPair> merged_hist(n_bins);
+    SyncArray<GHPair> merged_missing_gh(n_size);
     auto merged_hist_data = merged_hist.host_data();
+    auto merged_missing_gh_data = merged_missing_gh.host_data();
 
     for (int i = 0; i < parties_hist.size(); i++) {
         auto hist_data = parties_hist[i].host_data();
+        auto missing_gh_data =  parties_missing_gh[i].host_data();
         for (int j = 0; j < n_bins; j++) {
             GHPair &src = hist_data[j];
-            GHPair &dest = merged_hist_data[j];
-            // use homo add
-            if (src.encrypted) {
-                dest.homo_add(src);
-            }else {
-                dest = dest + src;
-            }
+            GHPair &missing_gh = missing_gh_data[j];
+            GHPair &hist_dest = merged_hist_data[j];
+            GHPair &missing_gh_dest = merged_missing_gh_data[j];
+            hist_dest = hist_dest + src;
+            missing_gh_dest = missing_gh_dest + missing_gh;
         }
     }
-
     last_hist.resize(n_bins);
     last_hist.copy_from(merged_hist);
+    last_missing_gh.resize(n_size);
+    last_missing_gh.copy_from(merged_missing_gh);
 }
 
 
@@ -1041,7 +1043,7 @@ void HistTreeBuilder::merge_histograms_server_propose() {
 //assumption 3: cut_val_data is sorted by feature id and split value, eg: [f0(0.1), f0(0.2), f0(0.3), f1(100), f1(200),...]
 //assumption 4: gradients and hessians are near uniformly distributed
 
-
+// TODO: Missing GH
 void HistTreeBuilder::merge_histograms_client_propose() {
     CHECK_EQ(parties_hist.size(), parties_cut.size());
     int n_columns = parties_cut[0].cut_col_ptr.size() - 1;
