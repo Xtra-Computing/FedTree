@@ -6,6 +6,15 @@
 
 //std::mutex mtx;
 
+void Booster::init(const GBDTParam &param, int n_instances) {
+    this -> param = param;
+    fbuilder.reset(new HistTreeBuilder);
+    fbuilder->init(param, n_instances);
+    n_devices = param.n_device;
+    int n_outputs = param.num_class * n_instances;
+    gradients = SyncArray<GHPair>(n_outputs);
+}
+
 void Booster::init(DataSet &dataSet, const GBDTParam &param) {
 //    int n_available_device;
 //    cudaGetDeviceCount(&n_available_device);

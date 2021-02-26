@@ -13,6 +13,8 @@ public:
 
     void init(DataSet &dataset, const GBDTParam &param) override;
 
+    void init(const GBDTParam &param, int n_instances) override;
+
     void get_bin_ids();
 
     Tree* build_tree_level_approximate(int level, int round) override;

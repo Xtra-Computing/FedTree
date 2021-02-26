@@ -10,7 +10,15 @@
 #include <thrust/execution_policy.h>
 #include <math.h>
 
-
+void TreeBuilder::init(const GBDTParam &param, int n_instances) {
+    FunctionBuilder::init(param, n_instances);
+    this->n_instances = n_instances;
+    ins2node_id = SyncArray<int>(n_instances);
+    sp = SyncArray<SplitPoint>();
+    int n_outputs = param.num_class * n_instances;
+    y_predict = SyncArray<float_type>(n_outputs);
+    gradients = SyncArray<GHPair>(n_instances);
+}
 
 void TreeBuilder::init(DataSet &dataSet, const GBDTParam &param) {
 //    int n_available_device;

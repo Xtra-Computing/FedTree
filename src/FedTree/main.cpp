@@ -162,7 +162,11 @@ int main(int argc, char** argv){
         server_dataset.y = dataset.y;
         server.vertical_init(fl_param, dataset.n_instances(), n_instances_per_party, server_dataset);
     }
+
     server.init(fl_param, dataset.n_instances(), n_instances_per_party);
+
+    if (fl_param.mode == "horizontal")
+        server.horizontal_init(fl_param, dataset.n_instances(), n_instances_per_party);
     LOG(INFO)<<"after server init";
 
     FLtrainer trainer;

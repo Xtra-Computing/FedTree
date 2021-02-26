@@ -29,6 +29,8 @@ public:
 
     void init(DataSet &dataset, const GBDTParam &param) override;
 
+    void init(const GBDTParam &param, int n_instances) override;
+
     void update_tree();
 
     void update_tree_in_a_node(int node_id);

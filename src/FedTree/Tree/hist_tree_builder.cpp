@@ -17,6 +17,10 @@
 
 using namespace thrust;
 
+void HistTreeBuilder::init(const GBDTParam &param, int n_instances) {
+    TreeBuilder::init(param, n_instances);
+}
+
 void HistTreeBuilder::init(DataSet &dataset, const GBDTParam &param) {
     TreeBuilder::init(dataset, param);
     //TODO refactor
@@ -568,20 +572,25 @@ void HistTreeBuilder::compute_histogram_in_a_level(int level, int n_max_splits, 
 //    int n_max_splits = n_max_nodes * n_bins;
     int n_split = n_nodes_in_level * n_bins;
 
-    LOG(TRACE) << "start finding split";
+    LOG(INFO) << "start finding split";
 
     {
         TIMED_SCOPE(timerObj, "build hist");
         if (n_nodes_in_level == 1) {
+
+            LOG(INFO) << "Initialize param";
             auto hist_data = hist.host_data();
             auto cut_col_ptr_data = cut.cut_col_ptr.host_data();
             auto gh_data = gh_pair.host_data();
             auto dense_bin_id_data = dense_bin_id.host_data();
             auto max_num_bin = param.max_num_bin;
             auto n_instances = this->n_instances;
+            LOG(INFO) << "Finish Initializing Param";
+
 //                ThunderGBM: check size of histogram.
             //has bug if using openmp
 //            #pragma omp parallel for
+            LOG(INFO) << "start loop";
             for (int i = 0; i < n_instances * n_column; i++) {
                 int iid = i / n_column;
                 int fid = i % n_column;
@@ -601,6 +610,7 @@ void HistTreeBuilder::compute_histogram_in_a_level(int level, int n_max_splits, 
 
                 }
             }
+            LOG(INFO) << "finish loop";
         } else {
             auto t_dp_begin = timer.now();
             SyncArray<int> node_idx(n_instances);
@@ -619,19 +629,20 @@ void HistTreeBuilder::compute_histogram_in_a_level(int level, int n_max_splits, 
 
                 thrust::upper_bound(thrust::host, nid4sort.host_data(), nid4sort.host_end(), counting_iter,
                                     counting_iter + n_nodes_in_level, node_ptr.host_data() + 1);
-                LOG(DEBUG) << "node ptr = " << node_ptr;
+                LOG(INFO) << "node ptr = " << node_ptr;
             }
             auto t_dp_end = timer.now();
             std::chrono::duration<double> dp_used_time = t_dp_end - t_dp_begin;
             this->total_dp_time += dp_used_time.count();
 
-
+            LOG(INFO) << "Initialize param";
             auto node_ptr_data = node_ptr.host_data();
             auto node_idx_data = node_idx.host_data();
             auto cut_col_ptr_data = cut.cut_col_ptr.host_data();
             auto gh_data = gh_pair.host_data();
             auto dense_bin_id_data = dense_bin_id.host_data();
             auto max_num_bin = param.max_num_bin;
+            LOG(INFO) << "Finish Initialize param";
             for (int i = 0; i < n_nodes_in_level / 2; ++i) {
 
                 int nid0_to_compute = i * 2;
@@ -692,13 +703,14 @@ void HistTreeBuilder::compute_histogram_in_a_level(int level, int n_max_splits, 
 //                            PERFORMANCE_CHECKPOINT(timerObj);
             }  // end for each node
         }
+        last_hist.resize(hist.size());
         last_hist.copy_from(hist);
     }
 
     this->build_n_hist++;
     inclusive_scan_by_key(thrust::host, hist_fid, hist_fid + n_split,
                           hist.host_data(), hist.host_data());
-    LOG(DEBUG) << hist;
+    LOG(INFO) << hist;
 
     auto nodes_data = tree.nodes.host_data();
     auto missing_gh_data = missing_gh.host_data();
@@ -716,7 +728,7 @@ void HistTreeBuilder::compute_histogram_in_a_level(int level, int n_max_splits, 
             missing_gh_data[pid] = nodes_data[nid].sum_gh_pair - node_gh;
         }
     }
-    LOG(DEBUG) << missing_gh;
+    LOG(INFO) << missing_gh;
     return;
 }
 

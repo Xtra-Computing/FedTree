@@ -59,6 +59,10 @@ public:
         this->param = param;
     };
 
+    virtual void init(const GBDTParam &param, int n_instances) {
+        this->param = param;
+    }
+
     virtual const SyncArray<float_type> &get_y_predict() { return y_predict; };
 
     virtual ~FunctionBuilder() {};

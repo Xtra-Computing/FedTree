@@ -25,6 +25,8 @@ class Booster {
 public:
     void init(DataSet &dataSet, const GBDTParam &param);
 
+    void init (const GBDTParam &param, int n_instances);
+
     SyncArray<GHPair> get_gradients();
 
     void set_gradients(SyncArray<GHPair> &gh);

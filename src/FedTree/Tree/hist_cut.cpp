@@ -213,4 +213,9 @@ void HistCut::get_cut_points_by_feature_range(vector<vector<float>> f_range, int
         }
     }   
     cut_col_ptr_data[n_features] = n_features * max_num_bins;
+
+    LOG(INFO) << "--->>>>  cut points value: " << cut_points_val;
+    LOG(INFO) << "--->>>> cut row ptr: " << cut_col_ptr;
+    LOG(INFO) << "--->>>> cut fid: " << cut_fid;
+    LOG(INFO) << "TOTAL CP:" << cut_fid.size();
 }
