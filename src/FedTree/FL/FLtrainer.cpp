@@ -168,6 +168,7 @@ void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FL
                 auto best_idx_data = best_idx_gain.host_data();
                 LOG(INFO) << "End Computing Gain";
                 LOG(INFO) << "Start Computing Split Points";
+                // error here hist cut not initalised properly: has size 0
                 server.booster.fbuilder->get_split_points(best_idx_gain, n_nodes_in_level, hist_fid_data, last_missing_gh,
                                                           last_hist);
                 LOG(INFO) << "End Computing Split Points";
