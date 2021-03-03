@@ -25,7 +25,11 @@ public:
 
     void predict_raw(const GBDTParam &model_param, const DataSet &dataSet, SyncArray<float_type> &y_predict);
 
+    void predict_raw_vertical(const GBDTParam &model_param, const DataSet &dataSet, SyncArray<float_type> &y_predict, std::map<int, vector<int>> &batch_idxs);
+
     float_type predict_score(const GBDTParam &model_param, const DataSet &dataSet);
+
+    float_type predict_score_vertical(const GBDTParam &model_param, const DataSet &dataSet, std::map<int, vector<int>> &batch_idxs);
 };
 
 #endif //FEDTREE_GBDT_H

@@ -669,6 +669,8 @@ void DataSet::csr_to_csc(){
         csc_col_ptr[i] = last;
         last = next_last;
     }
+
+    has_csc = true;
 }
 
 size_t DataSet::n_features() const {

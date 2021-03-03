@@ -20,10 +20,17 @@ public:
         this->pid = pid;
         this->dataset = dataset;
         this->param = param;
-        this->feature_map.resize(feature_map.size());
-        this->feature_map.copy_from(feature_map.host_data(), feature_map.size());
+        if (param.mode != "vertical") {
+            this->feature_map.resize(feature_map.size());
+            this->feature_map.copy_from(feature_map.host_data(), feature_map.size());
+        }
         booster.init(dataset, param.gbdt_param);
     };
+
+    void send_booster_gradients(Party &party){
+        SyncArray<GHPair> gh = booster.get_gradients();
+        party.booster.set_gradients(gh);
+    }
 
     void send_gradients(Party &party){
         SyncArray<GHPair> gh = booster.fbuilder->get_gradients();
@@ -48,7 +55,7 @@ public:
         party.booster.fbuilder->append_hist(hist);
     }
 
-    void send_node(int node_id, Party &party){
+    void send_node(int node_id, int n_nodes_in_level, Party &party){
         Tree::TreeNode *receiver_nodes_data = party.booster.fbuilder->trees.nodes.host_data();
         Tree::TreeNode *sender_nodes_data = booster.fbuilder->trees.nodes.host_data();
         auto& receiver_sp = party.booster.fbuilder->sp;
@@ -61,8 +68,12 @@ public:
         auto sender_ins2node_id_data = sender_ins2node_id.host_data();
         int n_instances = party.booster.fbuilder->n_instances;
 
+        int lch = sender_nodes_data[node_id].lch_index;
+        int rch = sender_nodes_data[node_id].rch_index;
         receiver_nodes_data[node_id] = sender_nodes_data[node_id];
-        receiver_sp_data[node_id] = sender_sp_data[node_id];
+        receiver_nodes_data[lch] = sender_nodes_data[lch];
+        receiver_nodes_data[rch] = sender_nodes_data[rch];
+        receiver_sp_data[node_id - n_nodes_in_level + 1] = sender_sp_data[node_id - n_nodes_in_level + 1];
 
         for (int iid = 0; iid < n_instances; iid++)
             if (receiver_ins2node_id_data[iid] == node_id)

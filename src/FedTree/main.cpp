@@ -78,17 +78,14 @@ int main(int argc, char** argv){
     vector<DataSet> test_subsets(n_parties);
     vector<DataSet> subsets(n_parties);
     vector<SyncArray<bool>> feature_map(n_parties);
+    std::map<int, vector<int>> batch_idxs;
     DataSet dataset;
     bool use_global_test_set = !model_param.test_path.empty();
     if(fl_param.partition == true){
-        dataset.load_from_file(model_param.path, fl_param);
         Partition partition;
         if(fl_param.partition_mode == "hybrid"){
+            dataset.load_from_file(model_param.path, fl_param);
             LOG(INFO)<<"horizontal vertical dir";
-            if(fl_param.mode == "horizontal")
-                CHECK_EQ(fl_param.n_verti, 1);
-            else if(fl_param.mode == "vertical")
-                CHECK_EQ(fl_param.n_hori, 1);
             partition.horizontal_vertical_dir_partition(dataset, n_parties, fl_param.alpha, feature_map, subsets, fl_param.n_hori, fl_param.n_verti);
 //            std::cout<<"subsets[0].n_instances:"<<subsets[0].n_instances()<<std::endl;
 //            std::cout<<"subsets[0].nnz:"<<subsets[0].csr_val.size()<<std::endl;
@@ -98,21 +95,28 @@ int main(int argc, char** argv){
 //            std::cout<<"subsets[2].nnz:"<<subsets[2].csr_val.size()<<std::endl;
 //            std::cout<<"subsets[3].n_instances:"<<subsets[3].n_instances()<<std::endl;
 //            std::cout<<"subsets[3].nnz:"<<subsets[3].csr_val.size()<<std::endl;
-            if(!use_global_test_set) {
-                LOG(INFO) << "train test split";
-                for (int i = 0; i < n_parties; i++) {
-                    partition.train_test_split(subsets[i], train_subsets[i], test_subsets[i]);
-                }
-            }
-            else{
-                for (int i = 0; i < n_parties; i++) {
-                    train_subsets[i] = subsets[i];
-                }
-            }
+        }
+        else if(fl_param.partition_mode == "vertical") {
+            LOG(INFO)<<"vertical dir";
+            CHECK_EQ(fl_param.mode, "vertical");
+            dataset.load_from_file(model_param.path, fl_param);
+            dataset.csr_to_csc();
+            partition.homo_partition(dataset,n_parties,false,subsets,batch_idxs);
         }
         else{
             std::cout<<"not supported yet"<<std::endl;
             exit(1);
+        }
+        if(!use_global_test_set) {
+            LOG(INFO) << "train test split";
+            for (int i = 0; i < n_parties; i++) {
+                partition.train_test_split(subsets[i], train_subsets[i], test_subsets[i]);
+            }
+        }
+        else{
+            for (int i = 0; i < n_parties; i++) {
+                train_subsets[i] = subsets[i];
+            }
         }
     }
     else{
@@ -146,7 +150,9 @@ int main(int argc, char** argv){
     else if(param.objective.find("reg:") != std::string::npos){
         param.num_class = 1;
     }
-    
+
+    LOG(INFO) << "privacy tech: " << fl_param.privacy_tech;
+
     vector<Party> parties(n_parties);
     vector<int> n_instances_per_party(n_parties);
     LOG(INFO)<<"initialize parties";
@@ -158,11 +164,10 @@ int main(int argc, char** argv){
 
     Server server;
     if (fl_param.mode == "vertical"){
-        DataSet server_dataset;
-        server_dataset.y = dataset.y;
-        server.vertical_init(fl_param, dataset.n_instances(), n_instances_per_party, server_dataset);
+        server.vertical_init(fl_param, dataset.n_instances(), n_instances_per_party, dataset);
+    } else {
+        server.init(fl_param, dataset.n_instances(), n_instances_per_party);
     }
-    server.init(fl_param, dataset.n_instances(), n_instances_per_party);
 
     FLtrainer trainer;
     if (param.tree_method == "auto")
@@ -224,12 +229,14 @@ int main(int argc, char** argv){
         }
     }
     else if(fl_param.mode == "vertical"){
+        LOG(INFO) << "batch_idxs: " << batch_idxs;
         trainer.vertical_fl_trainer(parties, server, fl_param);
+        auto node_data = parties[0].gbdt.trees[0][0].nodes.host_data();
         float_type score;
-        if(use_global_test_set)
-            score = parties[0].gbdt.predict_score(fl_param.gbdt_param, test_dataset);
-        else
-            score = parties[0].gbdt.predict_score(fl_param.gbdt_param, test_subsets[0]);
+//        if(use_global_test_set)
+        score = parties[0].gbdt.predict_score_vertical(fl_param.gbdt_param, dataset, batch_idxs);
+//        else
+//            score = parties[0].gbdt.predict_score(fl_param.gbdt_param, test_subsets[0]);
         scores.push_back(score);
     }
 

@@ -135,7 +135,7 @@ void HistCut::get_cut_points_fast(DataSet &dataset, int max_num_bins, int n_inst
     auto csc_ptr = &dataset.csc_col_ptr[0];
 
     auto cut_fid_data = cut_fid.host_data();
-    #pragma omp parallel for
+//    #pragma omp parallel for
     for(int fid = 0; fid < n_column; fid ++)
         for(int i = csc_ptr[fid]; i < csc_ptr[fid+1]; i++) {
             cut_fid_data[i] = fid;
