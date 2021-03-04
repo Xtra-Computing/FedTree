@@ -86,6 +86,10 @@ int main(int argc, char** argv){
         if(fl_param.partition_mode == "hybrid"){
             dataset.load_from_file(model_param.path, fl_param);
             LOG(INFO)<<"horizontal vertical dir";
+            if(fl_param.mode == "horizontal")
+                CHECK_EQ(fl_param.n_verti, 1);
+            if(fl_param.mode == "vertical")
+                CHECK_EQ(fl_param.n_hori, 1);
             partition.horizontal_vertical_dir_partition(dataset, n_parties, fl_param.alpha, feature_map, subsets, fl_param.n_hori, fl_param.n_verti);
 //            std::cout<<"subsets[0].n_instances:"<<subsets[0].n_instances()<<std::endl;
 //            std::cout<<"subsets[0].nnz:"<<subsets[0].csr_val.size()<<std::endl;
