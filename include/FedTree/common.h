@@ -56,6 +56,7 @@ struct GHPair {
     AdditivelyHE::EncryptedNumber g_enc;
     AdditivelyHE::EncryptedNumber h_enc;
     AdditivelyHE::PaillierPublicKey pk;
+    bool encrypted = false;
 
     HOST_DEVICE void homo_encrypt(AdditivelyHE::PaillierPublicKey pk) {
         g_enc = AdditivelyHE::encrypt(pk, g);
@@ -63,21 +64,26 @@ struct GHPair {
         this->pk = pk;
         g = 0;
         h = 0;
+        encrypted = true;
     }
 
-    HOST_DEVICE GHPair homo_add(const GHPair &rhs) const {
-//        CHECK_EQ(this->pk, rhs.pk);
-        GHPair res;
-        res.homo_encrypt(pk);
-        res.g_enc = AdditivelyHE::aggregate(this->g_enc, res.g_enc);
-        res.h_enc = AdditivelyHE::aggregate(this->h_enc, res.h_enc);
-        return res;
+    HOST_DEVICE void decrypt(AdditivelyHE::PaillierPrivateKey privateKey) {
+        g = AdditivelyHE::decrypt(privateKey, g_enc);
+        h = AdditivelyHE::decrypt(privateKey, h_enc);
+        encrypted = false;
     }
 
     HOST_DEVICE GHPair operator+(const GHPair &rhs) const {
         GHPair res;
-        res.g = this->g + rhs.g;
-        res.h = this->h + rhs.h;
+        if (encrypted) {
+            res.g_enc = AdditivelyHE::aggregate(this->g_enc, rhs.g_enc);
+            res.h_enc = AdditivelyHE::aggregate(this->h_enc, rhs.h_enc);
+            res.pk = this->pk;
+            res.encrypted = true;
+        } else {
+            res.g = this->g + rhs.g;
+            res.h = this->h + rhs.h;
+        }
         return res;
     }
 

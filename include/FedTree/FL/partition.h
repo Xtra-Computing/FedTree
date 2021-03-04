@@ -10,7 +10,7 @@
 class Partition {
 
 public:
-    void homo_partition(const DataSet &dataset, const int n_parties, const bool is_horizontal, vector<DataSet> &subsets);
+    void homo_partition(const DataSet &dataset, const int n_parties, const bool is_horizontal, vector<DataSet> &subsets, std::map<int, vector<int>> &batch_idxs);
 
     void hetero_partition(const DataSet &dataset, const int n_parties, const bool is_horizontal, vector<DataSet> &subsets,
                      const vector<float> alpha = {});

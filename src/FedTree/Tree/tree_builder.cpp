@@ -24,8 +24,8 @@ void TreeBuilder::init(DataSet &dataSet, const GBDTParam &param) {
     if (!dataSet.has_csc and dataSet.csr_row_ptr.size() > 1)
         dataSet.csr_to_csc();
     this->sorted_dataset = dataSet;
-    if (dataSet.csc_col_ptr.size() > 1)
-        seg_sort_by_key_cpu(sorted_dataset.csc_val, sorted_dataset.csc_row_idx, sorted_dataset.csc_col_ptr);
+//    if (dataSet.csc_col_ptr.size() > 1)
+    seg_sort_by_key_cpu(sorted_dataset.csc_val, sorted_dataset.csc_row_idx, sorted_dataset.csc_col_ptr);
     this->n_instances = sorted_dataset.n_instances();
 //    trees = vector<Tree>(1);
     ins2node_id = SyncArray<int>(n_instances);
@@ -75,7 +75,7 @@ void TreeBuilder::predict_in_training(int k) {
     auto nid_data = ins2node_id.host_data();
     const Tree::TreeNode *nodes_data = trees.nodes.host_data();
     auto lr = param.learning_rate;
-//    #pragma omp parallel for
+//#pragma omp parallel for
     for(int i = 0; i < n_instances; i++){
         int nid = nid_data[i];
         while (nid != -1 && (nodes_data[nid].is_pruned)) nid = nodes_data[nid].parent_index;
@@ -122,6 +122,7 @@ vector<Tree> TreeBuilder::build_approximate(const SyncArray<GHPair> &gradients, 
         }
         //here
         this->trees.prune_self(param.gamma);
+        LOG(INFO) << "y_predict: " << y_predict;
         if(update_y_predict)
             predict_in_training(k);
         tree.nodes.resize(this->trees.nodes.size());
@@ -246,7 +247,7 @@ void TreeBuilder::update_tree() {
 
             Tree::TreeNode &lch = nodes_data[node.lch_index];//left child
             Tree::TreeNode &rch = nodes_data[node.rch_index];//right child
-            lch.is_valid = true;
+            lch.is_valid = true; //TODO: broadcast lch and rch
             rch.is_valid = true;
             node.split_feature_id = sp_data[i].split_fea_id;
             GHPair p_missing_gh = sp_data[i].fea_missing_gh;

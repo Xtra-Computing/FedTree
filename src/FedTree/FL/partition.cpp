@@ -8,7 +8,7 @@
 #include <cassert>
 
 
-void Partition::homo_partition(const DataSet &dataset, const int n_parties, const bool is_horizontal, vector<DataSet> &subsets) {
+void Partition::homo_partition(const DataSet &dataset, const int n_parties, const bool is_horizontal, vector<DataSet> &subsets, std::map<int, vector<int>> &batch_idxs) {
     int n;
     if (is_horizontal)
         n = dataset.n_instances();
@@ -19,6 +19,9 @@ void Partition::homo_partition(const DataSet &dataset, const int n_parties, cons
         if(is_horizontal) {
             subsets[i].n_features_ = dataset.n_features();
         }
+        if(!is_horizontal) {
+            subsets[i].y = dataset.y;
+        }
     }
 
     vector<int> idxs;
@@ -26,18 +29,18 @@ void Partition::homo_partition(const DataSet &dataset, const int n_parties, cons
         idxs.push_back(i);
     }
 
-    std::random_shuffle(idxs.begin(), idxs.end());
+//    std::random_shuffle(idxs.begin(), idxs.end());
 
-    std::map<int, vector<int>> batch_idxs;
+//    std::map<int, vector<int>> batch_idxs;
 
-    int stride = n / n_parties;
+    int stride = n / n_parties + 1;
     for (int i = 0; i < n_parties; i++) {
         batch_idxs[i] = vector<int>(idxs.begin() + i * stride,
                                     std::min(idxs.end(), idxs.begin() + (i + 1) * stride));
     }
-    for (int i = 0; i < n % n_parties; i++) {
-        batch_idxs[i].push_back(idxs[n_parties * stride + i]);
-    }
+//    for (int i = 0; i < n % n_parties; i++) {
+//        batch_idxs[i].push_back(idxs[n_parties * stride + i]);
+//    }
 
     vector<int> part2party(n);
     for(int i = 0; i < n_parties; i ++) {
@@ -81,20 +84,21 @@ void Partition::homo_partition(const DataSet &dataset, const int n_parties, cons
 //            dataset.csr_to_csc();
 //        }
         for(int i = 0; i < dataset.csc_col_ptr.size()-1; i++) {
-            vector<int> csc_col_sub(n_parties, 0);
+            int csc_col_sub = 0;
+            int party_id = part2party[i];
             for(int j = dataset.csc_col_ptr[i]; j < dataset.csc_col_ptr[i+1]; j ++) {
                 float_type value = dataset.csc_val[j];
                 int row_id = dataset.csc_row_idx[j];
-                int part_id = i;
-                int party_id = part2party[part_id];
 
                 subsets[party_id].csc_val.push_back(value);
                 subsets[party_id].csc_row_idx.push_back(row_id);
-                csc_col_sub[party_id]++;
+                csc_col_sub++;
             }
-            for(int i = 0; i < n_parties; i ++) {
-                subsets[i].csc_col_ptr.push_back(subsets[i].csc_col_ptr.back() + csc_col_sub[i]);
-            }
+            subsets[party_id].csc_col_ptr.push_back(subsets[party_id].csc_col_ptr.back() + csc_col_sub);
+        }
+
+        for(int i = 0; i < n_parties; i++) {
+            subsets[i].n_features_ = subsets[i].csc_col_ptr.size() - 1;
         }
     }
 

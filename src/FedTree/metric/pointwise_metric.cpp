@@ -14,7 +14,7 @@ float_type RMSE::get_score(const SyncArray<float_type> &y_p) const {
     auto sq_err_data = sq_err.host_data();
     const float_type *y_data = y.host_data();
     const float_type *y_predict_data = y_p.host_data();
-#pragma omp parallel for
+//#pragma omp parallel for
     for (int i = 0; i < n_instances; i++){
         float_type e = y_predict_data[i] - y_data[i];
         sq_err_data[i] = e * e;
