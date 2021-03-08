@@ -27,12 +27,12 @@ void Tree::init_CPU(const SyncArray<GHPair> &gradients, const GBDTParam &param) 
     root_node.n_instances = gradients.size();
 }
 
-void Tree::init_structure(int depth){
+void Tree::init_structure(int depth) {
     int n_max_nodes = static_cast<int>(pow(2, depth + 1) - 1);
     nodes = SyncArray<TreeNode>(n_max_nodes);
     auto node_data = nodes.host_data();
-//    #pragma omp parallel for
-    for (int i = 0; i < n_max_nodes; i ++) {
+#pragma omp parallel for
+    for (int i = 0; i < n_max_nodes; i++) {
         node_data[i].final_id = i;
         node_data[i].split_feature_id = -1;
         node_data[i].is_valid = false;
@@ -93,17 +93,16 @@ string Tree::dump(int depth) const {
 }
 
 void Tree::preorder_traversal(int nid, int max_depth, int depth, string &s) const {
-    if(nid == -1)//child of leaf node
+    if (nid == -1)//child of leaf node
         return;
     const TreeNode &node = nodes.host_data()[nid];
     const TreeNode *node_data = nodes.host_data();
     if (node.is_valid && !node.is_pruned) {
         s = s + string(static_cast<unsigned long>(depth), '\t');
 
-        if(node.is_leaf){
+        if (node.is_leaf) {
             s = s + string_format("%d:leaf=%.6g\n", node.final_id, node.base_weight);
-        }
-        else {
+        } else {
             int lch_final_id = node_data[node.lch_index].final_id;
             int rch_final_id = node_data[node.rch_index].final_id;
             string str_inter_node = string_format("%d:[f%d<%.6g] yes=%d,no=%d,missing=%d\n", node.final_id,
@@ -123,7 +122,8 @@ void Tree::preorder_traversal(int nid, int max_depth, int depth, string &s) cons
 }
 
 std::ostream &operator<<(std::ostream &os, const Tree::TreeNode &node) {
-    os << string_format("\nnid:%d,l:%d,v:%d,p:%d,lch:%d,rch:%d,split_feature_id:%d,f:%f,gain:%f,r:%d,w:%f,", node.final_id, node.is_leaf,
+    os << string_format("\nnid:%d,l:%d,v:%d,p:%d,lch:%d,rch:%d,split_feature_id:%d,f:%f,gain:%f,r:%d,w:%f,",
+                        node.final_id, node.is_leaf,
                         node.is_valid, node.is_pruned, node.lch_index, node.rch_index,
                         node.split_feature_id, node.split_value, node.gain, node.default_right, node.base_weight);
     os << "g/h:" << node.sum_gh_pair;

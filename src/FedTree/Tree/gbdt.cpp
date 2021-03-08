@@ -5,24 +5,23 @@
 #include "FedTree/Tree/gbdt.h"
 #include "FedTree/booster.h"
 
-void GBDT::train(GBDTParam &param, DataSet &dataset){
+void GBDT::train(GBDTParam &param, DataSet &dataset) {
     if (param.tree_method == "auto")
         param.tree_method = "hist";
-    else if (param.tree_method != "hist"){
-        std::cout<<"FedTree only supports histogram-based training yet";
+    else if (param.tree_method != "hist") {
+        std::cout << "FedTree only supports histogram-based training yet";
         exit(1);
     }
 
-    if(param.objective.find("multi:") != std::string::npos || param.objective.find("binary:") != std::string::npos) {
+    if (param.objective.find("multi:") != std::string::npos || param.objective.find("binary:") != std::string::npos) {
         int num_class = dataset.label.size();
         if (param.num_class != num_class) {
             LOG(INFO) << "updating number of classes from " << param.num_class << " to " << num_class;
             param.num_class = num_class;
         }
-        if(param.num_class > 2)
+        if (param.num_class > 2)
             param.tree_per_rounds = param.num_class;
-    }
-    else if(param.objective.find("reg:") != std::string::npos){
+    } else if (param.objective.find("reg:") != std::string::npos) {
         param.num_class = 1;
     }
     Booster booster;
@@ -79,7 +78,8 @@ float_type GBDT::predict_score(const GBDTParam &model_param, const DataSet &data
     return score;
 }
 
-float_type GBDT::predict_score_vertical(const GBDTParam &model_param, const DataSet &dataSet, std::map<int, vector<int>> &batch_idxs){
+float_type GBDT::predict_score_vertical(const GBDTParam &model_param, const DataSet &dataSet,
+                                        std::map<int, vector<int>> &batch_idxs) {
     SyncArray<float_type> y_predict;
     predict_raw_vertical(model_param, dataSet, y_predict, batch_idxs);
     LOG(INFO) << "y_predict:" << y_predict;
@@ -98,7 +98,6 @@ float_type GBDT::predict_score_vertical(const GBDTParam &model_param, const Data
     LOG(INFO) << metric->get_name() << " = " << score;
     return score;
 }
-
 
 
 void GBDT::predict_raw(const GBDTParam &model_param, const DataSet &dataSet, SyncArray<float_type> &y_predict) {
@@ -149,8 +148,8 @@ void GBDT::predict_raw(const GBDTParam &model_param, const DataSet &dataSet, Syn
 //    int NUM_BLOCK = (n_instances - 1) / BLOCK_SIZE + 1;
 
     //use sparse format and binary search
-//    #pragma omp parallel for
-    for(int iid = 0; iid < n_instances; iid++){
+#pragma omp parallel for
+    for (int iid = 0; iid < n_instances; iid++) {
         auto get_next_child = [&](Tree::TreeNode node, float_type feaValue) {
             return feaValue < node.split_value ? node.lch_index : node.rch_index;
         };
@@ -202,12 +201,13 @@ void GBDT::predict_raw(const GBDTParam &model_param, const DataSet &dataSet, Syn
     }
 }
 
-void GBDT::predict_raw_vertical(const GBDTParam &model_param, const DataSet &dataSet, SyncArray<float_type> &y_predict, std::map<int, vector<int>> &batch_idxs) {
+void GBDT::predict_raw_vertical(const GBDTParam &model_param, const DataSet &dataSet, SyncArray<float_type> &y_predict,
+                                std::map<int, vector<int>> &batch_idxs) {
     TIMED_SCOPE(timerObj, "predict");
 
     vector<int> idx_map;
-    for(int i=0; i<batch_idxs.size(); i++){
-        for(int idx:batch_idxs[i]){
+    for (int i = 0; i < batch_idxs.size(); i++) {
+        for (int idx:batch_idxs[i]) {
             idx_map.push_back(idx);
         }
     }
@@ -258,8 +258,8 @@ void GBDT::predict_raw_vertical(const GBDTParam &model_param, const DataSet &dat
 //    int NUM_BLOCK = (n_instances - 1) / BLOCK_SIZE + 1;
 
     //use sparse format and binary search
-//    #pragma omp parallel for
-    for(int iid = 0; iid < n_instances; iid++){
+#pragma omp parallel for
+    for (int iid = 0; iid < n_instances; iid++) {
         auto get_next_child = [&](Tree::TreeNode node, float_type feaValue) {
             return feaValue < node.split_value ? node.lch_index : node.rch_index;
         };

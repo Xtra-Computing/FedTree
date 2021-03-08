@@ -75,7 +75,7 @@ void TreeBuilder::predict_in_training(int k) {
     auto nid_data = ins2node_id.host_data();
     const Tree::TreeNode *nodes_data = trees.nodes.host_data();
     auto lr = param.learning_rate;
-//#pragma omp parallel for
+#pragma omp parallel for
     for(int i = 0; i < n_instances; i++){
         int nid = nid_data[i];
         while (nid != -1 && (nodes_data[nid].is_pruned)) nid = nodes_data[nid].parent_index;
@@ -109,6 +109,7 @@ vector<Tree> TreeBuilder::build_approximate(const SyncArray<GHPair> &gradients, 
                 TIMED_SCOPE(timerObj, "apply sp");
                 update_tree();
                 update_ins2node_id();
+//                LOG(INFO) << "ins2node_id: " << ins2node_id;
                 {
                     LOG(TRACE) << "gathering ins2node id";
                     //get final result of the reset instance id to node id
@@ -122,7 +123,7 @@ vector<Tree> TreeBuilder::build_approximate(const SyncArray<GHPair> &gradients, 
         }
         //here
         this->trees.prune_self(param.gamma);
-        LOG(INFO) << "y_predict: " << y_predict;
+//        LOG(INFO) << "y_predict: " << y_predict;
         if(update_y_predict)
             predict_in_training(k);
         tree.nodes.resize(this->trees.nodes.size());

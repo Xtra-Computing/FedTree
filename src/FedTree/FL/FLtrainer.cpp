@@ -242,6 +242,7 @@ void FLtrainer::vertical_fl_trainer(vector<Party> &parties, Server &server, FLPa
                 // server find the best gain and its index
                 SyncArray<int_float> best_idx_gain(n_nodes_in_level);
                 server.booster.fbuilder->get_best_gain_in_a_level(gain, best_idx_gain, n_nodes_in_level, n_bins_new);
+//                LOG(INFO) << "best_idx_gain:" << best_idx_gain;
                 auto best_idx_data = best_idx_gain.host_data();
 
                 // parties who propose the best candidate update their trees accordingly
@@ -258,7 +259,7 @@ void FLtrainer::vertical_fl_trainer(vector<Party> &parties, Server &server, FLPa
                         party_id += 1;
                     }
                     party_id -= 1;
-                    int local_idx = best_idx + parties_n_bins[party_id];
+                    int local_idx = best_idx + parties_n_bins[party_id] * (node + 1);
 
                     int node_shifted = node + (1 << l) - 1;
                     party_node_map[party_id].push_back(node_shifted);
@@ -297,11 +298,10 @@ void FLtrainer::vertical_fl_trainer(vector<Party> &parties, Server &server, FLPa
                         }
                     }
                 }
-
-                bool split_further = true;
+                bool split_further = false;
                 for (int pid:updated_parties) {
-                    if (!parties[pid].booster.fbuilder->has_split) {
-                        split_further = false;
+                    if (parties[pid].booster.fbuilder->has_split) {
+                        split_further = true;
                         break;
                     }
                 }
@@ -319,7 +319,7 @@ void FLtrainer::vertical_fl_trainer(vector<Party> &parties, Server &server, FLPa
             tree.nodes.copy_from(parties[0].booster.fbuilder->trees.nodes);
         }
 
-        LOG(INFO) << "y_predict: " << parties[0].booster.fbuilder->get_y_predict();
+//        LOG(INFO) << "y_predict: " << parties[0].booster.fbuilder->get_y_predict();
         parties[0].gbdt.trees.push_back(trees);
         LOG(INFO) << parties[0].booster.metric->get_name() << " = "
                   << parties[0].booster.metric->get_score(parties[0].booster.fbuilder->get_y_predict());
