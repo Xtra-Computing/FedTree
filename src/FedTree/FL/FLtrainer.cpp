@@ -86,6 +86,7 @@ void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FL
                         parties[p].booster.fbuilder->cut.get_cut_points_by_feature_range(feature_range, n_bins);
                        LOG(INFO) << "Finish Generate Cut Points for " << p;
                     }
+                    server.booster.fbuilder->cut.get_cut_points_by_feature_range(feature_range, n_bins);
                 } else if (params.propose_split == "client") {
 
                     for (int p = 0; p < parties.size(); p++) {

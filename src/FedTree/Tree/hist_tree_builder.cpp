@@ -643,6 +643,8 @@ void HistTreeBuilder::compute_histogram_in_a_level(int level, int n_max_splits, 
             auto dense_bin_id_data = dense_bin_id.host_data();
             auto max_num_bin = param.max_num_bin;
             LOG(INFO) << "Finish Initialize param";
+
+
             for (int i = 0; i < n_nodes_in_level / 2; ++i) {
 
                 int nid0_to_compute = i * 2;
