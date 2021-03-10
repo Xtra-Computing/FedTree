@@ -1029,18 +1029,22 @@ void HistTreeBuilder::merge_histograms_server_propose() {
     SyncArray<GHPair> merged_hist(n_bins);
     SyncArray<GHPair> merged_missing_gh(n_size);
     auto merged_hist_data = merged_hist.host_data();
-//    auto merged_missing_gh_data = merged_missing_gh.host_data();
+    auto merged_missing_gh_data = merged_missing_gh.host_data();
 
     for (int i = 0; i < parties_hist.size(); i++) {
         auto hist_data = parties_hist[i].host_data();
-//        auto missing_gh_data =  parties_missing_gh[i].host_data();
         for (int j = 0; j < n_bins; j++) {
             GHPair &src = hist_data[j];
-//            GHPair &missing_gh = missing_gh_data[j];
             GHPair &hist_dest = merged_hist_data[j];
-//            GHPair &missing_gh_dest = merged_missing_gh_data[j];
             hist_dest = hist_dest + src;
-//            missing_gh_dest = missing_gh_dest + missing_gh;
+        }
+    }
+    for (int i = 0; i < parties_missing_gh.size(); i++) {
+        auto missing_gh_data =  parties_missing_gh[i].host_data();
+        for (int j = 0; j < n_size; j++) {
+            GHPair &missing_gh = missing_gh_data[j];
+            GHPair &missing_gh_dest = merged_missing_gh_data[j];
+            missing_gh_dest = missing_gh_dest + missing_gh;
         }
     }
     last_hist.resize(n_bins);
