@@ -8,7 +8,7 @@
 #include <random>
 
 template <typename T>
-class DPnoises {
+class DPNoises {
 public:
     static void add_gaussian_noise(T& data, float variance){
         std::default_random_engine generator;
