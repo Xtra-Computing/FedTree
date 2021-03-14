@@ -2,6 +2,7 @@
 // Created by liqinbin on 12/17/20.
 //
 
+#include <FedTree/DP/clipper.h>
 #include "FedTree/booster.h"
 
 //std::mutex mtx;
@@ -49,8 +50,17 @@ void Booster::encrypt_gradients(AdditivelyHE::PaillierPublicKey pk) {
 void Booster::add_noise_to_gradients(float variance) {
     auto gradients_data = gradients.host_data();
     for (int i = 0; i < gradients.size(); i++) {
-        DPnoises<float>::add_gaussian_noise(gradients_data[i].g, variance);
-        DPnoises<float>::add_gaussian_noise(gradients_data[i].h, variance);
+        DPNoises<float>::add_gaussian_noise(gradients_data[i].g, variance);
+        DPNoises<float>::add_gaussian_noise(gradients_data[i].h, variance);
+    }
+}
+
+// clip the gradient value to [-1, 1]
+void Booster::clip_gradients() {
+    auto gradients_data = gradients.host_data();
+    for(int i = 0; i < gradients.size(); i ++) {
+        DPClipper<float>::clip_gradient_value(gradients_data[i].g);
+        DPClipper<float>::clip_gradient_value(gradients_data[i].h);
     }
 }
 
