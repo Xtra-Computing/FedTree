@@ -1,6 +1,7 @@
 //
 // Created by liqinbin on 10/14/20.
 //
+#include "FedTree/DP/DifferentialPrivacy.h"
 #include "FedTree/FL/FLtrainer.h"
 #include "FedTree/Encryption/HE.h"
 #include "FedTree/FL/partition.h"
@@ -140,9 +141,14 @@ void FLtrainer::vertical_fl_trainer(vector<Party> &parties, Server &server, FLPa
             server.booster.encrypt_gradients(server.publicKey);
         }
         if (params.privacy_tech == "dp")
+            // TODO: remove direct adding noise
             server.booster.add_noise_to_gradients(params.variance);
+
+            DifferentialPrivacy dp_params = DifferentialPrivacy();
+            dp_params.init(params);
             // clip the gradient value to [-1, 1]
             server.booster.clip_gradients();
+
         for (int j = 0; j < parties.size(); j++) {
             server.send_booster_gradients(parties[j]);
         }
