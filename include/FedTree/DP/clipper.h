@@ -6,12 +6,12 @@
 #define FEDTREE_CLIPPER_H
 
 #include <algorithm>
-
+using namespace std;
 template <typename T>
 class DPClipper {
 public:
     static void clip_gradient_value(T& value) {
-        *value = max(min(*value, 1),-1)
+        value = max<T>(min<T>(value, 1),-1);
     }
 };
 #endif //FEDTREE_CLIPPER_H
