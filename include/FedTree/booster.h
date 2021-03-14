@@ -33,6 +33,8 @@ public:
 
     void add_noise_to_gradients(float variance);
 
+    void clip_gradients();
+
     void update_gradients();
 
     void boost(vector<vector<Tree>> &boosted_model);

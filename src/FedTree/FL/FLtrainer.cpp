@@ -147,6 +147,8 @@ void FLtrainer::vertical_fl_trainer(vector<Party> &parties, Server &server, FLPa
         }
         if (params.privacy_tech == "dp")
             server.booster.add_noise_to_gradients(params.variance);
+            // clip the gradient value to [-1, 1]
+            server.booster.clip_gradients();
         for (int j = 0; j < parties.size(); j++) {
             server.send_booster_gradients(parties[j]);
         }

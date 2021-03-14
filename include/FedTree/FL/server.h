@@ -58,7 +58,7 @@ public:
 private:
 //    std::unique_ptr<TreeBuilder> fbuilder;
     AdditivelyHE HE;
-    DPnoises<double> DP;
+    DPNoises<double> DP;
     AdditivelyHE::PaillierPrivateKey privateKey;
 };
 

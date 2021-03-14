@@ -93,7 +93,7 @@ public:
     Booster booster;
     GBDT gbdt;
     DataSet dataset;
-    DPnoises<double> DP;
+    DPNoises<double> DP;
     FLParam param;
 
 private:
