@@ -4,7 +4,7 @@
 
 #include "FedTree/DP/DifferentialPrivacy.h"
 #include "FedTree/Tree/GBDTparam.h"
-#include <random>
+#include <numeric>
 #include <math.h>
 
 void DifferentialPrivacy::init(FLParam flparam) {
@@ -40,9 +40,9 @@ void DifferentialPrivacy::compute_split_point_probability(SyncArray<float_type> 
 void DifferentialPrivacy::exponential_select_split_point(SyncArray<float_type> &prob, SyncArray<float_type> &gain,
                                                           SyncArray<int_float> &best_idx_gain, int n_nodes_in_level,
                                                           int n_bins) {
-    std::random_device device;
-    std::mt19937 generator(device);
-    std::uniform_real_distribution<> distribution(0.0, 1.0);
+//    std::random_device device;
+//    std::mt19937 generator(device());
+//    std::uniform_real_distribution<> distribution(0.0, 1.0);
 
     auto prob_data = prob.host_data();
     auto gain_data = gain.host_data();
@@ -52,10 +52,10 @@ void DifferentialPrivacy::exponential_select_split_point(SyncArray<float_type> &
         int start = i * n_bins;
         int end = start + n_bins - 1;
 
-        float prob_sum = std::accumulate(prob_data[start], prob_data[end], 0);
+        float prob_sum = std::accumulate(prob_data+start, prob_data+end, 0.0);
 
-        float rand_sample = distribution(generator);
-
+//        float rand_sample = distribution(generator);
+        float rand_sample = 0;
         float partial_sum = 0;
         for(int j = start; j <= end; j ++) {
             partial_sum += prob_data[j];
