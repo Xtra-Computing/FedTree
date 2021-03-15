@@ -268,13 +268,13 @@ void FLtrainer::vertical_fl_trainer(vector<Party> &parties, Server &server, FLPa
 
                 // server find the best gain and its index
                 SyncArray<int_float> best_idx_gain(n_nodes_in_level);
-                //TODO: add exponential mechanism
-                // Exponential Mechanism: select with split probability
+                // with Exponential Mechanism: select with split probability
                 if (params.privacy_tech == "dp") {
-                    SyncArray<float_type> probability(n_max_splits_new);
+                    SyncArray<float_type> probability(n_max_splits_new);    //probability mass for each split point
                     dp_manager.compute_split_point_probability(gain, probability);
+                    dp_manager.exponential_select_split_point(probability, gain, best_idx_gain, n_nodes_in_level, n_bins_new);
                 }
-                // without EM: select the split with max gain
+                // without Exponential Mechanism: select the split with max gain
                 else {
                     server.booster.fbuilder->get_best_gain_in_a_level(gain, best_idx_gain, n_nodes_in_level, n_bins_new);
                 }

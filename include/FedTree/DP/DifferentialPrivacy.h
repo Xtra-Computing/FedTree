@@ -21,7 +21,21 @@ public:
 
     void init(FLParam fLparam);
 
+    /**
+     * calculates p value based on gain value for each split point
+     * @param gain - gain values of all split points in the level
+     * @param prob - probability masses (Pi) of all split points in the level (not the actual probability)
+     */
     void compute_split_point_probability(SyncArray<float_type> &gain, SyncArray<float_type> &prob);
+
+    /**
+     * exponential mechanism: randomly selects split point based on p value
+     * @param prob - probability masses (Pi) of all split points in the level (not the actual probability)
+     * @param gain - gain values of all split points in the level
+     * @param best_idx_gain - mapping from the node index to the gain of split point; containing all the node in the level
+     */
+    void exponential_select_split_point(SyncArray<float_type> &prob, SyncArray<float_type> &gain,
+                                        SyncArray<int_float> &best_idx_gain, int n_nodes_in_level, int n_bins);
 };
 
 #endif //FEDTREE_DIFFERENTIALPRIVACY_H
