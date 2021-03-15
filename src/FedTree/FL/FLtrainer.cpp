@@ -346,6 +346,16 @@ void FLtrainer::vertical_fl_trainer(vector<Party> &parties, Server &server, FLPa
                 if (!split_further) // leaf nodes
                     if (params.privacy_tech == "dp") {
                         // TODO: apply Laplace noise to leaf nodes
+                        for(int party_id = 0; party_id < parties.size(); party_id ++) {
+                            int tree_size = parties[party_id].booster.fbuilder->trees.nodes.size();
+                            auto nodes = parties[party_id].booster.fbuilder->trees.nodes.host_data();
+                            for(int node_id = 0; node_id < tree_size; node_id++) {
+                                Tree::TreeNode node = nodes[node_id];
+                                if(node.is_leaf) {
+
+                                }
+                            }
+                        }
                     }
                     break;
             }

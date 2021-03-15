@@ -36,6 +36,8 @@ public:
      */
     void exponential_select_split_point(SyncArray<float_type> &prob, SyncArray<float_type> &gain,
                                         SyncArray<int_float> &best_idx_gain, int n_nodes_in_level, int n_bins);
+
+    void laplace_add_noise();
 };
 
 #endif //FEDTREE_DIFFERENTIALPRIVACY_H
