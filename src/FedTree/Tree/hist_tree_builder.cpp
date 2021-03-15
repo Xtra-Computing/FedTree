@@ -175,23 +175,9 @@ void HistTreeBuilder::find_split(int level) {
     SyncArray<GHPair> hist(n_max_splits);
     SyncArray<float_type> gain(n_max_splits);
     compute_histogram_in_a_level(level, n_max_splits, n_bins, n_nodes_in_level, hist_fid_data, missing_gh, hist);
-//    LOG(INFO) << "hist_fid:" << hist_fid;
 //    LOG(INFO) << "missing_gh:" << missing_gh;
-//    if(level>=2){
-//        auto data_mgh = missing_gh.host_data();
-//        auto data_hist = hist.host_data();
-//        vector<GHPair> test_mgh;
-//        vector<GHPair> test_hist;
-//        for(int i=350;i<420;i++){
-//            test_mgh.push_back(data_mgh[i]);
-//            test_hist.push_back(data_hist[i]);
-//        }
-//        LOG(INFO) << "test_mgh: " << test_mgh;
-//        LOG(INFO) << "test_hist: " << test_hist;
-//    }
 //    LOG(INFO) << "hist:" << hist;
     compute_gain_in_a_level(gain, n_nodes_in_level, n_bins, hist_fid_data, missing_gh, hist);
-//    LOG(INFO) << "gain: " << gain;
     SyncArray<int_float> best_idx_gain(n_nodes_in_level);
     get_best_gain_in_a_level(gain, best_idx_gain, n_nodes_in_level, n_bins);
 //    LOG(INFO) << "best_idx_gain: " << best_idx_gain;

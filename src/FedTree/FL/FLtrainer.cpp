@@ -6,6 +6,8 @@
 #include "FedTree/FL/partition.h"
 #include "FedTree/FL/comm_helper.h"
 #include "thrust/sequence.h"
+#include <fstream>
+#include <string>
 
 using namespace thrust;
 
@@ -129,6 +131,10 @@ void FLtrainer::vertical_fl_trainer(vector<Party> &parties, Server &server, FLPa
 
     // start training
     // for each boosting round
+
+    std::chrono::high_resolution_clock timer;
+    auto start = timer.now();
+
     for (int round = 0; round < params.gbdt_param.n_trees; round++) {
 
         vector<Tree> trees(params.gbdt_param.tree_per_rounds);
@@ -184,7 +190,6 @@ void FLtrainer::vertical_fl_trainer(vector<Party> &parties, Server &server, FLPa
                     SyncArray<int> global_hist_fid(n_nodes_in_level * n_bins);
                     auto hist_fid_data = hist_fid.host_data();
                     auto global_hist_fid_data = global_hist_fid.host_data();
-//#pragma omp parallel for
                     int global_offset = accumulate(parties_n_columns.begin(), parties_n_columns.begin() + pid, 0);
                     for (int i = 0; i < hist_fid.size(); i++) {
                         hist_fid_data[i] = cut_fid_data[i % n_bins];
@@ -224,11 +229,11 @@ void FLtrainer::vertical_fl_trainer(vector<Party> &parties, Server &server, FLPa
                 SyncArray<GHPair> hist(n_bins_new * n_nodes_in_level);
                 global_hist_fid.copy_from(
                         comm_helper.concat_msyncarray(parties_global_hist_fid, parties_n_bins, n_nodes_in_level));
-//                LOG(INFO) << "hist_fid: " << global_hist_fid;
                 missing_gh.copy_from(
                         comm_helper.concat_msyncarray(parties_missing_gh, parties_n_columns, n_nodes_in_level));
-//                LOG(INFO) << "missing_gh:" << missing_gh;
                 hist.copy_from(comm_helper.concat_msyncarray(parties_hist, parties_n_bins, n_nodes_in_level));
+//                LOG(INFO) << "hist_fid: " << global_hist_fid;
+//                LOG(INFO) << "missing_gh:" << missing_gh;
 //                LOG(INFO) << "hist:" << hist;
 
                 // server compute gain
@@ -238,7 +243,14 @@ void FLtrainer::vertical_fl_trainer(vector<Party> &parties, Server &server, FLPa
                 server.booster.fbuilder->compute_gain_in_a_level(gain, n_nodes_in_level, n_bins_new,
                                                                  global_hist_fid.host_data(),
                                                                  missing_gh, hist, n_column_new);
-//                LOG(INFO) << "gain:" << gain;
+//                std::ofstream myfile;
+//                myfile.open(std::to_string(l) + ".txt");
+//                auto gain_data = gain.host_data();
+//                for (int tmp = 0; tmp < gain.size(); tmp++) {
+//                    myfile << gain_data[tmp] << '\t';
+//                }
+//                myfile.close();
+
                 // server find the best gain and its index
                 SyncArray<int_float> best_idx_gain(n_nodes_in_level);
                 server.booster.fbuilder->get_best_gain_in_a_level(gain, best_idx_gain, n_nodes_in_level, n_bins_new);
@@ -275,12 +287,11 @@ void FLtrainer::vertical_fl_trainer(vector<Party> &parties, Server &server, FLPa
 
                     // update local split_feature_id to global
                     auto party_global_hist_fid_data = parties_global_hist_fid[party_id].host_data();
-                    int global_fid = party_global_hist_fid_data[local_idx]; //TODO: check here
+                    int global_fid = party_global_hist_fid_data[local_idx];
                     auto nodes_data = parties[party_id].booster.fbuilder->trees.nodes.host_data();
                     auto sp_data = parties[party_id].booster.fbuilder->sp.host_data();
                     sp_data[node].split_fea_id = global_fid;
-                    nodes_data[node_shifted].split_feature_id = global_fid; //TODO: change global to real global
-//                    LOG(INFO) << "ins2node_id" << parties[party_id].booster.fbuilder->ins2node_id;
+                    nodes_data[node_shifted].split_feature_id = global_fid;
                 }
 
                 // party broadcast new instance space to others
@@ -298,6 +309,9 @@ void FLtrainer::vertical_fl_trainer(vector<Party> &parties, Server &server, FLPa
                         }
                     }
                 }
+
+//                LOG(INFO) << "ins2node_id" << parties[0].booster.fbuilder->ins2node_id;
+
                 bool split_further = false;
                 for (int pid:updated_parties) {
                     if (parties[pid].booster.fbuilder->has_split) {
@@ -324,6 +338,10 @@ void FLtrainer::vertical_fl_trainer(vector<Party> &parties, Server &server, FLPa
         LOG(INFO) << parties[0].booster.metric->get_name() << " = "
                   << parties[0].booster.metric->get_score(parties[0].booster.fbuilder->get_y_predict());
     }
+
+    auto stop = timer.now();
+    std::chrono::duration<float> training_time = stop - start;
+    LOG(INFO) << "training time = " << training_time.count();
 
     LOG(INFO) << "end of training";
 }
