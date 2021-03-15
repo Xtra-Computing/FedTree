@@ -129,6 +129,13 @@ void FLtrainer::vertical_fl_trainer(vector<Party> &parties, Server &server, FLPa
     // load dataset
     GBDTParam &model_param = params.gbdt_param;
     Comm comm_helper;
+    DifferentialPrivacy dp_manager;
+
+    // initialize differential privacy
+    if(params.privacy_tech == "dp") {
+        dp_manager = DifferentialPrivacy();
+        dp_manager.init(params);
+    }
 
     // start training
     // for each boosting round
@@ -146,15 +153,15 @@ void FLtrainer::vertical_fl_trainer(vector<Party> &parties, Server &server, FLPa
             server.homo_init();
             server.booster.encrypt_gradients(server.publicKey);
         }
+
         if (params.privacy_tech == "dp")
             // TODO: remove direct adding noise
             server.booster.add_noise_to_gradients(params.variance);
 
-            DifferentialPrivacy dp_params = DifferentialPrivacy();
-            dp_params.init(params);
             // clip the gradient value to [-1, 1]
             server.booster.clip_gradients();
 
+        // update current gradients to all parties
         for (int j = 0; j < parties.size(); j++) {
             server.send_booster_gradients(parties[j]);
         }
@@ -261,7 +268,16 @@ void FLtrainer::vertical_fl_trainer(vector<Party> &parties, Server &server, FLPa
 
                 // server find the best gain and its index
                 SyncArray<int_float> best_idx_gain(n_nodes_in_level);
-                server.booster.fbuilder->get_best_gain_in_a_level(gain, best_idx_gain, n_nodes_in_level, n_bins_new);
+                //TODO: add exponential mechanism
+                // Exponential Mechanism: select with split probability
+                if (params.privacy_tech == "dp") {
+                    SyncArray<float_type> probability(n_max_splits_new);
+                    dp_manager.compute_split_point_probability(gain, probability);
+                }
+                // without EM: select the split with max gain
+                else {
+                    server.booster.fbuilder->get_best_gain_in_a_level(gain, best_idx_gain, n_nodes_in_level, n_bins_new);
+                }
 //                LOG(INFO) << "best_idx_gain:" << best_idx_gain;
                 auto best_idx_data = best_idx_gain.host_data();
 
@@ -327,7 +343,10 @@ void FLtrainer::vertical_fl_trainer(vector<Party> &parties, Server &server, FLPa
                         break;
                     }
                 }
-                if (!split_further)
+                if (!split_further) // leaf nodes
+                    if (params.privacy_tech == "dp") {
+                        // TODO: apply Laplace noise to leaf nodes
+                    }
                     break;
             }
 
