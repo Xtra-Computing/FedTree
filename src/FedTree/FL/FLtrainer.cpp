@@ -149,17 +149,20 @@ void FLtrainer::vertical_fl_trainer(vector<Party> &parties, Server &server, FLPa
 
         // Server update, encrypt and send gradients
         server.booster.update_gradients();
+
+        if (params.privacy_tech == "dp") {
+            // option 1: directly add noise to gradients
+            server.booster.add_noise_to_gradients(params.variance);
+
+            // option 2: clip the gradient value to [-1, 1]
+            server.booster.clip_gradients();
+        }
+
         if (params.privacy_tech == "he") {
             server.homo_init();
             server.booster.encrypt_gradients(server.publicKey);
         }
 
-        if (params.privacy_tech == "dp")
-            // TODO: remove direct adding noise
-            server.booster.add_noise_to_gradients(params.variance);
-
-            // clip the gradient value to [-1, 1]
-            server.booster.clip_gradients();
 
         // update current gradients to all parties
         for (int j = 0; j < parties.size(); j++) {
@@ -353,7 +356,7 @@ void FLtrainer::vertical_fl_trainer(vector<Party> &parties, Server &server, FLPa
                                 Tree::TreeNode node = nodes[node_id];
                                 if(node.is_leaf) {
                                     // add noises
-                                    dp_manager.laplace_add_noise(node.base_weight);
+                                    dp_manager.laplace_add_noise(node);
                                 }
                             }
                         }

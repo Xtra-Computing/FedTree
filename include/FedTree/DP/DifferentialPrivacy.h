@@ -7,6 +7,7 @@
 
 #include <FedTree/syncarray.h>
 #include "FedTree/FL/FLparam.h"
+#include "FedTree/Tree/tree.h"
 
 //template <typename T>
 class DifferentialPrivacy {
@@ -40,11 +41,9 @@ public:
 
     /**
      * add Laplace noise to the data
-     * @tparam T - the type of data which shall be added with noise
-     * @param data - the data which shall be added noise
+     * @param node - the leaf node which noise are to be added
      */
-    template <typename T>
-    void laplace_add_noise(T& data);
+    void laplace_add_noise(Tree::TreeNode &node);
 };
 
 #endif //FEDTREE_DIFFERENTIALPRIVACY_H
