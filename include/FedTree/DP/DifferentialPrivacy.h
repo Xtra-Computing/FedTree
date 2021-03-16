@@ -38,6 +38,11 @@ public:
     void exponential_select_split_point(SyncArray<float_type> &prob, SyncArray<float_type> &gain,
                                         SyncArray<int_float> &best_idx_gain, int n_nodes_in_level, int n_bins);
 
+    /**
+     * add Laplace noise to the data
+     * @tparam T - the type of data which shall be added with noise
+     * @param data - the data which shall be added noise
+     */
     template <typename T>
     void laplace_add_noise(T& data);
 };
