@@ -8,6 +8,7 @@
 #include <FedTree/syncarray.h>
 #include "FedTree/FL/FLparam.h"
 
+//template <typename T>
 class DifferentialPrivacy {
 public:
     float max_gradient = 1.0;
@@ -37,7 +38,8 @@ public:
     void exponential_select_split_point(SyncArray<float_type> &prob, SyncArray<float_type> &gain,
                                         SyncArray<int_float> &best_idx_gain, int n_nodes_in_level, int n_bins);
 
-    void laplace_add_noise();
+    template <typename T>
+    void laplace_add_noise(T& data);
 };
 
 #endif //FEDTREE_DIFFERENTIALPRIVACY_H
