@@ -9,6 +9,7 @@
 
 
 void Partition::homo_partition(const DataSet &dataset, const int n_parties, const bool is_horizontal, vector<DataSet> &subsets) {
+    LOG(INFO) << "Perform homo partition";
     int n;
     if (is_horizontal)
         n = dataset.n_instances();
@@ -54,22 +55,30 @@ void Partition::homo_partition(const DataSet &dataset, const int n_parties, cons
             subsets[i].csr_row_ptr.push_back(0);
         }
 
+
+
         for(int i = 0; i < dataset.csr_row_ptr.size()-1; i ++) { // for each row
+
+            int part_id = i;
+            int party_id = part2party[part_id];
             vector<int> csr_row_sub(n_parties, 0);
-            for(int j = dataset.csr_row_ptr[i]; j < dataset.csr_row_ptr[i+1]; j ++) { // for each element in the row
+
+            subsets[party_id].y.push_back(dataset.y[i]);
+
+            for (int j = dataset.csr_row_ptr[i]; j < dataset.csr_row_ptr[i + 1]; j++) { // for each element in the row
                 float_type value = dataset.csr_val[j];
                 int cid = dataset.csr_col_idx[j];
-                int part_id = i;
-                int party_id = part2party[part_id];
 
                 subsets[party_id].csr_val.push_back(value);
                 subsets[party_id].csr_col_idx.push_back(cid);
                 csr_row_sub[party_id]++;
             }
+
             for(int i = 0; i < n_parties; i++) {
                 subsets[i].csr_row_ptr.push_back(subsets[i].csr_row_ptr.back() + csr_row_sub[i]);
             }
         }
+
     } else {
         for(int i = 0; i < n_parties; i++) {
             subsets[i].csc_col_ptr.push_back(0);
@@ -82,7 +91,7 @@ void Partition::homo_partition(const DataSet &dataset, const int n_parties, cons
 //        }
         for(int i = 0; i < dataset.csc_col_ptr.size()-1; i++) {
             vector<int> csc_col_sub(n_parties, 0);
-            for(int j = dataset.csc_col_ptr[i]; j < dataset.csc_col_ptr[i+1]; j ++) {
+            for (int j = dataset.csc_col_ptr[i]; j < dataset.csc_col_ptr[i + 1]; j++) {
                 float_type value = dataset.csc_val[j];
                 int row_id = dataset.csc_row_idx[j];
                 int part_id = i;
@@ -94,6 +103,7 @@ void Partition::homo_partition(const DataSet &dataset, const int n_parties, cons
             }
             for(int i = 0; i < n_parties; i ++) {
                 subsets[i].csc_col_ptr.push_back(subsets[i].csc_col_ptr.back() + csc_col_sub[i]);
+                LOG(INFO) << subsets[i].csc_row_idx.size();
             }
         }
     }

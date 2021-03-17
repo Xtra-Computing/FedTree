@@ -647,18 +647,24 @@ void HistTreeBuilder::compute_histogram_in_a_level(int level, int n_max_splits, 
 
             for (int i = 0; i < n_nodes_in_level / 2; ++i) {
 
+                LOG(INFO) << "HERE?";
                 int nid0_to_compute = i * 2;
                 int nid0_to_substract = i * 2 + 1;
                 //node_ptr_data[i+1] - node_ptr_data[i] is the number of instances in node i, i is the node id in current level (start from 0)
+                LOG(INFO) << nid0_to_compute;
+                LOG(INFO) << nid0_to_substract;
                 int n_ins_left = node_ptr_data[nid0_to_compute + 1] - node_ptr_data[nid0_to_compute];
                 int n_ins_right = node_ptr_data[nid0_to_substract + 1] - node_ptr_data[nid0_to_substract];
+                LOG(INFO) << n_ins_left;
+                LOG(INFO) << n_ins_right;
                 if (std::max(n_ins_left, n_ins_right) == 0) continue;
                 //only compute the histogram on the node with the smaller data
+                LOG(INFO) << "here";
                 if (n_ins_left > n_ins_right)
                     std::swap(nid0_to_compute, nid0_to_substract);
-
                 //compute histogram
                 {
+                    LOG(INFO) << "start computing histogram";
                     int nid0 = nid0_to_compute;
                     auto idx_begin = node_ptr.host_data()[nid0];
                     auto idx_end = node_ptr.host_data()[nid0 + 1];
@@ -708,11 +714,11 @@ void HistTreeBuilder::compute_histogram_in_a_level(int level, int n_max_splits, 
         last_hist.resize(hist.size());
         last_hist.copy_from(hist);
     }
-
     this->build_n_hist++;
+    // SEGMENTATION ERROR IN HERE!
     inclusive_scan_by_key(thrust::host, hist_fid, hist_fid + n_split,
                           hist.host_data(), hist.host_data());
-    LOG(INFO) << hist;
+    LOG(INFO) << "HIST VALUE: " << hist <<"," << hist_fid << "," << n_split;
 
     auto nodes_data = tree.nodes.host_data();
     auto missing_gh_data = missing_gh.host_data();
@@ -730,7 +736,7 @@ void HistTreeBuilder::compute_histogram_in_a_level(int level, int n_max_splits, 
             missing_gh_data[pid] = nodes_data[nid].sum_gh_pair - node_gh;
         }
     }
-    LOG(INFO) << missing_gh;
+    LOG(DEBUG) << missing_gh;
     return;
 }
 
@@ -745,6 +751,7 @@ HistTreeBuilder::compute_gain_in_a_level(SyncArray<float_type> &gain, int n_node
     int nid_offset = static_cast<int>(n_nodes_in_level - 1);
     auto compute_gain = []__host__(GHPair father, GHPair lch, GHPair rch, float_type min_child_weight,
                                    float_type lambda) -> float_type {
+        LOG(INFO) << lch.h << "," << rch.h;
         if (lch.h >= min_child_weight && rch.h >= min_child_weight)
             return (lch.g * lch.g) / (lch.h + lambda) + (rch.g * rch.g) / (rch.h + lambda) -
                    (father.g * father.g) / (father.h + lambda);
@@ -758,6 +765,7 @@ HistTreeBuilder::compute_gain_in_a_level(SyncArray<float_type> &gain, int n_node
 //    auto ignored_set_data = ignored_set.host_data();
     //for lambda expression
     float_type mcw = param.min_child_weight;
+    LOG(INFO) << "MCW:" << mcw;
     float_type l = param.lambda;
 
 #pragma omp parallel for
@@ -770,6 +778,7 @@ HistTreeBuilder::compute_gain_in_a_level(SyncArray<float_type> &gain, int n_node
             GHPair father_gh = nodes_data[nid].sum_gh_pair;
             GHPair p_missing_gh = missing_gh_data[pid];
             GHPair rch_gh = gh_prefix_sum_data[i];
+            LOG(INFO) << father_gh << "," << p_missing_gh << "," << rch_gh;
             float_type default_to_left_gain = std::max(0.f,
                                                        compute_gain(father_gh, father_gh - rch_gh, rch_gh, mcw, l));
             rch_gh = rch_gh + p_missing_gh;
@@ -1051,6 +1060,7 @@ void HistTreeBuilder::merge_histograms_server_propose() {
     }
     last_hist.resize(n_bins);
     last_hist.copy_from(merged_hist);
+    LOG(INFO) << "MERGE HIST: " << last_hist;
     last_missing_gh.resize(n_size);
     last_missing_gh.copy_from(merged_missing_gh);
 }

@@ -81,12 +81,14 @@ void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FL
                     }
                     LOG(INFO) << "Feature range: " << feature_range;
                     // once we have feature_range, we can generate cut points
-                    for (int p = 0; p < parties.size(); p++) {
-                        LOG(INFO) << "Generate Cut Points for " << p;
-                        parties[p].booster.fbuilder->cut.get_cut_points_by_feature_range(feature_range, n_bins);
-                       LOG(INFO) << "Finish Generate Cut Points for " << p;
-                    }
+                    LOG(INFO) << "======SERVER=====";
                     server.booster.fbuilder->cut.get_cut_points_by_feature_range(feature_range, n_bins);
+                    LOG(INFO) << "======PARTY======";
+                    for (int p = 0; p < parties.size(); p++) {
+                        parties[p].booster.fbuilder->cut.get_cut_points_by_feature_range(feature_range, n_bins);
+                    }
+
+
                 } else if (params.propose_split == "client") {
 
                     for (int p = 0; p < parties.size(); p++) {
@@ -128,7 +130,7 @@ void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FL
                     parties[j].booster.fbuilder->compute_histogram_in_a_level(d, n_max_splits, n_bins,
                                                                               n_nodes_in_level,
                                                                               hist_fid_data, missing_gh, hist);
-                    LOG(INFO) << "Finish compute histogram";
+                    // LOG(INFO) << "Finish compute histogram, " << hist;
                     aggregator.booster.fbuilder->append_hist(hist, missing_gh, n_partition, n_max_splits);
                     LOG(INFO) << "Finish appending result";
                 }
@@ -145,6 +147,8 @@ void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FL
                 SyncArray <GHPair> last_hist = aggregator.booster.fbuilder->get_last_hist();
                 server.booster.fbuilder->set_last_hist(last_hist);
                 LOG(INFO) << "Finish Merging Histogram";
+
+                aggregator.booster.fbuilder->trees.init_CPU(last_hist, model_param);
 
                 // set these parameters to fit merged histogram
                 n_bins = aggregator.booster.fbuilder->cut.cut_points_val.size();
@@ -163,10 +167,12 @@ void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FL
                 auto hist_fid_data = parties_hist_fid[0].host_data();
                 server.booster.fbuilder->compute_gain_in_a_level(gain, n_nodes_in_level, n_bins, hist_fid_data,
                                                                  last_missing_gh, last_hist);
+                LOG(INFO) << "GAIN:" << gain;
                 // server find the best gain and its index
                 SyncArray <int_float> best_idx_gain(n_nodes_in_level);
                 server.booster.fbuilder->get_best_gain_in_a_level(gain, best_idx_gain, n_nodes_in_level, n_bins);
                 auto best_idx_data = best_idx_gain.host_data();
+                LOG(INFO) << "BEST_IDX_GAIN:" << best_idx_gain;
                 LOG(INFO) << "End Computing Gain";
                 LOG(INFO) << "Start Computing Split Points";
                 // error here hist cut not initalised properly: has size 0

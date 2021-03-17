@@ -234,7 +234,7 @@ void TreeBuilder::update_tree() {
     auto& sp = this->sp;
     auto& tree = this->trees;
     auto sp_data = sp.host_data();
-    LOG(DEBUG) << sp;
+    LOG(INFO) << sp;
     int n_nodes_in_level = sp.size();
 
     Tree::TreeNode *nodes_data = tree.nodes.host_data();
@@ -280,7 +280,7 @@ void TreeBuilder::update_tree() {
             nodes_data[node.rch_index].is_valid = false;
         }
     }
-    LOG(DEBUG) << tree.nodes;
+    LOG(INFO) << tree.nodes;
 }
 
 void TreeBuilder::update_tree_in_a_node(int node_id) {

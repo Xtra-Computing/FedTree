@@ -108,6 +108,11 @@ int main(int argc, char** argv){
                     train_subsets[i] = subsets[i];
                 }
             }
+        }else if (fl_param.partition_mode=="horizontal") {
+            partition.homo_partition(dataset, n_parties, true, subsets);
+            for (int i = 0; i < n_parties; i++) {
+                train_subsets[i] = subsets[i];
+            }
         }
         else{
             std::cout<<"not supported yet"<<std::endl;
@@ -149,6 +154,15 @@ int main(int argc, char** argv){
     vector<Party> parties(n_parties);
     vector<int> n_instances_per_party(n_parties);
     LOG(INFO)<<"initialize parties";
+
+    for(int i = 0; i < n_parties; i++) {
+        feature_map[i].resize(dataset.n_features());
+        auto feature_map_data = feature_map[i].host_data();
+        for(int j = 0; j < feature_map[i].size(); j++){
+            feature_map_data[j] = false;
+        }
+    }
+
     for(int i = 0; i < n_parties; i++){
         parties[i].init(i, train_subsets[i], fl_param, feature_map[i]);
         n_instances_per_party[i] = train_subsets[i].n_instances();
