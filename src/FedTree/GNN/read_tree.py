@@ -123,14 +123,14 @@ def read_data(file_path):
         if sp_bin_id > max_y:
             max_y = int(sp_bin_id)
     leaf_nodes_graphs.append(leaf_nodes)
-    print("leaf nodes graphs:", leaf_nodes_graphs)
+    # print("leaf nodes graphs:", leaf_nodes_graphs)
 
     edges_all_graphs.append(edges)
     print("edges before reorder:", edges_all_graphs)
     for i in range(len(edges_all_graphs)):
         edges = edges_all_graphs[i]
         leaf_nodes = leaf_nodes_graphs[i]
-        print("leaf_nodes:", leaf_nodes)
+        # print("leaf_nodes:", leaf_nodes)
         for edge in edges:
             for idx in range(len(edge)):
                 nid = edge[idx]

@@ -4,6 +4,7 @@ import re
 from torch_geometric.data import Data
 import torch_geometric.transforms as T
 import torch.nn.functional as F
+import torch.nn as nn
 import argparse
 import sys
 sys.path.append('../src/FedTree/GNN/')
@@ -38,6 +39,7 @@ if __name__ == '__main__':
     args = get_args()
     graph_datasets = read_data(args.tree_model_path)
     print("graph datasets:", graph_datasets)
+    print("dataset[0].y:", graph_datasets[0].y)
     # for graph_data in graph_datasets:
         # T.NormalizeFeatures()
 
@@ -53,6 +55,7 @@ if __name__ == '__main__':
         optimizer = optim.SGD(filter(lambda p: p.requires_grad, net.parameters()), lr=args.lr, momentum=0.9,
                                     weight_decay=args.reg)
     #criterion = F.nll_loss().to(device)
+    criterion = nn.CrossEntropyLoss().to(device)
 
     for epoch in range(args.epochs):
         epoch_loss_collector = []
@@ -61,8 +64,8 @@ if __name__ == '__main__':
             optimizer.zero_grad()
 
             out = net(data)
-            loss = F.nll_loss(out, data.y)
-
+            # loss = F.nll_loss(out, data.y)
+            loss = criterion(out, data.y)
             loss.backward()
             optimizer.step()
             epoch_loss_collector.append(loss.item())

@@ -204,6 +204,7 @@ void FLtrainer::hybrid_fl_trainer(vector<Party> &parties, Server &server, FLPara
         string predict_tree_path = "../src/FedTree/GNN/predict_tree.py";
         //string train_gnn_path = "/home/qinbin/FedTree/src/FedTree/GNN/train_net.py";
         string train_gnn_path = "../src/FedTree/GNN/train_net.py";
+        string all_trees_path = "trees_all.txt";
         int n_party = parties.size();
         Comm comm_helper;
         for (int i = 0; i < params.gbdt_param.n_trees; i++) {
@@ -220,6 +221,9 @@ void FLtrainer::hybrid_fl_trainer(vector<Party> &parties, Server &server, FLPara
                 outfile.open(local_trees_path, std::ios::app);
                 outfile << "Party " << pid << std::endl;
                 outfile.close();
+                outfile.open(all_trees_path, std::ios::app);
+                outfile << "Party " << pid << std::endl;
+                outfile.close();
                 for (int tid  = 0; tid < trees.size(); tid++) {
                     string tree_path = "tree_t" + std::to_string(i) + "_p"+ std::to_string(pid) + "_c" + std::to_string(tid) + ".txt";
                     outfile.open(local_trees_path, std::ios::app);
@@ -228,9 +232,13 @@ void FLtrainer::hybrid_fl_trainer(vector<Party> &parties, Server &server, FLPara
                     outfile.open(tree_path, std::ios::app);
                     outfile << "Tree " << tid << std::endl;
                     outfile.close();
+                    outfile.open(all_trees_path, std::ios::app);
+                    outfile << "Tree " << tid << std::endl;
+                    outfile.close();
                     trees[tid].save_to_file(tree_path);
                     trees[tid].save_to_file(local_trees_path);
-                    if (i) {
+                    trees[tid].save_to_file(all_trees_path);
+                    if (i == params.gbdt_param.n_trees - 1) {
                         std::cout<<"in predict"<<std::endl;
                         char *argv[3];
                         argv[0] = &predict_tree_path[0];
@@ -257,27 +265,30 @@ void FLtrainer::hybrid_fl_trainer(vector<Party> &parties, Server &server, FLPara
                 comm_helper.send_last_trees_to_server(parties[pid], pid, server);
 //                parties[pid].gbdt.trees.pop_back();
             }
-            char *argv[3];
-            argv[0] = &train_gnn_path[0];
-            //argv[1] = &("--tree_model_path " + local_trees_path)[0];
-            argv[1] = "--tree_model_path";
-            argv[2] = &local_trees_path[0];
-            wchar_t *wargv[3];
-            //wargv[0] = charToWChar(argv[0]);
-            //wargv[1] = charToWChar(argv[1]);
-            wargv[0] = Py_DecodeLocale(argv[0], NULL);
-            wargv[1] = Py_DecodeLocale(argv[1], NULL);
-            wargv[2] = Py_DecodeLocale(argv[2], NULL);
-            std::cout<<"set argv"<<std::endl;
-            PySys_SetArgv(3, wargv);
-            //PySys_SetArgv(1, wargv);
-            std::cout<<"open py file"<<std::endl;
-            fp = _Py_fopen(train_gnn_path.c_str(), "rb");
-            std::cout<<"run python train"<<std::endl;
-            PyRun_SimpleFile(fp, train_gnn_path.c_str());
-            delete []wargv[0];
-            delete []wargv[1];
-            delete []wargv[2];
+            if (i == params.gbdt_param.n_trees - 2) {
+                char *argv[3];
+                argv[0] = &train_gnn_path[0];
+                //argv[1] = &("--tree_model_path " + local_trees_path)[0];
+                argv[1] = "--tree_model_path";
+//            argv[2] = &local_trees_path[0];
+                argv[2] = &all_trees_path[0];
+                wchar_t *wargv[3];
+                //wargv[0] = charToWChar(argv[0]);
+                //wargv[1] = charToWChar(argv[1]);
+                wargv[0] = Py_DecodeLocale(argv[0], NULL);
+                wargv[1] = Py_DecodeLocale(argv[1], NULL);
+                wargv[2] = Py_DecodeLocale(argv[2], NULL);
+                std::cout << "set argv" << std::endl;
+                PySys_SetArgv(3, wargv);
+                //PySys_SetArgv(1, wargv);
+                std::cout << "open py file" << std::endl;
+                fp = _Py_fopen(train_gnn_path.c_str(), "rb");
+                std::cout << "run python train" << std::endl;
+                PyRun_SimpleFile(fp, train_gnn_path.c_str());
+                delete[]wargv[0];
+                delete[]wargv[1];
+                delete[]wargv[2];
+            }
             //if(i == 2){
             //    std::cout<<"in round 2"<<std::endl;
             //    exit(1);
