@@ -168,7 +168,7 @@ int main(int argc, char** argv){
 
     Server server;
     if (fl_param.mode == "vertical"){
-        server.vertical_init(fl_param, dataset.n_instances(), n_instances_per_party, dataset);
+        server.vertical_init(fl_param, dataset.n_instances(), n_instances_per_party, dataset.y);
     } else {
         server.init(fl_param, dataset.n_instances(), n_instances_per_party);
     }

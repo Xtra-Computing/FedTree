@@ -141,14 +141,22 @@ void FLtrainer::vertical_fl_trainer(vector<Party> &parties, Server &server, FLPa
 
         // Server update, encrypt and send gradients
         server.booster.update_gradients();
+
+        SyncArray<GHPair> temp_gradients;
         if (params.privacy_tech == "he") {
+            temp_gradients.resize(server.booster.gradients.size());
+            temp_gradients.copy_from(server.booster.gradients);
             server.homo_init();
             server.booster.encrypt_gradients(server.publicKey);
         }
         if (params.privacy_tech == "dp")
             server.booster.add_noise_to_gradients(params.variance);
+
         for (int j = 0; j < parties.size(); j++) {
             server.send_booster_gradients(parties[j]);
+        }
+        if (params.privacy_tech == "he") {
+            server.booster.gradients.copy_from(temp_gradients);
         }
 
 //        server.booster.update_gradients();
@@ -238,8 +246,10 @@ void FLtrainer::vertical_fl_trainer(vector<Party> &parties, Server &server, FLPa
 
                 // server compute gain
                 SyncArray<float_type> gain(n_max_splits_new);
-                if (params.privacy_tech == "he")
+                if (params.privacy_tech == "he") {
                     server.decrypt_gh_pairs(hist);
+                    server.decrypt_gh_pairs(missing_gh);
+                }
                 server.booster.fbuilder->compute_gain_in_a_level(gain, n_nodes_in_level, n_bins_new,
                                                                  global_hist_fid.host_data(),
                                                                  missing_gh, hist, n_column_new);
@@ -300,13 +310,22 @@ void FLtrainer::vertical_fl_trainer(vector<Party> &parties, Server &server, FLPa
                     if (party_node_map[sender_id].size() > 0) {
                         updated_parties.push_back(sender_id);
                         for (int nid: party_node_map[sender_id]) {
-                            for (int receiver_id = 0; receiver_id < parties.size(); receiver_id++) {
-                                if (sender_id != receiver_id) {
-                                    parties[sender_id].send_node(nid, n_nodes_in_level, parties[receiver_id]);
-                                }
-                            }
                             parties[sender_id].send_node(nid, n_nodes_in_level, server);
                         }
+                    }
+                }
+
+                if (params.privacy_tech == "he") {
+                    auto node_data = server.booster.fbuilder->trees.nodes.host_data();
+                    for (int nid = (2 << l) - 1; nid < (2 << (l + 1)) - 1; nid++) {
+                        server.decrypt_gh(node_data[nid].sum_gh_pair);
+                        node_data[nid].calc_weight(params.gbdt_param.lambda);
+                    }
+                }
+
+                for (int pid = 0; pid < parties.size(); pid++) {
+                    for (int nid = (1 << l) - 1; nid < (1 << l) - 1 + n_nodes_in_level; nid++) {
+                        server.send_node(nid, n_nodes_in_level, parties[pid]);
                     }
                 }
 

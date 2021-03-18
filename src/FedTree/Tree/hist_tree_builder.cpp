@@ -33,12 +33,12 @@ void HistTreeBuilder::init(DataSet &dataset, const GBDTParam &param) {
 //    else
 //        columns.csr2csc_gpu(dataset, v_columns);
 
-//    if (dataset.csc_col_ptr.size() > 1) {
-    cut.get_cut_points_fast(sorted_dataset, param.max_num_bin, n_instances);
-    LOG(INFO) << "after get cut points";
-    last_hist.resize((2 << param.depth) * cut.cut_points_val.size());
-    get_bin_ids();
-//    }
+    if (dataset.n_features_ > 0) {
+        cut.get_cut_points_fast(sorted_dataset, param.max_num_bin, n_instances);
+        LOG(INFO) << "after get cut points";
+        last_hist.resize((2 << param.depth) * cut.cut_points_val.size());
+        get_bin_ids();
+    }
 }
 
 SyncArray<GHPair> HistTreeBuilder::get_gradients() {
@@ -596,15 +596,15 @@ void HistTreeBuilder::compute_histogram_in_a_level(int level, int n_max_splits, 
                     int feature_offset = cut_col_ptr_data[fid];
                     const GHPair src = gh_data[iid];
                     GHPair &dest = hist_data[feature_offset + bid];
-                    if (src.h != 0) {
-//                        #pragma omp atomic
-                        dest.h += src.h;
-                    }
-                    if (src.g != 0) {
-//                        #pragma omp atomic
-                        dest.g += src.g;
-                    }
-
+//                    if (src.h != 0) {
+////                        #pragma omp atomic
+//                        dest.h += src.h;
+//                    }
+//                    if (src.g != 0) {
+////                        #pragma omp atomic
+//                        dest.g += src.g;
+//                    }
+                    dest = dest + src;
                 }
             }
         } else {
@@ -669,14 +669,15 @@ void HistTreeBuilder::compute_histogram_in_a_level(int level, int n_max_splits, 
                             int feature_offset = cut_col_ptr_data[fid];
                             const GHPair src = gh_data[iid];
                             GHPair &dest = hist_data[feature_offset + bid];
-                            if (src.h != 0) {
-//                                #pragma omp atomic
-                                dest.h += src.h;
-                            }
-                            if (src.g != 0) {
-//                                #pragma omp atomic
-                                dest.g += src.g;
-                            }
+//                            if (src.h != 0) {
+////                                #pragma omp atomic
+//                                dest.h += src.h;
+//                            }
+//                            if (src.g != 0) {
+////                                #pragma omp atomic
+//                                dest.g += src.g;
+//                            }
+                            dest = dest + src;
                         }
                     }
                 }
@@ -687,7 +688,7 @@ void HistTreeBuilder::compute_histogram_in_a_level(int level, int n_max_splits, 
                     auto hist_data_computed = hist.host_data() + nid0_to_compute * n_bins;
                     auto hist_data_to_compute = hist.host_data() + nid0_to_substract * n_bins;
                     auto father_hist_data = last_hist.host_data() + (nid0_to_substract / 2) * n_bins;
-#pragma omp parallel for
+//#pragma omp parallel for
                     for (int i = 0; i < n_bins; i++) {
                         hist_data_to_compute[i] = father_hist_data[i] - hist_data_computed[i];
                     }
@@ -711,7 +712,7 @@ void HistTreeBuilder::compute_histogram_in_a_level(int level, int n_max_splits, 
     auto missing_gh_data = missing_gh.host_data();
     auto cut_col_ptr = cut.cut_col_ptr.host_data();
     auto hist_data = hist.host_data();
-#pragma omp parallel for
+//#pragma omp parallel for
     for (int pid = 0; pid < n_partition; pid++) {
         int nid0 = pid / n_column;
         int nid = nid0 + nid_offset;
@@ -723,7 +724,7 @@ void HistTreeBuilder::compute_histogram_in_a_level(int level, int n_max_splits, 
             missing_gh_data[pid] = nodes_data[nid].sum_gh_pair - node_gh;
         }
     }
-    LOG(DEBUG) << missing_gh;
+//    LOG(DEBUG) << missing_gh;
     return;
 }
 
@@ -753,7 +754,7 @@ HistTreeBuilder::compute_gain_in_a_level(SyncArray<float_type> &gain, int n_node
     float_type mcw = param.min_child_weight;
     float_type l = param.lambda;
 
-#pragma omp parallel for
+//#pragma omp parallel for
     for (int i = 0; i < n_split; i++) {
         int nid0 = i / n_bins;
         int nid = nid0 + nid_offset;
@@ -765,7 +766,9 @@ HistTreeBuilder::compute_gain_in_a_level(SyncArray<float_type> &gain, int n_node
             GHPair rch_gh = gh_prefix_sum_data[i];
             float_type default_to_left_gain = std::max(0.f,
                                                        compute_gain(father_gh, father_gh - rch_gh, rch_gh, mcw, l));
-            rch_gh = rch_gh + p_missing_gh;
+//            rch_gh = rch_gh + p_missing_gh;
+            rch_gh.g += p_missing_gh.g;
+            rch_gh.h += p_missing_gh.h;
             float_type default_to_right_gain = std::max(0.f,
                                                         compute_gain(father_gh, father_gh - rch_gh, rch_gh, mcw, l));
             if (default_to_left_gain > default_to_right_gain)
@@ -880,7 +883,7 @@ void HistTreeBuilder::get_split_points_in_a_node(int node_id, int best_idx, floa
     sp_data[node_id].split_bid = (unsigned char) (best_idx % n_bins - cut_col_ptr_data[fid]);
     sp_data[node_id].fea_missing_gh = missing_gh_data[node_id * n_column + hist_fid[best_idx]];
     sp_data[node_id].default_right = best_gain < 0;
-    sp_data[node_id].rch_sum_gh = hist_data[best_idx]; //todo: check here
+    sp_data[node_id].rch_sum_gh = hist_data[best_idx];
     sp_data[node_id].no_split_value_update = 0;
 
     LOG(DEBUG) << "split points (gain/fea_id/nid): " << sp;

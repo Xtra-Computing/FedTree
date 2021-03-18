@@ -17,7 +17,7 @@ class Server : public Party {
 public:
     void init(FLParam &param, int n_total_instances, vector<int> &n_instances_per_party);
 
-    void vertical_init(FLParam &param, int n_total_instances, vector<int> &n_instances_per_party, DataSet dataSet);
+    void vertical_init(FLParam &param, int n_total_instances, vector<int> &n_instances_per_party, vector<float_type> y);
 
     void propose_split_candidates();
 
@@ -48,10 +48,14 @@ public:
         privateKey = std::get<1>(keyPairs);
     }
 
+    void decrypt_gh(GHPair &gh) {
+        gh.homo_decrypt(privateKey);
+    }
+
     void decrypt_gh_pairs(SyncArray<GHPair> &encrypted) {
         auto encrypted_data = encrypted.host_data();
         for (int i = 0; i < encrypted.size(); i++) {
-            encrypted_data[i].decrypt(privateKey);
+            encrypted_data[i].homo_decrypt(privateKey);
         }
     }
 

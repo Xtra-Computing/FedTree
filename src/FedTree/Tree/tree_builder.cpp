@@ -24,8 +24,8 @@ void TreeBuilder::init(DataSet &dataSet, const GBDTParam &param) {
     if (!dataSet.has_csc and dataSet.csr_row_ptr.size() > 1)
         dataSet.csr_to_csc();
     this->sorted_dataset = dataSet;
-//    if (dataSet.csc_col_ptr.size() > 1)
-    seg_sort_by_key_cpu(sorted_dataset.csc_val, sorted_dataset.csc_row_idx, sorted_dataset.csc_col_ptr);
+    if (dataSet.csc_col_ptr.size() > 1)
+        seg_sort_by_key_cpu(sorted_dataset.csc_val, sorted_dataset.csc_row_idx, sorted_dataset.csc_col_ptr);
     this->n_instances = sorted_dataset.n_instances();
 //    trees = vector<Tree>(1);
     ins2node_id = SyncArray<int>(n_instances);
@@ -313,8 +313,8 @@ void TreeBuilder::update_tree_in_a_node(int node_id) {
             node.default_right = true;
         }
         lch.sum_gh_pair = node.sum_gh_pair - rch.sum_gh_pair;
-        lch.calc_weight(lambda);
-        rch.calc_weight(lambda);
+        lch.calc_weight(lambda); // TODO: check here
+        rch.calc_weight(lambda); // TODO: check here
     } else {
         //set leaf
         //todo: check, thundergbm uses return

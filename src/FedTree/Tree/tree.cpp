@@ -23,7 +23,7 @@ void Tree::init_CPU(const SyncArray<GHPair> &gradients, const GBDTParam &param) 
     Tree::TreeNode &root_node = node_data[0];
     root_node.sum_gh_pair = sum_gh;
     root_node.is_valid = true;
-    root_node.calc_weight(lambda);
+    root_node.calc_weight(lambda); // TODO: check here
     root_node.n_instances = gradients.size();
 }
 

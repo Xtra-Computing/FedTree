@@ -25,7 +25,7 @@ void Parser::parse_param(FLParam &fl_param, int argc, char **argv) {
     GBDTParam *gbdt_param = &fl_param.gbdt_param;
 
     gbdt_param->depth = 6;
-    gbdt_param->n_trees = 80;
+    gbdt_param->n_trees = 5;
     gbdt_param->n_device = 1;
     gbdt_param->min_child_weight = 1;
     gbdt_param->lambda = 1;

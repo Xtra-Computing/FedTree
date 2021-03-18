@@ -67,30 +67,64 @@ struct GHPair {
         encrypted = true;
     }
 
-    HOST_DEVICE void decrypt(AdditivelyHE::PaillierPrivateKey privateKey) {
-        g = AdditivelyHE::decrypt(privateKey, g_enc);
-        h = AdditivelyHE::decrypt(privateKey, h_enc);
-        encrypted = false;
+    HOST_DEVICE void homo_decrypt(AdditivelyHE::PaillierPrivateKey privateKey) {
+        if (encrypted) {
+            g = AdditivelyHE::decrypt(privateKey, g_enc);
+            h = AdditivelyHE::decrypt(privateKey, h_enc);
+            encrypted = false;
+        }
+//        else {
+//            LOG(INFO) << "Trying to decrypt unencrypted numbers.";
+//        }
     }
 
     HOST_DEVICE GHPair operator+(const GHPair &rhs) const {
         GHPair res;
-        if (encrypted) {
+        if (encrypted && rhs.encrypted) {
             res.g_enc = AdditivelyHE::aggregate(this->g_enc, rhs.g_enc);
             res.h_enc = AdditivelyHE::aggregate(this->h_enc, rhs.h_enc);
+            res.pk = this->pk;
+            res.encrypted = true;
+        } else if (!encrypted && rhs.encrypted) {
+            res.g_enc = AdditivelyHE::aggregate_scalar(rhs.g_enc, this->g);
+            res.h_enc = AdditivelyHE::aggregate_scalar(rhs.h_enc, this->h);
+            res.pk = rhs.pk;
+            res.encrypted = true;
+        } else if (encrypted && !rhs.encrypted) {
+            res.g_enc = AdditivelyHE::aggregate_scalar(this->g_enc, rhs.g);
+            res.h_enc = AdditivelyHE::aggregate_scalar(this->h_enc, rhs.h);
             res.pk = this->pk;
             res.encrypted = true;
         } else {
             res.g = this->g + rhs.g;
             res.h = this->h + rhs.h;
+            res.encrypted = false;
         }
         return res;
     }
 
-    HOST_DEVICE const GHPair operator-(const GHPair &rhs) const {
+    HOST_DEVICE GHPair operator-(const GHPair &rhs) const {
         GHPair res;
-        res.g = this->g - rhs.g;
-        res.h = this->h - rhs.h;
+        if (encrypted && rhs.encrypted) {
+            res.g_enc = AdditivelyHE::aggregate(this->g_enc, AdditivelyHE::multiply_scalar(rhs.g_enc, -1));
+            res.h_enc = AdditivelyHE::aggregate(this->h_enc, AdditivelyHE::multiply_scalar(rhs.h_enc, -1));
+            res.pk = this->pk;
+            res.encrypted = true;
+        } else if (!encrypted && rhs.encrypted) {
+            res.g_enc = AdditivelyHE::aggregate_scalar(AdditivelyHE::multiply_scalar(rhs.g_enc, -1), this->g);
+            res.h_enc = AdditivelyHE::aggregate_scalar(AdditivelyHE::multiply_scalar(rhs.h_enc, -1), this->h);
+            res.pk = rhs.pk;
+            res.encrypted = true;
+        } else if (encrypted && !rhs.encrypted) {
+            res.g_enc = AdditivelyHE::aggregate_scalar(this->g_enc, -rhs.g);
+            res.h_enc = AdditivelyHE::aggregate_scalar(this->h_enc, -rhs.h);
+            res.pk = this->pk;
+            res.encrypted = true;
+        } else {
+            res.g = this->g - rhs.g;
+            res.h = this->h - rhs.h;
+            res.encrypted = false;
+        }
         return res;
     }
 
