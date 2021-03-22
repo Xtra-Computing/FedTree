@@ -185,12 +185,15 @@ void FLtrainer::vertical_fl_trainer(vector<Party> &parties, Server &server, FLPa
                 MSyncArray<GHPair> parties_hist(parties.size());
 
                 // each party compute hist, send hist to server
+                for (int pid = 0; pid < parties.size(); pid++)
+                    parties_n_columns[pid] = parties[pid].dataset.n_features();
+
+#pragma omp parallel for
                 for (int pid = 0; pid < parties.size(); pid++) {
                     int n_bins = parties[pid].booster.fbuilder->cut.cut_points_val.size();
                     parties_n_bins[pid] = n_bins;
                     int n_max_splits = n_max_nodes * n_bins;
                     int n_column = parties[pid].dataset.n_features();
-                    parties_n_columns[pid] = n_column;
                     int n_partition = n_column * n_nodes_in_level;
                     auto cut_fid_data = parties[pid].booster.fbuilder->cut.cut_fid.host_data();
 
