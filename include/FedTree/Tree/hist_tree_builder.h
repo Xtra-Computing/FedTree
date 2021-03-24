@@ -70,7 +70,6 @@ public:
 
     HistCut cut;
 
-
     void parties_hist_init(int party_size) override{
         LOG(INFO) << "Party size";
         parties_hist.resize(party_size);
