@@ -28,7 +28,7 @@ public:
      * @param gain - gain values of all split points in the level
      * @param prob - probability masses (Pi) of all split points in the level (not the actual probability)
      */
-    void compute_split_point_probability(SyncArray<float_type> &gain, SyncArray<float_type> &prob);
+    void compute_split_point_probability(SyncArray<float_type> &gain, SyncArray<float_type> &prob_exponent);
 
     /**
      * exponential mechanism: randomly selects split point based on p value
@@ -36,7 +36,7 @@ public:
      * @param gain - gain values of all split points in the level
      * @param best_idx_gain - mapping from the node index to the gain of split point; containing all the node in the level
      */
-    void exponential_select_split_point(SyncArray<float_type> &prob, SyncArray<float_type> &gain,
+    void exponential_select_split_point(SyncArray<float_type> &prob_exponent, SyncArray<float_type> &gain,
                                         SyncArray<int_float> &best_idx_gain, int n_nodes_in_level, int n_bins);
 
     /**
