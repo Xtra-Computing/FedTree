@@ -5,7 +5,7 @@
 #include "FedTree/Tree/tree.h"
 #include "thrust/reduce.h"
 #include "thrust/execution_policy.h"
-#include "cmath"
+#include <numeric>
 
 void Tree::init_CPU(const SyncArray<GHPair> &gradients, const GBDTParam &param) {
     TIMED_FUNC(timerObj);
@@ -16,6 +16,7 @@ void Tree::init_CPU(const SyncArray<GHPair> &gradients, const GBDTParam &param) 
 //    for (int i = 0; i < gradients.size(); i ++) {
 //        sum_gh.operator+(gh_pairs[i]);
 //    }
+//    GHPair sum_gh = std::accumulate(gradients.host_data(), gradients.host_end(), GHPair(0, 0));
     GHPair sum_gh = thrust::reduce(thrust::host, gradients.host_data(), gradients.host_end());
 
     float_type lambda = param.lambda;

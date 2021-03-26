@@ -7,7 +7,7 @@
 #define FEDTREE_TREE_BUILDER_H
 
 #include "FedTree/dataset.h"
-#include "FedTree/Encryption/HE.h"
+//#include "FedTree/Encryption/HE.h"
 #include "function_builder.h"
 #include "tree.h"
 #include "splitpoint.h"

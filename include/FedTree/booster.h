@@ -29,9 +29,9 @@ public:
 
     void set_gradients(SyncArray<GHPair> &gh);
 
-    void encrypt_gradients(AdditivelyHE::PaillierPublicKey pk);
-
-    void decrypt_gradients(AdditivelyHE::PaillierPrivateKey privateKey);
+//    void encrypt_gradients(AdditivelyHE::PaillierPublicKey pk);
+//
+//    void decrypt_gradients(AdditivelyHE::PaillierPrivateKey privateKey);
 
     void add_noise_to_gradients(float variance);
 

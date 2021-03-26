@@ -25,7 +25,7 @@ void Parser::parse_param(FLParam &fl_param, int argc, char **argv) {
     GBDTParam *gbdt_param = &fl_param.gbdt_param;
 
     gbdt_param->depth = 6;
-    gbdt_param->n_trees = 5;
+    gbdt_param->n_trees = 20;
     gbdt_param->n_device = 1;
     gbdt_param->min_child_weight = 1;
     gbdt_param->lambda = 1;
@@ -37,7 +37,7 @@ void Parser::parse_param(FLParam &fl_param, int argc, char **argv) {
     gbdt_param->column_sampling_rate = 1;
     gbdt_param->bagging = false;
     gbdt_param->n_parallel_trees = 1;
-    gbdt_param->learning_rate = 0.05;
+    gbdt_param->learning_rate = 0.01;
     gbdt_param->objective = "reg:linear";
     gbdt_param->num_class = 1;
     gbdt_param->path = "../dataset/test_dataset.txt";

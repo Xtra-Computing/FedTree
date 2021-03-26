@@ -7,9 +7,10 @@
 
 #include "FedTree/dataset.h"
 #include "FedTree/Tree/tree_builder.h"
-#include "FedTree/Encryption/HE.h"
+//#include "FedTree/Encryption/HE.h"
 #include "FedTree/DP/noises.h"
 #include "FedTree/Tree/gbdt.h"
+#include "omp.h"
 
 // Todo: the server structure.
 
@@ -36,34 +37,41 @@ public:
     int n_total_instances;
     vector<int> n_instances_per_party;
 
-    AdditivelyHE::PaillierPublicKey publicKey;
+//    AdditivelyHE::PaillierPublicKey publicKey;
+//    vector<AdditivelyHE::PaillierPublicKey> pk_vector;
+    Paillier paillier;
 
     void send_key(Party &party) {
-        party.serverKey = publicKey;
+        party.paillier = paillier;
     }
 
     void homo_init() {
-        std::tuple<AdditivelyHE::PaillierPublicKey, AdditivelyHE::PaillierPrivateKey> keyPairs = this->HE.generate_key_pairs();
-        publicKey = std::get<0>(keyPairs);
-        privateKey = std::get<1>(keyPairs);
+        paillier = Paillier(512);
     }
 
     void decrypt_gh(GHPair &gh) {
-        gh.homo_decrypt(privateKey);
+        gh.homo_decrypt(paillier);
     }
 
     void decrypt_gh_pairs(SyncArray<GHPair> &encrypted) {
         auto encrypted_data = encrypted.host_data();
+#pragma omp parallel for
         for (int i = 0; i < encrypted.size(); i++) {
-            encrypted_data[i].homo_decrypt(privateKey);
+            encrypted_data[i].homo_decrypt(paillier);
+        }
+    }
+
+    void encrypt_gh_pairs(SyncArray<GHPair> &raw) {
+        auto raw_data = raw.host_data();
+#pragma omp parallel for
+        for (int i = 0; i < raw.size(); i++) {
+            raw_data[i].homo_encrypt(paillier);
         }
     }
 
 private:
 //    std::unique_ptr<TreeBuilder> fbuilder;
-    AdditivelyHE HE;
     DPnoises<double> DP;
-    AdditivelyHE::PaillierPrivateKey privateKey;
 };
 
 #endif //FEDTREE_SERVER_H
