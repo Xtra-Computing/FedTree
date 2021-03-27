@@ -144,7 +144,6 @@ void FLtrainer::vertical_fl_trainer(vector<Party> &parties, Server &server, FLPa
             temp_gradients.resize(server.booster.gradients.size());
             temp_gradients.copy_from(server.booster.gradients);
             server.homo_init();
-//            server.booster.encrypt_gradients(server.publicKey);
             server.encrypt_gh_pairs(server.booster.gradients);
         }
         if (params.privacy_tech == "dp");
@@ -157,10 +156,6 @@ void FLtrainer::vertical_fl_trainer(vector<Party> &parties, Server &server, FLPa
         if (params.privacy_tech == "he") {
             server.booster.gradients.copy_from(temp_gradients);
         }
-
-//        server.booster.update_gradients();
-//        for (int pid = 0; pid < parties.size(); pid++)
-//            parties[pid].booster.update_gradients();
 
         // for each tree in a round
         for (int t = 0; t < params.gbdt_param.tree_per_rounds; t++) {
@@ -252,13 +247,7 @@ void FLtrainer::vertical_fl_trainer(vector<Party> &parties, Server &server, FLPa
                 server.booster.fbuilder->compute_gain_in_a_level(gain, n_nodes_in_level, n_bins_new,
                                                                  global_hist_fid.host_data(),
                                                                  missing_gh, hist, n_column_new);
-//                std::ofstream myfile;
-//                myfile.open(std::to_string(l) + ".txt");
-//                auto gain_data = gain.host_data();
-//                for (int tmp = 0; tmp < gain.size(); tmp++) {
-//                    myfile << gain_data[tmp] << '\t';
-//                }
-//                myfile.close();
+//                LOG(INFO) << "gain:" << gain;
 
                 // server find the best gain and its index
                 SyncArray<int_float> best_idx_gain(n_nodes_in_level);
@@ -317,7 +306,7 @@ void FLtrainer::vertical_fl_trainer(vector<Party> &parties, Server &server, FLPa
                 if (params.privacy_tech == "he") {
                     auto node_data = server.booster.fbuilder->trees.nodes.host_data();
 #pragma omp parallel for
-                    for (int nid = (2 << l) - 1; nid < (2 << (l + 1)) - 1; nid++) {
+                    for (int nid = (1 << l) - 1; nid < (2 << (l + 1)) - 1; nid++) {
                         server.decrypt_gh(node_data[nid].sum_gh_pair);
                         node_data[nid].calc_weight(params.gbdt_param.lambda);
                     }
@@ -331,6 +320,7 @@ void FLtrainer::vertical_fl_trainer(vector<Party> &parties, Server &server, FLPa
                 }
 
 //                LOG(INFO) << "ins2node_id" << parties[0].booster.fbuilder->ins2node_id;
+//                LOG(INFO) << parties[0].booster.fbuilder->trees.nodes;
 
                 bool split_further = false;
                 for (int pid:updated_parties) {

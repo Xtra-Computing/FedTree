@@ -118,7 +118,7 @@ struct GHPair {
         } else {
             GHPair tmp_lhs = *this;
             GHPair tmp_rhs = rhs;
-            NTL::ZZ minus_one = NTL::to_ZZ((unsigned int) -1);
+            NTL::ZZ minus_one = NTL::to_ZZ((unsigned long) -1);
             if (!encrypted) {
                 tmp_lhs.homo_encrypt(rhs.paillier);
                 tmp_rhs.g_enc = rhs.paillier.mul(tmp_rhs.g_enc, minus_one);
@@ -158,6 +158,15 @@ struct GHPair {
     HOST_DEVICE GHPair(float_type v) : g(v), h(v) {};
 
     HOST_DEVICE GHPair(float_type g, float_type h) : g(g), h(h) {};
+
+    GHPair(const GHPair& other) {
+        g = other.g;
+        h = other.h;
+        g_enc = other.g_enc;
+        h_enc= other.h_enc;
+        paillier = other.paillier;
+        encrypted = other.encrypted;
+    }
 
     friend std::ostream &operator<<(std::ostream &os,
                                     const GHPair &p) {

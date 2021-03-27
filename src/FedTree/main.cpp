@@ -16,6 +16,10 @@ INITIALIZE_EASYLOGGINGPP
 #endif
 
 int main(int argc, char **argv) {
+
+    Paillier pl(512);
+    GHPair g1(-1.234, 2.345);
+
     el::Loggers::reconfigureAllLoggers(el::ConfigurationType::Format, "%datetime %level %fbase:%line : %msg");
     el::Loggers::addFlag(el::LoggingFlag::ColoredTerminalOutput);
     el::Loggers::addFlag(el::LoggingFlag::FixedTimeFormat);

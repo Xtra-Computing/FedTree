@@ -699,7 +699,11 @@ void HistTreeBuilder::compute_histogram_in_a_level(int level, int n_max_splits, 
 //                            PERFORMANCE_CHECKPOINT(timerObj);
             }  // end for each node
         }
-        last_hist.copy_from(hist);
+        auto last_hist_data = last_hist.host_data();
+        auto hist_data = hist.host_data();
+        for (int i = 0; i < n_nodes_in_level * n_bins; i++) {
+            last_hist_data[i] = hist_data[i];
+        }
     }
 
     this->build_n_hist++;

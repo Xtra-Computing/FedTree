@@ -11,12 +11,11 @@ void Tree::init_CPU(const SyncArray<GHPair> &gradients, const GBDTParam &param) 
     TIMED_FUNC(timerObj);
     init_structure(param.depth);
     //init root node
-//    GHPair sum_gh = GHPair(0.0, 0.0);
+//    GHPair sum_gh = GHPair(0, 0);
 //    auto gh_pairs = gradients.host_data();
-//    for (int i = 0; i < gradients.size(); i ++) {
-//        sum_gh.operator+(gh_pairs[i]);
+//    for (int i = 0; i < gradients.size(); i++) {
+//        sum_gh = sum_gh + gh_pairs[i];
 //    }
-//    GHPair sum_gh = std::accumulate(gradients.host_data(), gradients.host_end(), GHPair(0, 0));
     GHPair sum_gh = thrust::reduce(thrust::host, gradients.host_data(), gradients.host_end());
 
     float_type lambda = param.lambda;
