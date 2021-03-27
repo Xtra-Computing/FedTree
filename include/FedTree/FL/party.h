@@ -7,7 +7,7 @@
 
 #include "FedTree/dataset.h"
 #include "FedTree/Tree/tree_builder.h"
-#include "FedTree/Encryption/HE.h"
+//#include "FedTree/Encryption/HE.h"
 #include "FedTree/DP/noises.h"
 #include "FLparam.h"
 #include "FedTree/booster.h"
@@ -88,7 +88,8 @@ public:
     void compute_leaf_values();
 
     int pid;
-    AdditivelyHE::PaillierPublicKey serverKey;
+//    AdditivelyHE::PaillierPublicKey serverKey;
+    Paillier paillier;
 
     Booster booster;
     GBDT gbdt;

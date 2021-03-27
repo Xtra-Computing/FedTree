@@ -3,12 +3,9 @@
 //
 #include "FedTree/DP/DifferentialPrivacy.h"
 #include "FedTree/FL/FLtrainer.h"
-#include "FedTree/Encryption/HE.h"
 #include "FedTree/FL/partition.h"
 #include "FedTree/FL/comm_helper.h"
 #include "thrust/sequence.h"
-#include <fstream>
-#include <string>
 
 using namespace thrust;
 
@@ -150,6 +147,8 @@ void FLtrainer::vertical_fl_trainer(vector<Party> &parties, Server &server, FLPa
         // Server update, encrypt and send gradients
         server.booster.update_gradients();
 
+        SyncArray<GHPair> temp_gradients;
+
         if (params.privacy_tech == "dp") {
             // option 1: directly add noise to gradients
             server.booster.add_noise_to_gradients(params.variance);
@@ -159,25 +158,27 @@ void FLtrainer::vertical_fl_trainer(vector<Party> &parties, Server &server, FLPa
         }
 
         if (params.privacy_tech == "he") {
+            temp_gradients.resize(server.booster.gradients.size());
+            temp_gradients.copy_from(server.booster.gradients);
             server.homo_init();
-            server.booster.encrypt_gradients(server.publicKey);
+            server.encrypt_gh_pairs(server.booster.gradients);
         }
-
-
-        // update current gradients to all parties
+        
+#pragma omp parallel for
         for (int j = 0; j < parties.size(); j++) {
             server.send_booster_gradients(parties[j]);
         }
-
-//        server.booster.update_gradients();
-//        for (int pid = 0; pid < parties.size(); pid++)
-//            parties[pid].booster.update_gradients();
+        if (params.privacy_tech == "he") {
+            server.booster.gradients.copy_from(temp_gradients);
+        }
 
         // for each tree in a round
         for (int t = 0; t < params.gbdt_param.tree_per_rounds; t++) {
             Tree &tree = trees[t];
             // each party initialize ins2node_id, gradients, etc.
             server.booster.fbuilder->build_init(server.booster.gradients, t);
+
+#pragma omp parallel for
             for (int pid = 0; pid < parties.size(); pid++)
                 parties[pid].booster.fbuilder->build_init(parties[pid].booster.gradients, t);
 
@@ -195,12 +196,15 @@ void FLtrainer::vertical_fl_trainer(vector<Party> &parties, Server &server, FLPa
                 MSyncArray<GHPair> parties_hist(parties.size());
 
                 // each party compute hist, send hist to server
+                for (int pid = 0; pid < parties.size(); pid++)
+                    parties_n_columns[pid] = parties[pid].dataset.n_features();
+
+#pragma omp parallel for
                 for (int pid = 0; pid < parties.size(); pid++) {
                     int n_bins = parties[pid].booster.fbuilder->cut.cut_points_val.size();
                     parties_n_bins[pid] = n_bins;
                     int n_max_splits = n_max_nodes * n_bins;
                     int n_column = parties[pid].dataset.n_features();
-                    parties_n_columns[pid] = n_column;
                     int n_partition = n_column * n_nodes_in_level;
                     auto cut_fid_data = parties[pid].booster.fbuilder->cut.cut_fid.host_data();
 
@@ -225,8 +229,6 @@ void FLtrainer::vertical_fl_trainer(vector<Party> &parties, Server &server, FLPa
                                                                                 n_nodes_in_level,
                                                                                 hist_fid_data, missing_gh, hist);
 
-//                    LOG(INFO) << "hist: " << hist;
-//                    LOG(INFO) << "missing_gh: " << missing_gh;
                     parties_missing_gh[pid].resize(n_partition);
                     parties_missing_gh[pid].copy_from(missing_gh);
                     parties_hist[pid].resize(n_max_splits);
@@ -250,24 +252,17 @@ void FLtrainer::vertical_fl_trainer(vector<Party> &parties, Server &server, FLPa
                 missing_gh.copy_from(
                         comm_helper.concat_msyncarray(parties_missing_gh, parties_n_columns, n_nodes_in_level));
                 hist.copy_from(comm_helper.concat_msyncarray(parties_hist, parties_n_bins, n_nodes_in_level));
-//                LOG(INFO) << "hist_fid: " << global_hist_fid;
-//                LOG(INFO) << "missing_gh:" << missing_gh;
-//                LOG(INFO) << "hist:" << hist;
 
                 // server compute gain
                 SyncArray<float_type> gain(n_max_splits_new);
-                if (params.privacy_tech == "he")
+                if (params.privacy_tech == "he") {
                     server.decrypt_gh_pairs(hist);
+                    server.decrypt_gh_pairs(missing_gh);
+                }
                 server.booster.fbuilder->compute_gain_in_a_level(gain, n_nodes_in_level, n_bins_new,
                                                                  global_hist_fid.host_data(),
                                                                  missing_gh, hist, n_column_new);
-//                std::ofstream myfile;
-//                myfile.open(std::to_string(l) + ".txt");
-//                auto gain_data = gain.host_data();
-//                for (int tmp = 0; tmp < gain.size(); tmp++) {
-//                    myfile << gain_data[tmp] << '\t';
-//                }
-//                myfile.close();
+//                LOG(INFO) << "gain:" << gain;
 
                 // server find the best gain and its index
                 SyncArray<int_float> best_idx_gain(n_nodes_in_level);
@@ -327,17 +322,29 @@ void FLtrainer::vertical_fl_trainer(vector<Party> &parties, Server &server, FLPa
                     if (party_node_map[sender_id].size() > 0) {
                         updated_parties.push_back(sender_id);
                         for (int nid: party_node_map[sender_id]) {
-                            for (int receiver_id = 0; receiver_id < parties.size(); receiver_id++) {
-                                if (sender_id != receiver_id) {
-                                    parties[sender_id].send_node(nid, n_nodes_in_level, parties[receiver_id]);
-                                }
-                            }
                             parties[sender_id].send_node(nid, n_nodes_in_level, server);
                         }
                     }
                 }
 
+                if (params.privacy_tech == "he") {
+                    auto node_data = server.booster.fbuilder->trees.nodes.host_data();
+#pragma omp parallel for
+                    for (int nid = (1 << l) - 1; nid < (2 << (l + 1)) - 1; nid++) {
+                        server.decrypt_gh(node_data[nid].sum_gh_pair);
+                        node_data[nid].calc_weight(params.gbdt_param.lambda);
+                    }
+                }
+
+#pragma omp parallel for
+                for (int pid = 0; pid < parties.size(); pid++) {
+                    for (int nid = (1 << l) - 1; nid < (1 << l) - 1 + n_nodes_in_level; nid++) {
+                        server.send_node(nid, n_nodes_in_level, parties[pid]);
+                    }
+                }
+
 //                LOG(INFO) << "ins2node_id" << parties[0].booster.fbuilder->ins2node_id;
+//                LOG(INFO) << parties[0].booster.fbuilder->trees.nodes;
 
                 bool split_further = false;
                 for (int pid:updated_parties) {

@@ -41,11 +41,17 @@ void Booster::set_gradients(SyncArray<GHPair> &gh) {
     gradients.copy_from(gh);
 }
 
-void Booster::encrypt_gradients(AdditivelyHE::PaillierPublicKey pk) {
-    auto gradients_data = gradients.host_data();
-    for (int i = 0; i < gradients.size(); i++)
-        gradients_data[i].homo_encrypt(pk);
-}
+//void Booster::encrypt_gradients(AdditivelyHE::PaillierPublicKey pk) {
+//    auto gradients_data = gradients.host_data();
+//    for (int i = 0; i < gradients.size(); i++)
+//        gradients_data[i].homo_encrypt(pk);
+//}
+
+//void Booster::decrypt_gradients(AdditivelyHE::PaillierPrivateKey privateKey) {
+//    auto gradients_data = gradients.host_data();
+//    for (int i = 0; i < gradients.size(); i++)
+//        gradients_data[i].homo_decrypt(privateKey);
+//}
 
 void Booster::add_noise_to_gradients(float variance) {
     auto gradients_data = gradients.host_data();

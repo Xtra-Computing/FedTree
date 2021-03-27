@@ -14,7 +14,8 @@
 #include "cstdlib"
 #include "config.h"
 #include "thrust/tuple.h"
-#include "FedTree/Encryption/HE.h"
+//#include "FedTree/Encryption/HE.h"
+#include "FedTree/Encryption/paillier.h"
 
 using std::vector;
 using std::string;
@@ -53,44 +54,94 @@ typedef float float_type;
 struct GHPair {
     float_type g;
     float_type h;
-    AdditivelyHE::EncryptedNumber g_enc;
-    AdditivelyHE::EncryptedNumber h_enc;
-    AdditivelyHE::PaillierPublicKey pk;
+    NTL::ZZ g_enc;
+    NTL::ZZ h_enc;
+    Paillier paillier;
     bool encrypted = false;
 
-    HOST_DEVICE void homo_encrypt(AdditivelyHE::PaillierPublicKey pk) {
-        g_enc = AdditivelyHE::encrypt(pk, g);
-        h_enc = AdditivelyHE::encrypt(pk, h);
-        this->pk = pk;
-        g = 0;
-        h = 0;
-        encrypted = true;
+    HOST_DEVICE void homo_encrypt(const Paillier &pl) {
+        if (!encrypted) {
+            g_enc = pl.encrypt(NTL::to_ZZ((unsigned long) (g * 1e6)));
+            h_enc = pl.encrypt(NTL::to_ZZ((unsigned long) (h * 1e6)));
+            this->paillier = pl;
+            g = 0;
+            h = 0;
+            encrypted = true;
+        }
     }
 
-    HOST_DEVICE void decrypt(AdditivelyHE::PaillierPrivateKey privateKey) {
-        g = AdditivelyHE::decrypt(privateKey, g_enc);
-        h = AdditivelyHE::decrypt(privateKey, h_enc);
-        encrypted = false;
+    HOST_DEVICE void homo_decrypt(const Paillier &pl) {
+        if (encrypted) {
+            long g_dec = NTL::to_long(pl.decrypt(g_enc));
+            long h_dec = NTL::to_long(pl.decrypt(h_enc));
+            g = (float_type) g_dec / 1e6;
+            h = (float_type) h_dec / 1e6;
+            encrypted = false;
+        }
     }
 
     HOST_DEVICE GHPair operator+(const GHPair &rhs) const {
         GHPair res;
-        if (encrypted) {
-            res.g_enc = AdditivelyHE::aggregate(this->g_enc, rhs.g_enc);
-            res.h_enc = AdditivelyHE::aggregate(this->h_enc, rhs.h_enc);
-            res.pk = this->pk;
-            res.encrypted = true;
-        } else {
+        if (!encrypted && !rhs.encrypted) {
             res.g = this->g + rhs.g;
             res.h = this->h + rhs.h;
+            res.encrypted = false;
+        } else {
+            if (!encrypted) {
+                GHPair tmp_lhs = *this;
+                tmp_lhs.homo_encrypt(rhs.paillier);
+                res.g_enc = rhs.paillier.add(tmp_lhs.g_enc, rhs.g_enc);
+                res.h_enc = rhs.paillier.add(tmp_lhs.h_enc, rhs.h_enc);
+                res.paillier = rhs.paillier;
+            } else if (!rhs.encrypted) {
+                GHPair tmp_rhs = rhs;
+                tmp_rhs.homo_encrypt(paillier);
+                res.g_enc = paillier.add(g_enc, tmp_rhs.g_enc);
+                res.h_enc = paillier.add(h_enc, tmp_rhs.h_enc);
+                res.paillier = paillier;
+            } else {
+                res.g_enc = paillier.add(g_enc, rhs.g_enc);
+                res.h_enc = paillier.add(h_enc, rhs.h_enc);
+                res.paillier = paillier;
+            }
+            res.encrypted = true;
         }
         return res;
     }
 
-    HOST_DEVICE const GHPair operator-(const GHPair &rhs) const {
+    HOST_DEVICE GHPair operator-(const GHPair &rhs) const {
         GHPair res;
-        res.g = this->g - rhs.g;
-        res.h = this->h - rhs.h;
+        if (!encrypted && !rhs.encrypted) {
+            res.g = this->g - rhs.g;
+            res.h = this->h - rhs.h;
+            res.encrypted = false;
+        } else {
+            GHPair tmp_lhs = *this;
+            GHPair tmp_rhs = rhs;
+            NTL::ZZ minus_one = NTL::to_ZZ((unsigned long) -1);
+            if (!encrypted) {
+                tmp_lhs.homo_encrypt(rhs.paillier);
+                tmp_rhs.g_enc = rhs.paillier.mul(tmp_rhs.g_enc, minus_one);
+                tmp_rhs.h_enc = rhs.paillier.mul(tmp_rhs.h_enc, minus_one);
+                res.g_enc = rhs.paillier.add(tmp_lhs.g_enc, tmp_rhs.g_enc);
+                res.h_enc = rhs.paillier.add(tmp_lhs.h_enc, tmp_rhs.h_enc);
+                res.paillier = rhs.paillier;
+            } else if (!rhs.encrypted) {
+                tmp_rhs.g *= -1;
+                tmp_rhs.h *= -1;
+                tmp_rhs.homo_encrypt(paillier);
+                res.g_enc = paillier.add(g_enc, tmp_rhs.g_enc);
+                res.h_enc = paillier.add(h_enc, tmp_rhs.h_enc);
+                res.paillier = paillier;
+            } else {
+                tmp_rhs.g_enc = paillier.mul(tmp_rhs.g_enc, minus_one);
+                tmp_rhs.h_enc = paillier.mul(tmp_rhs.h_enc, minus_one);
+                res.g_enc = paillier.add(g_enc, tmp_rhs.g_enc);
+                res.h_enc = paillier.add(h_enc, tmp_rhs.h_enc);
+                res.paillier = paillier;
+            }
+            res.encrypted = true;
+        }
         return res;
     }
 
@@ -107,6 +158,15 @@ struct GHPair {
     HOST_DEVICE GHPair(float_type v) : g(v), h(v) {};
 
     HOST_DEVICE GHPair(float_type g, float_type h) : g(g), h(h) {};
+
+    GHPair(const GHPair& other) {
+        g = other.g;
+        h = other.h;
+        g_enc = other.g_enc;
+        h_enc= other.h_enc;
+        paillier = other.paillier;
+        encrypted = other.encrypted;
+    }
 
     friend std::ostream &operator<<(std::ostream &os,
                                     const GHPair &p) {

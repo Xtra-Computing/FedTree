@@ -69,7 +69,6 @@ TEST_F(TreeBuilderTest, compute_histogram) {
 
     SyncArray<GHPair> hist(5);
     HistTreeBuilder htb;
-//    htb.compute_histogram_in_a_node(gradients, cut, dense_bin_id, false);
     htb.compute_histogram_in_a_node(gradients, cut, dense_bin_id);
     hist.copy_from(htb.get_hist());
     auto hist_data = hist.host_data();

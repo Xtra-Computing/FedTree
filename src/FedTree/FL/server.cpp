@@ -24,13 +24,14 @@ void Server::init(FLParam &param, int n_total_instances, vector<int> &n_instance
     this->global_trees.trees.clear();
 }
 
-void Server::vertical_init(FLParam &param, int n_total_instances, vector<int> &n_instances_per_party, DataSet dataSet){
+void Server::vertical_init(FLParam &param, int n_total_instances, vector<int> &n_instances_per_party, vector<float_type> y){
     this->local_trees.resize(param.n_parties);
     this->model_param = param.gbdt_param;
     this->n_total_instances = n_total_instances;
     this->n_instances_per_party = n_instances_per_party;
     this->global_trees.trees.clear();
-    this->dataset = dataSet;
+    dataset.y = y;
+    dataset.n_features_ = 0;
     booster.init(dataset, param.gbdt_param);
 }
 
