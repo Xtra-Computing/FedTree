@@ -8,3 +8,10 @@ test.sh
 .idea/
 tgbm.model
 .gradle
+/ntl-11.4.4/
+
+dataset/breast-cancer_scale
+
+dataset/diabetes_scale
+
+dataset/mnist.scale
