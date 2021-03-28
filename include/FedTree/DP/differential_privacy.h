@@ -8,7 +8,9 @@
 #include <FedTree/syncarray.h>
 #include "FedTree/FL/FLparam.h"
 #include "FedTree/Tree/tree.h"
+#include <algorithm>
 
+using namespace std;
 //template <typename T>
 class DifferentialPrivacy {
 public:
@@ -40,10 +42,19 @@ public:
                                         SyncArray<int_float> &best_idx_gain, int n_nodes_in_level, int n_bins);
 
     /**
-     * add Laplace noise to the data
+     * adds Laplace noise to the data
      * @param node - the leaf node which noise are to be added
      */
     void laplace_add_noise(Tree::TreeNode &node);
+
+    /**
+     * clips gradient data
+     * @param value - gradient data
+     */
+    template <typename T>
+    void clip_gradient_value(T& value) {
+        value = max<T>(min<T>(value, 1),-1);
+    }
 };
 
 #endif //FEDTREE_DIFFERENTIALPRIVACY_H
