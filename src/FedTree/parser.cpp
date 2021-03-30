@@ -22,6 +22,7 @@ void Parser::parse_param(FLParam &fl_param, int argc, char **argv) {
     fl_param.n_hori = 2;
     fl_param.n_verti = 2;
     fl_param.privacy_budget = 2;
+    fl_param.variance = 200;
 
     GBDTParam *gbdt_param = &fl_param.gbdt_param;
 

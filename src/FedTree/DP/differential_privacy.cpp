@@ -29,6 +29,8 @@ void DifferentialPrivacy::compute_split_point_probability(SyncArray<float_type> 
     auto gain_data = gain.host_data();
     for(int i = 0; i < gain.size(); i ++) {
         prob_exponent_data[i] = this->privacy_budget_internal_nodes * gain_data[i] / 2 / delta_g;
+//        LOG(INFO) << "budget" << this->privacy_budget_internal_nodes;
+//        LOG(INFO) << "gain" << gain_data[i];
     }
 }
 
@@ -69,12 +71,14 @@ void DifferentialPrivacy::exponential_select_split_point(SyncArray<float_type> &
             probability[j] = 1.0 / prob_sum_denominator;
         }
 
+
         float random_sample = distribution(generator);
         float partial_sum = 0;
         for(int j = start; j <= end; j ++) {
             partial_sum += probability[j];
             if(partial_sum > random_sample) {
                 best_idx_gain_data[i] = thrust::make_tuple(j, gain_data[j]);
+                break;
             }
         }
     }

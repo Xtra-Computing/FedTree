@@ -154,7 +154,9 @@ void FLtrainer::vertical_fl_trainer(vector<Party> &parties, Server &server, FLPa
             // option 2: clip gradients to (-1, 1)
             auto gradient_data = server.booster.gradients.host_data();
             for (int i = 0; i < server.booster.gradients.size(); i ++) {
+//                LOG(INFO) << "before" << gradient_data[i].g;
                 dp_manager.clip_gradient_value(gradient_data[i].g);
+//                LOG(INFO) << "after" << gradient_data[i].g;
             }
         }
 
@@ -265,7 +267,11 @@ void FLtrainer::vertical_fl_trainer(vector<Party> &parties, Server &server, FLPa
                                                                  global_hist_fid.host_data(),
                                                                  missing_gh, hist, n_column_new);
 //                LOG(INFO) << "gain:" << gain;
-
+                for (int index = 0; index < gain.size(); index ++) {
+                    if (gain.host_data()[index] != 0) {
+//                        LOG(INFO) << gain.host_data()[index];
+                    }
+                }
                 // server find the best gain and its index
                 SyncArray<int_float> best_idx_gain(n_nodes_in_level);
 
@@ -273,14 +279,23 @@ void FLtrainer::vertical_fl_trainer(vector<Party> &parties, Server &server, FLPa
                 if (params.privacy_tech == "dp") {
                     SyncArray<float_type> prob_exponent(n_max_splits_new);    //the exponent of probability mass for each split point
                     dp_manager.compute_split_point_probability(gain, prob_exponent);
+                    auto prob_exponent_data = prob_exponent.host_data();
+                    for (int index = 0; index < prob_exponent.size(); index ++) {
+                        if(prob_exponent_data[index]!=0) {
+                            LOG(INFO) << "prob expo: " << prob_exponent_data[index];
+                        }
+                    }
+//                    LOG(INFO)<<prob_exponent;
                     dp_manager.exponential_select_split_point(prob_exponent, gain, best_idx_gain, n_nodes_in_level, n_bins_new);
+
                 }
                 // without Exponential Mechanism: select the split with max gain
                 else {
                     server.booster.fbuilder->get_best_gain_in_a_level(gain, best_idx_gain, n_nodes_in_level, n_bins_new);
                 }
+                LOG(INFO) << "best index gain: "<< best_idx_gain;
+//                server.booster.fbuilder->get_best_gain_in_a_level(gain, best_idx_gain, n_nodes_in_level, n_bins_new);
 
-                //                LOG(INFO) << "best_idx_gain:" << best_idx_gain;
                 auto best_idx_data = best_idx_gain.host_data();
 
                 // parties who propose the best candidate update their trees accordingly
