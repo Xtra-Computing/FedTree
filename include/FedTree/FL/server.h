@@ -16,7 +16,7 @@ class Server : public Party {
 public:
     void init(FLParam &param, int n_total_instances, vector<int> &n_instances_per_party);
     void vertical_init(FLParam &param, int n_total_instances, vector<int> &n_instances_per_party, DataSet dataSet);
-    void horizontal_init (FLParam &param, int n_total_instances, vector<int> &n_instances_per_party);
+    void horizontal_init (FLParam &param, int n_total_instances, vector<int> &n_instances_per_party, DataSet dataSet);
     void propose_split_candidates();
     void send_info(string info_type);
 //    void send_info(vector<Party> &parties, AdditivelyHE::PaillierPublicKey serverKey,vector<SplitCandidate>candidates);

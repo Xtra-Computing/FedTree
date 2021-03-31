@@ -17,6 +17,7 @@ void Tree::init_CPU(const SyncArray<GHPair> &gradients, const GBDTParam &param) 
 //        sum_gh.operator+(gh_pairs[i]);
 //    }
     GHPair sum_gh = thrust::reduce(thrust::host, gradients.host_data(), gradients.host_end());
+    LOG(INFO) << "init_CPU: " << sum_gh;
 
     float_type lambda = param.lambda;
     auto node_data = nodes.host_data();

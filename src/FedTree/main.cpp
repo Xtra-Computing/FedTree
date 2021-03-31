@@ -180,7 +180,7 @@ int main(int argc, char** argv){
     server.init(fl_param, dataset.n_instances(), n_instances_per_party);
 
     if (fl_param.mode == "horizontal")
-        server.horizontal_init(fl_param, dataset.n_instances(), n_instances_per_party);
+        server.horizontal_init(fl_param, dataset.n_instances(), n_instances_per_party, dataset);
     LOG(INFO)<<"after server init";
 
     FLtrainer trainer;

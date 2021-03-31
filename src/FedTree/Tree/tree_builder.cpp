@@ -280,7 +280,7 @@ void TreeBuilder::update_tree() {
             nodes_data[node.rch_index].is_valid = false;
         }
     }
-    LOG(INFO) << tree.nodes;
+   // LOG(INFO) << tree.nodes;
 }
 
 void TreeBuilder::update_tree_in_a_node(int node_id) {
@@ -331,7 +331,6 @@ void TreeBuilder::update_tree_in_a_node(int node_id) {
         nodes_data[node.lch_index].is_valid = false;
         nodes_data[node.rch_index].is_valid = false;
     }
-
     LOG(DEBUG) << tree.nodes;
 }
 

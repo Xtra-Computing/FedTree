@@ -103,7 +103,7 @@ void Partition::homo_partition(const DataSet &dataset, const int n_parties, cons
             }
             for(int i = 0; i < n_parties; i ++) {
                 subsets[i].csc_col_ptr.push_back(subsets[i].csc_col_ptr.back() + csc_col_sub[i]);
-                LOG(INFO) << subsets[i].csc_row_idx.size();
+             //   LOG(INFO) << subsets[i].csc_row_idx.size();
             }
         }
     }

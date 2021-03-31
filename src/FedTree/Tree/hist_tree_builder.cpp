@@ -718,7 +718,7 @@ void HistTreeBuilder::compute_histogram_in_a_level(int level, int n_max_splits, 
     // SEGMENTATION ERROR IN HERE!
     inclusive_scan_by_key(thrust::host, hist_fid, hist_fid + n_split,
                           hist.host_data(), hist.host_data());
-    LOG(INFO) << "HIST VALUE: " << hist <<"," << hist_fid << "," << n_split;
+    //LOG(INFO) << "HIST VALUE: " << hist <<"," << hist_fid << "," << n_split;
 
     auto nodes_data = tree.nodes.host_data();
     auto missing_gh_data = missing_gh.host_data();
@@ -751,7 +751,6 @@ HistTreeBuilder::compute_gain_in_a_level(SyncArray<float_type> &gain, int n_node
     int nid_offset = static_cast<int>(n_nodes_in_level - 1);
     auto compute_gain = []__host__(GHPair father, GHPair lch, GHPair rch, float_type min_child_weight,
                                    float_type lambda) -> float_type {
-        LOG(INFO) << lch.h << "," << rch.h;
         if (lch.h >= min_child_weight && rch.h >= min_child_weight)
             return (lch.g * lch.g) / (lch.h + lambda) + (rch.g * rch.g) / (rch.h + lambda) -
                    (father.g * father.g) / (father.h + lambda);
@@ -768,6 +767,16 @@ HistTreeBuilder::compute_gain_in_a_level(SyncArray<float_type> &gain, int n_node
     LOG(INFO) << "MCW:" << mcw;
     float_type l = param.lambda;
 
+    int i = 0;
+    int nid0 = i / n_bins;
+    int nid = nid0 + nid_offset;
+    int fid = hist_fid[i % n_bins];
+    int pid = nid0 * n_column + fid;
+    GHPair father_gh = nodes_data[nid].sum_gh_pair;
+    GHPair p_missing_gh = missing_gh_data[pid];
+    GHPair rch_gh = gh_prefix_sum_data[i];
+    LOG(INFO) << "SUM_GH:" << father_gh << "," << p_missing_gh << "," << rch_gh;
+
 #pragma omp parallel for
     for (int i = 0; i < n_split; i++) {
         int nid0 = i / n_bins;
@@ -778,7 +787,7 @@ HistTreeBuilder::compute_gain_in_a_level(SyncArray<float_type> &gain, int n_node
             GHPair father_gh = nodes_data[nid].sum_gh_pair;
             GHPair p_missing_gh = missing_gh_data[pid];
             GHPair rch_gh = gh_prefix_sum_data[i];
-            LOG(INFO) << father_gh << "," << p_missing_gh << "," << rch_gh;
+            // LOG(INFO) << father_gh << "," << p_missing_gh << "," << rch_gh;
             float_type default_to_left_gain = std::max(0.f,
                                                        compute_gain(father_gh, father_gh - rch_gh, rch_gh, mcw, l));
             rch_gh = rch_gh + p_missing_gh;
@@ -1060,7 +1069,7 @@ void HistTreeBuilder::merge_histograms_server_propose() {
     }
     last_hist.resize(n_bins);
     last_hist.copy_from(merged_hist);
-    LOG(INFO) << "MERGE HIST: " << last_hist;
+   // LOG(INFO) << "MERGE HIST: " << last_hist;
     last_missing_gh.resize(n_size);
     last_missing_gh.copy_from(merged_missing_gh);
 }

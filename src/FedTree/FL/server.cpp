@@ -24,8 +24,9 @@ void Server::init(FLParam &param, int n_total_instances, vector<int> &n_instance
     this->global_trees.trees.clear();
 }
 
-void Server::horizontal_init (FLParam &param, int n_total_instances, vector<int> &n_instances_per_party) {
-    booster.init(param.gbdt_param, n_total_instances);
+void Server::horizontal_init (FLParam &param, int n_total_instances, vector<int> &n_instances_per_party, DataSet dataSet) {
+    init(param, n_total_instances, n_instances_per_party);
+    booster.init(dataSet, param.gbdt_param);
 }
 
 void Server::vertical_init(FLParam &param, int n_total_instances, vector<int> &n_instances_per_party, DataSet dataSet){
