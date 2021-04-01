@@ -1045,6 +1045,7 @@ void HistTreeBuilder::compute_histogram_in_a_node(SyncArray<GHPair> &gradients, 
 
 void HistTreeBuilder::merge_histograms_server_propose() {
     int n_bins = parties_hist[0].size();
+    CHECK_EQ(parties_hist[0].size(), parties_hist[1].size());
     int n_size = parties_missing_gh[0].size();
     SyncArray<GHPair> merged_hist(n_bins);
     SyncArray<GHPair> merged_missing_gh(n_size);

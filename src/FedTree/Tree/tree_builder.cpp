@@ -92,6 +92,7 @@ void TreeBuilder::predict_in_training(int k) {
 }
 
 void TreeBuilder::build_init(const SyncArray<GHPair> &gradients, int k) {
+    LOG(INFO)<<"n_instances:"<<n_instances;
     this->ins2node_id.resize(n_instances); // initialize n_instances here
     this->gradients.set_host_data(const_cast<GHPair *>(gradients.host_data() + k * n_instances));
     this->trees.init_CPU(this->gradients, param);
