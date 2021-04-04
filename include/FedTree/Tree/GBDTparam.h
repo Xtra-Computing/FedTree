@@ -34,6 +34,7 @@ struct GBDTParam {
     int n_device;
 
     std::string tree_method;
+    std::string metric;
 };
 
 #endif //FEDTREE_GBDTPARAM_H
