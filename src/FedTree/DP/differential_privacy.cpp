@@ -75,7 +75,7 @@ void DifferentialPrivacy::exponential_select_split_point(SyncArray<float_type> &
         for(int j = start; j <= end; j ++) {
             float curr_exponent = prob_exponent_data[j];
             if(curr_exponent == 0) {
-                probability[j] == 0;
+                probability[j] = 0;
             }
             else {
                 float denominator = 0;
@@ -88,14 +88,19 @@ void DifferentialPrivacy::exponential_select_split_point(SyncArray<float_type> &
             }
         }
 
+        bool split_selected = false;
         float random_sample = distribution(generator);
         float partial_sum = 0;
         for (int j = start; j <= end; j++) {
             partial_sum += probability[j];
             if (partial_sum > random_sample) {
                 best_idx_gain_data[i] = thrust::make_tuple(j, gain_data[j]);
+                split_selected = true;
                 break;
             }
+        }
+        if(! split_selected) {
+            best_idx_gain_data[i] = thrust::make_tuple(start, 0.0);
         }
 
 //        int max_idx = 0;
