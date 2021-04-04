@@ -64,15 +64,30 @@ void DifferentialPrivacy::exponential_select_split_point(SyncArray<float_type> &
         // The probability[0] can be calculated by exp(a)/(exp(a)+exp(b)+exp(c)+exp(d))
         // To avoid overflow, calculation will be done in 1/(exp(a-a)+exp(b-a)+exp(c-a)+exp(d-a))
         // Probability value with respect to the bin will be stored in probability vector
-        for (int j = start; j <= end; j++) {
+//        for (int j = start; j <= end; j++) {
+//            float curr_exponent = prob_exponent_data[j];
+//            float prob_sum_denominator = 0;
+//            for (int k = start; k <= end; k++) {
+//                prob_sum_denominator += exp(prob_exponent_data[k] - curr_exponent);
+//            }
+//            probability[j] = 1.0 / prob_sum_denominator;
+//        }
+        for(int j = start; j <= end; j ++) {
             float curr_exponent = prob_exponent_data[j];
-            float prob_sum_denominator = 0;
-            for (int k = start; k <= end; k++) {
-                prob_sum_denominator += exp(prob_exponent_data[k] - curr_exponent);
+            if(curr_exponent == 0) {
+                probability[j] == 0;
             }
-            probability[j] = 1.0 / prob_sum_denominator;
+            else {
+                float denominator = 0;
+                for(int k = 0; k <= end; k ++) {
+                    if(prob_exponent_data[k] != 0) {
+                        denominator += exp(prob_exponent_data[k] - curr_exponent);
+                    }
+                }
+                probability[j] = 1.0 / denominator;
+            }
         }
-//
+
         float random_sample = distribution(generator);
         float partial_sum = 0;
         for (int j = start; j <= end; j++) {
