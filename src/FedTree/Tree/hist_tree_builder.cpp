@@ -810,7 +810,17 @@ void HistTreeBuilder::get_best_gain_in_a_level(SyncArray<float_type> &gain, Sync
                 arg_abs_max
         );
         LOG(DEBUG) << n_split;
-        LOG(DEBUG) << "best rank & gain = " << best_idx_gain;
+        LOG(INFO) << "best rank & gain = " << best_idx_gain;
+
+//        for(int idx = 0; idx < 1000; idx ++) {
+//            if(gain.host_data()[idx] != 0) {
+//                LOG(INFO) << idx << " " << gain.host_data()[idx];
+//            }
+//        }
+//        LOG(INFO) << gain.size();
+//        LOG(INFO) << n_bins;
+//        LOG(INFO) << best_idx_gain.size();
+//        LOG(INFO) << best_idx_gain;
     }
     return;
 }

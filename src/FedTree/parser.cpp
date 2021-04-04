@@ -39,7 +39,7 @@ void Parser::parse_param(FLParam &fl_param, int argc, char **argv) {
     gbdt_param->column_sampling_rate = 1;
     gbdt_param->bagging = false;
     gbdt_param->n_parallel_trees = 1;
-    gbdt_param->learning_rate = 0.01;
+    gbdt_param->learning_rate = 0.1;
     gbdt_param->objective = "reg:linear";
     gbdt_param->num_class = 1;
     gbdt_param->path = "../dataset/test_dataset.txt";

@@ -25,10 +25,11 @@ void DifferentialPrivacy::init(FLParam flparam) {
  * @param prob_exponent - exponent for the probability mass; the probability mass is exp(prob_exponent[i])
  */
 void DifferentialPrivacy::compute_split_point_probability(SyncArray<float_type> &gain, SyncArray<float_type> &prob_exponent) {
+
     auto prob_exponent_data = prob_exponent.host_data();
     auto gain_data = gain.host_data();
     for(int i = 0; i < gain.size(); i ++) {
-        prob_exponent_data[i] = this->privacy_budget_internal_nodes * gain_data[i] / 2 / delta_g;
+        prob_exponent_data[i] = this->privacy_budget_internal_nodes * fabsf(gain_data[i]) / 2 / delta_g;
 //        LOG(INFO) << "budget" << this->privacy_budget_internal_nodes;
 //        LOG(INFO) << "gain" << gain_data[i];
     }
@@ -43,6 +44,7 @@ void DifferentialPrivacy::compute_split_point_probability(SyncArray<float_type> 
 void DifferentialPrivacy::exponential_select_split_point(SyncArray<float_type> &prob_exponent, SyncArray<float_type> &gain,
                                                          SyncArray<int_float> &best_idx_gain, int n_nodes_in_level,
                                                          int n_bins) {
+
     // initialize randomization
     std::random_device device;
     std::mt19937 generator(device());
@@ -54,7 +56,7 @@ void DifferentialPrivacy::exponential_select_split_point(SyncArray<float_type> &
 
     vector<float> probability(n_bins * n_nodes_in_level);
 
-    for(int i = 0; i < n_nodes_in_level; i ++) {
+    for (int i = 0; i < n_nodes_in_level; i++) {
         int start = i * n_bins;
         int end = start + n_bins - 1;
 
@@ -62,28 +64,42 @@ void DifferentialPrivacy::exponential_select_split_point(SyncArray<float_type> &
         // The probability[0] can be calculated by exp(a)/(exp(a)+exp(b)+exp(c)+exp(d))
         // To avoid overflow, calculation will be done in 1/(exp(a-a)+exp(b-a)+exp(c-a)+exp(d-a))
         // Probability value with respect to the bin will be stored in probability vector
-        for(int j = start; j <= end; j ++) {
+        for (int j = start; j <= end; j++) {
             float curr_exponent = prob_exponent_data[j];
             float prob_sum_denominator = 0;
-            for(int k = start; k <= end; k ++) {
+            for (int k = start; k <= end; k++) {
                 prob_sum_denominator += exp(prob_exponent_data[k] - curr_exponent);
             }
             probability[j] = 1.0 / prob_sum_denominator;
         }
-
-
+//
         float random_sample = distribution(generator);
         float partial_sum = 0;
-        for(int j = start; j <= end; j ++) {
+        for (int j = start; j <= end; j++) {
             partial_sum += probability[j];
-            if(partial_sum > random_sample) {
+            if (partial_sum > random_sample) {
                 best_idx_gain_data[i] = thrust::make_tuple(j, gain_data[j]);
                 break;
             }
         }
-    }
-}
 
+//        int max_idx = 0;
+//        int max_gain = prob_exponent_data[0];
+//        for(int j = start; j <= end; j ++) {
+//            if(prob_exponent_data[j] > max_gain) {
+//                max_idx = j;
+//                max_gain = prob_exponent_data[j];
+//            }
+//        }
+//        best_idx_gain_data[i] = thrust::make_tuple(max_idx, gain_data[max_idx]);
+    }
+//    for(int i = 0; i < 100; i ++) {
+//        LOG(INFO) << "gain" << gain.host_data()[i];
+//        LOG(INFO) << "prob" << probability[i];
+//    }
+    LOG(INFO) << "best rank and gain(dp) "<< best_idx_gain;
+
+}
 /**
  * add Laplace noise to the data
  * @param node - the leaf node which noise are to be added
