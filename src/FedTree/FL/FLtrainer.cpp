@@ -127,6 +127,7 @@ void FLtrainer::vertical_fl_trainer(vector<Party> &parties, Server &server, FLPa
     GBDTParam &model_param = params.gbdt_param;
     Comm comm_helper;
     DifferentialPrivacy dp_manager;
+    Partition partition;
 
     // initializing differential privacy
     if(params.privacy_tech == "dp") {
@@ -176,9 +177,25 @@ void FLtrainer::vertical_fl_trainer(vector<Party> &parties, Server &server, FLPa
             server.booster.gradients.copy_from(temp_gradients);
         }
 
+//        // ensemble of ensemble
+//        vector<vector<DataSet>> all_parties_sub_datasets(parties.size());
+//        if (params.privacy_tech == "dp") {
+//            for(int j = 0; j < parties.size(); j ++) {
+//                std::map<int, vector<int>> temp_batch_idxs;
+//                partition.homo_partition(parties[j].dataset, params.gbdt_param.tree_per_rounds, true, all_parties_sub_datasets[j], temp_batch_idxs);
+//            }
+//        }
+
         // for each tree in a round
         for (int t = 0; t < params.gbdt_param.tree_per_rounds; t++) {
             Tree &tree = trees[t];
+
+            // each party initialize dataset
+//            if (params.privacy_tech == "dp") {
+//                for (int pid = 0; pid < parties.size(); pid++) {
+//                    parties[pid].dataset = all_parties_sub_datasets[pid][t];
+//                }
+//            }
             // each party initialize ins2node_id, gradients, etc.
             server.booster.fbuilder->build_init(server.booster.gradients, t);
 
