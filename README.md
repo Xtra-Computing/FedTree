@@ -34,9 +34,8 @@ Make sure that you install the library to the correct Python version so that the
 # Install NTL library
 ```
 wget https://libntl.org/ntl-11.4.4.tar.gz
-gunzip ntl-11.4.4.tar.gz
-tar xf ntl-11.4.4.tar.gz
-cd ntl-11.4.4.tar.gz/src
+tar -xvf ntl-11.4.4.tar.gz
+cd ntl-11.4.4/src
 ./configure
 make
 make check
