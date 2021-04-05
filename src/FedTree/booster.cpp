@@ -18,7 +18,10 @@ void Booster::init(DataSet &dataSet, const GBDTParam &param) {
     fbuilder->init(dataSet, param);
     obj.reset(ObjectiveFunction::create(param.objective));
     obj->configure(param, dataSet);
-    metric.reset(Metric::create(obj->default_metric_name()));
+    if (param.metric == "default")
+        metric.reset(Metric::create(obj->default_metric_name()));
+    else
+        metric.reset(Metric::create(param.metric));
     metric->configure(param, dataSet);
 
     n_devices = param.n_device;
