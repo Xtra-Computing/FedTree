@@ -235,7 +235,6 @@ void TreeBuilder::update_tree() {
     auto& sp = this->sp;
     auto& tree = this->trees;
     auto sp_data = sp.host_data();
-    LOG(INFO) << sp;
     int n_nodes_in_level = sp.size();
 
     Tree::TreeNode *nodes_data = tree.nodes.host_data();

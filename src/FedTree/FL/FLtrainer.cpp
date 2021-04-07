@@ -102,7 +102,6 @@ void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FL
 
         for (int i = 0; i < server.booster.gradients.size(); i++) {
             auto gradient_data = server.booster.gradients.host_data();
-            LOG(INFO) << gradient_data[i];
             if (std::isnan(gradient_data[i].g)) {
                 LOG(INFO) << "Gradient is nan";
             }
@@ -201,7 +200,7 @@ void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FL
                 auto hist_fid_data = parties_hist_fid[0].host_data();
                 server.booster.fbuilder->compute_gain_in_a_level(gain, n_nodes_in_level, n_bins, hist_fid_data,
                                                                  missing_gh, hist);
-                LOG(INFO) << "GAIN:" << gain;
+               // LOG(INFO) << "GAIN:" << gain;
                 // server find the best gain and its index
                 SyncArray <int_float> best_idx_gain(n_nodes_in_level);
                 server.booster.fbuilder->get_best_gain_in_a_level(gain, best_idx_gain, n_nodes_in_level, n_bins);
@@ -244,7 +243,6 @@ void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FL
         }
 
 
-        LOG(INFO) << parties[0].booster.fbuilder->get_y_predict();
         LOG(INFO) << parties[0].booster.metric->get_name() << " = "
                   << parties[0].booster.metric->get_score(parties[0].booster.fbuilder->get_y_predict());
     } LOG(INFO) << "end of training";
