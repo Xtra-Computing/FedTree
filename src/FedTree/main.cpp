@@ -228,7 +228,8 @@ int main(int argc, char **argv) {
             }
         }
     } else if (fl_param.mode == "vertical") {
-        trainer.vertical_fl_trainer(parties, server, fl_param);
+//        trainer.vertical_fl_trainer(parties, server, fl_param);
+        trainer.vertical_fl_dp_trainer(parties, server, fl_param);
         float_type score;
 //        if(use_global_test_set)
         score = parties[0].gbdt.predict_score(fl_param.gbdt_param, test_dataset);

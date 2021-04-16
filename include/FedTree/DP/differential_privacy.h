@@ -22,8 +22,9 @@ public:
     float privacy_budget_per_tree;
     float privacy_budget_leaf_nodes;
     float privacy_budget_internal_nodes;
+    int   ensemble_in_ensemble = 10;
 
-    void init(FLParam fLparam);
+    void init(FLParam flParam);
 
     /**
      * calculates p value based on gain value for each split point

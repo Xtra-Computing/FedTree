@@ -19,6 +19,11 @@ void DifferentialPrivacy::init(FLParam flparam) {
     this->privacy_budget_internal_nodes = this->privacy_budget_per_tree / 2.0 / gbdt_param.depth;
 }
 
+//void DifferentialPrivacy::init_efe(FLParam flParam) {
+//    this->ensemble_in_ensemble = 10;
+//    this->
+//}
+
 /**
  * calculates p value based on gain value for each split point
  * @param gain - gain values of all split points in the level
