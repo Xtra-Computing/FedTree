@@ -1034,8 +1034,9 @@ void HistTreeBuilder::compute_histogram_in_a_node(SyncArray<GHPair> &gradients, 
 
 //assumption: GHPairs in the histograms of all clients are arranged in the same order
 
-void HistTreeBuilder::merge_histograms_server_propose() {
+void HistTreeBuilder::merge_histograms_server_propose(SyncArray<GHPair> &hist, SyncArray<GHPair> &missing_gh) {
     int n_bins = parties_hist[0].size();
+    LOG(INFO) << "n_bins_in_merge" << n_bins;
     CHECK_EQ(parties_hist[0].size(), parties_hist[1].size());
     int n_size = parties_missing_gh[0].size();
     SyncArray<GHPair> merged_hist(n_bins);
@@ -1059,11 +1060,11 @@ void HistTreeBuilder::merge_histograms_server_propose() {
             missing_gh_dest = missing_gh_dest + missing_gh;
         }
     }
-    last_hist.resize(n_bins);
-    last_hist.copy_from(merged_hist);
+    hist.resize(n_bins);
+    hist.copy_from(merged_hist);
    // LOG(INFO) << "MERGE HIST: " << last_hist;
-    last_missing_gh.resize(n_size);
-    last_missing_gh.copy_from(merged_missing_gh);
+    missing_gh.resize(n_size);
+    missing_gh.copy_from(merged_missing_gh);
 }
 
 

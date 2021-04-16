@@ -24,6 +24,8 @@ public:
 
     virtual void set_y_predict(int k) = 0;
 
+    virtual void build_init(const GHPair sum_gh, int k) = 0;
+
     virtual void build_init(const SyncArray<GHPair> &gradients, int k) = 0;
 
     virtual void compute_histogram_in_a_level(int level, int n_max_splits, int n_bins, int n_nodes_in_level,

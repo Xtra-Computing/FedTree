@@ -50,7 +50,7 @@ public:
 //support equal division or weighted division
     void propose_split_candidates();
 
-    void merge_histograms_server_propose();
+    void merge_histograms_server_propose(SyncArray<GHPair> &hist, SyncArray<GHPair> &missing_gh);
 
     void merge_histograms_client_propose();
 
@@ -104,6 +104,11 @@ public:
     void set_last_hist(SyncArray<GHPair> &last_hist_input) {
         last_hist.resize(last_hist_input.size());
         last_hist.copy_from(last_hist_input);
+    }
+
+    void set_last_missing_gh(SyncArray<GHPair> &last_missing_gh_input) {
+        last_hist.resize(last_missing_gh_input.size());
+        last_hist.copy_from(last_missing_gh_input);
     }
 
     SyncArray<GHPair> get_last_hist() {
