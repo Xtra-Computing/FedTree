@@ -424,10 +424,11 @@ void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FL
             }
             parties[0].gbdt.trees.push_back(trees);
 
-            LOG(INFO) << parties[0].booster.fbuilder->get_y_predict();
             LOG(INFO) << parties[0].booster.metric->get_name() << " = "
                       << parties[0].booster.metric->get_score(parties[0].booster.fbuilder->get_y_predict());
-        }LOG(INFO) << "end of training";
+        }
+
+        LOG(INFO) << "end of training";
     }
 
 
