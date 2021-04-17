@@ -18,7 +18,8 @@ class Server : public Party {
 public:
     void init(FLParam &param, int n_total_instances, vector<int> &n_instances_per_party);
 
-    void vertical_init(FLParam &param, int n_total_instances, vector<int> &n_instances_per_party, vector<float_type> y);
+    void vertical_init(FLParam &param, int n_total_instances, vector<int> &n_instances_per_party, vector<float_type> y,
+                       vector<float_type> label);
 
     void propose_split_candidates();
 
