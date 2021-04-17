@@ -10,16 +10,6 @@
 #include <thrust/execution_policy.h>
 #include <math.h>
 
-void TreeBuilder::init(const GBDTParam &param, int n_instances) {
-    FunctionBuilder::init(param, n_instances);
-    this->n_instances = n_instances;
-    ins2node_id = SyncArray<int>(n_instances);
-    sp = SyncArray<SplitPoint>();
-    int n_outputs = param.num_class * n_instances;
-    y_predict = SyncArray<float_type>(n_outputs);
-    gradients = SyncArray<GHPair>(n_instances);
-}
-
 void TreeBuilder::init(DataSet &dataSet, const GBDTParam &param) {
 //    int n_available_device;
 //    cudaGetDeviceCount(&n_available_device);
@@ -83,7 +73,7 @@ void TreeBuilder::predict_in_training(int k) {
     auto nid_data = ins2node_id.host_data();
     const Tree::TreeNode *nodes_data = trees.nodes.host_data();
     auto lr = param.learning_rate;
-//    #pragma omp parallel for
+#pragma omp parallel for
     for(int i = 0; i < n_instances; i++){
         int nid = nid_data[i];
         while (nid != -1 && (nodes_data[nid].is_pruned)) nid = nodes_data[nid].parent_index;
@@ -122,6 +112,7 @@ vector<Tree> TreeBuilder::build_approximate(const SyncArray<GHPair> &gradients, 
                 TIMED_SCOPE(timerObj, "apply sp");
                 update_tree();
                 update_ins2node_id();
+//                LOG(INFO) << "ins2node_id: " << ins2node_id;
                 {
                     LOG(TRACE) << "gathering ins2node id";
                     //get final result of the reset instance id to node id
@@ -135,6 +126,7 @@ vector<Tree> TreeBuilder::build_approximate(const SyncArray<GHPair> &gradients, 
         }
         //here
         this->trees.prune_self(param.gamma);
+//        LOG(INFO) << "y_predict: " << y_predict;
         if(update_y_predict)
             predict_in_training(k);
         tree.nodes.resize(this->trees.nodes.size());
@@ -258,7 +250,7 @@ void TreeBuilder::update_tree() {
 
             Tree::TreeNode &lch = nodes_data[node.lch_index];//left child
             Tree::TreeNode &rch = nodes_data[node.rch_index];//right child
-            lch.is_valid = true;
+            lch.is_valid = true; //TODO: broadcast lch and rch
             rch.is_valid = true;
             node.split_feature_id = sp_data[i].split_fea_id;
             GHPair p_missing_gh = sp_data[i].fea_missing_gh;
@@ -323,8 +315,8 @@ void TreeBuilder::update_tree_in_a_node(int node_id) {
             node.default_right = true;
         }
         lch.sum_gh_pair = node.sum_gh_pair - rch.sum_gh_pair;
-        lch.calc_weight(lambda);
-        rch.calc_weight(lambda);
+        lch.calc_weight(lambda); // TODO: check here
+        rch.calc_weight(lambda); // TODO: check here
     } else {
         //set leaf
         //todo: check, thundergbm uses return

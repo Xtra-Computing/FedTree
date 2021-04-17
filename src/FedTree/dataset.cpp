@@ -629,6 +629,7 @@ void DataSet::csr_to_csc(){
     int n_column = this->n_features();
     int n_row = this->n_instances();
     int nnz = this->csr_val.size();
+    LOG(INFO) << n_column << "," << n_row << "," << nnz;
 
 
     csc_val.resize(nnz);
@@ -669,6 +670,8 @@ void DataSet::csr_to_csc(){
         csc_col_ptr[i] = last;
         last = next_last;
     }
+
+    has_csc = true;
 }
 
 size_t DataSet::n_features() const {

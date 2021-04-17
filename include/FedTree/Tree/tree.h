@@ -69,6 +69,26 @@ public:
             return !is_leaf && is_valid;
         }
 
+        HOST_DEVICE TreeNode(const TreeNode& copy){
+            final_id = copy.final_id;
+            lch_index = copy.lch_index;
+            rch_index = copy.rch_index;
+            parent_index = copy.parent_index;
+            gain = copy.gain;
+            base_weight = copy.base_weight;
+            split_feature_id = copy.split_feature_id;
+            pid = copy.pid;
+            split_value = copy.split_value;
+            split_bid = copy.split_bid;
+            default_right = copy.default_right;
+            is_leaf = copy.is_leaf;
+            is_valid = copy.is_valid;
+            is_pruned = copy.is_pruned;
+            sum_gh_pair.g = copy.sum_gh_pair.g;
+            sum_gh_pair.h = copy.sum_gh_pair.h;
+            n_instances = copy.n_instances;
+        }
+
     };
 
     Tree() = default;

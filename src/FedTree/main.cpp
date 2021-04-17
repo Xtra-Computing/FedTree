@@ -46,6 +46,7 @@ int main(int argc, char** argv){
     acc = model.predict(test_dataset);
 */
 
+//centralized training test
     FLParam fl_param;
     Parser parser;
     parser.parse_param(fl_param, argc, argv);
@@ -63,13 +64,14 @@ int main(int argc, char** argv){
     if (!model_param.profiling) {
         el::Loggers::reconfigureAllLoggers(el::ConfigurationType::PerformanceTracking, "false");
     }
-//    if(fl_param.mode == "centralized") {
-//        DataSet dataset;
-//        vector <vector<Tree>> boosted_model;
-//        dataset.load_from_file(model_param.path, fl_param);
-//        GBDT gbdt;
-//        gbdt.train(model_param, dataset);
-//        parser.save_model("tgbm.model", model_param, gbdt.trees, dataset);
+    if(fl_param.mode == "centralized") {
+        DataSet dataset;
+        vector <vector<Tree>> boosted_model;
+        dataset.load_from_file(model_param.path, fl_param);
+        GBDT gbdt;
+        gbdt.train(model_param, dataset);
+        parser.save_model("tgbm.model", model_param, gbdt.trees, dataset);
+    }
 //    }
 //    else{
     int n_parties = fl_param.n_parties;
@@ -77,18 +79,20 @@ int main(int argc, char** argv){
     vector<DataSet> test_subsets(n_parties);
     vector<DataSet> subsets(n_parties);
     vector<SyncArray<bool>> feature_map(n_parties);
+    std::map<int, vector<int>> batch_idxs;
     DataSet dataset;
     bool use_global_test_set = !model_param.test_path.empty();
-    if(fl_param.partition == true){
-        dataset.load_from_file(model_param.path, fl_param);
+    if (fl_param.partition == true) {
         Partition partition;
-        if(fl_param.partition_mode == "hybrid"){
-            LOG(INFO)<<"horizontal vertical dir";
-            if(fl_param.mode == "horizontal")
+        if (fl_param.partition_mode == "hybrid") {
+            dataset.load_from_file(model_param.path, fl_param);
+            LOG(INFO) << "horizontal vertical dir";
+            if (fl_param.mode == "horizontal")
                 CHECK_EQ(fl_param.n_verti, 1);
-            else if(fl_param.mode == "vertical")
+            if (fl_param.mode == "vertical")
                 CHECK_EQ(fl_param.n_hori, 1);
-            partition.horizontal_vertical_dir_partition(dataset, n_parties, fl_param.alpha, feature_map, subsets, fl_param.n_hori, fl_param.n_verti);
+            partition.horizontal_vertical_dir_partition(dataset, n_parties, fl_param.alpha, feature_map, subsets,
+                                                        fl_param.n_hori, fl_param.n_verti);
 //            std::cout<<"subsets[0].n_instances:"<<subsets[0].n_instances()<<std::endl;
 //            std::cout<<"subsets[0].nnz:"<<subsets[0].csr_val.size()<<std::endl;
 //            std::cout<<"subsets[1].n_instances:"<<subsets[1].n_instances()<<std::endl;
@@ -97,35 +101,45 @@ int main(int argc, char** argv){
 //            std::cout<<"subsets[2].nnz:"<<subsets[2].csr_val.size()<<std::endl;
 //            std::cout<<"subsets[3].n_instances:"<<subsets[3].n_instances()<<std::endl;
 //            std::cout<<"subsets[3].nnz:"<<subsets[3].csr_val.size()<<std::endl;
-            if(!use_global_test_set) {
+        } else if (fl_param.partition_mode == "vertical") {
+            LOG(INFO) << "vertical dir";
+            CHECK_EQ(fl_param.mode, "vertical");
+            dataset.load_from_file(model_param.path, fl_param);
+            dataset.csr_to_csc();
+            partition.homo_partition(dataset, n_parties, false, subsets, batch_idxs);
+            if (!use_global_test_set) {
                 LOG(INFO) << "train test split";
                 for (int i = 0; i < n_parties; i++) {
                     partition.train_test_split(subsets[i], train_subsets[i], test_subsets[i]);
                 }
-            }
-            else{
-                for (int i = 0; i < n_parties; i++) {
-                    train_subsets[i] = subsets[i];
+            }else{
+                    for (int i = 0; i < n_parties; i++) {
+                        train_subsets[i] = subsets[i];
+                    }
                 }
-            }
-        }else if (fl_param.partition_mode=="horizontal") {
-            partition.homo_partition(dataset, n_parties, true, subsets);
-            for (int i = 0; i < n_parties; i++) {
-                train_subsets[i] = subsets[i];
+            }else if (fl_param.partition_mode=="horizontal") {
+            dataset.load_from_file(model_param.path, fl_param);
+            partition.homo_partition(dataset, n_parties, true, subsets, batch_idxs);
+            if (!use_global_test_set) {
+                LOG(INFO) << "train test split";
+                for (int i = 0; i < n_parties; i++) {
+                    partition.train_test_split(subsets[i], train_subsets[i], test_subsets[i]);
+                }
+            }else{
+                    for (int i = 0; i < n_parties; i++) {
+                        train_subsets[i] = subsets[i];
+                    }
+                }
             }
         }
         else{
             std::cout<<"not supported yet"<<std::endl;
             exit(1);
         }
-    }
-    else{
-        std::cout<<"not supported yet"<<std::endl;
-    }
 
     DataSet test_dataset;
     LOG(INFO)<<"global test";
-    if(use_global_test_set)
+    if (use_global_test_set)
         test_dataset.load_from_file(model_param.test_path, fl_param);
 
 //    if (ObjectiveFunction::need_group_label(param.gbdt_param.objective)) {
@@ -153,34 +167,22 @@ int main(int argc, char** argv){
     
     vector<Party> parties(n_parties);
     vector<int> n_instances_per_party(n_parties);
+
     LOG(INFO)<<"initialize parties";
-
-    for(int i = 0; i < n_parties; i++) {
-        feature_map[i].resize(dataset.n_features());
-        auto feature_map_data = feature_map[i].host_data();
-        for(int j = 0; j < feature_map[i].size(); j++){
-            feature_map_data[j] = false;
-        }
-    }
-
     for(int i = 0; i < n_parties; i++){
         parties[i].init(i, train_subsets[i], fl_param, feature_map[i]);
         n_instances_per_party[i] = train_subsets[i].n_instances();
     }
     LOG(INFO)<<"after party init";
 
-    LOG(INFO)<<"Initialize Server";
     Server server;
-    if (fl_param.mode == "vertical"){
-        DataSet server_dataset;
-        server_dataset.y = dataset.y;
-        server.vertical_init(fl_param, dataset.n_instances(), n_instances_per_party, server_dataset);
-    }
-    else if (fl_param.mode == "horizontal")
+    if (fl_param.mode == "vertical") {
+        server.vertical_init(fl_param, dataset.n_instances(), n_instances_per_party, dataset.y);
+    }else if (fl_param.mode == "horizontal") {
         server.horizontal_init(fl_param, dataset.n_instances(), n_instances_per_party, dataset);
-    else
+    }else {
         server.init(fl_param, dataset.n_instances(), n_instances_per_party);
-    LOG(INFO)<<"after server init";
+    }
 
     FLtrainer trainer;
     if (param.tree_method == "auto")
@@ -240,14 +242,13 @@ int main(int argc, char** argv){
                 scores.push_back(score);
             }
         }
-    }
-    else if(fl_param.mode == "vertical"){
+    } else if (fl_param.mode == "vertical") {
         trainer.vertical_fl_trainer(parties, server, fl_param);
         float_type score;
-        if(use_global_test_set)
-            score = parties[0].gbdt.predict_score(fl_param.gbdt_param, test_dataset);
-        else
-            score = parties[0].gbdt.predict_score(fl_param.gbdt_param, test_subsets[0]);
+//        if(use_global_test_set)
+        score = parties[0].gbdt.predict_score(fl_param.gbdt_param, test_dataset);
+//        else
+//            score = parties[0].gbdt.predict_score(fl_param.gbdt_param, test_subsets[0]);
         scores.push_back(score);
     }else if (fl_param.mode == "horizontal") {
         LOG(INFO)<<"start training";

@@ -7,7 +7,7 @@
 #define FEDTREE_TREE_BUILDER_H
 
 #include "FedTree/dataset.h"
-#include "FedTree/Encryption/HE.h"
+//#include "FedTree/Encryption/HE.h"
 #include "function_builder.h"
 #include "tree.h"
 #include "splitpoint.h"
@@ -30,8 +30,6 @@ public:
     void build_init(const SyncArray<GHPair> &gradients, int k) override;
 
     void init(DataSet &dataset, const GBDTParam &param) override;
-
-    void init(const GBDTParam &param, int n_instances) override;
 
     void update_tree();
 

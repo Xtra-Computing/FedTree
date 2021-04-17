@@ -19,9 +19,10 @@ public:
     string mode; // "horizontal", "vertical", "hybrid", or "centralized"
     string partition_mode; // "horizontal", "vertical" or "hybrid"
     string privacy_tech; //"none" or "he" or "dp"
-    float variance; // variance of dp noise if privacy_tech=="dp"
     string propose_split; // "server" or "client"
     string merge_histogram; // "server" or "client"
+    float variance; // variance of dp noise if privacy_tech=="dp"
+    float privacy_budget;       // privacy budget for differential privacy
     GBDTParam gbdt_param; // parameters for the gbdt training
 };
 

@@ -9,7 +9,7 @@
 #include "tree.h"
 #include "FedTree/common.h"
 #include "FedTree/dataset.h"
-#include "FedTree/Encryption/HE.h"
+//#include "FedTree/Encryption/HE.h"
 #include "FedTree/Tree/hist_cut.h"
 
 class FunctionBuilder {

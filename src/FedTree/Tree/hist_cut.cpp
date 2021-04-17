@@ -24,20 +24,20 @@ void HistCut::get_cut_points_by_data_range(DataSet &dataset, int max_num_bins, i
     auto temp_row_ptr_data = temp_row_ptr.host_data();
     auto temp_params_data = temp_params.host_data();
 
-    #pragma omp parallel for
-    for(int fid = 0; fid < n_column; fid++) {
+#pragma omp parallel for
+    for (int fid = 0; fid < n_column; fid++) {
         // copy data value from csc array to unique array
         int col_start = csc_col_ptr_data[fid];
-        int col_len = csc_col_ptr_data[fid+1] - col_start;
+        int col_len = csc_col_ptr_data[fid + 1] - col_start;
 
         auto val_data = csc_val_data + col_start;
-        auto unique_start = unique_vals_data + fid*n_instances;  // notice here
+        auto unique_start = unique_vals_data + fid * n_instances;  // notice here
 
         int unique_len = thrust::unique_copy(thrust::host, val_data, val_data + col_len, unique_start) - unique_start;
         int n_cp = (unique_len <= temp_params_data[1]) ? unique_len : temp_params_data[1];
-        temp_row_ptr_data[fid+1] = unique_len;
+        temp_row_ptr_data[fid + 1] = unique_len;
         // atomicAdd(&tmp_params_data[0], n_cp);
-        #pragma omp atomic
+#pragma omp atomic
         temp_params_data[0] += n_cp;
     }
 
@@ -63,19 +63,20 @@ void HistCut::get_cut_points_by_data_range(DataSet &dataset, int max_num_bins, i
     unique_vals_data = unique_vals.host_data();
 
 #pragma omp parallel for
-    for(int fid = 0; fid < n_column; fid ++) {
-        for(int i = cut_col_ptr_data[fid]; i < cut_col_ptr_data[fid+1]; i ++) {
-            int unique_len = temp_row_ptr_data[fid+1];
+    for (int fid = 0; fid < n_column; fid++) {
+        for (int i = cut_col_ptr_data[fid]; i < cut_col_ptr_data[fid + 1]; i++) {
+            int unique_len = temp_row_ptr_data[fid + 1];
             int unique_idx = i - cut_col_ptr_data[fid];
-            int cp_idx = (unique_len <= temp_params_data[1]) ? unique_idx : (unique_len / temp_params_data[1] * unique_idx);
-            cut_point_val_data[i] = unique_vals_data[fid*n_instances+cp_idx];
+            int cp_idx = (unique_len <= temp_params_data[1]) ? unique_idx : (unique_len / temp_params_data[1] *
+                                                                             unique_idx);
+            cut_point_val_data[i] = unique_vals_data[fid * n_instances + cp_idx];
         }
     }
 
     auto cut_fid_data = cut_fid.host_data();
 #pragma omp parallel for
-    for(int fid = 0; fid < n_column; fid ++) {
-        for(int i = cut_col_ptr_data[fid]; i < cut_col_ptr_data[fid+1]; i ++) {
+    for (int fid = 0; fid < n_column; fid++) {
+        for (int i = cut_col_ptr_data[fid]; i < cut_col_ptr_data[fid + 1]; i++) {
             cut_fid_data[i] = fid;
         }
     }
@@ -96,7 +97,7 @@ void unique_by_flag(SyncArray<float> &target_arr, SyncArray<int> &flags, int n_c
 
 //    float max_elem = max_elements(target_arr);
     float max_elem = *thrust::max_element(thrust::host, target_arr.host_data(), target_arr.host_end());
-    CHECK_LT(max_elem + n_columns*(max_elem + 1),INT_MAX) << "Max_values is too large to be transformed";
+    CHECK_LT(max_elem + n_columns * (max_elem + 1), INT_MAX) << "Max_values is too large to be transformed";
     // 1. transform data into unique ranges
     thrust::transform(thrust::host,
                       target_arr.host_data(),
@@ -190,8 +191,6 @@ void HistCut::get_cut_points_fast(DataSet &dataset, int max_num_bins, int n_inst
  * @param f_range Min and max values for each feature.
  * @param max_num_bins Number of cut points for each feature.
  */
-
-// Need to set cut points here?
 void HistCut::get_cut_points_by_feature_range(vector<vector<float>> f_range, int max_num_bins) {
     int n_features = f_range.size();
 
@@ -213,11 +212,6 @@ void HistCut::get_cut_points_by_feature_range(vector<vector<float>> f_range, int
             cut_fid_data[fid * max_num_bins + i] = fid;
             cut_points_val_data[fid * max_num_bins + 1] = i * val_step + f_range[fid][0];
         }
-    }   
+    }
     cut_col_ptr_data[n_features] = n_features * max_num_bins;
-
-    LOG(INFO) << "--->>>>  cut points value: " << cut_points_val;
-    LOG(INFO) << "--->>>> cut row ptr: " << cut_col_ptr;
-    LOG(INFO) << "--->>>> cut fid: " << cut_fid;
-    LOG(INFO) << "TOTAL CP:" << cut_fid.size();
 }

@@ -30,6 +30,20 @@ public:
         no_split_value_update=false;
     }
 
+    SplitPoint(const SplitPoint& copy){
+        gain = copy.gain;
+        fea_missing_gh.g = copy.fea_missing_gh.g;
+        fea_missing_gh.h = copy.fea_missing_gh.h;
+        rch_sum_gh.g = copy.rch_sum_gh.g;
+        rch_sum_gh.h = copy.rch_sum_gh.h;
+        default_right = copy.default_right;
+        nid = copy.nid;
+        split_fea_id = copy.split_fea_id;
+        fval = copy.fval;
+        split_bid = copy.split_bid;
+        no_split_value_update = copy.no_split_value_update;
+    }
+
     friend std::ostream &operator<<(std::ostream &output, const SplitPoint &sp) {
         output << sp.gain << "/" << sp.split_fea_id << "/" << sp.nid << "/" << sp.rch_sum_gh;
         return output;

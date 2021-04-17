@@ -27,7 +27,7 @@ void Parser::parse_param(FLParam &fl_param, int argc, char **argv) {
     GBDTParam *gbdt_param = &fl_param.gbdt_param;
 
     gbdt_param->depth = 6;
-    gbdt_param->n_trees = 40;
+    gbdt_param->n_trees = 20;
     gbdt_param->n_device = 1;
     gbdt_param->min_child_weight = 1;
     gbdt_param->lambda = 1;
@@ -45,6 +45,7 @@ void Parser::parse_param(FLParam &fl_param, int argc, char **argv) {
     gbdt_param->path = "../dataset/test_dataset.txt";
     gbdt_param->tree_method = "hist";
     gbdt_param->tree_per_rounds = 1; // # tree of each round, depends on # class
+    gbdt_param->metric = "default";
 
     if (argc < 2) {
         printf("Usage: <config>\n");
@@ -74,6 +75,8 @@ void Parser::parse_param(FLParam &fl_param, int argc, char **argv) {
                 fl_param.n_hori = atoi(val);
             else if (str_name.compare("n_verti") == 0)
                 fl_param.n_verti = atoi(val);
+            else if (str_name.compare("privacy_budget") == 0)
+                fl_param.privacy_budget = atof(val);
             else if (str_name.compare("merge_histogram") == 0)
                 fl_param.merge_histogram = val;
             else if (str_name.compare("propose_split") == 0)
@@ -101,8 +104,9 @@ void Parser::parse_param(FLParam &fl_param, int argc, char **argv) {
                 gbdt_param->bagging = atoi(val);
             else if ((str_name.compare("num_parallel_tree") == 0) || (str_name.compare("n_parallel_trees") == 0))
                 gbdt_param->n_parallel_trees = atoi(val);
-            else if (str_name.compare("eta") == 0 || str_name.compare("learning_rate") == 0)
+            else if (str_name.compare("eta") == 0 || str_name.compare("learning_rate") == 0) {
                 gbdt_param->learning_rate = atof(val);
+            }
             else if (str_name.compare("objective") == 0)
                 gbdt_param->objective = val;
             else if (str_name.compare("num_class") == 0)
@@ -115,6 +119,8 @@ void Parser::parse_param(FLParam &fl_param, int argc, char **argv) {
                 gbdt_param->gamma = atof(val);
             else if (str_name.compare("tree_method") == 0)
                 gbdt_param->tree_method = val;
+            else if (str_name.compare("metric") == 0)
+                gbdt_param->metric = val;
             else
                 LOG(INFO) << "\"" << name << "\" is unknown option!";
         } else {

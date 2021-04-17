@@ -13,8 +13,6 @@ public:
 
     void init(DataSet &dataset, const GBDTParam &param) override;
 
-    void init(const GBDTParam &param, int n_instances) override;
-
     void get_bin_ids();
 
     Tree* build_tree_level_approximate(int level, int round) override;
@@ -26,7 +24,7 @@ public:
     void compute_histogram_in_a_level(int level, int n_max_splits, int n_bins, int n_nodes_in_level, int* hist_fid_data,
                                       SyncArray<GHPair> &missing_gh, SyncArray<GHPair> &hist) override;
 
-    void compute_histogram_in_a_node(SyncArray<GHPair> &gradients, HistCut &cut, SyncArray<unsigned char> &dense_bin_id, bool enc);
+    void compute_histogram_in_a_node(SyncArray<GHPair> &gradients, HistCut &cut, SyncArray<unsigned char> &dense_bin_id);
 
     void compute_gain_in_a_level(SyncArray<float_type> &gain, int n_nodes_in_level, int n_bins, int* hist_fid_data,
                                  SyncArray<GHPair> &missing_gh, SyncArray<GHPair> &hist, int n_columns = 0) override;
@@ -123,13 +121,13 @@ public:
         return last_missing_gh_return;
     }
 
-    void decrypt_histogram(AdditivelyHE::PaillierPrivateKey privateKey) {
-        int size = last_hist.size();
-        auto hist_data = last_hist.host_data();
-        for (int i = 0; i < size; i++) {
-            hist_data[i].decrypt(privateKey);
-        }
-    }
+//    void decrypt_histogram(AdditivelyHE::PaillierPrivateKey privateKey) {
+//        int size = last_hist.size();
+//        auto hist_data = last_hist.host_data();
+//        for (int i = 0; i < size; i++) {
+//            hist_data[i].decrypt(privateKey);
+//        }
+//    }
 
 private:
     vector<HistCut> parties_cut;

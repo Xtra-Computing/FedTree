@@ -6,14 +6,14 @@
 
 //std::mutex mtx;
 
-void Booster::init(const GBDTParam &param, int n_instances) {
-    this -> param = param;
-    fbuilder.reset(new HistTreeBuilder);
-    fbuilder->init(param, n_instances);
-    n_devices = param.n_device;
-    int n_outputs = param.num_class * n_instances;
-    gradients = SyncArray<GHPair>(n_outputs);
-}
+//void Booster::init(const GBDTParam &param, int n_instances) {
+//    this -> param = param;
+//    fbuilder.reset(new HistTreeBuilder);
+//    fbuilder->init(param, n_instances);
+//    n_devices = param.n_device;
+//    int n_outputs = param.num_class * n_instances;
+//    gradients = SyncArray<GHPair>(n_outputs);
+//}
 
 void Booster::init(DataSet &dataSet, const GBDTParam &param) {
 //    int n_available_device;
@@ -27,7 +27,10 @@ void Booster::init(DataSet &dataSet, const GBDTParam &param) {
     fbuilder->init(dataSet, param);
     obj.reset(ObjectiveFunction::create(param.objective));
     obj->configure(param, dataSet);
-    metric.reset(Metric::create(obj->default_metric_name()));
+    if (param.metric == "default")
+        metric.reset(Metric::create(obj->default_metric_name()));
+    else
+        metric.reset(Metric::create(param.metric));
     metric->configure(param, dataSet);
 
     n_devices = param.n_device;
@@ -49,11 +52,17 @@ void Booster::set_gradients(SyncArray<GHPair> &gh) {
     gradients.copy_from(gh);
 }
 
-void Booster::encrypt_gradients(AdditivelyHE::PaillierPublicKey pk) {
-    auto gradients_data = gradients.host_data();
-    for (int i = 0; i < gradients.size(); i++)
-        gradients_data[i].homo_encrypt(pk);
-}
+//void Booster::encrypt_gradients(AdditivelyHE::PaillierPublicKey pk) {
+//    auto gradients_data = gradients.host_data();
+//    for (int i = 0; i < gradients.size(); i++)
+//        gradients_data[i].homo_encrypt(pk);
+//}
+
+//void Booster::decrypt_gradients(AdditivelyHE::PaillierPrivateKey privateKey) {
+//    auto gradients_data = gradients.host_data();
+//    for (int i = 0; i < gradients.size(); i++)
+//        gradients_data[i].homo_decrypt(privateKey);
+//}
 
 void Booster::add_noise_to_gradients(float variance) {
     auto gradients_data = gradients.host_data();
