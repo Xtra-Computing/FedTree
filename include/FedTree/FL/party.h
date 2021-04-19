@@ -87,7 +87,11 @@ public:
 
     vector<float> get_feature_range_by_feature_index (int index) {
         float inf = std::numeric_limits<float>::infinity();
-        dataset.csr_to_csc();
+//        for(int i = 0; i < dataset.csr_val.size(); i++){
+//            std::cout<<dataset.csr_val[i]<<" ";
+//        }
+        if(!dataset.has_csc)
+            dataset.csr_to_csc();
         vector<float> feature_range(2);
         int column_start = dataset.csc_col_ptr[index];
         int column_end = dataset.csc_col_ptr[index+1] + 1;

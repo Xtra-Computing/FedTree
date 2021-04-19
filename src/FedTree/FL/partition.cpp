@@ -8,7 +8,8 @@
 #include <cassert>
 
 
-void Partition::homo_partition(const DataSet &dataset, const int n_parties, const bool is_horizontal, vector<DataSet> &subsets, std::map<int, vector<int>> &batch_idxs) {
+void Partition::homo_partition(const DataSet &dataset, const int n_parties, const bool is_horizontal,
+                               vector<DataSet> &subsets, std::map<int, vector<int>> &batch_idxs, int seed) {
     int n;
     if (is_horizontal)
         n = dataset.n_instances();
@@ -28,7 +29,8 @@ void Partition::homo_partition(const DataSet &dataset, const int n_parties, cons
     for (int i = 0; i < n; i++) {
         idxs.push_back(i);
     }
-
+//    std::default_random_engine e(seed);
+//    std::shuffle(idxs.begin(), idxs.end(), e);
     std::random_shuffle(idxs.begin(), idxs.end());
 
 //    std::map<int, vector<int>> batch_idxs;
@@ -76,7 +78,9 @@ void Partition::homo_partition(const DataSet &dataset, const int n_parties, cons
                 csr_row_sub[party_id]++;
             }
             for(int i = 0; i < n_parties; i++) {
-                subsets[i].csr_row_ptr.push_back(subsets[i].csr_row_ptr.back() + csr_row_sub[i]);
+                // Do not store the empty rows
+                if(csr_row_sub[i] != 0)
+                    subsets[i].csr_row_ptr.push_back(subsets[i].csr_row_ptr.back() + csr_row_sub[i]);
             }
         }
     } else {

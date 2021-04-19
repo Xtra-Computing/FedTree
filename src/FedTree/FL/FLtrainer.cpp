@@ -35,7 +35,8 @@ void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FL
         // loop through all party to find max and min for each feature
         float inf = std::numeric_limits<float>::infinity();
         vector<vector<float>> feature_range(parties[0].get_num_feature());
-
+//        for(int i = 0; i < parties[0].dataset.csr_val.size(); i++)
+//            std::cout<<parties[0].dataset.csr_val[i]<<" ";
         for (int n = 0; n < parties[0].get_num_feature(); n++) {
             vector<float> min_max = {inf, -inf};
             for (int p = 0; p < parties.size(); p++) {
@@ -47,7 +48,6 @@ void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FL
             }
             feature_range[n] = min_max;
         }
-        LOG(INFO) << "RANGE" << feature_range;
 //        // once we have feature_range, we can generate cut points
         server.booster.fbuilder->cut.get_cut_points_by_feature_range(feature_range, n_bins);
         server.booster.fbuilder->get_bin_ids();
@@ -55,6 +55,7 @@ void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FL
             parties[p].booster.fbuilder->cut.get_cut_points_by_feature_range(feature_range, n_bins);
             parties[p].booster.fbuilder->get_bin_ids();
         }
+
 
     } else if (params.propose_split == "client") {
         for (int p = 0; p < parties.size(); p++) {
