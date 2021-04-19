@@ -16,6 +16,9 @@ Parameters for Federated Setting
     - ``he``: use homomorphic encryption to protect the communicated messages.
     - ``dp``: use differential privacy to protect the communicated messages.
 
+* ``partition_mode`` [default=``iid``, type=string]
+    - ``iid``: IID data partitioning
+    - ``noniid``: non-IID data partitioning
 
 Parameters for GBDT model
 -------------------------
