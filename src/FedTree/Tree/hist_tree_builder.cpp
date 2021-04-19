@@ -33,7 +33,7 @@ void HistTreeBuilder::init(DataSet &dataset, const GBDTParam &param) {
 //    else
 //        columns.csr2csc_gpu(dataset, v_columns);
 
-    if (dataset.n_features_ > 0 and dataset.y.size() > 0) {
+    if (dataset.n_features_ > 0) {
         cut.get_cut_points_fast(sorted_dataset, param.max_num_bin, n_instances);
         LOG(INFO) << "after get cut points";
         last_hist.resize((2 << param.depth) * cut.cut_points_val.size());
@@ -173,13 +173,13 @@ void HistTreeBuilder::find_split(int level) {
     SyncArray<GHPair> hist(n_max_splits);
     SyncArray<float_type> gain(n_max_splits);
     compute_histogram_in_a_level(level, n_max_splits, n_bins, n_nodes_in_level, hist_fid_data, missing_gh, hist);
-    LOG(INFO) << hist;
+    //LOG(INFO) << hist;
     compute_gain_in_a_level(gain, n_nodes_in_level, n_bins, hist_fid_data, missing_gh, hist);
     SyncArray<int_float> best_idx_gain(n_nodes_in_level);
     get_best_gain_in_a_level(gain, best_idx_gain, n_nodes_in_level, n_bins);
-    LOG(INFO) << best_idx_gain;
+    //LOG(INFO) << best_idx_gain;
     get_split_points(best_idx_gain, n_nodes_in_level, hist_fid_data, missing_gh, hist);
-    LOG(INFO) << this->sp;
+    //LOG(INFO) << this->sp;
 }
 
 

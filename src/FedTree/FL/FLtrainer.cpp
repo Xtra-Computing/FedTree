@@ -50,7 +50,7 @@ void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FL
         LOG(INFO) << "RANGE" << feature_range;
 //        // once we have feature_range, we can generate cut points
         server.booster.fbuilder->cut.get_cut_points_by_feature_range(feature_range, n_bins);
-        server.booster.fbuilder->get_bin_ids();
+        //server.booster.fbuilder->get_bin_ids();
         for (int p = 0; p < parties.size(); p++) {
             parties[p].booster.fbuilder->cut.get_cut_points_by_feature_range(feature_range, n_bins);
             parties[p].booster.fbuilder->get_bin_ids();
@@ -81,7 +81,7 @@ void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FL
             sum_gh = sum_gh + party_gh;
         }
 
-      //  LOG(INFO) << "SUM_GH" << sum_gh;
+        LOG(INFO) << "SUM_GH" << sum_gh;
 
         // update gradients for all parties
 
@@ -125,7 +125,7 @@ void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FL
 
         // for each tree per round
         for (int k = 0; k < params.gbdt_param.tree_per_rounds; k++) {
-            LOG(INFO) << "ROUND" << k;
+            LOG(INFO) << "CLASS" << k;
 //            Tree &tree = trees[k];
             // each party initialize ins2node_id, gradients, etc.
             // ask parties to send gradient and aggregate by server
@@ -182,8 +182,7 @@ void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FL
 
                 if (params.propose_split == "server") {
                     aggregator.booster.fbuilder->merge_histograms_server_propose(hist, missing_gh);
-//                    server.booster.fbuilder->set_last_hist(hist);
-////                    server.booster.fbuilder->set_last_missing_gh(missing_gh);
+                    server.booster.fbuilder->set_last_hist(hist);
 //                    LOG(INFO) << hist;
                 }else if (params.propose_split == "client") {
                     // TODO: Fix this to make use of missing_gh
@@ -211,10 +210,10 @@ void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FL
                 // server find the best gain and its index
                 SyncArray <int_float> best_idx_gain(n_nodes_in_level);
                 server.booster.fbuilder->get_best_gain_in_a_level(gain, best_idx_gain, n_nodes_in_level, n_bins);
-                //LOG(INFO) << "BEST_IDX_GAIN:" << best_idx_gain;
+//                LOG(INFO) << "BEST_IDX_GAIN:" << best_idx_gain;
 
                 server.booster.fbuilder->get_split_points(best_idx_gain, n_nodes_in_level, hist_fid_data, missing_gh, hist);
-                //LOG(INFO) << "SP" << server.booster.fbuilder->sp;
+               // LOG(INFO) << "SP" << server.booster.fbuilder->sp;
                 server.booster.fbuilder->update_tree();
 
                 // TODO: Update trees of every party

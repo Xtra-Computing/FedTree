@@ -103,8 +103,8 @@ public:
     }
 
     void set_last_missing_gh(SyncArray<GHPair> &last_missing_gh_input) {
-        last_hist.resize(last_missing_gh_input.size());
-        last_hist.copy_from(last_missing_gh_input);
+        last_missing_gh.resize(last_missing_gh_input.size());
+        last_missing_gh.copy_from(last_missing_gh_input);
     }
 
     SyncArray<GHPair> get_last_hist() {

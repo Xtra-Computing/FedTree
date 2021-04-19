@@ -111,7 +111,7 @@ vector<Tree> TreeBuilder::build_approximate(const SyncArray<GHPair> &gradients, 
             {
                 TIMED_SCOPE(timerObj, "apply sp");
                 update_tree();
-                LOG(INFO) << this->trees.nodes;
+              //  LOG(INFO) << this->trees.nodes;
                 update_ins2node_id();
 //                LOG(INFO) << "ins2node_id: " << ins2node_id;
                 {
