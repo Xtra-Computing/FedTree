@@ -624,20 +624,20 @@ void DataSet::load_csc_from_file(string file_name, FLParam &param, const int nfe
 //}
 
 void DataSet::csr_to_csc(){
-    LOG(INFO) << "convert csr to csc using cpu...";
+//    LOG(INFO) << "convert csr to csc using cpu...";
     //cpu transpose
     int n_column = this->n_features();
     int n_row = this->n_instances();
     int nnz = this->csr_val.size();
-    LOG(INFO) << n_column << "," << n_row << "," << nnz;
+//    LOG(INFO) << n_column << "," << n_row << "," << nnz;
 
 
     csc_val.resize(nnz);
     csc_row_idx.resize(nnz);
     csc_col_ptr.resize(n_column+1);
 
-    LOG(INFO) << string_format("#non-zeros = %ld, density = %.2f%%", nnz,
-                               (float) nnz / n_column / n_row * 100);
+//    LOG(INFO) << string_format("#non-zeros = %ld, density = %.2f%%", nnz,
+//                               (float) nnz / n_column / n_row * 100);
     for (int i = 0; i <= n_column; ++i) {
         csc_col_ptr[i] = 0;
     }
@@ -652,9 +652,8 @@ void DataSet::csr_to_csc(){
     for (int i = 1; i < n_column + 1; ++i){
         csc_col_ptr[i] += csc_col_ptr[i - 1];
     }
-
     // TODO to parallelize here
-    for (int row = 0; row < n_instances(); ++row) {
+    for (int row = 0; row < csr_row_ptr.size() - 1; ++row) {
         for (int j = csr_row_ptr[row]; j < csr_row_ptr[row + 1]; ++j) {
             int col = csr_col_idx[j]; // csr col
             int dest = csc_col_ptr[col]; // destination index in csc array
@@ -663,7 +662,6 @@ void DataSet::csr_to_csc(){
             csc_col_ptr[col] += 1; //increment sscolumn start position
         }
     }
-
     //recover column start position
     for (int i = 0, last = 0; i < n_column; ++i) {
         int next_last = csc_col_ptr[i];
