@@ -86,7 +86,7 @@ void TreeBuilder::build_init(const GHPair sum_gh, int k) {
 }
 
 void TreeBuilder::build_init(const SyncArray<GHPair> &gradients, int k) {
-    LOG(INFO)<<"n_instances:"<<n_instances;
+    //LOG(INFO)<<"n_instances:"<<n_instances;
     this->ins2node_id.resize(n_instances); // initialize n_instances here
     this->gradients.set_host_data(const_cast<GHPair *>(gradients.host_data() + k * n_instances));
     this->trees.init_CPU(this->gradients, param);
@@ -111,6 +111,7 @@ vector<Tree> TreeBuilder::build_approximate(const SyncArray<GHPair> &gradients, 
             {
                 TIMED_SCOPE(timerObj, "apply sp");
                 update_tree();
+                LOG(INFO) << this->trees.nodes;
                 update_ins2node_id();
 //                LOG(INFO) << "ins2node_id: " << ins2node_id;
                 {
@@ -260,9 +261,11 @@ void TreeBuilder::update_tree() {
             rch.sum_gh_pair = sp_data[i].rch_sum_gh;
             if (sp_data[i].default_right) {
                 rch.sum_gh_pair = rch.sum_gh_pair + p_missing_gh;
+               // LOG(INFO) << "RCH" << rch.sum_gh_pair;
                 node.default_right = true;
             }
             lch.sum_gh_pair = node.sum_gh_pair - rch.sum_gh_pair;
+          //  LOG(INFO) << "LCH" << lch.sum_gh_pair;
             lch.calc_weight(lambda);
             rch.calc_weight(lambda);
         } else {

@@ -82,7 +82,7 @@ float_type GBDT::predict_score_vertical(const GBDTParam &model_param, const Data
                                         std::map<int, vector<int>> &batch_idxs) {
     SyncArray<float_type> y_predict;
     predict_raw_vertical(model_param, dataSet, y_predict, batch_idxs);
-    LOG(INFO) << "y_predict:" << y_predict;
+    //LOG(INFO) << "y_predict:" << y_predict;
     //convert the aggregated values to labels, probabilities or ranking scores.
     std::unique_ptr<ObjectiveFunction> obj;
     obj.reset(ObjectiveFunction::create(model_param.objective));
@@ -109,6 +109,7 @@ void GBDT::predict_raw(const GBDTParam &model_param, const DataSet &dataSet, Syn
     int num_iter = trees.size();
     int num_class = trees.front().size();
     int num_node = trees[0][0].nodes.size();
+
     int total_num_node = num_iter * num_class * num_node;
     //TODO: reduce the output size for binary classification
     y_predict.resize(n_instances * num_class);
@@ -306,7 +307,6 @@ void GBDT::predict_raw_vertical(const GBDTParam &model_param, const DataSet &dat
                 }
                 sum += lr * node_data[cur_nid].base_weight;
             }
-            predict_data_class[iid] += sum;
         }//end all tree prediction
     }
 }

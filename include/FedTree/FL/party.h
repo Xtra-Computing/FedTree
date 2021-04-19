@@ -87,16 +87,16 @@ public:
 
     vector<float> get_feature_range_by_feature_index (int index) {
         float inf = std::numeric_limits<float>::infinity();
+        dataset.csr_to_csc();
         vector<float> feature_range(2);
-        LOG(INFO) << dataset.csr_row_ptr.size();
-        int column_start = dataset.csr_row_ptr[index];
-        int column_end = dataset.csr_row_ptr[index+1] + 1;
+        int column_start = dataset.csc_col_ptr[index];
+        int column_end = dataset.csc_col_ptr[index+1] + 1;
 
         int num_of_values = column_end - column_start;
 
         if (num_of_values > 0) {
             vector<float> temp(num_of_values);
-            copy(dataset.csr_val.begin() + column_start, dataset.csr_val.begin() + column_end, temp.begin());
+            copy(dataset.csc_val.begin() + column_start, dataset.csc_val.begin() + column_end, temp.begin());
             auto minmax = std::minmax_element(begin(temp), end(temp));
             feature_range[1] = *minmax.second;
             feature_range[0] = *minmax.first;

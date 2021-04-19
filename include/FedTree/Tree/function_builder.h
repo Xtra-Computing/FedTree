@@ -53,7 +53,7 @@ public:
 
     virtual void append_hist(SyncArray<GHPair> &hist) = 0;
 
-    virtual void append_hist(SyncArray<GHPair> &hist, SyncArray<GHPair> &missing_gh,int n_partition, int n_max_splits) = 0;
+    virtual void append_hist(SyncArray<GHPair> &hist, SyncArray<GHPair> &missing_gh,int n_partition, int n_max_splits, int party_idx) = 0;
 
     virtual void concat_histograms() = 0;
 

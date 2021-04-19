@@ -29,7 +29,7 @@ void Partition::homo_partition(const DataSet &dataset, const int n_parties, cons
         idxs.push_back(i);
     }
 
-//    std::random_shuffle(idxs.begin(), idxs.end());
+    std::random_shuffle(idxs.begin(), idxs.end());
 
 //    std::map<int, vector<int>> batch_idxs;
 

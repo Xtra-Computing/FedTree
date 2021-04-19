@@ -69,11 +69,9 @@ public:
     HistCut cut;
 
     void parties_hist_init(int party_size) override{
-        LOG(INFO) << "Party size";
         parties_hist.resize(party_size);
         parties_missing_gh.resize(party_size);
         this->party_size = party_size;
-        LOG(INFO) << "DOne";
         party_idx = 0;
     }
 
@@ -85,16 +83,16 @@ public:
     }
 
 
-    void append_hist(SyncArray<GHPair> &hist, SyncArray<GHPair> &missing_gh,int n_partition, int n_max_splits) override{
-        CHECK_LT(party_idx, party_size);
+    void append_hist(SyncArray<GHPair> &hist, SyncArray<GHPair> &missing_gh,int n_partition, int n_max_splits, int party_idx) override{
         parties_missing_gh[party_idx].resize(n_partition);
         parties_missing_gh[party_idx].copy_from(missing_gh);
         parties_hist[party_idx].resize(n_max_splits);
         parties_hist[party_idx].copy_from(hist);
-        party_idx += 1;
     }
 
     void set_cut (HistCut commonCut) {
+        cut.cut_points_val.resize(commonCut.cut_points_val.size());
+        cut.cut_col_ptr.resize(commonCut.cut_col_ptr.size());
         cut.cut_points_val.copy_from(commonCut.cut_points_val);
         cut.cut_col_ptr.copy_from(commonCut.cut_col_ptr);
     }
