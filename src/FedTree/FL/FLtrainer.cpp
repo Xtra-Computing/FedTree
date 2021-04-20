@@ -54,6 +54,7 @@ void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FL
         server.booster.fbuilder->cut.get_cut_points_by_feature_range(feature_range, n_bins);
         server.booster.fbuilder->get_bin_ids();
 
+
 //        auto cut_points_val_data = server.booster.fbuilder->cut.cut_points_val.host_data();
 //        auto cut_col_ptr_data = server.booster.fbuilder->cut.cut_col_ptr.host_data();
 //        for(int j = 0; j < feature_range.size(); j++) {
@@ -65,9 +66,8 @@ void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FL
 //        std::cout<<std::endl;
 //        LOG(INFO)<<"feature rage 0:"<<feature_range[0];
 
-        //Todo: use copy since the cut points of each party are same with the server
         for (int p = 0; p < parties.size(); p++) {
-            parties[p].booster.fbuilder->cut.get_cut_points_by_feature_range(feature_range, n_bins);
+            parties[p].booster.fbuilder->set_cut(server.booster.fbuilder->cut);
             parties[p].booster.fbuilder->get_bin_ids();
         }
 //        auto party_cut_points_val_data = parties[0].booster.fbuilder->cut.cut_points_val.host_data();

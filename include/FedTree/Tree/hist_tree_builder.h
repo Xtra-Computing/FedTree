@@ -11,6 +11,8 @@
 class HistTreeBuilder : public TreeBuilder {
 public:
 
+    HistCut cut;
+
     void init(DataSet &dataset, const GBDTParam &param) override;
 
     void get_bin_ids();
@@ -66,7 +68,7 @@ public:
         return h;
     }
 
-    HistCut cut;
+
 
     void parties_hist_init(int party_size) override{
         parties_hist.resize(party_size);
@@ -91,11 +93,13 @@ public:
         parties_hist[party_idx].copy_from(hist);
     }
 
-    void set_cut (HistCut commonCut) {
+    void set_cut (HistCut &commonCut) {
         cut.cut_points_val.resize(commonCut.cut_points_val.size());
         cut.cut_col_ptr.resize(commonCut.cut_col_ptr.size());
+        cut.cut_fid.resize(commonCut.cut_fid.size());
         cut.cut_points_val.copy_from(commonCut.cut_points_val);
         cut.cut_col_ptr.copy_from(commonCut.cut_col_ptr);
+        cut.cut_fid.copy_from(commonCut.cut_fid);
     }
 
     void set_last_hist(SyncArray<GHPair> &last_hist_input) {
