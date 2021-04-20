@@ -13,6 +13,8 @@
 #include "thrust/execution_policy.h"
 #include "FedTree/util/multi_device.h"
 #include "FedTree/common.h"
+#include <math.h>
+#include <algorithm>
 
 
 using namespace thrust;
@@ -1050,88 +1052,131 @@ void HistTreeBuilder::merge_histograms_server_propose(SyncArray<GHPair> &hist, S
 }
 
 
-//assumption 1: bin sizes for the split of a feature are the same
-//assumption 2: for each feature, there must be at least 3 bins (2 cut points)
-//assumption 3: cut_val_data is sorted by feature id and split value, eg: [f0(0.1), f0(0.2), f0(0.3), f1(100), f1(200),...]
-//assumption 4: gradients and hessians are near uniformly distributed
-
-
-void HistTreeBuilder::merge_histograms_client_propose() {
-    CHECK_EQ(parties_hist.size(), parties_cut.size());
+void HistTreeBuilder::merge_histograms_client_propose(SyncArray<GHPair> &hist, SyncArray<GHPair> &missing_gh, int n_max_splits) {
+    float inf = std::numeric_limits<float>::infinity();
+    // find feature range of each feature for each party
     int n_columns = parties_cut[0].cut_col_ptr.size() - 1;
-    vector<float_type> low(n_columns, std::numeric_limits<float>::max());
-    vector<float_type> high(n_columns, -std::numeric_limits<float>::max());
-    vector<float_type> resolution(n_columns, std::numeric_limits<float>::max());
-    vector<vector<float_type>> bin_edges;
+    vector<vector<float>> ranges(n_columns);
 
-    for (int i = 0; i < parties_cut.size(); i++) {
-        auto cut_val_data = parties_cut[i].cut_points_val.host_data();
-        auto cut_col_ptr_data = parties_cut[i].cut_col_ptr.host_data();
-        vector<float_type> v = {};
-        for (int j = 0; j < n_columns; j++) {
-            int end = cut_col_ptr_data[j + 1];
-            int start = cut_col_ptr_data[j];
-            float_type res = cut_val_data[end - 1] - cut_val_data[end - 2];
-            resolution[j] = std::min(res, resolution[j]);
-            float_type l = cut_val_data[start] - res;
-            low[j] = std::min(l, low[j]);
-            float_type h = cut_val_data[end - 1] + res;
-            high[j] = std::max(h, high[j]);
-            for (int k = -1; k < end - start + 1; k++)
-                v.push_back(cut_val_data[start] + k * res);
+    for (int n = 0; n < n_columns; n++) {
+        vector<float> min_max = {inf, -inf};
+        for (int p = 0; p < parties_hist.size(); p++) {
+            auto cut_col_data = parties_cut[p].cut_col_ptr.host_data();
+            auto cut_points_val_data = parties_cut[p].cut_points_val.host_data();
+            vector<float> feature_range(2);
+            int column_start = cut_col_data[n];
+            int column_end = cut_col_data[n+1];
+
+            int num_of_values = column_end - column_start;
+
+            if (num_of_values > 0) {
+                vector<float> temp(num_of_values);
+                for (int j = column_start; j <= column_end; j++) {
+                    temp[j-column_start] = cut_points_val_data[j];
+                }
+                auto minmax = std::minmax_element(begin(temp), end(temp));
+                feature_range[1] = *minmax.second;
+                feature_range[0] = *minmax.first;
+            }else{
+                feature_range[0] = inf;
+                feature_range[1] = -inf;
+            }
+            if (feature_range[0] <= min_max[0] && feature_range[0] != -inf)
+                min_max[0] = feature_range[0];
+            if (feature_range[1] >= min_max[1] && feature_range[1] != inf)
+                min_max[1] = feature_range[1];
         }
-        bin_edges.push_back(v);
+        ranges[n] = min_max;
     }
 
-    int n_bins = 0;
-    vector<float_type> merged_bin_edges;
-    vector<int> merged_bins_count;
-    merged_bins_count.push_back(0);
-    for (int i = 0; i < n_columns; i++) {
-        float_type count = (high[i] - low[i]) / resolution[i];
-        if (abs(int(count) - count) < 1e-6)
-            count = int(count);
-        else
-            count = ceil(count);
-        n_bins += count;
-        merged_bins_count.push_back(n_bins);
-        for (int j = 0; j <= count; j++)
-            merged_bin_edges.push_back(std::min(low[i] + j * resolution[i], high[i]));
-    }
+    SyncArray<float> cut_points_val;
+    SyncArray<int> cut_col_ptr;
 
-    SyncArray<GHPair> merged_hist(n_bins);
+    int max_num_bins = parties_cut[0].cut_points_val.size() / n_columns;
+    cut_points_val.resize(n_columns * max_num_bins);
+    cut_col_ptr.resize(n_columns + 1);
+
+    auto cut_points_val_data = cut_points_val.host_data();
+    auto cut_col_ptr_data = cut_col_ptr.host_data();
+
+    for(int fid = 0; fid < n_columns; fid ++) {
+        cut_col_ptr_data[fid] = fid * max_num_bins;
+        float val_range = ranges[fid][1] - ranges[fid][0];
+        float val_step = val_range / max_num_bins;
+
+        for(int i = 0; i < max_num_bins; i ++) {
+            cut_points_val_data[fid * max_num_bins + 1] = i * val_step + ranges[fid][0];
+        }
+    }
+    cut_col_ptr_data[n_columns] = n_columns * max_num_bins;
+
+    // populate histogram based on cut points
+    // assume it is distributed uniformly
+    SyncArray<GHPair> merged_hist(n_max_splits);
     auto merged_hist_data = merged_hist.host_data();
+    int n_max_nodes = n_max_splits / (n_columns * max_num_bins);
+    LOG(INFO) << n_max_splits;
+    LOG(INFO) << n_columns;
+    LOG(INFO) << n_max_nodes;
 
-    for (int i = 0; i < parties_hist.size(); i++) {
-        CHECK_EQ(parties_hist[i].size(), parties_cut[i].cut_points_val.size() + n_columns);
-        CHECK_EQ(parties_hist[i].size() + n_columns, bin_edges[i].size());
-        auto hist_data = parties_hist[i].host_data();
-        auto cut_col_ptr_data = parties_cut[i].cut_col_ptr.host_data();
-        for (int j = 0; j < n_columns; j++) {
-            int client_bin_index_low = cut_col_ptr_data[j] + 2 * j;
-            int client_bin_index_high = cut_col_ptr_data[j + 1] + 2 * (j + 1);
-            for (int k = merged_bins_count[j]; k < merged_bins_count[j + 1]; k++) {
-                float_type bin_low = merged_bin_edges[k + j];
-                float_type bin_high = merged_bin_edges[k + j + 1];
-                for (int m = client_bin_index_low; m < client_bin_index_high - 1; m++) {
-                    float_type client_low = bin_edges[i][m];
-                    float_type client_high = bin_edges[i][m + 1];
-                    if (bin_low < client_low && bin_high > client_low) {
-                        GHPair &dest = merged_hist_data[k];
-                        GHPair &src = hist_data[m - j];
-                        float_type factor = (bin_high - client_low) / (client_high - client_low);
+    for (int h = 0; h < merged_hist.size(); h++) {
+        int fid = h % n_columns;
+        int node_offset = floor(h / n_columns) + 1;
+
+        auto cut_col_ptr_data = cut_col_ptr.host_data();
+        auto cut_points_val_data = cut_points_val.host_data();
+        int column_start = cut_col_ptr_data[fid];
+        int column_end = cut_col_ptr_data[fid+1];
+        LOG(INFO) << "column_start" << column_start;
+        LOG(INFO) << "column_end" << column_end;
+        SyncArray<float> cut_points_range(column_end-column_start);
+        auto cut_points_range_data = cut_points_range.host_data();
+        for (int p = column_start; p < column_end; p++) {
+            cut_points_range_data[p-column_start] = cut_points_val_data[p];
+        }
+
+        for (int pid = 0; pid < parties_hist.size(); pid++) {
+            auto parties_hist_data = parties_hist[pid].host_data();
+            auto parties_cut_col_ptr_data = parties_cut[pid].cut_col_ptr.host_data();
+            auto parties_cut_points_val_data = parties_cut[pid].cut_points_val.host_data();
+
+            int party_column_start = parties_cut_col_ptr_data[fid];
+            int party_column_end = parties_cut_col_ptr_data[fid + 1];
+            SyncArray<float> party_cut_points_range(party_column_end - party_column_start);
+            auto party_cut_points_range_data = party_cut_points_range.host_data();
+            for (int p = party_column_start; p < party_column_end; p++) {
+                party_cut_points_range_data[p-party_column_start] = parties_cut_points_val_data[p];
+            }
+
+            // for each global feature range
+            for (int index = 0; index < cut_points_range.size() - 1; index++) {
+                float_type lower_bound = cut_points_range_data[index];
+                float_type upper_bound = cut_points_range_data[index + 1];
+                // for each local feature range
+                for (int i = 0; i < party_cut_points_range.size() - 1; i++) {
+                    float_type client_low = party_cut_points_range_data[i];
+                    float_type client_high = party_cut_points_range_data[i + 1];
+                    if (client_low >= lower_bound && upper_bound <= client_high) {
+                        GHPair &dest = merged_hist_data[(index + fid) * node_offset];
+                        GHPair &src = parties_hist_data[(i + fid) * node_offset];
+                        dest.g += src.g;
+                        dest.h += src.h;
+                    } else if (client_low < lower_bound && upper_bound <= client_high) {
+                        float_type factor = (client_high - lower_bound) / (client_high - client_low);
+                        GHPair &dest = merged_hist_data[(index + fid) * node_offset];
+                        GHPair &src = parties_hist_data[(i + fid) * node_offset];
                         dest.g += src.g * factor;
                         dest.h += src.h * factor;
-                    } else if (bin_low >= client_low && bin_high <= client_high) {
-                        GHPair &dest = merged_hist_data[k];
-                        GHPair &src = hist_data[m];
-                        float_type factor = (bin_high - bin_low) / (client_high - client_low);
+                    } else if (client_high > upper_bound && lower_bound <= client_low) {
+                        float_type factor = (upper_bound - client_low) / (client_high - client_low);
+                        GHPair &dest = merged_hist_data[(index + fid) * node_offset];
+                        GHPair &src = parties_hist_data[(i + fid) * node_offset];
                         dest.g += src.g * factor;
                         dest.h += src.h * factor;
-                    } else if (bin_high > client_high && bin_low < client_high) {
-                        GHPair &dest = merged_hist_data[k];
-                        GHPair &src = hist_data[m];
-                        float_type factor = (client_high - bin_low) / (client_high - client_low);
+                    } else if (client_low < lower_bound && client_high > upper_bound) {
+                        float_type factor = (upper_bound - lower_bound) / (client_high - client_low);
+                        GHPair &dest = merged_hist_data[(index + fid) * node_offset];
+                        GHPair &src = parties_hist_data[(i + fid) * node_offset];
                         dest.g += src.g * factor;
                         dest.h += src.h * factor;
                     }
@@ -1139,11 +1184,113 @@ void HistTreeBuilder::merge_histograms_client_propose() {
             }
         }
     }
-    last_hist.resize(n_bins);
-    last_hist.copy_from(merged_hist);
-//    hist.resize(n_bins);
-//    hist.copy_from(merged_hist);
+    hist.resize(merged_hist.size());
+    merged_hist.copy_from(hist);
 }
+
+//assumption 1: bin sizes for the split of a feature are the same
+//assumption 2: for each feature, there must be at least 3 bins (2 cut points)
+//assumption 3: cut_val_data is sorted by feature id and split value, eg: [f0(0.1), f0(0.2), f0(0.3), f1(100), f1(200),...]
+//assumption 4: gradients and hessians are near uniformly distributed
+
+
+//void HistTreeBuilder::merge_histograms_client_propose(SyncArray<GHPair> &hist, SyncArray<GHPair> &missing_gh, int n_max_splits) {
+//    CHECK_EQ(parties_hist.size(), parties_cut.size());
+//    int n_columns = parties_cut[0].cut_col_ptr.size() - 1;
+//    vector<float_type> low(n_columns, std::numeric_limits<float>::max());
+//    vector<float_type> high(n_columns, -std::numeric_limits<float>::max());
+//    vector<float_type> resolution(n_columns, std::numeric_limits<float>::max());
+//    vector<vector<float_type>> bin_edges;
+//
+//    for (int i = 0; i < parties_cut.size(); i++) {
+//        auto cut_val_data = parties_cut[i].cut_points_val.host_data();
+//        auto cut_col_ptr_data = parties_cut[i].cut_col_ptr.host_data();
+//        vector<float_type> v = {};
+//        for (int j = 0; j < n_columns; j++) {
+//            int end = cut_col_ptr_data[j + 1];
+//            int start = cut_col_ptr_data[j];
+//            float_type res = cut_val_data[end - 1] - cut_val_data[end - 2];
+//            resolution[j] = std::min(res, resolution[j]);
+//            float_type l = cut_val_data[start] - res;
+//            low[j] = std::min(l, low[j]);
+//            float_type h = cut_val_data[end - 1] + res;
+//            high[j] = std::max(h, high[j]);
+//            for (int k = -1; k < end - start + 1; k++)
+//                v.push_back(cut_val_data[start] + k * res);
+//        }
+//        bin_edges.push_back(v);
+//    }
+//
+//    int n_bins = 0;
+//    vector<float_type> merged_bin_edges;
+//    vector<int> merged_bins_count;
+//    merged_bins_count.push_back(0);
+//    for (int i = 0; i < n_columns; i++) {
+//        float_type count = (high[i] - low[i]) / resolution[i];
+//        if (abs(int(count) - count) < 1e-6)
+//            count = int(count);
+//        else
+//            count = ceil(count);
+//        n_bins += count;
+//        merged_bins_count.push_back(n_bins);
+//        for (int j = 0; j <= count; j++)
+//            merged_bin_edges.push_back(std::min(low[i] + j * resolution[i], high[i]));
+//    }
+//    LOG(INFO) << merged_bin_edges;
+//    LOG(INFO) << n_bins;
+//    SyncArray<GHPair> merged_hist(n_bins);
+//    auto merged_hist_data = merged_hist.host_data();
+//
+//    LOG(INFO) << parties_hist[0].size() / n_max_splits;
+//    LOG(INFO) << parties_cut[0].cut_col_ptr.size();
+//    LOG(INFO) << parties_cut[0].cut_points_val.size();
+//    LOG(INFO) << bin_edges[0].size();
+//
+//    for (int i = 0; i < parties_hist.size(); i++) {
+//        CHECK_EQ(parties_hist[i].size() / n_max_splits, parties_cut[i].cut_points_val.size());
+//        CHECK_EQ(parties_hist[i].size() / n_max_splits + n_columns, bin_edges[i].size());
+//        auto hist_data = parties_hist[i].host_data();
+//        auto cut_col_ptr_data = parties_cut[i].cut_col_ptr.host_data();
+//        for (int j = 0; j < n_columns; j++) {
+//            int client_bin_index_low = cut_col_ptr_data[j] + 2 * j;
+//            int client_bin_index_high = cut_col_ptr_data[j + 1] + 2 * (j + 1);
+//            for (int k = merged_bins_count[j]; k < merged_bins_count[j + 1]; k++) {
+//                float_type bin_low = merged_bin_edges[k + j];
+//                float_type bin_high = merged_bin_edges[k + j + 1];
+//                for (int m = client_bin_index_low; m < client_bin_index_high - 1; m++) {
+//                    float_type client_low = bin_edges[i][m];
+//                    float_type client_high = bin_edges[i][m + 1];
+//                    if (bin_low < client_low && bin_high > client_low) {
+//                        GHPair &dest = merged_hist_data[k];
+//                        GHPair &src = hist_data[m - j];
+//                        float_type factor = (bin_high - client_low) / (client_high - client_low);
+//                        dest.g += src.g * factor;
+//                        dest.h += src.h * factor;
+//                    } else if (bin_low >= client_low && bin_high <= client_high) {
+//                        GHPair &dest = merged_hist_data[k];
+//                        GHPair &src = hist_data[m];
+//                        float_type factor = (bin_high - bin_low) / (client_high - client_low);
+//                        dest.g += src.g * factor;
+//                        dest.h += src.h * factor;
+//                    } else if (bin_high > client_high && bin_low < client_high) {
+//                        GHPair &dest = merged_hist_data[k];
+//                        GHPair &src = hist_data[m];
+//                        float_type factor = (client_high - bin_low) / (client_high - client_low);
+//                        dest.g += src.g * factor;
+//                        dest.h += src.h * factor;
+//                    }
+//                }
+//            }
+//        }
+//    }
+////    hist.resize(n_bins);
+////    hist.copy_from(merged_hist);
+////    // LOG(INFO) << "MERGE HIST: " << last_hist;
+////    missing_gh.resize(n_size);
+//   // missing_gh.copy_from(merged_missing_gh);
+////    hist.resize(n_bins);
+////    hist.copy_from(merged_hist);
+//}
 
 void HistTreeBuilder::concat_histograms() {
     int n_bins = 0;

@@ -4,6 +4,8 @@
 
 #include "FedTree/Tree/gbdt.h"
 #include "FedTree/booster.h"
+#include "FedTree/FL/partition.h"
+
 
 void GBDT::train(GBDTParam &param, DataSet &dataset) {
     if (param.tree_method == "auto")
@@ -24,6 +26,12 @@ void GBDT::train(GBDTParam &param, DataSet &dataset) {
     } else if (param.objective.find("reg:") != std::string::npos) {
         param.num_class = 1;
     }
+
+//    std::map<int, vector<int>> batch_idxs;
+//    Partition partition;
+//    vector<DataSet> subsets(3);
+//    partition.homo_partition(dataset, 3, true, subsets, batch_idxs);
+//
     Booster booster;
     booster.init(dataset, param);
     std::chrono::high_resolution_clock timer;
@@ -32,6 +40,11 @@ void GBDT::train(GBDTParam &param, DataSet &dataset) {
         //one iteration may produce multiple trees, depending on objectives
         booster.boost(trees);
     }
+
+//    float_type score = predict_score(param, dataset);
+//    LOG(INFO) << score;
+
+
     auto stop = timer.now();
     std::chrono::duration<float> training_time = stop - start;
     LOG(INFO) << "training time = " << training_time.count();

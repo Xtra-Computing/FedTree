@@ -68,9 +68,15 @@ int main(int argc, char** argv){
         DataSet dataset;
         vector <vector<Tree>> boosted_model;
         dataset.load_from_file(model_param.path, fl_param);
+        std::map<int, vector<int>> batch_idxs;
+        Partition partition;
+        vector<DataSet> subsets(3);
+        partition.homo_partition(dataset, 3, true, subsets, batch_idxs);
         GBDT gbdt;
         gbdt.train(model_param, dataset);
-        parser.save_model("tgbm.model", model_param, gbdt.trees, dataset);
+//       float_type score = gbdt.predict_score(model_param, dataset);
+       // LOG(INFO) << score;
+      //  parser.save_model("tgbm.model", model_param, gbdt.trees, dataset);
     }
 //    }
 //    else{
@@ -179,7 +185,7 @@ int main(int argc, char** argv){
     if (fl_param.mode == "vertical") {
         server.vertical_init(fl_param, dataset.n_instances(), n_instances_per_party, dataset.y);
     }else if (fl_param.mode == "horizontal") {
-        server.horizontal_init(fl_param, dataset.n_instances(), n_instances_per_party);
+        server.horizontal_init(fl_param, dataset.n_instances(), n_instances_per_party, dataset);
     }else {
         server.init(fl_param, dataset.n_instances(), n_instances_per_party);
     }

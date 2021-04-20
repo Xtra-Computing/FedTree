@@ -50,7 +50,7 @@ public:
 
     void merge_histograms_server_propose(SyncArray<GHPair> &hist, SyncArray<GHPair> &missing_gh);
 
-    void merge_histograms_client_propose();
+    void merge_histograms_client_propose(SyncArray<GHPair> &hist, SyncArray<GHPair> &missing_gh, int max_splits);
 
     void concat_histograms() override;
 
@@ -71,6 +71,7 @@ public:
     void parties_hist_init(int party_size) override{
         parties_hist.resize(party_size);
         parties_missing_gh.resize(party_size);
+        parties_cut = vector<HistCut>(party_size);
         this->party_size = party_size;
         party_idx = 0;
     }
@@ -117,6 +118,13 @@ public:
         SyncArray<GHPair> last_missing_gh_return(last_missing_gh.size());
         last_missing_gh_return.copy_from(last_missing_gh);
         return last_missing_gh_return;
+    }
+
+    void append_to_parties_cut(HistCut &cut, int index) {
+        parties_cut[index].cut_col_ptr = SyncArray<int>(cut.cut_col_ptr.size());
+        parties_cut[index].cut_col_ptr.copy_from(cut.cut_col_ptr);
+        parties_cut[index].cut_points_val = SyncArray<float_type>(cut.cut_points_val.size());
+        parties_cut[index].cut_points_val.copy_from(cut.cut_points_val);
     }
 
 //    void decrypt_histogram(AdditivelyHE::PaillierPrivateKey privateKey) {

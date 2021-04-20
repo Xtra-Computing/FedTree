@@ -7,6 +7,8 @@
 #include <thrust/sort.h>
 #include <thrust/execution_policy.h>
 #include <thrust/binary_search.h>
+#include <limits>
+
 
 //void send_info(vector<Party> &parties, AdditivelyHE::PaillierPublicKey serverKey,vector<SplitCandidate>candidates) {
 //    for(int i = 0; i < parties.size(); i++) {
@@ -24,9 +26,8 @@ void Server::init(FLParam &param, int n_total_instances, vector<int> &n_instance
     this->global_trees.trees.clear();
 }
 
-void Server::horizontal_init (FLParam &param, int n_total_instances, vector<int> &n_instances_per_party) {
+void Server::horizontal_init (FLParam &param, int n_total_instances, vector<int> &n_instances_per_party, DataSet &dataset) {
     init(param, n_total_instances, n_instances_per_party);
-    dataset.n_features_ = 0;
     booster.init(dataset, param.gbdt_param);
 }
 

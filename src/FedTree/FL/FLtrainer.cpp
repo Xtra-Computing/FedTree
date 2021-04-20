@@ -11,11 +11,15 @@
 #include "thrust/execution_policy.h"
 #include <limits>
 #include <cmath>
+#include <iostream>
+#include <fstream>
 
 using namespace thrust;
 
 void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FLParam &params) {
     auto model_param = params.gbdt_param;
+    Party &aggregator = (params.merge_histogram == "client")? parties[0] : server;
+    aggregator.booster.fbuilder->parties_hist_init(parties.size());
 
 //    if (params.privacy_tech == "he") {
 //        LOG(INFO) << "Start HE Init";
@@ -41,13 +45,15 @@ void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FL
             vector<float> min_max = {inf, -inf};
             for (int p = 0; p < parties.size(); p++) {
                 vector<float> temp = parties[p].get_feature_range_by_feature_index(n);
-                if (temp[0] <= min_max[0])
+                if (temp[0] <= min_max[0] && temp[0] != -inf)
                     min_max[0] = temp[0];
-                if (temp[1] >= min_max[1])
+                if (temp[1] >= min_max[1] && temp[1] != inf)
                     min_max[1] = temp[1];
             }
             feature_range[n] = min_max;
+            LOG(INFO) << "MINMAX" << min_max;
         }
+        LOG(INFO) << feature_range;
 //        // once we have feature_range, we can generate cut points
         server.booster.fbuilder->cut.get_cut_points_by_feature_range(feature_range, n_bins);
         //server.booster.fbuilder->get_bin_ids();
@@ -61,6 +67,7 @@ void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FL
         for (int p = 0; p < parties.size(); p++) {
             auto dataset = parties[p].dataset;
             parties[p].booster.fbuilder->cut.get_cut_points_fast(dataset, n_bins, dataset.n_instances());
+            aggregator.booster.fbuilder->append_to_parties_cut(parties[p].booster.fbuilder->cut, p);
         }
 //        LOG(INFO)<<"not supported yet";
 //        exit(1);
@@ -148,8 +155,8 @@ void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FL
 
                 // Each Party Compute Histogram
                 // each party compute hist, send hist to server or party
-                Party &aggregator = (params.merge_histogram == "client")? parties[0] : server;
-                aggregator.booster.fbuilder->parties_hist_init(parties.size());
+
+
 #pragma omp parallel for
                 for (int j = 0; j < parties.size(); j++) {
                     int n_column = parties[j].dataset.n_features();
@@ -173,13 +180,13 @@ void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FL
                                                                               n_nodes_in_level,
                                                                               hist_fid_data, missing_gh, hist);
                     //todo: encrypt the histogram
-                   // LOG(INFO) << hist;
                     aggregator.booster.fbuilder->append_hist(hist, missing_gh, n_partition, n_max_splits, j);
                 }
                 // Now we have the array of hist and missing_gh
 
                 SyncArray <GHPair> missing_gh;
                 SyncArray <GHPair> hist;
+                int n_max_splits = n_max_nodes * n_bins;
 
                 if (params.propose_split == "server") {
                     aggregator.booster.fbuilder->merge_histograms_server_propose(hist, missing_gh);
@@ -187,13 +194,11 @@ void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FL
 //                    LOG(INFO) << hist;
                 }else if (params.propose_split == "client") {
                     // TODO: Fix this to make use of missing_gh
-//                    aggregator.booster.fbuilder->merge_histograms_client_propose();
-                    LOG(INFO)<<"not supported yet";
-                    exit(1);
+                    aggregator.booster.fbuilder->merge_histograms_client_propose(hist, missing_gh, n_max_splits);
                 }
 
                 // set these parameters to fit merged histogram
-                int n_max_splits = n_max_nodes * n_bins;
+
                 n_bins = aggregator.booster.fbuilder->cut.cut_points_val.size();
 
                 // server compute gain
@@ -251,9 +256,12 @@ void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FL
         for (int p = 0; p < parties.size(); p++) {
             parties[p].gbdt.trees.push_back(parties_trees[p]);
         }
-       // LOG(INFO) <<  "Y_PREDICT" << parties[0].booster.fbuilder->get_y_predict();
-        LOG(INFO) << parties[0].booster.metric->get_name() << " = "
-                  << parties[0].booster.metric->get_score(parties[0].booster.fbuilder->get_y_predict());
+       LOG(INFO) <<  "Y_PREDICT" << parties[0].booster.fbuilder->get_y_predict()
+                 << parties[0].booster.metric->get_name() << " = " << parties[0].booster.metric->get_score(parties[0].booster.fbuilder->get_y_predict());
+//        std::ofstream myfile;
+//        myfile.open ("data.txt", std::ios_base::app);
+  //    myfile << parties[0].booster.metric->get_score(parties[0].booster.fbuilder->get_y_predict()) << "\n";
+//        myfile.close();
     } LOG(INFO) << "end of training";
 }
 
