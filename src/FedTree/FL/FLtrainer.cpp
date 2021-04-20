@@ -51,12 +51,29 @@ void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FL
 //        // once we have feature_range, we can generate cut points
         server.booster.fbuilder->cut.get_cut_points_by_feature_range(feature_range, n_bins);
         server.booster.fbuilder->get_bin_ids();
+
+//        auto cut_points_val_data = server.booster.fbuilder->cut.cut_points_val.host_data();
+//        auto cut_col_ptr_data = server.booster.fbuilder->cut.cut_col_ptr.host_data();
+//        for(int j = 0; j < feature_range.size(); j++) {
+//            std::cout<<"server " << j << " column cut points"<<std::endl;
+//            for (int i = cut_col_ptr_data[0]; i < cut_col_ptr_data[1]; i++) {
+//                std::cout << cut_points_val_data[i] << " ";
+//            }
+//        }
+//        std::cout<<std::endl;
+//        LOG(INFO)<<"feature rage 0:"<<feature_range[0];
+
+        //Todo: use copy since the cut points of each party are same with the server
         for (int p = 0; p < parties.size(); p++) {
             parties[p].booster.fbuilder->cut.get_cut_points_by_feature_range(feature_range, n_bins);
             parties[p].booster.fbuilder->get_bin_ids();
         }
-
-
+//        auto party_cut_points_val_data = parties[0].booster.fbuilder->cut.cut_points_val.host_data();
+//        auto party_cut_col_ptr_data = parties[0].booster.fbuilder->cut.cut_col_ptr.host_data();
+//        std::cout<<"party0 first column cut points:"<<std::endl;
+//        for(int i = party_cut_col_ptr_data[0]; i < party_cut_col_ptr_data[1]; i++){
+//            std::cout<<party_cut_points_val_data[i]<<" ";
+//        }
     } else if (params.propose_split == "client") {
         for (int p = 0; p < parties.size(); p++) {
             auto dataset = parties[p].dataset;
@@ -67,7 +84,6 @@ void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FL
     }
 
     for (int i = 0; i < params.gbdt_param.n_trees; i++) {
-
         LOG(INFO) << "ROUND " << i;
         vector<vector<Tree>> parties_trees(parties.size());
         for (int p = 0; p < parties.size(); p++) {
