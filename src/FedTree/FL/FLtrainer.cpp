@@ -68,7 +68,7 @@ void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FL
 
         for (int p = 0; p < parties.size(); p++) {
             parties[p].booster.fbuilder->set_cut(server.booster.fbuilder->cut);
-            parties[p].booster.fbuilder->get_bin_ids();
+//            parties[p].booster.fbuilder->get_bin_ids();
         }
 //        auto party_cut_points_val_data = parties[0].booster.fbuilder->cut.cut_points_val.host_data();
 //        auto party_cut_col_ptr_data = parties[0].booster.fbuilder->cut.cut_col_ptr.host_data();
@@ -168,8 +168,6 @@ void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FL
 
                 // Each Party Compute Histogram
                 // each party compute hist, send hist to server or party
-                Party &aggregator = (params.merge_histogram == "client")? parties[0] : server;
-                aggregator.booster.fbuilder->parties_hist_init(parties.size());
 #pragma omp parallel for
                 for (int j = 0; j < parties.size(); j++) {
                     int n_column = parties[j].dataset.n_features();
@@ -203,7 +201,7 @@ void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FL
 
                 if (params.propose_split == "server") {
                     aggregator.booster.fbuilder->merge_histograms_server_propose(hist, missing_gh);
-//                    server.booster.fbuilder->set_last_hist(hist);
+                    server.booster.fbuilder->set_last_hist(hist);
 ////                    server.booster.fbuilder->set_last_missing_gh(missing_gh);
 //                    LOG(INFO) << hist;
                 }else if (params.propose_split == "client") {
@@ -218,7 +216,7 @@ void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FL
                 n_bins = aggregator.booster.fbuilder->cut.cut_points_val.size();
 
                 // server compute gain
-                SyncArray <float_type> gain(n_max_splits * parties.size());
+                SyncArray <float_type> gain(n_max_splits);
 
                 // if privacy tech == 'he', decrypt histogram
 //                if (params.privacy_tech == "he")
@@ -259,6 +257,7 @@ void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FL
             }
 
             // After training each tree, update vector of tree
+            server.booster.fbuilder->trees.prune_self(model_param.gamma);
 #pragma omp parallel for
             for (int p = 0; p < parties.size(); p++) {
                 Tree &tree = parties_trees[p][k];
