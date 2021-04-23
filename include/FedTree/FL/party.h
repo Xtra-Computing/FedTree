@@ -25,7 +25,7 @@ public:
             this->feature_map.resize(feature_map.size());
             this->feature_map.copy_from(feature_map.host_data(), feature_map.size());
         }
-        booster.init(dataset, param.gbdt_param);
+        booster.init(dataset, param.gbdt_param, param.mode != "horizontal");
     };
 
     void send_booster_gradients(Party &party){

@@ -23,7 +23,7 @@
 
 class Booster {
 public:
-    void init(DataSet &dataSet, const GBDTParam &param);
+    void init(DataSet &dataSet, const GBDTParam &param, bool get_cut_points = 1);
 
     void init (const GBDTParam &param, int n_instances);
 

@@ -43,6 +43,29 @@ void HistTreeBuilder::init(DataSet &dataset, const GBDTParam &param) {
     }
 }
 
+void HistTreeBuilder::init_nocutpoints(DataSet &dataset, const GBDTParam &param) {
+    TreeBuilder::init_nosortdataset(dataset, param);
+//    if (dataset.n_features_ > 0) {
+//        cut.get_cut_points_fast(sorted_dataset, param.max_num_bin, n_instances);
+//        LOG(INFO) << "after get cut points";
+//        last_hist.resize((2 << param.depth) * cut.cut_points_val.size());
+////        get_bin_ids();
+//    }
+    //TODO refactor
+    //init shards
+//    shards = vector<Shard>(n_device);
+//    vector<std::unique_ptr<SparseColumns>> v_columns(param.n_device);
+//    for (int i = 0; i < param.n_device; ++i) {
+//        v_columns[i].reset(&shards[i].columns);
+//        shards[i].ignored_set = SyncArray<bool>(dataset.n_features());
+//    }
+//    SparseColumns columns;
+//    if(dataset.use_cpu)
+//        columns.csr2csc_cpu(dataset, v_columns);
+//    else
+//        columns.csr2csc_gpu(dataset, v_columns);
+}
+
 SyncArray<GHPair> HistTreeBuilder::get_gradients() {
     SyncArray<GHPair> hist;
     auto &last_hist = this->last_hist;
@@ -93,6 +116,7 @@ void HistTreeBuilder::get_bin_ids() {
     auto cut_points_ptr = cut.cut_points_val.host_data();
     auto csc_val_data = &(sorted_dataset.csc_val[0]);
     auto csc_col_ptr_data = &(sorted_dataset.csc_col_ptr[0]);
+
     SyncArray<unsigned char> bin_id;
     bin_id.resize(nnz);
     auto bin_id_data = bin_id.host_data();

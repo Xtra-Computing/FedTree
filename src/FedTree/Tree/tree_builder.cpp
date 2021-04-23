@@ -34,6 +34,25 @@ void TreeBuilder::init(DataSet &dataSet, const GBDTParam &param) {
     gradients = SyncArray<GHPair>(n_instances);
 }
 
+void TreeBuilder::init_nosortdataset(DataSet &dataSet, const GBDTParam &param) {
+    FunctionBuilder::init(dataSet, param);
+
+
+    if (!dataSet.has_csc and dataSet.csr_row_ptr.size() > 1)
+        dataSet.csr_to_csc();
+    this->sorted_dataset = dataSet;
+//    if (dataSet.csc_col_ptr.size() > 1)
+//        seg_sort_by_key_cpu(sorted_dataset.csc_val, sorted_dataset.csc_row_idx, sorted_dataset.csc_col_ptr);
+    this->n_instances = sorted_dataset.n_instances();
+//    trees = vector<Tree>(1);
+    ins2node_id = SyncArray<int>(n_instances);
+    sp = SyncArray<SplitPoint>();
+//    has_split = vector<bool>(param.n_device);
+    int n_outputs = param.num_class * n_instances;
+    y_predict = SyncArray<float_type>(n_outputs);
+    gradients = SyncArray<GHPair>(n_instances);
+}
+
 //void TreeBuilder::split_point_all_reduce(int depth) {
 //    TIMED_FUNC(timerObj);
 //    //get global best split of each node

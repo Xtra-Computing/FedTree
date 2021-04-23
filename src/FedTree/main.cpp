@@ -179,8 +179,8 @@ int main(int argc, char** argv){
         parties[i].init(i, train_subsets[i], fl_param, feature_map[i]);
         n_instances_per_party[i] = train_subsets[i].n_instances();
     }
-    LOG(INFO)<<"after party init";
 
+    LOG(INFO)<<"initialize server";
     Server server;
     if (fl_param.mode == "vertical") {
         server.vertical_init(fl_param, dataset.n_instances(), n_instances_per_party, dataset.y);
@@ -257,9 +257,9 @@ int main(int argc, char** argv){
 //            score = parties[0].gbdt.predict_score(fl_param.gbdt_param, test_subsets[0]);
         scores.push_back(score);
     }else if (fl_param.mode == "horizontal") {
-        LOG(INFO)<<"start training";
+        LOG(INFO)<<"start horizontal training";
         trainer.horizontal_fl_trainer(parties, server, fl_param);
-        LOG(INFO)<<"end training";
+        LOG(INFO)<<"end horizontal training";
         float_type score;
         if(use_global_test_set)
             score = parties[0].gbdt.predict_score(fl_param.gbdt_param, test_dataset);

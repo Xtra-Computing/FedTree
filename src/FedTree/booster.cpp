@@ -16,7 +16,7 @@
 //    gradients = SyncArray<GHPair>(n_outputs);
 //}
 
-void Booster::init(DataSet &dataSet, const GBDTParam &param) {
+void Booster::init(DataSet &dataSet, const GBDTParam &param, bool get_cut_points) {
 //    int n_available_device;
 //    cudaGetDeviceCount(&n_available_device);
 //    CHECK_GE(n_available_device, param.n_device) << "only " << n_available_device
@@ -25,7 +25,11 @@ void Booster::init(DataSet &dataSet, const GBDTParam &param) {
 
 //    fbuilder.reset(FunctionBuilder::create(param.tree_method));
     fbuilder.reset(new HistTreeBuilder);
-    fbuilder->init(dataSet, param);
+    if(get_cut_points)
+        fbuilder->init(dataSet, param);
+    else {
+        fbuilder->init_nocutpoints(dataSet, param);
+    }
     obj.reset(ObjectiveFunction::create(param.objective));
     obj->configure(param, dataSet);
     if (param.metric == "default")

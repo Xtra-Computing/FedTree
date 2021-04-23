@@ -30,6 +30,7 @@ public:
     void build_init(const SyncArray<GHPair> &gradients, int k) override;
 
     void init(DataSet &dataset, const GBDTParam &param) override;
+    void init_nosortdataset(DataSet &dataset, const GBDTParam &param);
 
     void update_tree();
 

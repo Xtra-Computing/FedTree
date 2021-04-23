@@ -52,7 +52,7 @@ void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FL
         }
 //        // once we have feature_range, we can generate cut points
         server.booster.fbuilder->cut.get_cut_points_by_feature_range(feature_range, n_bins);
-        server.booster.fbuilder->get_bin_ids();
+//        server.booster.fbuilder->get_bin_ids();
 
 
 //        auto cut_points_val_data = server.booster.fbuilder->cut.cut_points_val.host_data();
@@ -64,11 +64,19 @@ void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FL
 //            }
 //        }
 //        std::cout<<std::endl;
+
 //        LOG(INFO)<<"feature rage 0:"<<feature_range[0];
 
         for (int p = 0; p < parties.size(); p++) {
             parties[p].booster.fbuilder->set_cut(server.booster.fbuilder->cut);
-//            parties[p].booster.fbuilder->get_bin_ids();
+            parties[p].booster.fbuilder->get_bin_ids();
+//            if(p == 0){
+//                std::cout<<"dense_bin_id:";
+//                auto dense_bin_id_data = parties[0].booster.fbuilder->dense_bin_id.host_data();
+//                for(int i = 0; i < parties[0].booster.fbuilder->dense_bin_id.size(); i++)
+//                    std::cout<<int(dense_bin_id_data[i])<<" ";
+//                std::cout<<std::endl;
+//            }
         }
 //        auto party_cut_points_val_data = parties[0].booster.fbuilder->cut.cut_points_val.host_data();
 //        auto party_cut_col_ptr_data = parties[0].booster.fbuilder->cut.cut_col_ptr.host_data();
