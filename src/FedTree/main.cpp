@@ -154,8 +154,9 @@ int main(int argc, char** argv){
 //    }
 
     GBDTParam &param = fl_param.gbdt_param;
-    if(param.objective.find("multi:") != std::string::npos || param.objective.find("binary:") != std::string::npos) {
-        for(int i = 0; i < n_parties; i++){
+
+    if (param.objective.find("multi:") != std::string::npos || param.objective.find("binary:") != std::string::npos || param.metric == "error") {
+        for (int i = 0; i < n_parties; i++) {
             train_subsets[i].group_label();
             test_subsets[i].group_label();
         }
@@ -181,15 +182,19 @@ int main(int argc, char** argv){
     }
     LOG(INFO)<<"after party init";
 
+    LOG(INFO) << "intialize server";
     Server server;
     if (fl_param.mode == "vertical") {
         server.vertical_init(fl_param, dataset.n_instances(), n_instances_per_party, dataset.y);
     }else if (fl_param.mode == "horizontal") {
         server.horizontal_init(fl_param, dataset.n_instances(), n_instances_per_party, dataset);
     }else {
+        server.vertical_init(fl_param, dataset.n_instances(), n_instances_per_party, dataset.y, dataset.label);
+    } else {
         server.init(fl_param, dataset.n_instances(), n_instances_per_party);
     }
 
+    LOG(INFO) << "start training";
     FLtrainer trainer;
     if (param.tree_method == "auto")
         param.tree_method = "hist";

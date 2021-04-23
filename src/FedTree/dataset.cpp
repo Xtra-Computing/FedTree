@@ -283,7 +283,7 @@ void DataSet::load_from_file(string file_name, FLParam &param) {
     free(buffer);
     LOG(INFO) << "#instances = " << this->n_instances() << ", #features = " << this->n_features();
     if (ObjectiveFunction::need_load_group_file(param.gbdt_param.objective)) load_group_file(file_name + ".group");
-    if (ObjectiveFunction::need_group_label(param.gbdt_param.objective)) {
+    if (ObjectiveFunction::need_group_label(param.gbdt_param.objective) || param.gbdt_param.metric == "error") {
         group_label();
         param.gbdt_param.num_class = label.size();
     }
