@@ -8,7 +8,7 @@
 #include "FedTree/Tree/GBDTparam.h"
 #include "FedTree/common.h"
 
-// Todo: FLParams structure
+// Todo: automatically set partition
 class FLParam {
 public:
     int n_parties; // number of parties
