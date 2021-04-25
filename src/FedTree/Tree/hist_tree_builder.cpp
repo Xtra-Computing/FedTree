@@ -34,10 +34,8 @@ void HistTreeBuilder::init(DataSet &dataset, const GBDTParam &param) {
 //        columns.csr2csc_cpu(dataset, v_columns);
 //    else
 //        columns.csr2csc_gpu(dataset, v_columns);
-
     if (dataset.n_features_ > 0) {
         cut.get_cut_points_fast(sorted_dataset, param.max_num_bin, n_instances);
-        LOG(INFO) << "after get cut points";
         last_hist.resize((2 << param.depth) * cut.cut_points_val.size());
         get_bin_ids();
     }

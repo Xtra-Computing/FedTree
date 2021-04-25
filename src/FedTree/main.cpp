@@ -108,7 +108,6 @@ int main(int argc, char** argv){
 //            std::cout<<"subsets[3].n_instances:"<<subsets[3].n_instances()<<std::endl;
 //            std::cout<<"subsets[3].nnz:"<<subsets[3].csr_val.size()<<std::endl;
         } else if (fl_param.partition_mode == "vertical") {
-            LOG(INFO) << "vertical dir";
             CHECK_EQ(fl_param.mode, "vertical");
             dataset.load_from_file(model_param.path, fl_param);
             dataset.csr_to_csc();
@@ -144,7 +143,6 @@ int main(int argc, char** argv){
     }
 
     DataSet test_dataset;
-    LOG(INFO)<<"global test";
     if (use_global_test_set)
         test_dataset.load_from_file(model_param.test_path, fl_param);
 
@@ -269,20 +267,6 @@ int main(int argc, char** argv){
             score = parties[0].gbdt.predict_score(fl_param.gbdt_param, test_subsets[0]);
         scores.push_back(score);
     }
-
-    float_type mean = 0;
-    for(int i = 0; i < scores.size(); i++){
-        mean += scores[i];
-    }
-    mean /= scores.size();
-    std::cout<<"mean score:"<<mean<<std::endl;
-    float_type var = 0;
-    for(int i = 0; i < scores.size(); i++){
-        var += (scores[i] - mean) * (scores[i] - mean);
-    }
-    var /= scores.size();
-    float_type std = sqrt(var);
-    std::cout<<"std:"<<std<<std::endl;
 //        parser.save_model("global_model", fl_param.gbdt_param, server.global_trees.trees, dataset);
 //    }
     return 0;

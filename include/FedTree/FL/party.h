@@ -97,11 +97,11 @@ public:
         int column_end = dataset.csc_col_ptr[index+1];
 
         int num_of_values = column_end - column_start;
-        LOG(INFO) << "feature " << index << "," << num_of_values;
+        LOG(DEBUG) << "feature " << index << "," << num_of_values;
         if (num_of_values > 0) {
             vector<float> temp(num_of_values);
             copy(dataset.csc_val.begin() + column_start, dataset.csc_val.begin() + column_end, temp.begin());
-            LOG(INFO) << "TEMP" << temp << "feature" << index;
+            LOG(DEBUG) << "TEMP" << temp << "feature" << index;
             auto minmax = std::minmax_element(begin(temp), end(temp));
             feature_range[1] = *minmax.second;
             feature_range[0] = *minmax.first;

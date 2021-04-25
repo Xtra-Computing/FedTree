@@ -125,11 +125,10 @@ void unique_by_flag(SyncArray<float> &target_arr, SyncArray<int> &flags, int n_c
 
 // cost more memory
 void HistCut::get_cut_points_fast(DataSet &dataset, int max_num_bins, int n_instances) {
-    LOG(INFO) << "Fast getting cut points...";
+//    LOG(INFO) << "Fast getting cut points...";
     if(!dataset.has_csc)
         dataset.csr_to_csc();
     int n_column = dataset.n_features();
-    LOG(INFO) << n_instances;
 
     cut_points_val.resize(dataset.csc_val.size());
     cut_col_ptr.resize(dataset.csc_col_ptr.size());

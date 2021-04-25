@@ -95,7 +95,6 @@ void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FL
     }
 
     for (int i = 0; i < params.gbdt_param.n_trees; i++) {
-
         LOG(INFO) << "ROUND " << i;
         vector<vector<Tree>> parties_trees(parties.size());
         for (int p = 0; p < parties.size(); p++) {
@@ -154,7 +153,7 @@ void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FL
 
         // for each tree per round
         for (int k = 0; k < params.gbdt_param.tree_per_rounds; k++) {
-            LOG(INFO) << "ROUND" << k;
+//            LOG(INFO) << "ROUND" << k;
 //            Tree &tree = trees[k];
             // each party initialize ins2node_id, gradients, etc.
             // ask parties to send gradient and aggregate by server
@@ -457,7 +456,7 @@ void FLtrainer::vertical_fl_trainer(vector<Party> &parties, Server &server, FLPa
                 else {
                     server.booster.fbuilder->get_best_gain_in_a_level(gain, best_idx_gain, n_nodes_in_level, n_bins_new);
                 }
-                LOG(INFO) << "best index gain: "<< best_idx_gain;
+                LOG(DEBUG) << "best index gain: "<< best_idx_gain;
 //                server.booster.fbuilder->get_best_gain_in_a_level(gain, best_idx_gain, n_nodes_in_level, n_bins_new);
 
                 auto best_idx_data = best_idx_gain.host_data();
