@@ -16,11 +16,15 @@ void Parser::parse_param(FLParam &fl_param, int argc, char **argv) {
     // setup default value
     fl_param.n_parties = 2; // TODO: validate the default fl values
     fl_param.mode = "horizontal";
+    fl_param.partition_mode = fl_param.mode;
     fl_param.privacy_tech = "he";
     fl_param.partition= true;
     fl_param.alpha = 100;
     fl_param.n_hori = 2;
     fl_param.n_verti = 2;
+
+    fl_param.propose_split = "server";
+    fl_param.merge_histogram = "server";
     fl_param.privacy_budget = 10;
     fl_param.variance = 200;
 
@@ -79,6 +83,10 @@ void Parser::parse_param(FLParam &fl_param, int argc, char **argv) {
                 fl_param.n_verti = atoi(val);
             else if (str_name.compare("privacy_budget") == 0)
                 fl_param.privacy_budget = atof(val);
+            else if (str_name.compare("merge_histogram") == 0)
+                fl_param.merge_histogram = val;
+            else if (str_name.compare("propose_split") == 0)
+                fl_param.propose_split = val;
             // GBDT params
             else if ((str_name.compare("max_depth") == 0) || (str_name.compare("depth") == 0))
                 gbdt_param->depth = atoi(val);
@@ -102,8 +110,9 @@ void Parser::parse_param(FLParam &fl_param, int argc, char **argv) {
                 gbdt_param->bagging = atoi(val);
             else if ((str_name.compare("num_parallel_tree") == 0) || (str_name.compare("n_parallel_trees") == 0))
                 gbdt_param->n_parallel_trees = atoi(val);
-            else if (str_name.compare("eta") == 0 || str_name.compare("learning_rate") == 0)
+            else if (str_name.compare("eta") == 0 || str_name.compare("learning_rate") == 0) {
                 gbdt_param->learning_rate = atof(val);
+            }
             else if (str_name.compare("objective") == 0)
                 gbdt_param->objective = val;
             else if (str_name.compare("num_class") == 0)

@@ -84,7 +84,6 @@ protected:
 template<typename T>
 struct SquareLoss {
     HOST_DEVICE static GHPair gradient(T y, T y_p) { return GHPair(y_p - y, 1); }
-
     HOST_DEVICE static T predict_transform(T x) { return x; }
 };
 

@@ -25,9 +25,12 @@ public:
 
     void build_tree_by_predefined_structure(const SyncArray<GHPair> &gradients, vector<Tree> &trees);
 
+    void build_init(const GHPair sum_gh, int k) override;
+
     void build_init(const SyncArray<GHPair> &gradients, int k) override;
 
     void init(DataSet &dataset, const GBDTParam &param) override;
+    void init_nosortdataset(DataSet &dataset, const GBDTParam &param);
 
     void update_tree();
 

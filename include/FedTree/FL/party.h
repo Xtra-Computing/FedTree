@@ -12,6 +12,7 @@
 #include "FLparam.h"
 #include "FedTree/booster.h"
 #include "FedTree/Tree/gbdt.h"
+#include <algorithm>
 
 // Todo: the party structure
 class Party {
@@ -20,11 +21,11 @@ public:
         this->pid = pid;
         this->dataset = dataset;
         this->param = param;
-        if (param.mode != "vertical") {
+        if (param.mode != "vertical" and param.mode != "horizontal") {
             this->feature_map.resize(feature_map.size());
             this->feature_map.copy_from(feature_map.host_data(), feature_map.size());
         }
-        booster.init(dataset, param.gbdt_param);
+        booster.init(dataset, param.gbdt_param, param.mode != "horizontal");
     };
 
     void send_booster_gradients(Party &party){
@@ -80,6 +81,37 @@ public:
                 receiver_ins2node_id_data[iid] = sender_ins2node_id_data[iid];
     }
 
+    int get_num_feature () {
+        return dataset.n_features();
+    }
+
+    vector<float> get_feature_range_by_feature_index (int index) {
+        float inf = std::numeric_limits<float>::infinity();
+//        for(int i = 0; i < dataset.csr_val.size(); i++){
+//            std::cout<<dataset.csr_val[i]<<" ";
+//        }
+        if(!dataset.has_csc)
+            dataset.csr_to_csc();
+        vector<float> feature_range(2);
+        int column_start = dataset.csc_col_ptr[index];
+        int column_end = dataset.csc_col_ptr[index+1];
+
+        int num_of_values = column_end - column_start;
+        LOG(INFO) << "feature " << index << "," << num_of_values;
+        if (num_of_values > 0) {
+            vector<float> temp(num_of_values);
+            copy(dataset.csc_val.begin() + column_start, dataset.csc_val.begin() + column_end, temp.begin());
+            LOG(INFO) << "TEMP" << temp << "feature" << index;
+            auto minmax = std::minmax_element(begin(temp), end(temp));
+            feature_range[1] = *minmax.second;
+            feature_range[0] = *minmax.first;
+        }else{
+            feature_range[0] = inf;
+            feature_range[1] = -inf;
+        }
+
+        return feature_range;
+    }
 
     //for hybrid fl, the parties correct the merged trees.
     void correct_trees();
@@ -96,6 +128,7 @@ public:
     DataSet dataset;
     DPnoises<double> DP;
     FLParam param;
+    int n_total_instances;
 
 private:
 //    AdditivelyHE HE;

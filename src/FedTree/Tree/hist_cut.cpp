@@ -9,7 +9,7 @@
 #include "thrust/execution_policy.h"
 
 
-void HistCut::get_cut_points_by_data_range(DataSet &dataset, int max_num_bins, int n_instances) {
+void HistCut::get_cut_points_by_data_range(DataSet &dataset, int max_num_bins, int n_instances){
     int n_column = dataset.n_features();
     SyncArray<float> unique_vals(n_column * n_instances);
     SyncArray<int> temp_row_ptr(n_column + 1);
@@ -50,11 +50,11 @@ void HistCut::get_cut_points_by_data_range(DataSet &dataset, int max_num_bins, i
     cut_col_ptr.copy_from(temp_row_ptr);
     auto cut_col_ptr_data = cut_col_ptr.host_data();
     temp_row_ptr_data = temp_row_ptr.host_data();
-    for (int i = 1; i < (n_column + 1); i++) {
-        if (temp_row_ptr_data[i] <= temp_params_data[1])
-            cut_col_ptr_data[i] += cut_col_ptr_data[i - 1];
+    for(int i = 1; i < (n_column + 1); i++) {
+        if(temp_row_ptr_data[i] <= temp_params_data[1])
+            cut_col_ptr_data[i] += cut_col_ptr_data[i-1];
         else
-            cut_col_ptr_data[i] = cut_col_ptr_data[i - 1] + max_num_bins;
+            cut_col_ptr_data[i] = cut_col_ptr_data[i-1] + max_num_bins;
     }
 
     auto cut_point_val_data = cut_points_val.host_data();
@@ -126,8 +126,10 @@ void unique_by_flag(SyncArray<float> &target_arr, SyncArray<int> &flags, int n_c
 // cost more memory
 void HistCut::get_cut_points_fast(DataSet &dataset, int max_num_bins, int n_instances) {
     LOG(INFO) << "Fast getting cut points...";
-
+    if(!dataset.has_csc)
+        dataset.csr_to_csc();
     int n_column = dataset.n_features();
+    LOG(INFO) << n_instances;
 
     cut_points_val.resize(dataset.csc_val.size());
     cut_col_ptr.resize(dataset.csc_col_ptr.size());
@@ -136,9 +138,9 @@ void HistCut::get_cut_points_fast(DataSet &dataset, int max_num_bins, int n_inst
     auto csc_ptr = &dataset.csc_col_ptr[0];
 
     auto cut_fid_data = cut_fid.host_data();
-#pragma omp parallel for
-    for (int fid = 0; fid < n_column; fid++)
-        for (int i = csc_ptr[fid]; i < csc_ptr[fid + 1]; i++) {
+    #pragma omp parallel for
+    for(int fid = 0; fid < n_column; fid ++)
+        for(int i = csc_ptr[fid]; i < csc_ptr[fid+1]; i++) {
             cut_fid_data[i] = fid;
         }
     unique_by_flag(cut_points_val, cut_fid, n_column);
@@ -146,25 +148,24 @@ void HistCut::get_cut_points_fast(DataSet &dataset, int max_num_bins, int n_inst
     cut_fid_data = cut_fid.host_data();
     cut_col_ptr.resize(n_column + 1);
     auto cut_col_ptr_data = cut_col_ptr.host_data();
-    for (int fid = 0; fid < cut_fid.size(); fid++) {
+    for(int fid = 0; fid < cut_fid.size(); fid++){
         *(cut_col_ptr_data + cut_fid_data[fid] + 1) += 1;
     }
     thrust::inclusive_scan(thrust::host, cut_col_ptr_data, cut_col_ptr_data + cut_col_ptr.size(), cut_col_ptr_data);
     SyncArray<int> select_index(cut_fid.size());
     auto select_index_data = select_index.host_data();
-#pragma omp parallel for
-    for (int fid = 0; fid < n_column; fid++) {
-        int interval = (cut_col_ptr_data[fid + 1] - cut_col_ptr_data[fid]) / max_num_bins;
-        for (int i = cut_col_ptr_data[fid]; i < cut_col_ptr_data[fid + 1]; i++) {
+    #pragma omp parallel for
+    for(int fid = 0; fid < n_column; fid++){
+        int interval = (cut_col_ptr_data[fid+1] - cut_col_ptr_data[fid])/max_num_bins;
+        for (int i = cut_col_ptr_data[fid]; i < cut_col_ptr_data[fid+1]; i++){
             int feature_idx = i - cut_col_ptr_data[fid];
-            if (interval == 0)
+            if(interval == 0)
                 select_index_data[i] = 1;
-            else if (feature_idx < max_num_bins)
+            else if(feature_idx < max_num_bins)
                 select_index_data[cut_col_ptr_data[fid] + interval * feature_idx] = 1;
         }
     }
-    auto cut_fid_new_end = thrust::remove_if(thrust::host, cut_fid_data, cut_fid_data + cut_fid.size(),
-                                             select_index_data,
+    auto cut_fid_new_end = thrust::remove_if(thrust::host, cut_fid_data, cut_fid_data+cut_fid.size(), select_index_data,
                                              thrust::not1(thrust::identity<int>()));
     syncarray_resize_cpu(cut_fid, cut_fid_new_end - cut_fid_data);
     auto cut_points_val_data = cut_points_val.host_data();
@@ -175,7 +176,7 @@ void HistCut::get_cut_points_fast(DataSet &dataset, int max_num_bins, int n_inst
     cut_fid_data = cut_fid.host_data();
     cut_col_ptr.resize(n_column + 1);
     cut_col_ptr_data = cut_col_ptr.host_data();
-    for (int fid = 0; fid < cut_fid.size(); fid++) {
+    for(int fid = 0; fid < cut_fid.size(); fid++){
         *(cut_col_ptr_data + cut_fid_data[fid] + 1) += 1;
     }
     thrust::inclusive_scan(thrust::host, cut_col_ptr_data, cut_col_ptr_data + cut_col_ptr.size(), cut_col_ptr_data);
@@ -202,16 +203,15 @@ void HistCut::get_cut_points_by_feature_range(vector<vector<float>> f_range, int
     auto cut_points_val_data = cut_points_val.host_data();
     auto cut_col_ptr_data = cut_col_ptr.host_data();
     auto cut_fid_data = cut_fid.host_data();
-
-#pragma omp parallel for
-    for (int fid = 0; fid < n_features; fid++) {
+    #pragma omp parallel for
+    for(int fid = 0; fid < n_features; fid ++) {
         cut_col_ptr_data[fid] = fid * max_num_bins;
         float val_range = f_range[fid][1] - f_range[fid][0];
         float val_step = val_range / max_num_bins;
 
-        for (int i = 0; i < max_num_bins; i++) {
+        for(int i = 0; i < max_num_bins; i ++) {
             cut_fid_data[fid * max_num_bins + i] = fid;
-            cut_points_val_data[fid * max_num_bins + 1] = i * val_step + f_range[fid][0];
+            cut_points_val_data[fid * max_num_bins + i] = f_range[fid][1] - i * val_step;
         }
     }
     cut_col_ptr_data[n_features] = n_features * max_num_bins;

@@ -105,7 +105,7 @@ TEST_F(TreeBuilderTest, merge_histogram_server) {
     htb.parties_hist_init(2);
     htb.append_hist(hists[0]);
     htb.append_hist(hists[1]);
-    htb.merge_histograms_server_propose();
+    htb.merge_histograms_server_propose(merged_hist, merged_hist);
     merged_hist.copy_from(htb.get_hist());
     auto hist_data = merged_hist.host_data();
     EXPECT_NEAR(hist_data[0].g, 0.21, 1e-5);

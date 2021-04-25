@@ -23,7 +23,9 @@
 
 class Booster {
 public:
-    void init(DataSet &dataSet, const GBDTParam &param);
+    void init(DataSet &dataSet, const GBDTParam &param, bool get_cut_points = 1);
+
+    void init (const GBDTParam &param, int n_instances);
 
     SyncArray<GHPair> get_gradients();
 
@@ -43,14 +45,15 @@ public:
 
     std::unique_ptr<HistTreeBuilder> fbuilder;
     SyncArray<GHPair> gradients;
+
     std::unique_ptr<Metric> metric;
 private:
-
+    int n_devices;
     std::unique_ptr<ObjectiveFunction> obj;
     SyncArray<float_type> y;
 //    RowSampler rowSampler;
     GBDTParam param;
-    int n_devices;
+
 };
 
 

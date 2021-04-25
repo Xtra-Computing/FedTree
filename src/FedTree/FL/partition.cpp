@@ -9,7 +9,7 @@
 
 
 void Partition::homo_partition(const DataSet &dataset, const int n_parties, const bool is_horizontal,
-                               vector<DataSet> &subsets, std::map<int, vector<int>> &batch_idxs) {
+                               vector<DataSet> &subsets, std::map<int, vector<int>> &batch_idxs, int seed) {
     int n;
     if (is_horizontal)
         n = dataset.n_instances();
@@ -30,7 +30,9 @@ void Partition::homo_partition(const DataSet &dataset, const int n_parties, cons
         idxs.push_back(i);
     }
 
-    std::random_shuffle(idxs.begin(), idxs.end());
+    std::default_random_engine e(seed);
+    std::shuffle(idxs.begin(), idxs.end(), e);
+//    std::random_shuffle(idxs.begin(), idxs.end());
 
 //    std::map<int, vector<int>> batch_idxs;
 
@@ -55,31 +57,35 @@ void Partition::homo_partition(const DataSet &dataset, const int n_parties, cons
         }
     }
 
-    if (is_horizontal) {
+    if(is_horizontal) {
         // TODO: verify whether to modify feature map
 
-        for (int i = 0; i < n_parties; i++) {
+        for(int i = 0; i < n_parties; i++) {
             subsets[i].csr_row_ptr.push_back(0);
         }
 
-        for (int i = 0; i < dataset.csr_row_ptr.size() - 1; i++) { // for each row
+        for(int i = 0; i < dataset.csr_row_ptr.size()-1; i ++) { // for each row
             vector<int> csr_row_sub(n_parties, 0);
-            for (int j = dataset.csr_row_ptr[i]; j < dataset.csr_row_ptr[i + 1]; j++) { // for each element in the row
+            int part_id = i;
+            int party_id = part2party[part_id];
+            subsets[party_id].y.push_back(dataset.y[i]);
+
+            for(int j = dataset.csr_row_ptr[i]; j < dataset.csr_row_ptr[i+1]; j ++) { // for each element in the row
                 float_type value = dataset.csr_val[j];
                 int cid = dataset.csr_col_idx[j];
-                int part_id = i;
-                int party_id = part2party[part_id];
 
                 subsets[party_id].csr_val.push_back(value);
                 subsets[party_id].csr_col_idx.push_back(cid);
                 csr_row_sub[party_id]++;
             }
-            for (int i = 0; i < n_parties; i++) {
-                subsets[i].csr_row_ptr.push_back(subsets[i].csr_row_ptr.back() + csr_row_sub[i]);
+            for(int i = 0; i < n_parties; i++) {
+                // Do not store the empty rows
+                if(csr_row_sub[i] != 0)
+                    subsets[i].csr_row_ptr.push_back(subsets[i].csr_row_ptr.back() + csr_row_sub[i]);
             }
         }
     } else {
-        for (int i = 0; i < n_parties; i++) {
+        for(int i = 0; i < n_parties; i++) {
             subsets[i].csc_col_ptr.push_back(0);
         }
 
@@ -97,6 +103,7 @@ void Partition::homo_partition(const DataSet &dataset, const int n_parties, cons
 
                 subsets[party_id].csc_val.push_back(value);
                 subsets[party_id].csc_row_idx.push_back(row_id);
+                subsets[party_id].has_csc = true;
                 csc_col_sub++;
             }
             subsets[party_id].csc_col_ptr.push_back(subsets[party_id].csc_col_ptr.back() + csc_col_sub);

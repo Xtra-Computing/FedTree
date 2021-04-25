@@ -18,20 +18,17 @@ class Server : public Party {
 public:
     void init(FLParam &param, int n_total_instances, vector<int> &n_instances_per_party);
 
+    void horizontal_init (FLParam &param, int n_total_instances, vector<int> &n_instances_per_party, DataSet &dataSet);
+
     void vertical_init(FLParam &param, int n_total_instances, vector<int> &n_instances_per_party, vector<float_type> y,
                        vector<float_type> label);
 
     void propose_split_candidates();
-
     void send_info(string info_type);
-
 //    void send_info(vector<Party> &parties, AdditivelyHE::PaillierPublicKey serverKey,vector<SplitCandidate>candidates);
     void sum_histograms();
-
     void hybrid_merge_trees();
-
     void ensemble_merge_trees();
-
     GBDT global_trees;
     vector<GBDT> local_trees;
     GBDTParam model_param;
