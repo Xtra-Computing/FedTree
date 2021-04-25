@@ -82,25 +82,25 @@ Tree *HistTreeBuilder::build_tree_level_approximate(int level, int round) {
     TIMED_FUNC(timerObj);
     //Todo: add column sampling
 
-        this->ins2node_id.resize(n_instances);
-        this->gradients.set_host_data(const_cast<GHPair *>(gradients.host_data() + round * n_instances));
-        this->trees.init_CPU(this->gradients, param);
-        find_split(level);
+    this->ins2node_id.resize(n_instances);
+    this->gradients.set_host_data(const_cast<GHPair *>(gradients.host_data() + round * n_instances));
+    this->trees.init_CPU(this->gradients, param);
+    find_split(level);
 //        split_point_all_reduce(level);
+    {
+        TIMED_SCOPE(timerObj, "apply sp");
+        update_tree();
+        update_ins2node_id();
         {
-            TIMED_SCOPE(timerObj, "apply sp");
-            update_tree();
-            update_ins2node_id();
-            {
-                LOG(TRACE) << "gathering ins2node id";
-                //get final result of the reset instance id to node id
-                if (!has_split) {
-                    LOG(INFO) << "no splittable nodes, stop";
-                    return nullptr;
-                }
+            LOG(TRACE) << "gathering ins2node id";
+            //get final result of the reset instance id to node id
+            if (!has_split) {
+                LOG(INFO) << "no splittable nodes, stop";
+                return nullptr;
             }
-//                ins2node_id_all_reduce(level);
         }
+//                ins2node_id_all_reduce(level);
+    }
 
     return &tree;
 }

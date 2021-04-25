@@ -103,6 +103,7 @@ void Partition::homo_partition(const DataSet &dataset, const int n_parties, cons
 
                 subsets[party_id].csc_val.push_back(value);
                 subsets[party_id].csc_row_idx.push_back(row_id);
+                subsets[party_id].has_csc = true;
                 csc_col_sub++;
             }
             subsets[party_id].csc_col_ptr.push_back(subsets[party_id].csc_col_ptr.back() + csc_col_sub);

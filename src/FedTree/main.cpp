@@ -122,8 +122,8 @@ int main(int argc, char** argv){
                     for (int i = 0; i < n_parties; i++) {
                         train_subsets[i] = subsets[i];
                     }
-                }
-            }else if (fl_param.partition_mode=="horizontal") {
+            }
+        }else if (fl_param.partition_mode=="horizontal") {
             dataset.load_from_file(model_param.path, fl_param);
             partition.homo_partition(dataset, n_parties, true, subsets, batch_idxs);
             if (!use_global_test_set) {
@@ -132,16 +132,16 @@ int main(int argc, char** argv){
                     partition.train_test_split(subsets[i], train_subsets[i], test_subsets[i]);
                 }
             }else{
-                    for (int i = 0; i < n_parties; i++) {
-                        train_subsets[i] = subsets[i];
-                    }
+                for (int i = 0; i < n_parties; i++) {
+                    train_subsets[i] = subsets[i];
                 }
             }
         }
-        else{
-            std::cout<<"not supported yet"<<std::endl;
-            exit(1);
-        }
+    }
+    else{
+        std::cout<<"not supported yet"<<std::endl;
+        exit(1);
+    }
 
     DataSet test_dataset;
     LOG(INFO)<<"global test";

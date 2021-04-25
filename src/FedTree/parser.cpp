@@ -16,6 +16,7 @@ void Parser::parse_param(FLParam &fl_param, int argc, char **argv) {
     // setup default value
     fl_param.n_parties = 2; // TODO: validate the default fl values
     fl_param.mode = "horizontal";
+    fl_param.partition_mode = fl_param.mode;
     fl_param.privacy_tech = "he";
     fl_param.partition= true;
     fl_param.alpha = 100;
