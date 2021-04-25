@@ -1,6 +1,14 @@
 Parameters
 ==========
 
+**Contents**
+
+-  `Parameters for Federated Setting <#parameters-for-federated-setting>`__
+
+-  `Parameters for GBDTs <#parameters-for-gbdts>`__
+
+-  `Parameters for Privacy Protection <#parameters-for-privacy-protection>`__
+
 Parameters for Federated Setting
 --------------------------------
 
@@ -20,8 +28,8 @@ Parameters for Federated Setting
     - ``iid``: IID data partitioning
     - ``noniid``: non-IID data partitioning
 
-Parameters for GBDT model
--------------------------
+Parameters for GBDTs
+--------------------
 
 * ``verbose`` [default=1, type=int]
     - Printing information: 0 for silence, 1 for key information and 2 for more information.
@@ -66,7 +74,7 @@ Parameters for GBDT model
     - The minimum loss reduction required to make a further split on a leaf node of the tree. ``gamma`` is used in the pruning stage.
 
 
-Parameters for privacy approaches
+Parameters for Privacy Protection
 ---------------------------------
 
 * ``privacy_budget`` [default=10, type=float]

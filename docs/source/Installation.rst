@@ -7,7 +7,7 @@ Here is the guide for the installation of FedTree.
 
 **Contents**
 
-- `Prerequisites <#prerequisites>`__
+-  `Prerequisites <#prerequisites>`__
 
 -  `Install Fedtree <#install-fedtree>`__
 
