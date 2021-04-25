@@ -141,12 +141,11 @@ public:
 //        }
 //    }
 
-    SyncArray<unsigned char> dense_bin_id;
 
 private:
     vector<HistCut> parties_cut;
     // MSyncArray<unsigned char> char_dense_bin_id;
-
+    SyncArray<unsigned char> dense_bin_id;
     SyncArray<GHPair> last_hist;
     SyncArray<GHPair> last_missing_gh;
     MSyncArray<GHPair> parties_hist;
