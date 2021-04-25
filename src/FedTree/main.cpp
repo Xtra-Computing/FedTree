@@ -169,24 +169,24 @@ int main(int argc, char** argv){
     else if(param.objective.find("reg:") != std::string::npos){
         param.num_class = 1;
     }
-    
+
     vector<Party> parties(n_parties);
     vector<int> n_instances_per_party(n_parties);
-
-    LOG(INFO)<<"initialize parties";
-    for(int i = 0; i < n_parties; i++){
-        parties[i].init(i, train_subsets[i], fl_param, feature_map[i]);
-        n_instances_per_party[i] = train_subsets[i].n_instances();
-    }
-
-    LOG(INFO) << "initialize server";
     Server server;
-    if (fl_param.mode == "vertical") {
-        server.vertical_init(fl_param, dataset.n_instances(), n_instances_per_party, dataset.y, dataset.label);
-    }else if (fl_param.mode == "horizontal") {
-        server.horizontal_init(fl_param, dataset.n_instances(), n_instances_per_party, dataset);
-    }else {
-        server.init(fl_param, dataset.n_instances(), n_instances_per_party);
+    if(fl_param.mode != "centralized") {
+        LOG(INFO) << "initialize parties";
+        for (int i = 0; i < n_parties; i++) {
+            parties[i].init(i, train_subsets[i], fl_param, feature_map[i]);
+            n_instances_per_party[i] = train_subsets[i].n_instances();
+        }
+        LOG(INFO) << "initialize server";
+        if (fl_param.mode == "vertical") {
+            server.vertical_init(fl_param, dataset.n_instances(), n_instances_per_party, dataset.y, dataset.label);
+        } else if (fl_param.mode == "horizontal") {
+            server.horizontal_init(fl_param, dataset.n_instances(), n_instances_per_party, dataset);
+        } else {
+            server.init(fl_param, dataset.n_instances(), n_instances_per_party);
+        }
     }
 
     LOG(INFO) << "start training";
