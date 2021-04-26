@@ -108,3 +108,14 @@ make -j
 # under 'build' directory
 ./bin/FedTree-train ../dataset/machine.conf
 ```
+
+# Run distributed training
+```bash
+# under 'build' directory
+./bin/FedTree-distributed-server ../dataset/machine.conf
+# open a new terminal
+./bin/FedTree-distributed-client ../dataset/machine.conf 0
+# open another new terminal
+./bin/FedTree-distributed-client ../dataset/machine.conf 1
+# run multiple copies of the client based on the n_parties param you specified
+```
