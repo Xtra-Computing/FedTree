@@ -19,16 +19,16 @@ void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FL
     Party &aggregator = (params.merge_histogram == "client")? parties[0] : server;
     aggregator.booster.fbuilder->parties_hist_init(parties.size());
 
-//    if (params.privacy_tech == "he") {
-//        LOG(INFO) << "Start HE Init";
-//        // server generate public key and private key
-//        server.homo_init();
-//        // server distribute public key to rest of parties
-//        for (int i = 0; i < parties.size(); i++) {
-//            parties[i].publicKey = server.publicKey;
-//        }
-//        LOG(INFO) << "End of HE init";
-//    }
+    if (params.privacy_tech == "he") {
+        LOG(INFO) << "Start HE Init";
+        // server generate public key and private key
+        server.homo_init();
+        // server distribute public key to rest of parties
+        for (int i = 0; i < parties.size(); i++) {
+            parties[i].paillier = server.paillier;
+        }
+        LOG(INFO) << "End of HE init";
+    }
 
     // Generate HistCut by server or each party
     int n_bins = model_param.max_num_bin;
@@ -109,7 +109,6 @@ void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FL
             GHPair party_gh = thrust::reduce(thrust::host, parties[pid].booster.gradients.host_data(), parties[pid].booster.gradients.host_end());
             sum_gh = sum_gh + party_gh;
         }
-
       //  LOG(INFO) << "SUM_GH" << sum_gh;
 
         // update gradients for all parties
@@ -199,7 +198,11 @@ void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FL
                                                                               n_nodes_in_level,
                                                                               hist_fid_data, missing_gh, hist);
                     //todo: encrypt the histogram
-                   // LOG(INFO) << hist;
+                    if (params.privacy_tech == "he") {
+                        parties[j].encrypt_histogram(hist);
+                        parties[j].encrypt_histogram(missing_gh);
+                    }
+
                     aggregator.booster.fbuilder->append_hist(hist, missing_gh, n_partition, n_max_splits, j);
                 }
                 // Now we have the array of hist and missing_gh
@@ -209,7 +212,6 @@ void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FL
 
                 if (params.propose_split == "server") {
                     aggregator.booster.fbuilder->merge_histograms_server_propose(hist, missing_gh);
-                    server.booster.fbuilder->set_last_hist(hist);
 ////                    server.booster.fbuilder->set_last_missing_gh(missing_gh);
 //                    LOG(INFO) << hist;
                 }else if (params.propose_split == "client") {
@@ -227,8 +229,9 @@ void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FL
                 SyncArray <float_type> gain(n_max_splits);
 
                 // if privacy tech == 'he', decrypt histogram
-//                if (params.privacy_tech == "he")
-//                    server.decrypt_histogram();
+                if (params.privacy_tech == "he")
+                    server.decrypt_gh_pairs(hist);
+                    server.decrypt_gh_pairs(missing_gh);
 
                 // if server propose cut, hist_fid for each party should be the same
                 auto hist_fid_data = parties_hist_fid[0].host_data();
