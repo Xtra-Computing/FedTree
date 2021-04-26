@@ -26,7 +26,7 @@ void Booster::init(DataSet &dataSet, const GBDTParam &param) {
 
     n_devices = param.n_device;
     int n_outputs = param.num_class * dataSet.n_instances();
-    gradients = SyncArray<GHPair>(n_outputs);
+    gradients.resize(n_outputs);
     y = SyncArray<float_type>(dataSet.n_instances());
     y.copy_from(dataSet.y.data(), dataSet.n_instances());
 }

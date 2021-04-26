@@ -11,7 +11,6 @@
 #include <math.h>
 
 
-
 void TreeBuilder::init(DataSet &dataSet, const GBDTParam &param) {
 //    int n_available_device;
 //    cudaGetDeviceCount(&n_available_device);
@@ -67,16 +66,17 @@ void TreeBuilder::init(DataSet &dataSet, const GBDTParam &param) {
 //    LOG(DEBUG) << "global best split point = " << sp;
 //}
 
-void TreeBuilder::set_y_predict(int k){
+void TreeBuilder::set_y_predict(int k) {
     predict_in_training(k);
 }
+
 void TreeBuilder::predict_in_training(int k) {
     auto y_predict_data = y_predict.host_data() + k * n_instances;
     auto nid_data = ins2node_id.host_data();
     const Tree::TreeNode *nodes_data = trees.nodes.host_data();
     auto lr = param.learning_rate;
 #pragma omp parallel for
-    for(int i = 0; i < n_instances; i++){
+    for (int i = 0; i < n_instances; i++) {
         int nid = nid_data[i];
         while (nid != -1 && (nodes_data[nid].is_pruned)) nid = nodes_data[nid].parent_index;
         y_predict_data[i] += lr * nodes_data[nid].base_weight;
@@ -103,7 +103,7 @@ vector<Tree> TreeBuilder::build_approximate(const SyncArray<GHPair> &gradients, 
 
         for (int level = 0; level < param.depth; ++level) {
             //LOG(INFO)<<"in level:"<<level;
-                find_split(level);
+            find_split(level);
             //split_point_all_reduce(level);
             {
                 TIMED_SCOPE(timerObj, "apply sp");
@@ -124,7 +124,7 @@ vector<Tree> TreeBuilder::build_approximate(const SyncArray<GHPair> &gradients, 
         //here
         this->trees.prune_self(param.gamma);
 //        LOG(INFO) << "y_predict: " << y_predict;
-        if(update_y_predict)
+        if (update_y_predict)
             predict_in_training(k);
         tree.nodes.resize(this->trees.nodes.size());
         tree.nodes.copy_from(this->trees.nodes);
@@ -135,7 +135,7 @@ vector<Tree> TreeBuilder::build_approximate(const SyncArray<GHPair> &gradients, 
 /*
  * Build a tree with the given structure and split features.
  */
-void TreeBuilder::build_tree_by_predefined_structure(const SyncArray<GHPair> &gradients, vector<Tree> &trees){
+void TreeBuilder::build_tree_by_predefined_structure(const SyncArray<GHPair> &gradients, vector<Tree> &trees) {
     TIMED_FUNC(timerObj);
     //Todo: add column sampling
 
@@ -156,14 +156,14 @@ void TreeBuilder::build_tree_by_predefined_structure(const SyncArray<GHPair> &gr
         root_node.n_instances = gradients.size();
 
         for (int level = 0; level < tree.final_depth; ++level) {
-            LOG(INFO)<<"find split";
+            LOG(INFO) << "find split";
             find_split_by_predefined_features(level);
 //            split_point_all_reduce(level);
             {
                 TIMED_SCOPE(timerObj, "apply sp");
-                LOG(INFO)<<"update tree";
+                LOG(INFO) << "update tree";
                 update_tree_by_sp_values();
-                LOG(INFO)<<"update ins2node_id";
+                LOG(INFO) << "update ins2node_id";
                 update_ins2node_id();
                 {
                     LOG(TRACE) << "gathering ins2node id";
@@ -186,7 +186,9 @@ void TreeBuilder::build_tree_by_predefined_structure(const SyncArray<GHPair> &gr
 }
 
 // Remove SyncArray<GHPair> missing_gh, int n_columnf
-void TreeBuilder::find_split (SyncArray<SplitPoint> &sp, int n_nodes_in_level, Tree tree, SyncArray<int_float> best_idx_gain, int nid_offset, HistCut cut, SyncArray<GHPair> hist, int n_bins) {
+void
+TreeBuilder::find_split(SyncArray<SplitPoint> &sp, int n_nodes_in_level, Tree tree, SyncArray<int_float> best_idx_gain,
+                        int nid_offset, HistCut cut, SyncArray<GHPair> hist, int n_bins) {
     sp.resize(n_nodes_in_level);
     const int_float *best_idx_gain_data = best_idx_gain.host_data();
     auto hist_data = hist.host_data();
@@ -197,7 +199,7 @@ void TreeBuilder::find_split (SyncArray<SplitPoint> &sp, int n_nodes_in_level, T
     int column_offset = 0;
     auto cut_fid_data = cut.cut_fid.host_data();
     auto cut_col_ptr_data = cut.cut_col_ptr.host_data();
-    auto i2fid = [=](int i) {return cut_fid_data[i % n_bins];};
+    auto i2fid = [=](int i) { return cut_fid_data[i % n_bins]; };
     auto hist_fid = thrust::make_transform_iterator(thrust::counting_iterator<int>(0), i2fid);
 
     for (int i = 0; i < n_nodes_in_level; i++) {
@@ -225,8 +227,8 @@ void TreeBuilder::find_split (SyncArray<SplitPoint> &sp, int n_nodes_in_level, T
 
 void TreeBuilder::update_tree() {
     TIMED_FUNC(timerObj);
-    auto& sp = this->sp;
-    auto& tree = this->trees;
+    auto &sp = this->sp;
+    auto &tree = this->trees;
     auto sp_data = sp.host_data();
     LOG(DEBUG) << sp;
     int n_nodes_in_level = sp.size();
@@ -235,8 +237,8 @@ void TreeBuilder::update_tree() {
     float_type rt_eps = param.rt_eps;
     float_type lambda = param.lambda;
 
-    #pragma omp parallel for
-    for(int i = 0; i < n_nodes_in_level; i++){
+#pragma omp parallel for
+    for (int i = 0; i < n_nodes_in_level; i++) {
         float_type best_split_gain = sp_data[i].gain;
         if (best_split_gain > rt_eps) {
             //do split
@@ -279,10 +281,10 @@ void TreeBuilder::update_tree() {
 
 void TreeBuilder::update_tree_in_a_node(int node_id) {
     TIMED_FUNC(timerObj);
-    auto& sp = this->sp;
-    auto& tree = this->trees;
+    auto &sp = this->sp;
+    auto &tree = this->trees;
     auto sp_data = sp.host_data();
-    LOG(DEBUG) << sp;
+//    LOG(DEBUG) << sp;
     int n_nodes_in_level = sp.size();
 
     Tree::TreeNode *nodes_data = tree.nodes.host_data();
@@ -326,14 +328,14 @@ void TreeBuilder::update_tree_in_a_node(int node_id) {
         nodes_data[node.rch_index].is_valid = false;
     }
 
-    LOG(DEBUG) << tree.nodes;
+//    LOG(DEBUG) << tree.nodes;
 }
 
 
 void TreeBuilder::update_tree_by_sp_values() {
     TIMED_FUNC(timerObj);
-    auto& sp = this->sp;
-    auto& tree = this->trees;
+    auto &sp = this->sp;
+    auto &tree = this->trees;
     auto sp_data = sp.host_data();
     LOG(DEBUG) << sp;
     int n_nodes_in_level = sp.size();
@@ -342,9 +344,9 @@ void TreeBuilder::update_tree_by_sp_values() {
     float_type rt_eps = param.rt_eps;
     float_type lambda = param.lambda;
 
-    #pragma omp parallel for
-    for(int i = 0; i < n_nodes_in_level; i++){
-        if(sp_data[i].no_split_value_update){
+#pragma omp parallel for
+    for (int i = 0; i < n_nodes_in_level; i++) {
+        if (sp_data[i].no_split_value_update) {
             int nid = sp_data[i].nid;
             Tree::TreeNode &node = nodes_data[nid];
             Tree::TreeNode &lch = nodes_data[node.lch_index];//left child
@@ -361,8 +363,7 @@ void TreeBuilder::update_tree_by_sp_values() {
             lch.sum_gh_pair = node.sum_gh_pair - rch.sum_gh_pair;
             lch.calc_weight(lambda);
             rch.calc_weight(lambda);
-        }
-        else {
+        } else {
             float_type best_split_gain = sp_data[i].gain;
             if (best_split_gain > rt_eps) {
                 //do split

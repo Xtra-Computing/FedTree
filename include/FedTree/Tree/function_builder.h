@@ -41,13 +41,9 @@ public:
                                             int *hist_fid, SyncArray<GHPair> &missing_gh,
                                             SyncArray<GHPair> &hist) = 0;
 
-    virtual void update_ins2node_id_in_a_node(int node_id) = 0;
-
     virtual HistCut get_cut() = 0;
 
     virtual SyncArray<GHPair> get_hist() = 0;
-
-    virtual void parties_hist_init(int party_size) = 0;
 
     virtual void append_hist(SyncArray<GHPair> &hist) = 0;
 

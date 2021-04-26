@@ -41,6 +41,7 @@ public:
 
     void boost_without_prediction(vector<vector<Tree>> &boosted_model);
 
+    GBDTParam param;
     std::unique_ptr<HistTreeBuilder> fbuilder;
     SyncArray<GHPair> gradients;
     std::unique_ptr<Metric> metric;
@@ -49,7 +50,6 @@ private:
     std::unique_ptr<ObjectiveFunction> obj;
     SyncArray<float_type> y;
 //    RowSampler rowSampler;
-    GBDTParam param;
     int n_devices;
 };
 

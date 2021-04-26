@@ -180,7 +180,7 @@ void HistTreeBuilder::find_split(int level) {
     compute_gain_in_a_level(gain, n_nodes_in_level, n_bins, hist_fid_data, missing_gh, hist);
     SyncArray<int_float> best_idx_gain(n_nodes_in_level);
     get_best_gain_in_a_level(gain, best_idx_gain, n_nodes_in_level, n_bins);
-//    LOG(INFO) << "best_idx_gain: " << best_idx_gain;
+    LOG(INFO) << "best_idx_gain: " << best_idx_gain;
     get_split_points(best_idx_gain, n_nodes_in_level, hist_fid_data, missing_gh, hist);
 }
 
@@ -699,6 +699,7 @@ void HistTreeBuilder::compute_histogram_in_a_level(int level, int n_max_splits, 
 //                            PERFORMANCE_CHECKPOINT(timerObj);
             }  // end for each node
         }
+        last_hist.resize(n_bins * n_nodes_in_level);
         auto last_hist_data = last_hist.host_data();
         auto hist_data = hist.host_data();
         for (int i = 0; i < n_nodes_in_level * n_bins; i++) {
@@ -758,7 +759,7 @@ HistTreeBuilder::compute_gain_in_a_level(SyncArray<float_type> &gain, int n_node
     float_type mcw = param.min_child_weight;
     float_type l = param.lambda;
 
-#pragma omp parallel for
+//#pragma omp parallel for
     for (int i = 0; i < n_split; i++) {
         int nid0 = i / n_bins;
         int nid = nid0 + nid_offset;
@@ -890,7 +891,7 @@ void HistTreeBuilder::get_split_points_in_a_node(int node_id, int best_idx, floa
     sp_data[node_id].rch_sum_gh = hist_data[best_idx];
     sp_data[node_id].no_split_value_update = 0;
 
-    LOG(DEBUG) << "split points (gain/fea_id/nid): " << sp;
+//    LOG(DEBUG) << "split points (gain/fea_id/nid): " << sp;
 }
 
 void HistTreeBuilder::update_ins2node_id() {
@@ -939,7 +940,7 @@ void HistTreeBuilder::update_ins2node_id() {
     has_split = has_splittable.host_data()[0];
 }
 
-void HistTreeBuilder::update_ins2node_id_in_a_node(int node_id) {
+bool HistTreeBuilder::update_ins2node_id_in_a_node(int node_id) {
     TIMED_FUNC(timerObj);
     SyncArray<bool> has_splittable(1);
 //    auto &columns = shards.columns;
@@ -981,8 +982,8 @@ void HistTreeBuilder::update_ins2node_id_in_a_node(int node_id) {
             }
         }
     }
-    LOG(DEBUG) << "new tree_id = " << ins2node_id;
-    has_split = has_splittable.host_data()[0];
+//    LOG(DEBUG) << "new tree_id = " << ins2node_id;
+    return has_splittable.host_data()[0];
 }
 
 //for each node

@@ -5,6 +5,7 @@
 #ifndef FEDTREE_SERVER_H
 #define FEDTREE_SERVER_H
 
+#include "FedTree/FL/party.h"
 #include "FedTree/dataset.h"
 #include "FedTree/Tree/tree_builder.h"
 //#include "FedTree/Encryption/HE.h"
@@ -24,7 +25,6 @@ public:
 
     void send_info(string info_type);
 
-//    void send_info(vector<Party> &parties, AdditivelyHE::PaillierPublicKey serverKey,vector<SplitCandidate>candidates);
     void sum_histograms();
 
     void hybrid_merge_trees();
@@ -36,6 +36,8 @@ public:
     GBDTParam model_param;
     int n_total_instances;
     vector<int> n_instances_per_party;
+    vector<int> n_bins_per_party;
+    vector<int> n_columns_per_party;
 
 //    AdditivelyHE::PaillierPublicKey publicKey;
 //    vector<AdditivelyHE::PaillierPublicKey> pk_vector;

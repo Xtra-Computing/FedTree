@@ -137,10 +137,10 @@ void Parser::parse_param(FLParam &fl_param, int argc, char **argv) {
         parse_value(line.c_str());
     }
 
-    //TODO: confirm handling spaces around "="
-    for (int i = 0; i < argc; ++i) {
-        parse_value(argv[i]);
-    }//end parsing parameters
+//    TODO: confirm handling spaces around "="
+//    for (int i = 0; i < argc; ++i) {
+//        parse_value(argv[i]);
+//    } //end parsing parameters
 }
 
 // TODO: implement Tree and DataSet; check data structure compatibility

@@ -43,7 +43,7 @@ public:
 
     void update_ins2node_id() override;
 
-    void update_ins2node_id_in_a_node(int node_id) override;
+    bool update_ins2node_id_in_a_node(int node_id);
 
 //support equal division or weighted division
     void propose_split_candidates();
@@ -67,10 +67,11 @@ public:
     }
 
     HistCut cut;
-    void parties_hist_init(int party_size) override{
-        parties_hist = MSyncArray<GHPair>(party_size);
+    void party_containers_init(int party_size) {
+        parties_hist = MSyncArray<GHPair>(party_size, 1);
+        parties_missing_gh = MSyncArray<GHPair>(party_size, 1);
+        parties_hist_fid = MSyncArray<int>(party_size, 1);
         this->party_size = party_size;
-        party_idx = 0;
     }
 
     void append_hist(SyncArray<GHPair> &hist) override{
@@ -80,13 +81,15 @@ public:
         party_idx += 1;
     }
 
+    MSyncArray<GHPair> parties_hist;
+    MSyncArray<GHPair> parties_missing_gh;
+    MSyncArray<int> parties_hist_fid;
 
 private:
     vector<HistCut> parties_cut;
     // MSyncArray<unsigned char> char_dense_bin_id;
     SyncArray<unsigned char> dense_bin_id;
     SyncArray<GHPair> last_hist;
-    MSyncArray<GHPair> parties_hist;
     int party_idx = 0;
     int party_size = 0;
 

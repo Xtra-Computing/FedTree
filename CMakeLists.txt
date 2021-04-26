@@ -35,7 +35,16 @@ else ()
     thrust_create_target(ThrustOMP HOST CPP DEVICE OMP)
 endif ()
 add_subdirectory(${PROJECT_SOURCE_DIR}/pybind11)
-#find_package(pybind11 REQUIRED)
+
+include(FetchContent)
+FetchContent_Declare(
+        gRPC
+        GIT_REPOSITORY https://github.com/grpc/grpc
+        GIT_TAG        v1.35.0  # e.g v1.28.0
+)
+set(FETCHCONTENT_QUIET OFF)
+FetchContent_MakeAvailable(gRPC)
+
 if (CMAKE_VERSION VERSION_LESS "3.1")
     add_compile_options("-std=c++11")
 else ()

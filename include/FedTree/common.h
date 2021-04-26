@@ -179,5 +179,17 @@ typedef thrust::tuple<int, float_type> int_float;
 
 std::ostream &operator<<(std::ostream &os, const int_float &rhs);
 
+struct BestInfo {
+    int pid;
+    int nid;
+    int idx;
+    int global_fid;
+    float gain;
+
+    friend std::ostream &operator<<(std::ostream &os, const BestInfo &best) {
+        os << string_format("%d/%d/%d/%f", best.pid, best.nid, best.idx, best.gain);
+        return os;
+    }
+};
 
 #endif //FEDTREE_COMMON_H
