@@ -27,9 +27,3 @@ and **secure**. It has the following features.
       Frameworks <Frameworks>
       Experiments <Experiments>
 
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
