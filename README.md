@@ -13,8 +13,8 @@ The overall architecture of FedTree is shown below.
 # Getting Started
 
 ## Prerequisites
-* `CMake`_ 3.15 or above
-* `NTL`_ library
+* `CMake` 3.15 or above
+* `NTL` library
 
 You can follow the following commands to install NTL library.
 
