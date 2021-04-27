@@ -4,8 +4,8 @@ and **secure**. It currently has the following features.
 
 - Federated training of gradient boosting decision trees.
 - Parallel computing on multi-core CPUs.
-- Support homomorphic encryption and differential privacy.
-- Support classification and regression.
+- Supporting homomorphic encryption and differential privacy.
+- Supporting classification and regression.
 
 The overall architecture of FedTree is shown below.
 ![FedTree_archi](./docs/source/images/fedtree_archi.png)
