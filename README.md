@@ -18,15 +18,16 @@ The overall architecture of FedTree is shown below.
 
 You can follow the following commands to install NTL library.
 
-    .. code::
+```
+    wget https://libntl.org/ntl-11.4.4.tar.gz
+    tar -xvf ntl-11.4.4.tar.gz
+    cd ntl-11.4.4/src
+    ./configure
+    make
+    make check
+    sudo make install
+```
 
-        wget https://libntl.org/ntl-11.4.4.tar.gz
-        tar -xvf ntl-11.4.4.tar.gz
-        cd ntl-11.4.4/src
-        ./configure
-        make
-        make check
-        sudo make install
 
 If you install the NTL library at another location, please also modify the CMakeList files of FedTree accordingly (line 64 of CMakeLists.txt).
 ## Install submodules
