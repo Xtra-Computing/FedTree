@@ -14,7 +14,7 @@
 #include "FedTree/Tree/gbdt.h"
 #include <algorithm>
 
-// Todo: the party structure
+
 class Party {
 public:
     void init(int pid, DataSet &dataset, FLParam &param, SyncArray<bool> &feature_map) {

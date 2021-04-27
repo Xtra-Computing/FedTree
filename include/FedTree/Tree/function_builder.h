@@ -16,8 +16,6 @@ class FunctionBuilder {
 public:
     virtual vector<Tree> build_approximate(const SyncArray<GHPair> &gradients, bool update_y_predict = true) = 0;
 
-    virtual Tree* build_tree_level_approximate(int level, int round) = 0;
-
     virtual Tree get_tree()= 0;
 
     virtual void set_tree(Tree tree) = 0;

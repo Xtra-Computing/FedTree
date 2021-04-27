@@ -3,7 +3,6 @@
 //
 #include "FedTree/DP/differential_privacy.h"
 #include "FedTree/FL/FLtrainer.h"
-#include "FedTree/Encryption/HE.h"
 #include "FedTree/FL/partition.h"
 #include "FedTree/FL/comm_helper.h"
 #include "thrust/sequence.h"
@@ -244,8 +243,8 @@ void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FL
                 //LOG(INFO) << "SP" << server.booster.fbuilder->sp;
                 server.booster.fbuilder->update_tree();
 
-                // TODO: Update trees of every party
-#pragma omp parallel for
+
+                #pragma omp parallel for
                 for (int j = 0; j < parties.size(); j++) {
                     parties_trees[j][k] = server.booster.fbuilder->get_tree();
                     parties[j].booster.fbuilder->set_tree(parties_trees[j][k]);
@@ -582,7 +581,7 @@ void FLtrainer::vertical_fl_trainer(vector<Party> &parties, Server &server, FLPa
 
     auto stop = timer.now();
     std::chrono::duration<float> training_time = stop - start;
-    LOG(INFO) << "training time = " << training_time.count();
+    LOG(INFO) << "training time = " << training_time.count() << "s";
 
     LOG(INFO) << "end of training";
 }

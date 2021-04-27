@@ -19,8 +19,6 @@ public:
 
     void get_bin_ids();
 
-    Tree* build_tree_level_approximate(int level, int round) override;
-
     void find_split(int level) override;
 
     void find_split_by_predefined_features(int level) override;

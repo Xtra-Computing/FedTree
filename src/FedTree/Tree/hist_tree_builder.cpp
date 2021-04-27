@@ -21,19 +21,6 @@ using namespace thrust;
 
 void HistTreeBuilder::init(DataSet &dataset, const GBDTParam &param) {
     TreeBuilder::init(dataset, param);
-    //TODO refactor
-    //init shards
-//    shards = vector<Shard>(n_device);
-//    vector<std::unique_ptr<SparseColumns>> v_columns(param.n_device);
-//    for (int i = 0; i < param.n_device; ++i) {
-//        v_columns[i].reset(&shards[i].columns);
-//        shards[i].ignored_set = SyncArray<bool>(dataset.n_features());
-//    }
-//    SparseColumns columns;
-//    if(dataset.use_cpu)
-//        columns.csr2csc_cpu(dataset, v_columns);
-//    else
-//        columns.csr2csc_gpu(dataset, v_columns);
     if (dataset.n_features_ > 0) {
         cut.get_cut_points_fast(sorted_dataset, param.max_num_bin, n_instances);
         last_hist.resize((2 << param.depth) * cut.cut_points_val.size());
@@ -43,25 +30,6 @@ void HistTreeBuilder::init(DataSet &dataset, const GBDTParam &param) {
 
 void HistTreeBuilder::init_nocutpoints(DataSet &dataset, const GBDTParam &param) {
     TreeBuilder::init_nosortdataset(dataset, param);
-//    if (dataset.n_features_ > 0) {
-//        cut.get_cut_points_fast(sorted_dataset, param.max_num_bin, n_instances);
-//        LOG(INFO) << "after get cut points";
-//        last_hist.resize((2 << param.depth) * cut.cut_points_val.size());
-////        get_bin_ids();
-//    }
-    //TODO refactor
-    //init shards
-//    shards = vector<Shard>(n_device);
-//    vector<std::unique_ptr<SparseColumns>> v_columns(param.n_device);
-//    for (int i = 0; i < param.n_device; ++i) {
-//        v_columns[i].reset(&shards[i].columns);
-//        shards[i].ignored_set = SyncArray<bool>(dataset.n_features());
-//    }
-//    SparseColumns columns;
-//    if(dataset.use_cpu)
-//        columns.csr2csc_cpu(dataset, v_columns);
-//    else
-//        columns.csr2csc_gpu(dataset, v_columns);
 }
 
 SyncArray<GHPair> HistTreeBuilder::get_gradients() {
@@ -75,33 +43,33 @@ void HistTreeBuilder::set_gradients(SyncArray<GHPair> &gh) {
 }
 
 
-Tree *HistTreeBuilder::build_tree_level_approximate(int level, int round) {
-    Tree tree;
-    TIMED_FUNC(timerObj);
-    //Todo: add column sampling
-
-    this->ins2node_id.resize(n_instances);
-    this->gradients.set_host_data(const_cast<GHPair *>(gradients.host_data() + round * n_instances));
-    this->trees.init_CPU(this->gradients, param);
-    find_split(level);
-//        split_point_all_reduce(level);
-    {
-        TIMED_SCOPE(timerObj, "apply sp");
-        update_tree();
-        update_ins2node_id();
-        {
-            LOG(TRACE) << "gathering ins2node id";
-            //get final result of the reset instance id to node id
-            if (!has_split) {
-                LOG(INFO) << "no splittable nodes, stop";
-                return nullptr;
-            }
-        }
-//                ins2node_id_all_reduce(level);
-    }
-
-    return &tree;
-}
+//Tree *HistTreeBuilder::build_tree_level_approximate(int level, int round) {
+//    Tree tree;
+//    TIMED_FUNC(timerObj);
+//    //Todo: add column sampling
+//
+//    this->ins2node_id.resize(n_instances);
+//    this->gradients.set_host_data(const_cast<GHPair *>(gradients.host_data() + round * n_instances));
+//    this->trees.init_CPU(this->gradients, param);
+//    find_split(level);
+////        split_point_all_reduce(level);
+//    {
+//        TIMED_SCOPE(timerObj, "apply sp");
+//        update_tree();
+//        update_ins2node_id();
+//        {
+//            LOG(TRACE) << "gathering ins2node id";
+//            //get final result of the reset instance id to node id
+//            if (!has_split) {
+//                LOG(INFO) << "no splittable nodes, stop";
+//                return nullptr;
+//            }
+//        }
+////                ins2node_id_all_reduce(level);
+//    }
+//
+//    return &tree;
+//}
 
 void HistTreeBuilder::get_bin_ids() {
 //    SparseColumns &columns = shards[device_id].columns;
