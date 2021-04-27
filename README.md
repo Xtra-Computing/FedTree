@@ -29,18 +29,14 @@ You can follow the following commands to install NTL library.
         sudo make install
 
 If you install the NTL library at another location, please also modify the CMakeList files of FedTree accordingly (line 64 of CMakeLists.txt).
-# Install submodules
+## Install submodules
 ```
 git submodule init src/test/googletest
 git submodule init thrust
 git submodule update
 ```
 
-# Install NTL library
-
-
-
-# Build on Linux
+## Build on Linux
 
 ```bash
 # under the directory of FedTree
@@ -49,9 +45,9 @@ cmake ..
 make -j
 ```
 
-# Build on MacOS
+## Build on MacOS
 
-## Build with gcc
+### Build with gcc
 
 Install gcc:
 ```
@@ -64,7 +60,7 @@ cd build
 cmake -DCMAKE_CXX_COMPILER=g++-7 -DCMAKE_C_COMPILER=gcc-7 .. # replace "7" with version of gcc installed
 make -j
 ```
-## Build with Apple Clang
+### Build with Apple Clang
 
 You need to install ```libomp``` for MacOS.
 ```
@@ -85,7 +81,7 @@ cmake -DOpenMP_C_FLAGS="-Xpreprocessor -fopenmp -I/usr/local/opt/libomp/include"
 make -j
 ```
 
-# Run training
+## Run training
 ```bash
 # under 'FedTree' directory
 ./build/bin/FedTree-train ./examples/vertical_example.conf
