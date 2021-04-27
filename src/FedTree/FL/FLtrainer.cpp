@@ -160,7 +160,6 @@ void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FL
                     int n_bins = parties[j].booster.fbuilder->cut.cut_points_val.size();
                     auto cut_fid_data = parties[j].booster.fbuilder->cut.cut_fid.host_data();
                     int n_max_splits = n_max_nodes * n_bins;
-
                     SyncArray<int> hist_fid(n_nodes_in_level * n_bins);
                     auto hist_fid_data = hist_fid.host_data();
 
@@ -209,12 +208,9 @@ void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FL
                     exit(1);
                 }
 
-
-
                 // set these parameters to fit merged histogram
-                int n_max_splits = n_max_nodes * n_bins;
                 n_bins = aggregator.booster.fbuilder->cut.cut_points_val.size();
-
+                int n_max_splits = n_max_nodes * n_bins;
                 // server compute gain
                 SyncArray <float_type> gain(n_max_splits);
 
