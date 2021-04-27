@@ -61,7 +61,7 @@ set(DATASET_DIR ${PROJECT_SOURCE_DIR}/dataset/)
 configure_file(include/FedTree/config.h.in config.h)
 
 include_directories(${COMMON_INCLUDES})
-include_directories(/usr/local/include/NTL)
+include_directories(/usr/local/include/)
 if (USE_CUDA)
     include_directories(${PROJECT_SOURCE_DIR}/cub)
 endif ()
