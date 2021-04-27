@@ -30,6 +30,12 @@ void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FL
         LOG(INFO) << "End of HE init";
     }
 
+    DifferentialPrivacy dp_manager = DifferentialPrivacy();
+    if (params.privacy_tech == "dp"){
+        LOG(INFO) << "Start DP init";
+        dp_manager.init(params);
+    }
+
     // Generate HistCut by server or each party
     int n_bins = model_param.max_num_bin;
 
@@ -106,6 +112,12 @@ void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FL
         GHPair sum_gh;
         for (int pid = 0; pid < parties.size(); pid++) {
             parties[pid].booster.update_gradients();
+            if(params.privacy_tech == "dp"){
+                auto gradient_data = parties[pid].booster.gradients.host_data();
+                for(int i = 0; i < parties[pid].booster.gradients.size(); i++){
+                    dp_manager.clip_gradient_value(gradient_data[i].g);
+                }
+            }
             GHPair party_gh = thrust::reduce(thrust::host, parties[pid].booster.gradients.host_data(), parties[pid].booster.gradients.host_end());
             sum_gh = sum_gh + party_gh;
         }
@@ -237,10 +249,16 @@ void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FL
                 auto hist_fid_data = parties_hist_fid[0].host_data();
                 server.booster.fbuilder->compute_gain_in_a_level(gain, n_nodes_in_level, n_bins, hist_fid_data,
                                                                  missing_gh, hist);
-              //  LOG(INFO) << "GAIN:" << gain;
+                //  LOG(INFO) << "GAIN:" << gain;
                 // server find the best gain and its index
                 SyncArray <int_float> best_idx_gain(n_nodes_in_level);
-                server.booster.fbuilder->get_best_gain_in_a_level(gain, best_idx_gain, n_nodes_in_level, n_bins);
+                if(params.privacy_tech == "dp"){
+                    SyncArray<float_type> prob_exponent(n_max_splits);    //the exponent of probability mass for each split point
+                    dp_manager.compute_split_point_probability(gain, prob_exponent);
+                    dp_manager.exponential_select_split_point(prob_exponent, gain, best_idx_gain, n_nodes_in_level, n_bins);
+                }
+                else
+                    server.booster.fbuilder->get_best_gain_in_a_level(gain, best_idx_gain, n_nodes_in_level, n_bins);
                 //LOG(INFO) << "BEST_IDX_GAIN:" << best_idx_gain;
 
                 server.booster.fbuilder->get_split_points(best_idx_gain, n_nodes_in_level, hist_fid_data, missing_gh, hist);
@@ -468,7 +486,6 @@ void FLtrainer::vertical_fl_trainer(vector<Party> &parties, Server &server, FLPa
                 // parties who propose the best candidate update their trees accordingly
                 vector<vector<int>> party_node_map(parties.size());
                 for (int node = 0; node < n_nodes_in_level; node++) {
-
                     // convert the global best index to party id & its local index
                     int best_idx = get < 0 > (best_idx_data[node]);
                     best_idx -= node * n_bins_new;
