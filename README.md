@@ -70,7 +70,7 @@ You need to install ```libomp``` for MacOS.
 brew install libomp
 ```
 
-Without CUDA supports (e.g., on CPUs):
+Install FedTree:
 ```bash
 # under the directory of FedTree
 mkdir build
