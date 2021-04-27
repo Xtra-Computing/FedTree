@@ -9,8 +9,8 @@ if(MSVC)
 endif()
 
 #option(BUILD_SHARED_LIBS "Build as a shared library" ON)
-option(USE_CUDA "Compile with CUDA" ON)
-set(BUILD_TESTS ON CACHE BOOL "Build Tests")
+option(USE_CUDA "Compile with CUDA" OFF)
+set(BUILD_TESTS OFF CACHE BOOL "Build Tests")
 
 #find_package(Threads)
 find_package(OpenMP REQUIRED)
