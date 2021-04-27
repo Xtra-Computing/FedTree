@@ -35,7 +35,7 @@ You can follow the following commands to install NTL library.
 
 If you install the NTL library at another location, please also modify the CMakeList files of FedTree accordingly (line 64 of CMakeLists.txt).
 
-Install FedTree
+Install submodules
 ~~~~~~~~~~~~~~~
 
 Run the following commands:
