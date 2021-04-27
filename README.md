@@ -96,6 +96,7 @@ The following features are in development.
 - Distributed Computing.
 - Training on GPUs.
 - Federated Training of Random Forests.
+- Python interfaces.
 
 # Other information
 FedTree is built based on [ThunderGBM](https://github.com/Xtra-Computing/thundergbm), which is a fast GBDTs and Radom Forests training system on GPUs.
