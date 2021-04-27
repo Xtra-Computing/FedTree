@@ -50,19 +50,6 @@ make -j
 
 ## Build on MacOS
 
-### Build with gcc
-
-Install gcc:
-```
-brew install gcc
-```
-Install FedTree:
-```
-mkdir build
-cd build
-cmake -DCMAKE_CXX_COMPILER=g++-7 -DCMAKE_C_COMPILER=gcc-7 .. # replace "7" with version of gcc installed
-make -j
-```
 ### Build with Apple Clang
 
 You need to install ```libomp``` for MacOS.

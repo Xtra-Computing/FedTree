@@ -60,24 +60,7 @@ Run the following commands:
 
 Build on MacOS
 ~~~~~~~~~~~~~~
-On MacOS, you can either use gcc or Apple Clang to build FedTree.
-
-Build with gcc
-^^^^^^^^^^^^^^
-Install `gcc` if you haven't:
-
-    .. code::
-
-        brew install gcc
-
-Run the following commands:
-
-    .. code::
-
-        mkdir build
-        cd build
-        cmake -DUSE_CUDA=OFF -DCMAKE_CXX_COMPILER=g++-7 -DCMAKE_C_COMPILER=gcc-7 .. # replace "7" with version of gcc installed
-        make -j
+On MacOS, you can use Apple Clang to build FedTree.
 
 Build with Apple Clang
 ^^^^^^^^^^^^^^^^^^^^^^
