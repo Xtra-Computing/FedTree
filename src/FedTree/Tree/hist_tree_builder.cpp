@@ -34,10 +34,8 @@ void HistTreeBuilder::init(DataSet &dataset, const GBDTParam &param) {
 //        columns.csr2csc_cpu(dataset, v_columns);
 //    else
 //        columns.csr2csc_gpu(dataset, v_columns);
-
     if (dataset.n_features_ > 0) {
         cut.get_cut_points_fast(sorted_dataset, param.max_num_bin, n_instances);
-        LOG(INFO) << "after get cut points";
         last_hist.resize((2 << param.depth) * cut.cut_points_val.size());
         get_bin_ids();
     }
@@ -574,7 +572,7 @@ void HistTreeBuilder::find_split_by_predefined_features(int level) {
     LOG(DEBUG) << "split points (gain/fea_id/nid): " << sp;
 }
 
-
+//todo: reduce hist size according to current level (not n_max_split)
 void HistTreeBuilder::compute_histogram_in_a_level(int level, int n_max_splits, int n_bins, int n_nodes_in_level,
                                                    int *hist_fid, SyncArray<GHPair> &missing_gh,
                                                    SyncArray<GHPair> &hist) {
@@ -1038,12 +1036,14 @@ void HistTreeBuilder::compute_histogram_in_a_node(SyncArray<GHPair> &gradients, 
 
 //assumption: GHPairs in the histograms of all clients are arranged in the same order
 
-void HistTreeBuilder::merge_histograms_server_propose(SyncArray<GHPair> &hist, SyncArray<GHPair> &missing_gh) {
+void HistTreeBuilder::merge_histograms_server_propose(SyncArray<GHPair> &merged_hist, SyncArray<GHPair> &merged_missing_gh) {
     int n_bins = parties_hist[0].size();
     CHECK_EQ(parties_hist[0].size(), parties_hist[1].size());
     int n_size = parties_missing_gh[0].size();
-    SyncArray<GHPair> merged_hist(n_bins);
-    SyncArray<GHPair> merged_missing_gh(n_size);
+    merged_hist.resize(n_bins);
+    merged_missing_gh.resize(n_size);
+//    SyncArray<GHPair> merged_hist(n_bins);
+//    SyncArray<GHPair> merged_missing_gh(n_size);
     auto merged_hist_data = merged_hist.host_data();
     auto merged_missing_gh_data = merged_missing_gh.host_data();
 
@@ -1066,11 +1066,12 @@ void HistTreeBuilder::merge_histograms_server_propose(SyncArray<GHPair> &hist, S
             missing_gh_dest = missing_gh_dest + missing_gh;
         }
     }
-    hist.resize(n_bins);
-    hist.copy_from(merged_hist);
-   // LOG(INFO) << "MERGE HIST: " << last_hist;
-    missing_gh.resize(n_size);
-    missing_gh.copy_from(merged_missing_gh);
+
+//    hist.resize(n_bins);
+//    hist.copy_from(merged_hist);
+//   // LOG(INFO) << "MERGE HIST: " << last_hist;
+//    missing_gh.resize(n_size);
+//    missing_gh.copy_from(merged_missing_gh);
 //    last_hist.resize(n_bins);
 //    last_hist.copy_from(merged_hist);
 }

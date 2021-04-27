@@ -74,7 +74,7 @@ vector<float_type> GBDT::predict(const GBDTParam &model_param, const DataSet &da
 float_type GBDT::predict_score(const GBDTParam &model_param, const DataSet &dataSet) {
     SyncArray<float_type> y_predict;
     predict_raw(model_param, dataSet, y_predict);
-    LOG(INFO) << "y_predict:" << y_predict;
+    LOG(DEBUG) << "y_predict:" << y_predict;
     //convert the aggregated values to labels, probabilities or ranking scores.
     std::unique_ptr<ObjectiveFunction> obj;
     obj.reset(ObjectiveFunction::create(model_param.objective));

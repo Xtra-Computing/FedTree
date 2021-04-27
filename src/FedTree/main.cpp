@@ -108,7 +108,6 @@ int main(int argc, char** argv){
 //            std::cout<<"subsets[3].n_instances:"<<subsets[3].n_instances()<<std::endl;
 //            std::cout<<"subsets[3].nnz:"<<subsets[3].csr_val.size()<<std::endl;
         } else if (fl_param.partition_mode == "vertical") {
-            LOG(INFO) << "vertical dir";
             CHECK_EQ(fl_param.mode, "vertical");
             dataset.load_from_file(model_param.path, fl_param);
             dataset.csr_to_csc();
@@ -144,7 +143,6 @@ int main(int argc, char** argv){
     }
 
     DataSet test_dataset;
-    LOG(INFO)<<"global test";
     if (use_global_test_set)
         test_dataset.load_from_file(model_param.test_path, fl_param);
 
@@ -171,24 +169,24 @@ int main(int argc, char** argv){
     else if(param.objective.find("reg:") != std::string::npos){
         param.num_class = 1;
     }
-    
+
     vector<Party> parties(n_parties);
     vector<int> n_instances_per_party(n_parties);
-
-    LOG(INFO)<<"initialize parties";
-    for(int i = 0; i < n_parties; i++){
-        parties[i].init(i, train_subsets[i], fl_param, feature_map[i]);
-        n_instances_per_party[i] = train_subsets[i].n_instances();
-    }
-
-    LOG(INFO) << "initialize server";
     Server server;
-    if (fl_param.mode == "vertical") {
-        server.vertical_init(fl_param, dataset.n_instances(), n_instances_per_party, dataset.y, dataset.label);
-    }else if (fl_param.mode == "horizontal") {
-        server.horizontal_init(fl_param, dataset.n_instances(), n_instances_per_party, dataset);
-    }else {
-        server.init(fl_param, dataset.n_instances(), n_instances_per_party);
+    if(fl_param.mode != "centralized") {
+        LOG(INFO) << "initialize parties";
+        for (int i = 0; i < n_parties; i++) {
+            parties[i].init(i, train_subsets[i], fl_param, feature_map[i]);
+            n_instances_per_party[i] = train_subsets[i].n_instances();
+        }
+        LOG(INFO) << "initialize server";
+        if (fl_param.mode == "vertical") {
+            server.vertical_init(fl_param, dataset.n_instances(), n_instances_per_party, dataset.y, dataset.label);
+        } else if (fl_param.mode == "horizontal") {
+            server.horizontal_init(fl_param, dataset.n_instances(), n_instances_per_party, dataset);
+        } else {
+            server.init(fl_param, dataset.n_instances(), n_instances_per_party);
+        }
     }
 
     LOG(INFO) << "start training";
@@ -269,20 +267,6 @@ int main(int argc, char** argv){
             score = parties[0].gbdt.predict_score(fl_param.gbdt_param, test_subsets[0]);
         scores.push_back(score);
     }
-
-    float_type mean = 0;
-    for(int i = 0; i < scores.size(); i++){
-        mean += scores[i];
-    }
-    mean /= scores.size();
-    std::cout<<"mean score:"<<mean<<std::endl;
-    float_type var = 0;
-    for(int i = 0; i < scores.size(); i++){
-        var += (scores[i] - mean) * (scores[i] - mean);
-    }
-    var /= scores.size();
-    float_type std = sqrt(var);
-    std::cout<<"std:"<<std<<std::endl;
 //        parser.save_model("global_model", fl_param.gbdt_param, server.global_trees.trees, dataset);
 //    }
     return 0;

@@ -125,11 +125,10 @@ void unique_by_flag(SyncArray<float> &target_arr, SyncArray<int> &flags, int n_c
 
 // cost more memory
 void HistCut::get_cut_points_fast(DataSet &dataset, int max_num_bins, int n_instances) {
-    LOG(INFO) << "Fast getting cut points...";
+//    LOG(INFO) << "Fast getting cut points...";
     if(!dataset.has_csc)
         dataset.csr_to_csc();
     int n_column = dataset.n_features();
-    LOG(INFO) << n_instances;
 
     cut_points_val.resize(dataset.csc_val.size());
     cut_col_ptr.resize(dataset.csc_col_ptr.size());
@@ -208,7 +207,7 @@ void HistCut::get_cut_points_by_feature_range(vector<vector<float>> f_range, int
         cut_col_ptr_data[fid] = fid * max_num_bins;
         float val_range = f_range[fid][1] - f_range[fid][0];
         float val_step = val_range / max_num_bins;
-
+        //todo: compress the cut points if distance is small
         for(int i = 0; i < max_num_bins; i ++) {
             cut_fid_data[fid * max_num_bins + i] = fid;
             cut_points_val_data[fid * max_num_bins + i] = f_range[fid][1] - i * val_step;
