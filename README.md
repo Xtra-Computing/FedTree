@@ -13,7 +13,7 @@ The overall architecture of FedTree is shown below.
 ![FedTree_archi](./docs/source/images/fedtree_archi.png)
 
 # Getting Started
-
+You can refer to our primary documentation [here](https://fedtree.readthedocs.io/en/latest/index.html).
 ## Prerequisites
 * `CMake` 3.15 or above
 * `NTL` library
