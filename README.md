@@ -1,59 +1,51 @@
-# FedTree
-A tree-based federated learning system.
+# Overview
+**FedTree** is a federated learning system for tree-based models. It designed to be highly **efficient**, **effective**,
+and **secure**. It currently has the following features.
 
-# Prerequisites
-* ```cmake``` 3.15 or above
-* ```gcc``` 4.8 or above for Linux and MacOS
+- Federated training of gradient boosting decision trees.
+- Parallel computing on multi-core CPUs.
+- Support homomorphic encryption and differential privacy.
+- Support classification and regression.
 
+The overall architecture of FedTree is shown below.
+![FedTree_archi](./docs/source/images/fedtree_archi.png)
+
+# Getting Started
+
+## Prerequisites
+* `CMake`_ 3.15 or above
+* `NTL`_ library
+
+You can follow the following commands to install NTL library.
+
+    .. code::
+
+        wget https://libntl.org/ntl-11.4.4.tar.gz
+        tar -xvf ntl-11.4.4.tar.gz
+        cd ntl-11.4.4/src
+        ./configure
+        make
+        make check
+        sudo make install
+
+If you install the NTL library at another location, please also modify the CMakeList files of FedTree accordingly (line 64 of CMakeLists.txt).
 # Install submodules
 ```
 git submodule init src/test/googletest
-git submodule init pybind11
-```
-For CPUs:
-```
 git submodule init thrust
-```
-
-For GPUs:
-```
-git submodule init cub
-```
-
-Then
-```
 git submodule update
 ```
 
-# Install python modules
-```
-pip install phe
-```
-Make sure that you install the library to the correct Python version so that the embedded python interpreter can find the module. You can verify your python version by running `pip --version`.
-
 # Install NTL library
-```
-wget https://libntl.org/ntl-11.4.4.tar.gz
-tar -xvf ntl-11.4.4.tar.gz
-cd ntl-11.4.4/src
-./configure
-make
-make check
-sudo make install
-```
-If you install the NTL library at another location, please also modify the CMakeList files accordingly.
+
+
 
 # Build on Linux
-With CUDA supports:
-```bash
-# under the directory of FedTree
-mkdir build && cd build && cmake .. && make -j
-```
-Without CUDA supports (i.e., on CPUs):
+
 ```bash
 # under the directory of FedTree
 mkdir build && cd build 
-cmake -DUSE_CUDA=OFF ..
+cmake ..
 make -j
 ```
 
@@ -65,11 +57,11 @@ Install gcc:
 ```
 brew install gcc
 ```
-Install FedTree without CUDA
+Install FedTree:
 ```
 mkdir build
 cd build
-cmake -DUSE_CUDA=OFF -DCMAKE_CXX_COMPILER=g++-7 -DCMAKE_C_COMPILER=gcc-7 .. # replace "7" with version of gcc installed
+cmake -DCMAKE_CXX_COMPILER=g++-7 -DCMAKE_C_COMPILER=gcc-7 .. # replace "7" with version of gcc installed
 make -j
 ```
 ## Build with Apple Clang
@@ -84,8 +76,7 @@ Without CUDA supports (e.g., on CPUs):
 # under the directory of FedTree
 mkdir build
 cd build
-cmake -DUSE_CUDA=OFF \
-  -DOpenMP_C_FLAGS="-Xpreprocessor -fopenmp -I/usr/local/opt/libomp/include" \
+cmake -DOpenMP_C_FLAGS="-Xpreprocessor -fopenmp -I/usr/local/opt/libomp/include" \
   -DOpenMP_C_LIB_NAMES=omp \
   -DOpenMP_CXX_FLAGS="-Xpreprocessor -fopenmp -I/usr/local/opt/libomp/include" \
   -DOpenMP_CXX_LIB_NAMES=omp \
@@ -94,17 +85,18 @@ cmake -DUSE_CUDA=OFF \
 make -j
 ```
 
-# Run Tests
-```bash
-# under 'build' directory
-./src/test/FedTree-test
-```
-
-# Paramters
-`mode`: `centralized` or `ensemble`.
-
 # Run training
 ```bash
-# under 'build' directory
-./bin/FedTree-train ../dataset/machine.conf
+# under 'FedTree' directory
+./build/bin/FedTree-train ./examples/vertical_example.conf
 ```
+
+# Features in development
+The following features are in development.
+
+- Distributed Computing.
+- Training on GPUs.
+- Federated Training of Random Forests.
+
+# Other information
+FedTree is built based on [ThunderGBM](https://github.com/Xtra-Computing/thundergbm), which is a fast GBDTs and Radom Forests training system on GPUs.
