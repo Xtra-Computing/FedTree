@@ -1,5 +1,5 @@
 # Overview
-**FedTree** is a federated learning system for tree-based models. It designed to be highly **efficient**, **effective**,
+**FedTree** is a federated learning system for tree-based models. It is designed to be highly **efficient**, **effective**,
 and **secure**. It currently has the following features.
 
 - Federated training of gradient boosting decision trees.
