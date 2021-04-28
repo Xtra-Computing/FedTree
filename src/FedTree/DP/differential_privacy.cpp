@@ -33,6 +33,7 @@ void DifferentialPrivacy::compute_split_point_probability(SyncArray<float_type> 
 
     auto prob_exponent_data = prob_exponent.host_data();
     auto gain_data = gain.host_data();
+#pragma omp parallel for
     for(int i = 0; i < gain.size(); i ++) {
         prob_exponent_data[i] = this->privacy_budget_internal_nodes * fabsf(gain_data[i]) / 2 / delta_g;
 //        LOG(INFO) << "budget" << this->privacy_budget_internal_nodes;
@@ -60,7 +61,7 @@ void DifferentialPrivacy::exponential_select_split_point(SyncArray<float_type> &
     auto best_idx_gain_data = best_idx_gain.host_data();
 
     vector<float> probability(n_bins * n_nodes_in_level);
-
+#pragma omp parallel for
     for (int i = 0; i < n_nodes_in_level; i++) {
         int start = i * n_bins;
         int end = start + n_bins - 1;
@@ -107,23 +108,8 @@ void DifferentialPrivacy::exponential_select_split_point(SyncArray<float_type> &
         if(! split_selected) {
             best_idx_gain_data[i] = thrust::make_tuple(start, 0.0);
         }
-
-//        int max_idx = 0;
-//        int max_gain = prob_exponent_data[0];
-//        for(int j = start; j <= end; j ++) {
-//            if(prob_exponent_data[j] > max_gain) {
-//                max_idx = j;
-//                max_gain = prob_exponent_data[j];
-//            }
-//        }
-//        best_idx_gain_data[i] = thrust::make_tuple(max_idx, gain_data[max_idx]);
     }
-//    for(int i = 0; i < 100; i ++) {
-//        LOG(INFO) << "gain" << gain.host_data()[i];
-//        LOG(INFO) << "prob" << probability[i];
-//    }
-    LOG(INFO) << "best rank and gain(dp) "<< best_idx_gain;
-
+//    LOG(INFO) << "best rank and gain(dp) "<< best_idx_gain;
 }
 /**
  * add Laplace noise to the data
