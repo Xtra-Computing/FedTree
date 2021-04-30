@@ -685,6 +685,12 @@ void DataSet::load_from_files(vector<string> file_names, FLParam &param) {
     for(auto name: file_names) {
         DataSet next;
         next.load_from_file(name, param);
+        if (param.partition_mode == "horizontal") {
+            n_features_ = next.n_features();
+        }
+        if (param.partition_mode == "vertical") {
+            n_features_ += next.n_features();
+        }
         csr_val.insert(csr_val.end(), next.csr_val.begin(), next.csr_val.end());
         csr_col_idx.insert(csr_col_idx.end(), next.csr_col_idx.begin(), next.csr_col_idx.end());
         label.insert(label.end(), next.label.begin(), next.label.end());

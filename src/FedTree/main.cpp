@@ -80,7 +80,15 @@ int main(int argc, char** argv){
     }
 //    }
 //    else{
+
     int n_parties = fl_param.n_parties;
+    Partition partition;
+    vector<string> paths = partition.split_string_by_delimiter(model_param.path, ",");
+
+    if (!fl_param.partition || paths.size() > 1) {
+        n_parties = paths.size();
+        fl_param.partition = false;
+    }
     vector<DataSet> train_subsets(n_parties);
     vector<DataSet> test_subsets(n_parties);
     vector<DataSet> subsets(n_parties);
@@ -89,7 +97,6 @@ int main(int argc, char** argv){
     DataSet dataset;
     bool use_global_test_set = !model_param.test_path.empty();
     if (fl_param.partition == true) {
-        Partition partition;
         if (fl_param.partition_mode == "hybrid") {
             dataset.load_from_file(model_param.path, fl_param);
             LOG(INFO) << "horizontal vertical dir";
@@ -138,8 +145,20 @@ int main(int argc, char** argv){
         }
     }
     else{
-        std::cout<<"not supported yet"<<std::endl;
-        exit(1);
+        dataset.load_from_files(paths, fl_param);
+        for (int i = 0; i < n_parties; i ++) {
+            subsets[i].load_from_file(paths[i], fl_param);
+        }
+        if (!use_global_test_set) {
+            LOG(INFO) << "train test split";
+            for (int i = 0; i < n_parties; i++) {
+                partition.train_test_split(subsets[i], train_subsets[i], test_subsets[i]);
+            }
+        } else{
+            for (int i = 0; i < n_parties; i++) {
+                train_subsets[i] = subsets[i];
+            }
+        }
     }
 
     DataSet test_dataset;
