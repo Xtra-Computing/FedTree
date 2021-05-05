@@ -1018,26 +1018,26 @@ void HistTreeBuilder::merge_histograms_server_propose(SyncArray<GHPair> &merged_
     for (int i = 0; i < parties_hist.size(); i++) {
         auto hist_data = parties_hist[i].host_data();
         int n_bins = parties_hist[i].size();
-        thrust::transform(merged_hist_data, merged_hist_data + n_bins,
-                          hist_data, merged_hist_data, thrust::plus<GHPair>());
-//#pragma omp parallel for
-//        for (int j = 0; j < n_bins; j++) {
-//            GHPair &src = hist_data[j];
-//            GHPair &hist_dest = merged_hist_data[j];
-//            hist_dest = hist_dest + src;
-//        }
+        //thrust::transform(merged_hist_data, merged_hist_data + n_bins,
+        //                  hist_data, merged_hist_data, thrust::plus<GHPair>());
+#pragma omp parallel for
+        for (int j = 0; j < n_bins; j++) {
+            GHPair &src = hist_data[j];
+            GHPair &hist_dest = merged_hist_data[j];
+            hist_dest = hist_dest + src;
+        }
     }
 
     for (int i = 0; i < parties_missing_gh.size(); i++) {
         auto missing_gh_data =  parties_missing_gh[i].host_data();
-        thrust::transform(merged_missing_gh_data, merged_missing_gh_data + n_size,
-                missing_gh_data, merged_missing_gh_data, thrust::plus<GHPair>());
-//#pragma omp parallel for
-//        for (int j = 0; j < n_size; j++) {
-//            GHPair &missing_gh = missing_gh_data[j];
-//            GHPair &missing_gh_dest = merged_missing_gh_data[j];
-//            missing_gh_dest = missing_gh_dest + missing_gh;
-//        }
+        //thrust::transform(merged_missing_gh_data, merged_missing_gh_data + n_size,
+        //        missing_gh_data, merged_missing_gh_data, thrust::plus<GHPair>());
+#pragma omp parallel for
+        for (int j = 0; j < n_size; j++) {
+            GHPair &missing_gh = missing_gh_data[j];
+            GHPair &missing_gh_dest = merged_missing_gh_data[j];
+            missing_gh_dest = missing_gh_dest + missing_gh;
+        }
     }
 
 //    hist.resize(n_bins);
