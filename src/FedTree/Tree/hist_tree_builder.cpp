@@ -1017,6 +1017,7 @@ void HistTreeBuilder::merge_histograms_server_propose(SyncArray<GHPair> &merged_
 
     for (int i = 0; i < parties_hist.size(); i++) {
         auto hist_data = parties_hist[i].host_data();
+        int n_bins = parties_hist[i].size();
 #pragma omp parallel for
         for (int j = 0; j < n_bins; j++) {
             GHPair &src = hist_data[j];
@@ -1024,7 +1025,7 @@ void HistTreeBuilder::merge_histograms_server_propose(SyncArray<GHPair> &merged_
             hist_dest = hist_dest + src;
         }
     }
-#pragma omp parallel for
+
     for (int i = 0; i < parties_missing_gh.size(); i++) {
         auto missing_gh_data =  parties_missing_gh[i].host_data();
 #pragma omp parallel for
