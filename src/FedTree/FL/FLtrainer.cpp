@@ -16,6 +16,7 @@ using namespace thrust;
 void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FLParam &params) {
     std::chrono::high_resolution_clock timer;
     auto t_start = timer.now();
+    auto start = t_start;
 
     auto model_param = params.gbdt_param;
     Party &aggregator = (params.merge_histogram == "client")? parties[0] : server;
@@ -45,8 +46,6 @@ void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FL
         // loop through all party to find max and min for each feature
         float inf = std::numeric_limits<float>::infinity();
         vector<vector<float>> feature_range(parties[0].get_num_feature());
-//        for(int i = 0; i < parties[0].dataset.csr_val.size(); i++)
-//            std::cout<<parties[0].dataset.csr_val[i]<<" ";
         for (int n = 0; n < parties[0].get_num_feature(); n++) {
             vector<float> min_max = {inf, -inf};
             for (int p = 0; p < parties.size(); p++) {
@@ -60,46 +59,18 @@ void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FL
         }
 //        // once we have feature_range, we can generate cut points
         server.booster.fbuilder->cut.get_cut_points_by_feature_range(feature_range, n_bins);
-//        server.booster.fbuilder->get_bin_ids();
-
-
-//        auto cut_points_val_data = server.booster.fbuilder->cut.cut_points_val.host_data();
-//        auto cut_col_ptr_data = server.booster.fbuilder->cut.cut_col_ptr.host_data();
-//        for(int j = 0; j < feature_range.size(); j++) {
-//            std::cout<<"server " << j << " column cut points"<<std::endl;
-//            for (int i = cut_col_ptr_data[0]; i < cut_col_ptr_data[1]; i++) {
-//                std::cout << cut_points_val_data[i] << " ";
-//            }
-//        }
-//        std::cout<<std::endl;
-
-//        LOG(INFO)<<"feature rage 0:"<<feature_range[0];
 
         for (int p = 0; p < parties.size(); p++) {
             parties[p].booster.fbuilder->set_cut(server.booster.fbuilder->cut);
             parties[p].booster.fbuilder->get_bin_ids();
-//            if(p == 0){
-//                std::cout<<"dense_bin_id:";
-//                auto dense_bin_id_data = parties[0].booster.fbuilder->dense_bin_id.host_data();
-//                for(int i = 0; i < parties[0].booster.fbuilder->dense_bin_id.size(); i++)
-//                    std::cout<<int(dense_bin_id_data[i])<<" ";
-//                std::cout<<std::endl;
-//            }
         }
-//        auto party_cut_points_val_data = parties[0].booster.fbuilder->cut.cut_points_val.host_data();
-//        auto party_cut_col_ptr_data = parties[0].booster.fbuilder->cut.cut_col_ptr.host_data();
-//        std::cout<<"party0 first column cut points:"<<std::endl;
-//        for(int i = party_cut_col_ptr_data[0]; i < party_cut_col_ptr_data[1]; i++){
-//            std::cout<<party_cut_points_val_data[i]<<" ";
-//        }
+
     } else if (params.propose_split == "client") {
         for (int p = 0; p < parties.size(); p++) {
             auto dataset = parties[p].dataset;
             parties[p].booster.fbuilder->cut.get_cut_points_fast(dataset, n_bins, dataset.n_instances());
             aggregator.booster.fbuilder->append_to_parties_cut(parties[p].booster.fbuilder->cut, p);
         }
-//        LOG(INFO)<<"not supported yet";
-//        exit(1);
     }
 
     auto t_end = timer.now();
@@ -108,7 +79,7 @@ void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FL
     t_start = t_end;
 
     for (int i = 0; i < params.gbdt_param.n_trees; i++) {
-        LOG(INFO) << "ROUND " << i;
+        LOG(DEBUG) << "ROUND " << i;
         vector<vector<Tree>> parties_trees(parties.size());
         for (int p = 0; p < parties.size(); p++) {
             parties_trees[p].resize(params.gbdt_param.tree_per_rounds);
@@ -287,11 +258,17 @@ void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FL
        // LOG(INFO) <<  "Y_PREDICT" << parties[0].booster.fbuilder->get_y_predict();
         LOG(INFO) << parties[0].booster.metric->get_name() << " = "
                   << parties[0].booster.metric->get_score(parties[0].booster.fbuilder->get_y_predict());
-    } LOG(INFO) << "end of training";
+    }
+    auto t_stop = timer.now();
+    std::chrono::duration<float> training_time = t_stop - start;
+    LOG(INFO) << "training time = " << training_time.count() << "s";
+
+    LOG(INFO) << "end of training";
 }
 
 void FLtrainer::vertical_fl_trainer(vector<Party> &parties, Server &server, FLParam &params) {
-
+    std::chrono::high_resolution_clock timer;
+    auto start = timer.now();
     // load dataset
     GBDTParam &model_param = params.gbdt_param;
     Comm comm_helper;
@@ -305,9 +282,6 @@ void FLtrainer::vertical_fl_trainer(vector<Party> &parties, Server &server, FLPa
 
     // start training
     // for each boosting round
-
-    std::chrono::high_resolution_clock timer;
-    auto start = timer.now();
 
     for (int round = 0; round < params.gbdt_param.n_trees; round++) {
 
