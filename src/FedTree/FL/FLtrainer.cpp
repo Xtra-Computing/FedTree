@@ -186,10 +186,10 @@ void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FL
                 SyncArray <float_type> gain(n_max_splits);
 
                 // if privacy tech == 'he', decrypt histogram
-                if (params.privacy_tech == "he")
+                if (params.privacy_tech == "he") {
                     server.decrypt_gh_pairs(hist);
                     server.decrypt_gh_pairs(missing_gh);
-
+                }
                 // if server propose cut, hist_fid for each party should be the same
                 auto hist_fid_data = parties_hist_fid[0].host_data();
                 server.booster.fbuilder->compute_gain_in_a_level(gain, n_nodes_in_level, n_bins, hist_fid_data,
