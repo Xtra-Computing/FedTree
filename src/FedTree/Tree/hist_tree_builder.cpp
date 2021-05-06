@@ -586,14 +586,16 @@ void HistTreeBuilder::compute_histogram_in_a_level(int level, int n_max_splits, 
                     int feature_offset = cut_col_ptr_data[fid];
                     const GHPair src = gh_data[iid];
                     GHPair &dest = hist_data[feature_offset + bid];
-                    if (src.h != 0) {
-//                        #pragma omp atomic
-                        dest.h += src.h;
-                    }
-                    if (src.g != 0) {
-//                        #pragma omp atomic
-                        dest.g += src.g;
-                    }
+                    dest = dest + src;
+//                    g and h values are 0 if after HE encryption
+//                    if (src.h != 0) {
+////                        #pragma omp atomic
+//                        dest.h += src.h;
+//                    }
+//                    if (src.g != 0) {
+////                        #pragma omp atomic
+//                        dest.g += src.g;
+//                    }
 
                 }
             }
