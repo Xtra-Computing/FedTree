@@ -275,7 +275,7 @@ void DataSet::load_from_file(string file_name, FLParam &param) {
         }
         for (int i = 0; i < nthread; i++) {
             this->y.insert(y.end(), y_[i].begin(), y_[i].end());
-            this->label.insert(label.end(), y_[i].begin(), y_[i].end());
+//            this->label.insert(label.end(), y_[i].begin(), y_[i].end());
         }
     } // end while
 
@@ -285,6 +285,7 @@ void DataSet::load_from_file(string file_name, FLParam &param) {
     if (ObjectiveFunction::need_load_group_file(param.gbdt_param.objective)) load_group_file(file_name + ".group");
     if (ObjectiveFunction::need_group_label(param.gbdt_param.objective) || param.gbdt_param.metric == "error") {
         group_label();
+        is_classification = true;
         param.gbdt_param.num_class = label.size();
     }
 

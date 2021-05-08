@@ -23,6 +23,10 @@ void Partition::homo_partition(const DataSet &dataset, const int n_parties, cons
         if (!is_horizontal) {
             subsets[i].y = dataset.y;
         }
+        if(dataset.is_classification) {
+            subsets[i].label = dataset.label;
+            subsets[i].is_classification = true;
+        }
     }
 
     vector<int> idxs;
@@ -69,6 +73,7 @@ void Partition::homo_partition(const DataSet &dataset, const int n_parties, cons
             int part_id = i;
             int party_id = part2party[part_id];
             subsets[party_id].y.push_back(dataset.y[i]);
+//            subsets[party_id].label.push_back(dataset.label[i]);
 
             for(int j = dataset.csr_row_ptr[i]; j < dataset.csr_row_ptr[i+1]; j ++) { // for each element in the row
                 float_type value = dataset.csr_val[j];
