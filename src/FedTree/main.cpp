@@ -246,7 +246,8 @@ int main(int argc, char** argv){
         trainer.vertical_fl_trainer(parties, server, fl_param);
         float_type score;
 //        if(use_global_test_set)
-        score = parties[0].gbdt.predict_score(fl_param.gbdt_param, test_dataset);
+//        score = parties[0].gbdt.predict_score(fl_param.gbdt_param, test_dataset);
+        score = parties[0].gbdt.predict_score_vertical(fl_param.gbdt_param, test_dataset, batch_idxs);
 //        else
 //            score = parties[0].gbdt.predict_score(fl_param.gbdt_param, test_subsets[0]);
         scores.push_back(score);

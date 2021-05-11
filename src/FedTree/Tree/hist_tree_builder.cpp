@@ -855,7 +855,7 @@ void HistTreeBuilder::get_split_points_in_a_node(int node_id, int best_idx, floa
     auto missing_gh_data = missing_gh.host_data();
     auto cut_val_data = cut.cut_points_val.host_data();
 
-    sp.resize(n_nodes_in_level);
+//    sp.resize(n_nodes_in_level);
     auto sp_data = sp.host_data();
     auto nodes_data = trees.nodes.host_data();
 
@@ -864,7 +864,6 @@ void HistTreeBuilder::get_split_points_in_a_node(int node_id, int best_idx, floa
     if (!nodes_data[node_id].is_valid) {
         sp_data[node_id].split_fea_id = -1;
         sp_data[node_id].nid = -1;
-        // todo: check, ThunderGBM uses return;
         return;
     }
     int fid = hist_fid[best_idx];

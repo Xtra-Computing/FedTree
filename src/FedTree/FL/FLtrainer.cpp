@@ -417,11 +417,11 @@ void FLtrainer::vertical_fl_trainer(vector<Party> &parties, Server &server, FLPa
                                                                  global_hist_fid.host_data(),
                                                                  missing_gh, hist, n_column_new);
 //                LOG(INFO) << "gain:" << gain;
-                for (int index = 0; index < gain.size(); index ++) {
-                    if (gain.host_data()[index] != 0) {
-//                        LOG(INFO) << gain.host_data()[index];
-                    }
-                }
+//                for (int index = 0; index < gain.size(); index ++) {
+//                    if (gain.host_data()[index] != 0) {
+////                        LOG(INFO) << gain.host_data()[index];
+//                    }
+//                }
                 // server find the best gain and its index
                 SyncArray<int_float> best_idx_gain(n_nodes_in_level);
 
@@ -450,6 +450,7 @@ void FLtrainer::vertical_fl_trainer(vector<Party> &parties, Server &server, FLPa
 
                 // parties who propose the best candidate update their trees accordingly
                 vector<vector<int>> party_node_map(parties.size());
+
                 for (int node = 0; node < n_nodes_in_level; node++) {
                     // convert the global best index to party id & its local index
                     int best_idx = get < 0 > (best_idx_data[node]);
@@ -466,6 +467,7 @@ void FLtrainer::vertical_fl_trainer(vector<Party> &parties, Server &server, FLPa
                     int node_shifted = node + (1 << l) - 1;
                     party_node_map[party_id].push_back(node_shifted);
                     // party get local split point
+
                     parties[party_id].booster.fbuilder->get_split_points_in_a_node(node, local_idx, best_gain,
                                                                                    n_nodes_in_level,
                                                                                    parties_hist_fid[party_id].host_data(),
@@ -474,13 +476,14 @@ void FLtrainer::vertical_fl_trainer(vector<Party> &parties, Server &server, FLPa
                     // party update itself
                     parties[party_id].booster.fbuilder->update_tree_in_a_node(node);
                     parties[party_id].booster.fbuilder->update_ins2node_id_in_a_node(node_shifted);
-
                     // update local split_feature_id to global
                     auto party_global_hist_fid_data = parties_global_hist_fid[party_id].host_data();
                     int global_fid = party_global_hist_fid_data[local_idx];
                     auto nodes_data = parties[party_id].booster.fbuilder->trees.nodes.host_data();
                     auto sp_data = parties[party_id].booster.fbuilder->sp.host_data();
+                    // LOG(INFO)<<"local split fea id:"<<sp_data[node].split_fea_id;
                     sp_data[node].split_fea_id = global_fid;
+                    // LOG(INFO)<<"global split fea id:"<<sp_data[node].split_fea_id;
                     nodes_data[node_shifted].split_feature_id = global_fid;
                 }
 
@@ -542,12 +545,14 @@ void FLtrainer::vertical_fl_trainer(vector<Party> &parties, Server &server, FLPa
 
             for (int pid = 0; pid < parties.size(); pid++) {
                 parties[pid].booster.fbuilder->trees.prune_self(model_param.gamma);
+//                LOG(INFO)<<"trees:"<< parties[pid].booster.fbuilder->trees.nodes;
                 parties[pid].booster.fbuilder->predict_in_training(t);
             }
             server.booster.fbuilder->trees.prune_self(model_param.gamma);
             server.booster.fbuilder->predict_in_training(t);
-            tree.nodes.resize(parties[0].booster.fbuilder->trees.nodes.size());
-            tree.nodes.copy_from(parties[0].booster.fbuilder->trees.nodes);
+            tree = parties[0].booster.fbuilder->trees;
+//            tree.nodes.resize(parties[0].booster.fbuilder->trees.nodes.size());
+//            tree.nodes.copy_from(parties[0].booster.fbuilder->trees.nodes);
         }
 
 //        LOG(INFO) << "y_predict: " << parties[0].booster.fbuilder->get_y_predict();
