@@ -77,20 +77,14 @@ make -j
 ./build/bin/FedTree-train ./examples/vertical_example.conf
 ```
 
-# Run training
-```bash
-# under 'build' directory
-./bin/FedTree-train ../dataset/machine.conf
-```
-
 # Run distributed training
 ```bash
-# under 'build' directory
-./bin/FedTree-distributed-server ../dataset/machine.conf
+# under 'FedTree' directory
+./build/bin/FedTree-distributed-server ./examples/vertical_example.conf
 # open a new terminal
-./bin/FedTree-distributed-client ../dataset/machine.conf 0
+./build/bin/FedTree-distributed-client ./examples/vertical_example.conf 0
 # open another new terminal
-./bin/FedTree-distributed-client ../dataset/machine.conf 1
+./build/bin/FedTree-distributed-client ./examples/vertical_example.conf 1
 # run multiple copies of the client based on the n_parties param you specified
 ```
 
