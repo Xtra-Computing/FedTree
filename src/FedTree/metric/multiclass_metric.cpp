@@ -41,6 +41,7 @@ float_type BinaryClassMetric::get_score(const SyncArray<float_type> &y_p) const 
     auto is_true_data = is_true.host_data();
 #pragma omp parallel for
     for (int i = 0; i < n_instances; i++){
+        // change the threshold to 0 if the classes are -1 and 1 and using regression as the objective.
         int max_k = (yp_data[i] > 0.5) ? 1 : 0;
         is_true_data[i] = max_k == y_data[i];
     }

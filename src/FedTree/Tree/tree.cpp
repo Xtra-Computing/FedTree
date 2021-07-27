@@ -7,16 +7,22 @@
 #include "thrust/execution_policy.h"
 #include <numeric>
 
+void Tree::init_CPU(const GHPair sum_gh, const GBDTParam &param) {
+    init_structure(param.depth);
+    float_type lambda = param.lambda;
+    auto node_data = nodes.host_data();
+    Tree::TreeNode &root_node = node_data[0];
+    root_node.sum_gh_pair = sum_gh;
+    root_node.is_valid = true;
+    root_node.calc_weight(lambda);
+}
+
 void Tree::init_CPU(const SyncArray<GHPair> &gradients, const GBDTParam &param) {
     TIMED_FUNC(timerObj);
     init_structure(param.depth);
     //init root node
-//    GHPair sum_gh = GHPair(0, 0);
-//    auto gh_pairs = gradients.host_data();
-//    for (int i = 0; i < gradients.size(); i++) {
-//        sum_gh = sum_gh + gh_pairs[i];
-//    }
     GHPair sum_gh = thrust::reduce(thrust::host, gradients.host_data(), gradients.host_end());
+    LOG(DEBUG) << "init_CPU: " << sum_gh;
 
     float_type lambda = param.lambda;
     auto node_data = nodes.host_data();

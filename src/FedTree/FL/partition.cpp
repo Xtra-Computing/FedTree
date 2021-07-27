@@ -9,7 +9,7 @@
 
 
 void Partition::homo_partition(const DataSet &dataset, const int n_parties, const bool is_horizontal,
-                               vector<DataSet> &subsets, std::map<int, vector<int>> &batch_idxs) {
+                               vector<DataSet> &subsets, std::map<int, vector<int>> &batch_idxs, int seed) {
     int n;
     if (is_horizontal)
         n = dataset.n_instances();
@@ -23,6 +23,10 @@ void Partition::homo_partition(const DataSet &dataset, const int n_parties, cons
         if (!is_horizontal) {
             subsets[i].y = dataset.y;
         }
+        if(dataset.is_classification) {
+            subsets[i].label = dataset.label;
+            subsets[i].is_classification = true;
+        }
     }
 
     vector<int> idxs;
@@ -30,6 +34,8 @@ void Partition::homo_partition(const DataSet &dataset, const int n_parties, cons
         idxs.push_back(i);
     }
 
+    std::default_random_engine e(seed);
+    std::shuffle(idxs.begin(), idxs.end(), e);
 //    std::random_shuffle(idxs.begin(), idxs.end());
 
 //    std::map<int, vector<int>> batch_idxs;
@@ -37,12 +43,16 @@ void Partition::homo_partition(const DataSet &dataset, const int n_parties, cons
     int stride = n / n_parties;
     for (int i = 0; i < n_parties; i++) {
         batch_idxs[i] = vector<int>(idxs.begin() + i * stride, idxs.begin() + (i + 1) * stride);
+        thrust::sort(thrust::host, batch_idxs[i].begin(), batch_idxs[i].begin() + batch_idxs[i].size());
     }
+    //LOG(INFO)<<"batch_idxs:"<<batch_idxs;
+
     if (stride * n_parties < n) {
         for (int i = stride * n_parties; i < n; i++) {
-            batch_idxs[n_parties - 1].push_back(i);
+            batch_idxs[n_parties - 1].push_back(idxs[i]);
         }
     }
+    thrust::sort(thrust::host, batch_idxs[n_parties - 1].begin(), batch_idxs[n_parties - 1].begin() + batch_idxs[n_parties - 1].size());
 //    for (int i = 0; i < n % n_parties; i++) {
 //        batch_idxs[i].push_back(idxs[n_parties * stride + i]);
 //    }
@@ -55,31 +65,36 @@ void Partition::homo_partition(const DataSet &dataset, const int n_parties, cons
         }
     }
 
-    if (is_horizontal) {
+    if(is_horizontal) {
         // TODO: verify whether to modify feature map
 
-        for (int i = 0; i < n_parties; i++) {
+        for(int i = 0; i < n_parties; i++) {
             subsets[i].csr_row_ptr.push_back(0);
         }
 
-        for (int i = 0; i < dataset.csr_row_ptr.size() - 1; i++) { // for each row
+        for(int i = 0; i < dataset.csr_row_ptr.size()-1; i ++) { // for each row
             vector<int> csr_row_sub(n_parties, 0);
-            for (int j = dataset.csr_row_ptr[i]; j < dataset.csr_row_ptr[i + 1]; j++) { // for each element in the row
+            int part_id = i;
+            int party_id = part2party[part_id];
+            subsets[party_id].y.push_back(dataset.y[i]);
+//            subsets[party_id].label.push_back(dataset.label[i]);
+
+            for(int j = dataset.csr_row_ptr[i]; j < dataset.csr_row_ptr[i+1]; j ++) { // for each element in the row
                 float_type value = dataset.csr_val[j];
                 int cid = dataset.csr_col_idx[j];
-                int part_id = i;
-                int party_id = part2party[part_id];
 
                 subsets[party_id].csr_val.push_back(value);
                 subsets[party_id].csr_col_idx.push_back(cid);
                 csr_row_sub[party_id]++;
             }
-            for (int i = 0; i < n_parties; i++) {
-                subsets[i].csr_row_ptr.push_back(subsets[i].csr_row_ptr.back() + csr_row_sub[i]);
+            for(int i = 0; i < n_parties; i++) {
+                // Do not store the empty rows
+                if(csr_row_sub[i] != 0)
+                    subsets[i].csr_row_ptr.push_back(subsets[i].csr_row_ptr.back() + csr_row_sub[i]);
             }
         }
     } else {
-        for (int i = 0; i < n_parties; i++) {
+        for(int i = 0; i < n_parties; i++) {
             subsets[i].csc_col_ptr.push_back(0);
         }
 
@@ -97,6 +112,7 @@ void Partition::homo_partition(const DataSet &dataset, const int n_parties, cons
 
                 subsets[party_id].csc_val.push_back(value);
                 subsets[party_id].csc_row_idx.push_back(row_id);
+                subsets[party_id].has_csc = true;
                 csc_col_sub++;
             }
             subsets[party_id].csc_col_ptr.push_back(subsets[party_id].csc_col_ptr.back() + csc_col_sub);

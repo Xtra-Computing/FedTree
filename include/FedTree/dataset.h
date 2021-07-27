@@ -2,7 +2,6 @@
 // Created by liqinbin on 10/13/20.
 //
 
-
 #ifndef FEDTREE_DATASET_H
 #define FEDTREE_DATASET_H
 
@@ -54,6 +53,7 @@ class DataSet{
     // whether the dataset is to big
     bool use_cpu = true;
     bool has_csc = false;
+    bool is_classification = false;
 };
 
 #endif //FEDTREE_DATASET_H

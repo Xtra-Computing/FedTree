@@ -108,6 +108,8 @@ public:
         return *this;
     }
 
+    void init_CPU(const GHPair sum_gh, const GBDTParam &param);
+
     void init_CPU(const SyncArray<GHPair> &gradients, const GBDTParam &param);
 
     void init_structure(int depth);

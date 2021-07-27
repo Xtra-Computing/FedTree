@@ -3,7 +3,8 @@
 //
 
 #include "FedTree/FL/distributed_server.h"
-
+#include "FedTree/FL/partition.h"
+#include "FedTree/parser.h"
 
 grpc::Status DistributedServer::TriggerUpdateGradients(::grpc::ServerContext *context, const ::fedtree::PID *request,
                                                        ::fedtree::Ready *response) {
@@ -431,7 +432,7 @@ int main(int argc, char **argv) {
     int n_parties = fl_param.n_parties;
     server.InitVectors(n_parties);
     vector<int> n_instances_per_party(n_parties);
-    server.vertical_init(fl_param, dataset.n_instances(), n_instances_per_party, dataset.y);
+    server.distributed_vertical_init(fl_param, dataset.n_instances(), n_instances_per_party, dataset.y);
     RunServer(server);
     return 0;
 }

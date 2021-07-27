@@ -25,7 +25,7 @@ protected:
 };
 
 TEST_F(DatasetTest, load_from_file){
-    printf("### Dataset: test_dataset.txt, num_instances: %d, num_features: %d, get_cut_points finished. ###\n",
+    printf("### Dataset: test_dataset.txt, num_instances: %zu, num_features: %zu, get_cut_points finished. ###\n",
         dataset.n_instances(),
         dataset.n_features());
     EXPECT_EQ(dataset.n_instances(), 1605);
@@ -35,7 +35,7 @@ TEST_F(DatasetTest, load_from_file){
 }
 
 TEST_F(DatasetLoadCscTest, load_csc_from_file){
-    printf("### Dataset: test_dataset.txt, num_instances: %d, num_features: %d, get_cut_points finished. ###\n",
+    printf("### Dataset: test_dataset.txt, num_instances: %zu, num_features: %zu, get_cut_points finished. ###\n",
            dataset.n_instances(),
            dataset.n_features());
     EXPECT_EQ(dataset.n_instances(), 1605);

@@ -10,7 +10,6 @@
 #include <thrust/execution_policy.h>
 #include <math.h>
 
-
 void TreeBuilder::init(DataSet &dataSet, const GBDTParam &param) {
 //    int n_available_device;
 //    cudaGetDeviceCount(&n_available_device);
@@ -25,6 +24,25 @@ void TreeBuilder::init(DataSet &dataSet, const GBDTParam &param) {
     this->sorted_dataset = dataSet;
     if (dataSet.csc_col_ptr.size() > 1)
         seg_sort_by_key_cpu(sorted_dataset.csc_val, sorted_dataset.csc_row_idx, sorted_dataset.csc_col_ptr);
+    this->n_instances = sorted_dataset.n_instances();
+//    trees = vector<Tree>(1);
+    ins2node_id = SyncArray<int>(n_instances);
+    sp = SyncArray<SplitPoint>();
+//    has_split = vector<bool>(param.n_device);
+    int n_outputs = param.num_class * n_instances;
+    y_predict = SyncArray<float_type>(n_outputs);
+    gradients = SyncArray<GHPair>(n_instances);
+}
+
+void TreeBuilder::init_nosortdataset(DataSet &dataSet, const GBDTParam &param) {
+    FunctionBuilder::init(dataSet, param);
+
+
+    if (!dataSet.has_csc and dataSet.csr_row_ptr.size() > 1)
+        dataSet.csr_to_csc();
+    this->sorted_dataset = dataSet;
+//    if (dataSet.csc_col_ptr.size() > 1)
+//        seg_sort_by_key_cpu(sorted_dataset.csc_val, sorted_dataset.csc_row_idx, sorted_dataset.csc_col_ptr);
     this->n_instances = sorted_dataset.n_instances();
 //    trees = vector<Tree>(1);
     ins2node_id = SyncArray<int>(n_instances);
@@ -83,7 +101,12 @@ void TreeBuilder::predict_in_training(int k) {
     }
 }
 
+void TreeBuilder::build_init(const GHPair sum_gh, int k) {
+    this->trees.init_CPU(sum_gh, param);
+}
+
 void TreeBuilder::build_init(const SyncArray<GHPair> &gradients, int k) {
+    //LOG(INFO)<<"n_instances:"<<n_instances;
     this->ins2node_id.resize(n_instances); // initialize n_instances here
     this->gradients.set_host_data(const_cast<GHPair *>(gradients.host_data() + k * n_instances));
     this->trees.init_CPU(this->gradients, param);
@@ -108,6 +131,7 @@ vector<Tree> TreeBuilder::build_approximate(const SyncArray<GHPair> &gradients, 
             {
                 TIMED_SCOPE(timerObj, "apply sp");
                 update_tree();
+              //  LOG(INFO) << this->trees.nodes;
                 update_ins2node_id();
 //                LOG(INFO) << "ins2node_id: " << ins2node_id;
                 {
@@ -230,7 +254,6 @@ void TreeBuilder::update_tree() {
     auto &sp = this->sp;
     auto &tree = this->trees;
     auto sp_data = sp.host_data();
-    LOG(DEBUG) << sp;
     int n_nodes_in_level = sp.size();
 
     Tree::TreeNode *nodes_data = tree.nodes.host_data();
@@ -260,9 +283,11 @@ void TreeBuilder::update_tree() {
             rch.sum_gh_pair = sp_data[i].rch_sum_gh;
             if (sp_data[i].default_right) {
                 rch.sum_gh_pair = rch.sum_gh_pair + p_missing_gh;
+               // LOG(INFO) << "RCH" << rch.sum_gh_pair;
                 node.default_right = true;
             }
             lch.sum_gh_pair = node.sum_gh_pair - rch.sum_gh_pair;
+          //  LOG(INFO) << "LCH" << lch.sum_gh_pair;
             lch.calc_weight(lambda);
             rch.calc_weight(lambda);
         } else {
@@ -276,7 +301,7 @@ void TreeBuilder::update_tree() {
             nodes_data[node.rch_index].is_valid = false;
         }
     }
-    LOG(DEBUG) << tree.nodes;
+   // LOG(INFO) << tree.nodes;
 }
 
 void TreeBuilder::update_tree_in_a_node(int node_id) {
@@ -294,7 +319,6 @@ void TreeBuilder::update_tree_in_a_node(int node_id) {
     float_type best_split_gain = sp_data[node_id].gain;
     if (best_split_gain > rt_eps) {
         //do split
-        //todo: check, thundergbm uses return
         if (sp_data[node_id].nid == -1) return;
         int nid = sp_data[node_id].nid;
         Tree::TreeNode &node = nodes_data[nid];

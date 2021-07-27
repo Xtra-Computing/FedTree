@@ -1,12 +1,9 @@
 [submodule "src/googletest"]
 	path = src/test/googletest
 	url = https://github.com/google/googletest
-[submodule "cub"]
-	path = cub
-	url = https://github.com/NVlabs/cub.git
+#[submodule "cub"]
+#	path = cub
+#	url = https://github.com/NVlabs/cub.git
 [submodule "thrust"]
 	path = thrust
 	url = https://github.com/NVIDIA/thrust.git
-[submodule "pybind11"]
-	path = pybind11
-	url = https://github.com/pybind/pybind11.git

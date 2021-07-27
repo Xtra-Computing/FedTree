@@ -16,13 +16,13 @@ class FunctionBuilder {
 public:
     virtual vector<Tree> build_approximate(const SyncArray<GHPair> &gradients, bool update_y_predict = true) = 0;
 
-    virtual Tree* build_tree_level_approximate(int level, int round) = 0;
-
     virtual Tree get_tree()= 0;
 
     virtual void set_tree(Tree tree) = 0;
 
     virtual void set_y_predict(int k) = 0;
+
+    virtual void build_init(const GHPair sum_gh, int k) = 0;
 
     virtual void build_init(const SyncArray<GHPair> &gradients, int k) = 0;
 
@@ -45,13 +45,21 @@ public:
 
     virtual SyncArray<GHPair> get_hist() = 0;
 
+    virtual void parties_hist_init(int party_size) = 0;
+
     virtual void append_hist(SyncArray<GHPair> &hist) = 0;
+
+    virtual void append_hist(SyncArray<GHPair> &hist, SyncArray<GHPair> &missing_gh,int n_partition, int n_max_splits, int party_idx) = 0;
 
     virtual void concat_histograms() = 0;
 
     virtual void init(DataSet &dataset, const GBDTParam &param) {
         this->param = param;
     };
+
+    virtual void init(const GBDTParam &param, int n_instances) {
+        this->param = param;
+    }
 
     virtual const SyncArray<float_type> &get_y_predict() { return y_predict; };
 

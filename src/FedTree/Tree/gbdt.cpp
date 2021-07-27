@@ -4,6 +4,8 @@
 
 #include "FedTree/Tree/gbdt.h"
 #include "FedTree/booster.h"
+#include "FedTree/FL/partition.h"
+
 
 void GBDT::train(GBDTParam &param, DataSet &dataset) {
     if (param.tree_method == "auto")
@@ -24,6 +26,12 @@ void GBDT::train(GBDTParam &param, DataSet &dataset) {
     } else if (param.objective.find("reg:") != std::string::npos) {
         param.num_class = 1;
     }
+
+//    std::map<int, vector<int>> batch_idxs;
+//    Partition partition;
+//    vector<DataSet> subsets(3);
+//    partition.homo_partition(dataset, 3, true, subsets, batch_idxs);
+//
     Booster booster;
     booster.init(dataset, param);
     std::chrono::high_resolution_clock timer;
@@ -32,6 +40,11 @@ void GBDT::train(GBDTParam &param, DataSet &dataset) {
         //one iteration may produce multiple trees, depending on objectives
         booster.boost(trees);
     }
+
+//    float_type score = predict_score(param, dataset);
+//    LOG(INFO) << score;
+
+
     auto stop = timer.now();
     std::chrono::duration<float> training_time = stop - start;
     LOG(INFO) << "training time = " << training_time.count();
@@ -61,7 +74,7 @@ vector<float_type> GBDT::predict(const GBDTParam &model_param, const DataSet &da
 float_type GBDT::predict_score(const GBDTParam &model_param, const DataSet &dataSet) {
     SyncArray<float_type> y_predict;
     predict_raw(model_param, dataSet, y_predict);
-    LOG(INFO) << "y_predict:" << y_predict;
+    LOG(DEBUG) << "y_predict:" << y_predict;
     //convert the aggregated values to labels, probabilities or ranking scores.
     std::unique_ptr<ObjectiveFunction> obj;
     obj.reset(ObjectiveFunction::create(model_param.objective));
@@ -82,7 +95,7 @@ float_type GBDT::predict_score_vertical(const GBDTParam &model_param, const Data
                                         std::map<int, vector<int>> &batch_idxs) {
     SyncArray<float_type> y_predict;
     predict_raw_vertical(model_param, dataSet, y_predict, batch_idxs);
-    LOG(INFO) << "y_predict:" << y_predict;
+    //LOG(INFO) << "y_predict:" << y_predict;
     //convert the aggregated values to labels, probabilities or ranking scores.
     std::unique_ptr<ObjectiveFunction> obj;
     obj.reset(ObjectiveFunction::create(model_param.objective));
@@ -109,6 +122,7 @@ void GBDT::predict_raw(const GBDTParam &model_param, const DataSet &dataSet, Syn
     int num_iter = trees.size();
     int num_class = trees.front().size();
     int num_node = trees[0][0].nodes.size();
+
     int total_num_node = num_iter * num_class * num_node;
     //TODO: reduce the output size for binary classification
     y_predict.resize(n_instances * num_class);
@@ -306,7 +320,6 @@ void GBDT::predict_raw_vertical(const GBDTParam &model_param, const DataSet &dat
                 }
                 sum += lr * node_data[cur_nid].base_weight;
             }
-            predict_data_class[iid] += sum;
         }//end all tree prediction
     }
 }

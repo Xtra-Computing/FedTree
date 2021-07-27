@@ -3,7 +3,8 @@
 //
 
 #include "FedTree/FL/distributed_party.h"
-
+#include "FedTree/FL/partition.h"
+#include "FedTree/parser.h"
 
 void DistributedParty::TriggerUpdateGradients() {
     fedtree::PID id;
