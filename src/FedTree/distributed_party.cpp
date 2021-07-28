@@ -304,49 +304,8 @@ void DistributedParty::TriggerPrune(int t) {
     }
 }
 
-int main(int argc, char **argv) {
-    int pid;
-    FLParam fl_param;
-    Parser parser;
-    if (argc > 2) {
-        pid = std::stoi(argv[2]);
-        parser.parse_param(fl_param, argc, argv);
-    } else {
-        printf("Usage: <config file path> <pid>\n");
-        exit(0);
-    }
-
-    DistributedParty party(grpc::CreateChannel("localhost:50051",
-                                               grpc::InsecureChannelCredentials()));
-
-    GBDTParam &model_param = fl_param.gbdt_param;
-    DataSet dataset;
-    dataset.load_from_file(model_param.path, fl_param);
-
-    Partition partition;
-    vector<DataSet> subsets(fl_param.n_parties);
-    std::map<int, vector<int>> batch_idxs;
-    LOG(INFO) << "vertical dir";
-    CHECK_EQ(fl_param.mode, "vertical");
-    dataset.load_from_file(model_param.path, fl_param);
-    dataset.csr_to_csc();
-    partition.homo_partition(dataset, fl_param.n_parties, false, subsets, batch_idxs);
-
+void distributed_vertical_train(DistributedParty& party, FLParam &fl_param) {
     GBDTParam &param = fl_param.gbdt_param;
-    if (param.objective.find("multi:") != std::string::npos || param.objective.find("binary:") != std::string::npos) {
-        dataset.group_label();
-        int num_class = dataset.label.size();
-        if (param.num_class != num_class) {
-            LOG(DEBUG) << "updating number of classes from " << param.num_class << " to " << num_class;
-            param.num_class = num_class;
-        }
-        if (param.num_class > 2)
-            param.tree_per_rounds = param.num_class;
-    } else if (param.objective.find("reg:") != std::string::npos) {
-        param.num_class = 1;
-    }
-
-    party.vertical_init(pid, subsets[pid], fl_param);
     party.SendDatasetInfo(party.booster.fbuilder->cut.cut_points_val.size(), party.dataset.n_features());
     for (int round = 0; round < param.n_trees; round++) {
         if (party.pid == 0)
@@ -428,7 +387,7 @@ int main(int argc, char **argv) {
                     cont = party.CheckIfContinue(false);
                 if (!cont) break;
             }
-            party.booster.fbuilder->trees.prune_self(model_param.gamma);
+            party.booster.fbuilder->trees.prune_self(param.gamma);
             party.booster.fbuilder->predict_in_training(t);
             if (party.pid == 0)
                 party.TriggerPrune(t);
@@ -436,6 +395,62 @@ int main(int argc, char **argv) {
         LOG(DEBUG) << party.booster.metric->get_name() << " = "
                    << party.booster.metric->get_score(party.booster.fbuilder->get_y_predict());
     }
+}
+
+void distributed_horizontal_train(DistributedParty& party, FLParam &fl_param) {
+
+}
+
+int main(int argc, char **argv) {
+    int pid;
+    FLParam fl_param;
+    Parser parser;
+    if (argc > 2) {
+        pid = std::stoi(argv[2]);
+        parser.parse_param(fl_param, argc, argv);
+    } else {
+        printf("Usage: <config file path> <pid>\n");
+        exit(0);
+    }
+
+    DistributedParty party(grpc::CreateChannel("localhost:50051",
+                                               grpc::InsecureChannelCredentials()));
+
+    GBDTParam &model_param = fl_param.gbdt_param;
+    DataSet dataset;
+    dataset.load_from_file(model_param.path, fl_param);
+    Partition partition;
+    vector<DataSet> subsets(fl_param.n_parties);
+    std::map<int, vector<int>> batch_idxs;
+    if (fl_param.mode == "vertical") {
+        LOG(INFO) << "vertical dir";
+        dataset.csr_to_csc();
+        partition.homo_partition(dataset, fl_param.n_parties, false, subsets, batch_idxs);
+        GBDTParam &param = fl_param.gbdt_param;
+        if (param.objective.find("multi:") != std::string::npos || param.objective.find("binary:") != std::string::npos) {
+            dataset.group_label();
+            int num_class = dataset.label.size();
+            if (param.num_class != num_class) {
+                LOG(DEBUG) << "updating number of classes from " << param.num_class << " to " << num_class;
+                param.num_class = num_class;
+            }
+            if (param.num_class > 2)
+                param.tree_per_rounds = param.num_class;
+        } else if (param.objective.find("reg:") != std::string::npos) {
+            param.num_class = 1;
+        }
+
+        party.vertical_init(pid, subsets[pid], fl_param);
+        distributed_vertical_train(party, fl_param);
+    }
+    else if (fl_param.mode == "horizontal") {
+        // draft
+        LOG(INFO) << "horizontal dir, developing, stop";
+        // subset division
+        // party.init(pid, subsets[pid], fl_param, );
+        // distributed_horizontal_train(party, fl_param);
+    }
+    
 
     return 0;
 }

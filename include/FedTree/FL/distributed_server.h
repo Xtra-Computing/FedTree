@@ -71,11 +71,12 @@ public:
     grpc::Status TriggerPrune(grpc::ServerContext *context, const fedtree::PID *pid,
                               fedtree::Ready *ready) override;
 
-    void InitVectors(int n_parties);
+    void VerticalInitVectors(int n_parties);
+
+    void HorizontalInitVectors(int n_parties);
 
     vector<int> n_bins_per_party;
     vector<int> n_columns_per_party;
-    
     void distributed_vertical_init(FLParam &param, int n_total_instances, vector<int> &n_instances_per_party, vector<float_type> y) {
         this->local_trees.resize(param.n_parties);
         this->param = param;

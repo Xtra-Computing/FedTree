@@ -383,10 +383,14 @@ grpc::Status DistributedServer::TriggerPrune(grpc::ServerContext *context, const
     return grpc::Status::OK;
 }
 
-void DistributedServer::InitVectors(int n_parties) {
+void DistributedServer::VerticalInitVectors(int n_parties) {
     hists_received.resize(n_parties, 0);
     missing_gh_received.resize(n_parties, 0);
     hist_fid_received.resize(n_parties, 0);
+}
+
+void DistributedServer::HorizontalInitVectors(int n_parties) {
+    // TODO
 }
 
 void RunServer(DistributedServer &service) {
@@ -430,9 +434,16 @@ int main(int argc, char **argv) {
 
     DistributedServer server;
     int n_parties = fl_param.n_parties;
-    server.InitVectors(n_parties);
-    vector<int> n_instances_per_party(n_parties);
-    server.distributed_vertical_init(fl_param, dataset.n_instances(), n_instances_per_party, dataset.y);
+    if (fl_param.mode == "vertical") {
+        server.VerticalInitVectors(n_parties);
+        vector<int> n_instances_per_party(n_parties);
+        server.distributed_vertical_init(fl_param, dataset.n_instances(), n_instances_per_party, dataset.y);
+    }
+    else if (fl_param.mode == "horizontal") {
+        server.HorizontalInitVectors(n_parties);
+        // TODO
+    }
+    
     RunServer(server);
     return 0;
 }
