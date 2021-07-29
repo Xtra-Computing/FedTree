@@ -71,6 +71,15 @@ public:
     grpc::Status TriggerPrune(grpc::ServerContext *context, const fedtree::PID *pid,
                               fedtree::Ready *ready) override;
 
+    grpc::Status SendRange(grpc::ServerContext* context, grpc::ServerReader<fedtree::GHPair>* reader,
+                                fedtree::PID* response) override;
+    
+    grpc::Status TriggerCut(grpc::ServerContext* context, const fedtree::PID* request,
+                                fedtree::Ready* response) override;
+    
+    grpc::Status GetRange(grpc::ServerContext* context, const fedtree::PID* request,
+                                grpc::ServerWriter<fedtree::GHPair>* writer) override;
+    
     void VerticalInitVectors(int n_parties);
 
     void HorizontalInitVectors(int n_parties);
@@ -101,6 +110,11 @@ private:
     int n_nodes_received = 0;
     bool update_gradients_success = false;
     bool aggregate_success = false;
+
+    // for horizontal
+    vector<vector<GHPair>> party_feature_range;
+    vector<int> range_received;
+    bool range_success = false;
 };
 
 #endif //FEDTREE_DISTRIBUTED_SERVER_H

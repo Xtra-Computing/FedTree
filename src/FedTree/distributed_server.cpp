@@ -5,6 +5,7 @@
 #include "FedTree/FL/distributed_server.h"
 #include "FedTree/FL/partition.h"
 #include "FedTree/parser.h"
+#include "FedTree/DP/differential_privacy.h"
 
 grpc::Status DistributedServer::TriggerUpdateGradients(::grpc::ServerContext *context, const ::fedtree::PID *request,
                                                        ::fedtree::Ready *response) {
@@ -391,6 +392,8 @@ void DistributedServer::VerticalInitVectors(int n_parties) {
 
 void DistributedServer::HorizontalInitVectors(int n_parties) {
     // TODO
+    range_received.resize(n_parties, 0);
+    party_feature_range.resize(n_parties);
 }
 
 void RunServer(DistributedServer &service) {
@@ -403,6 +406,85 @@ void RunServer(DistributedServer &service) {
     LOG(DEBUG) << "Server listening on " << server_address;
     server->Wait();
 }
+
+grpc::Status DistributedServer::SendRange(grpc::ServerContext* context, grpc::ServerReader<fedtree::GHPair>* reader,
+                                            fedtree::PID* response) {
+    fedtree::GHPair frange;
+    std::multimap<grpc::string_ref, grpc::string_ref> metadata = context->client_metadata();
+    auto pid_itr = metadata.find("pid");
+    int pid = std::stoi(pid_itr->second.data());
+    party_feature_range[pid].clear();
+    while(reader->Read(&frange)) {
+        party_feature_range[pid].emplace_back(frange.g(), frange.h());
+    }
+    LOG(DEBUG) << "Receive range from " << pid;
+    range_received[pid] += 1;
+    return grpc::Status::OK;
+}
+
+grpc::Status DistributedServer::TriggerCut(grpc::ServerContext* context, const fedtree::PID* request,
+                                fedtree::Ready* response) {
+    // cyz: request is n_bins
+    unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+    std::default_random_engine generator(seed);
+    std::uniform_int_distribution<int> delay_distribution(10, 20);
+    while (true) {
+        bool cont = true;
+        for (int i = 0; i < param.n_parties; i++) {
+            if (range_received[i] < 1) {
+                cont = false;
+            }
+        }
+        if (cont) {
+            break;
+        }
+        std::this_thread::sleep_for(
+                std::chrono::milliseconds(delay_distribution(generator)));
+    }
+    // cyz: g: min, h: max, party0 stores final result
+    for (int i = 1; i < param.n_parties; i++) {
+        for (int j = 0; j < party_feature_range[0].size(); j++) {
+            if (party_feature_range[i][j].g < party_feature_range[0][j].g) {
+                party_feature_range[0][j].g = party_feature_range[i][j].g;
+            }
+            if (party_feature_range[i][j].h > party_feature_range[0][j].h) {
+                party_feature_range[0][j].h = party_feature_range[i][j].h;
+            }
+        }
+    }
+    
+    // cyz: efficiency problem
+    vector<vector<float>> temp;
+    for (auto e: party_feature_range[0]) {
+        temp.push_back({e.g, e.h});
+    }
+    int n_bins = request->id();
+    booster.fbuilder->cut.get_cut_points_by_feature_range(temp, n_bins);
+    // cyz: efficiency try
+    range_success = true;
+    
+    return grpc::Status::OK;
+}
+
+grpc::Status DistributedServer::GetRange(grpc::ServerContext* context, const fedtree::PID* request,
+                                grpc::ServerWriter<fedtree::GHPair>* writer) {
+    unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+    std::default_random_engine generator(seed);
+    std::uniform_int_distribution<int> delay_distribution(10, 20);
+    while (!range_success) {
+        std::this_thread::sleep_for(
+                std::chrono::milliseconds(delay_distribution(generator)));
+    }
+    for(auto e: party_feature_range[0]) {
+        fedtree::GHPair frange;
+        frange.set_g(e.g);
+        frange.set_h(e.h);
+        writer->Write(frange);
+    }
+    LOG(DEBUG) << "Send range to " << request->id();
+    return grpc::Status::OK;
+}
+
 
 int main(int argc, char **argv) {
     int pid;
@@ -441,7 +523,16 @@ int main(int argc, char **argv) {
     }
     else if (fl_param.mode == "horizontal") {
         server.HorizontalInitVectors(n_parties);
-        // TODO
+        // FIXME strong assumptions: n_instances are even
+        int stride = dataset.n_instances() / n_parties;
+        vector<int> n_instances_per_party(n_parties);
+        for (int i = 0; i < n_parties; i++) {
+            n_instances_per_party[i] = stride;
+        }
+        n_instances_per_party[n_parties-1] += dataset.n_instances() - stride * n_parties;
+        // FIXME server不应该知道全局dataset
+        server.param = fl_param;
+        server.horizontal_init(fl_param, dataset.n_instances(), n_instances_per_party, dataset);
     }
     
     RunServer(server);

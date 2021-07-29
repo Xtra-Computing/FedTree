@@ -48,9 +48,9 @@ public:
 
     void TriggerPrune(int t);
 
-    // void SendRange(const vector<vector<float>>& ranges);
-    // void TriggerCut(int n_bins);
-    // void GetRangeAndSet(int n_bins);
+    void SendRange(const vector<vector<float>>& ranges);
+    void TriggerCut(int n_bins);
+    void GetRangeAndSet(int n_bins);
 
 private:
     std::unique_ptr<fedtree::FedTree::Stub> stub_;

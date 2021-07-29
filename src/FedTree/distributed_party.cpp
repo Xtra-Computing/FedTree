@@ -5,6 +5,7 @@
 #include "FedTree/FL/distributed_party.h"
 #include "FedTree/FL/partition.h"
 #include "FedTree/parser.h"
+#include "FedTree/DP/differential_privacy.h"
 
 void DistributedParty::TriggerUpdateGradients() {
     fedtree::PID id;
@@ -304,6 +305,63 @@ void DistributedParty::TriggerPrune(int t) {
     }
 }
 
+void DistributedParty::SendRange(const vector<vector<float>>& ranges) {
+    fedtree::PID id;
+    grpc::ClientContext context;
+    context.AddMetadata("pid", std::to_string(pid));
+    std::unique_ptr<grpc::ClientWriter<fedtree::GHPair>> writer(stub_->SendRange(&context, &id));
+    for (int i = 0; i < ranges.size(); i++) {
+        fedtree::GHPair range;
+        range.set_g(ranges[i][0]);
+        range.set_h(ranges[i][1]);
+        if (!writer->Write(range)) {
+            break;
+        }
+    }
+    writer->WritesDone();
+    grpc::Status status = writer->Finish();
+    if (status.ok()) {
+        LOG(DEBUG) << "All feature range sent.";
+    }
+    else {
+        LOG(DEBUG) << "SendRange rpc failed.";
+    }
+}
+
+void DistributedParty::TriggerCut(int n_bins) {
+    fedtree::PID id;
+    fedtree::Ready ready;
+    grpc::ClientContext context;
+    id.set_id(n_bins);
+    grpc::Status status = stub_->TriggerCut(&context, id, &ready);
+    if (status.ok()) {
+        LOG(DEBUG) << "Triggered the server to cut.";
+    } else {
+        LOG(DEBUG) << "TriggerCut rpc failed.";
+    }
+}
+
+void DistributedParty::GetRangeAndSet(int n_bins) {
+    grpc::ClientContext context;
+    fedtree::PID id;
+    id.set_id(pid);
+    std::unique_ptr<grpc::ClientReader<fedtree::GHPair>> reader(stub_->GetRange(&context, id));
+    fedtree::GHPair range;
+    vector<vector<float>> feature_range;
+    while(reader->Read(&range)) {
+        feature_range.push_back({range.g(), range.h()});
+    }
+    grpc::Status status = reader->Finish();
+    if (status.ok()) {
+        std::cout << "All range received." << std::endl;
+    } else {
+        std::cout << "GetRange rpc failed." << std::endl;
+    }
+    booster.fbuilder->cut.get_cut_points_by_feature_range(feature_range, n_bins);
+    booster.fbuilder->get_bin_ids();
+
+}
+
 void distributed_vertical_train(DistributedParty& party, FLParam &fl_param) {
     GBDTParam &param = fl_param.gbdt_param;
     party.SendDatasetInfo(party.booster.fbuilder->cut.cut_points_val.size(), party.dataset.n_features());
@@ -398,7 +456,31 @@ void distributed_vertical_train(DistributedParty& party, FLParam &fl_param) {
 }
 
 void distributed_horizontal_train(DistributedParty& party, FLParam &fl_param) {
+    // initialization
+    DifferentialPrivacy dp_manager = DifferentialPrivacy();
+    if (fl_param.privacy_tech == "dp") {
+        LOG(INFO) << "Start DP init";
+        dp_manager.init(fl_param);
+    }
+    int n_bins = fl_param.gbdt_param.max_num_bin;
+    // FIXME 获得本地最大最小，传递feature range
+    vector<vector<float>> feature_range(party.get_num_feature());
+    for (int i = 0; i < party.get_num_feature(); i++) {
+        feature_range[i] = party.get_feature_range_by_feature_index(i);
+    }
 
+    party.SendRange(feature_range);
+    if (party.pid == 0) {
+        // FIXME trigger send (模仿aggregate)
+        party.TriggerCut(n_bins);
+    }
+    // FIXME GetRangeOrCut 简单做法
+    party.GetRangeAndSet(n_bins);
+    // initialization end
+
+    // for (int i = 0; i < fl_param.gbdt_param.n_trees; i++) {
+
+    // }
 }
 
 int main(int argc, char **argv) {
@@ -445,10 +527,13 @@ int main(int argc, char **argv) {
     }
     else if (fl_param.mode == "horizontal") {
         // draft
-        LOG(INFO) << "horizontal dir, developing, stop";
-        // subset division
-        // party.init(pid, subsets[pid], fl_param, );
-        // distributed_horizontal_train(party, fl_param);
+        LOG(INFO) << "horizontal dir, developing";
+        partition.homo_partition(dataset, fl_param.n_parties, true, subsets, batch_idxs);
+        SyncArray<bool> dummy_map;
+        // horizontal does not need feature_map parameter
+        party.init(pid, subsets[pid], fl_param, dummy_map);
+        distributed_horizontal_train(party, fl_param);
+        
     }
     
 

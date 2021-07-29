@@ -267,8 +267,8 @@ const char descriptor_table_protodef_fedtree_2eproto[] PROTOBUF_SECTION_VARIABLE
   "\007is_leaf\030\014 \001(\010\022\020\n\010is_valid\030\r \001(\010\022\021\n\tis_p"
   "runed\030\016 \001(\010\022\025\n\rsum_gh_pair_g\030\017 \001(\002\022\025\n\rsu"
   "m_gh_pair_h\030\020 \001(\002\022\023\n\013n_instances\030\021 \001(\005\"&"
-  "\n\nIns2NodeID\022\013\n\003iid\030\001 \001(\005\022\013\n\003nid\030\002 \001(\0052\333"
-  "\005\n\007FedTree\0228\n\026TriggerUpdateGradients\022\014.f"
+  "\n\nIns2NodeID\022\013\n\003iid\030\001 \001(\005\022\013\n\003nid\030\002 \001(\0052\350"
+  "\006\n\007FedTree\0228\n\026TriggerUpdateGradients\022\014.f"
   "edtree.PID\032\016.fedtree.Ready\"\000\0222\n\020TriggerB"
   "uildInit\022\014.fedtree.PID\032\016.fedtree.Ready\"\000"
   "\0221\n\014GetGradients\022\014.fedtree.PID\032\017.fedtree"
@@ -286,7 +286,11 @@ const char descriptor_table_protodef_fedtree_2eproto[] PROTOBUF_SECTION_VARIABLE
   "tree.PID\032\023.fedtree.Ins2NodeID\"\0000\001\0221\n\017Che"
   "ckIfContinue\022\014.fedtree.PID\032\016.fedtree.Rea"
   "dy\"\000\022.\n\014TriggerPrune\022\014.fedtree.PID\032\016.fed"
-  "tree.Ready\"\000b\006proto3"
+  "tree.Ready\"\000\022.\n\tSendRange\022\017.fedtree.GHPa"
+  "ir\032\014.fedtree.PID\"\000(\001\022,\n\nTriggerCut\022\014.fed"
+  "tree.PID\032\016.fedtree.Ready\"\000\022-\n\010GetRange\022\014"
+  ".fedtree.PID\032\017.fedtree.GHPair\"\0000\001b\006proto"
+  "3"
   ;
 static const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable*const descriptor_table_fedtree_2eproto_deps[1] = {
 };
@@ -302,7 +306,7 @@ static ::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase*const descriptor_table_fed
 };
 static ::PROTOBUF_NAMESPACE_ID::internal::once_flag descriptor_table_fedtree_2eproto_once;
 const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable descriptor_table_fedtree_2eproto = {
-  false, false, descriptor_table_protodef_fedtree_2eproto, "fedtree.proto", 1380,
+  false, false, descriptor_table_protodef_fedtree_2eproto, "fedtree.proto", 1521,
   &descriptor_table_fedtree_2eproto_once, descriptor_table_fedtree_2eproto_sccs, descriptor_table_fedtree_2eproto_deps, 8, 0,
   schemas, file_default_instances, TableStruct_fedtree_2eproto::offsets,
   file_level_metadata_fedtree_2eproto, 8, file_level_enum_descriptors_fedtree_2eproto, file_level_service_descriptors_fedtree_2eproto,

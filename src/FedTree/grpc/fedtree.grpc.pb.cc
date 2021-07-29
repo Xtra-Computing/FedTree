@@ -36,6 +36,9 @@ static const char* FedTree_method_names[] = {
   "/fedtree.FedTree/GetIns2NodeID",
   "/fedtree.FedTree/CheckIfContinue",
   "/fedtree.FedTree/TriggerPrune",
+  "/fedtree.FedTree/SendRange",
+  "/fedtree.FedTree/TriggerCut",
+  "/fedtree.FedTree/GetRange",
 };
 
 std::unique_ptr< FedTree::Stub> FedTree::NewStub(const std::shared_ptr< ::grpc::ChannelInterface>& channel, const ::grpc::StubOptions& options) {
@@ -59,6 +62,9 @@ FedTree::Stub::Stub(const std::shared_ptr< ::grpc::ChannelInterface>& channel)
   , rpcmethod_GetIns2NodeID_(FedTree_method_names[11], ::grpc::internal::RpcMethod::SERVER_STREAMING, channel)
   , rpcmethod_CheckIfContinue_(FedTree_method_names[12], ::grpc::internal::RpcMethod::NORMAL_RPC, channel)
   , rpcmethod_TriggerPrune_(FedTree_method_names[13], ::grpc::internal::RpcMethod::NORMAL_RPC, channel)
+  , rpcmethod_SendRange_(FedTree_method_names[14], ::grpc::internal::RpcMethod::CLIENT_STREAMING, channel)
+  , rpcmethod_TriggerCut_(FedTree_method_names[15], ::grpc::internal::RpcMethod::NORMAL_RPC, channel)
+  , rpcmethod_GetRange_(FedTree_method_names[16], ::grpc::internal::RpcMethod::SERVER_STREAMING, channel)
   {}
 
 ::grpc::Status FedTree::Stub::TriggerUpdateGradients(::grpc::ClientContext* context, const ::fedtree::PID& request, ::fedtree::Ready* response) {
@@ -334,6 +340,61 @@ void FedTree::Stub::experimental_async::TriggerPrune(::grpc::ClientContext* cont
   return result;
 }
 
+::grpc::ClientWriter< ::fedtree::GHPair>* FedTree::Stub::SendRangeRaw(::grpc::ClientContext* context, ::fedtree::PID* response) {
+  return ::grpc::internal::ClientWriterFactory< ::fedtree::GHPair>::Create(channel_.get(), rpcmethod_SendRange_, context, response);
+}
+
+void FedTree::Stub::experimental_async::SendRange(::grpc::ClientContext* context, ::fedtree::PID* response, ::grpc::experimental::ClientWriteReactor< ::fedtree::GHPair>* reactor) {
+  ::grpc::internal::ClientCallbackWriterFactory< ::fedtree::GHPair>::Create(stub_->channel_.get(), stub_->rpcmethod_SendRange_, context, response, reactor);
+}
+
+::grpc::ClientAsyncWriter< ::fedtree::GHPair>* FedTree::Stub::AsyncSendRangeRaw(::grpc::ClientContext* context, ::fedtree::PID* response, ::grpc::CompletionQueue* cq, void* tag) {
+  return ::grpc::internal::ClientAsyncWriterFactory< ::fedtree::GHPair>::Create(channel_.get(), cq, rpcmethod_SendRange_, context, response, true, tag);
+}
+
+::grpc::ClientAsyncWriter< ::fedtree::GHPair>* FedTree::Stub::PrepareAsyncSendRangeRaw(::grpc::ClientContext* context, ::fedtree::PID* response, ::grpc::CompletionQueue* cq) {
+  return ::grpc::internal::ClientAsyncWriterFactory< ::fedtree::GHPair>::Create(channel_.get(), cq, rpcmethod_SendRange_, context, response, false, nullptr);
+}
+
+::grpc::Status FedTree::Stub::TriggerCut(::grpc::ClientContext* context, const ::fedtree::PID& request, ::fedtree::Ready* response) {
+  return ::grpc::internal::BlockingUnaryCall< ::fedtree::PID, ::fedtree::Ready, ::grpc::protobuf::MessageLite, ::grpc::protobuf::MessageLite>(channel_.get(), rpcmethod_TriggerCut_, context, request, response);
+}
+
+void FedTree::Stub::experimental_async::TriggerCut(::grpc::ClientContext* context, const ::fedtree::PID* request, ::fedtree::Ready* response, std::function<void(::grpc::Status)> f) {
+  ::grpc::internal::CallbackUnaryCall< ::fedtree::PID, ::fedtree::Ready, ::grpc::protobuf::MessageLite, ::grpc::protobuf::MessageLite>(stub_->channel_.get(), stub_->rpcmethod_TriggerCut_, context, request, response, std::move(f));
+}
+
+void FedTree::Stub::experimental_async::TriggerCut(::grpc::ClientContext* context, const ::fedtree::PID* request, ::fedtree::Ready* response, ::grpc::experimental::ClientUnaryReactor* reactor) {
+  ::grpc::internal::ClientCallbackUnaryFactory::Create< ::grpc::protobuf::MessageLite, ::grpc::protobuf::MessageLite>(stub_->channel_.get(), stub_->rpcmethod_TriggerCut_, context, request, response, reactor);
+}
+
+::grpc::ClientAsyncResponseReader< ::fedtree::Ready>* FedTree::Stub::PrepareAsyncTriggerCutRaw(::grpc::ClientContext* context, const ::fedtree::PID& request, ::grpc::CompletionQueue* cq) {
+  return ::grpc::internal::ClientAsyncResponseReaderHelper::Create< ::fedtree::Ready, ::fedtree::PID, ::grpc::protobuf::MessageLite, ::grpc::protobuf::MessageLite>(channel_.get(), cq, rpcmethod_TriggerCut_, context, request);
+}
+
+::grpc::ClientAsyncResponseReader< ::fedtree::Ready>* FedTree::Stub::AsyncTriggerCutRaw(::grpc::ClientContext* context, const ::fedtree::PID& request, ::grpc::CompletionQueue* cq) {
+  auto* result =
+    this->PrepareAsyncTriggerCutRaw(context, request, cq);
+  result->StartCall();
+  return result;
+}
+
+::grpc::ClientReader< ::fedtree::GHPair>* FedTree::Stub::GetRangeRaw(::grpc::ClientContext* context, const ::fedtree::PID& request) {
+  return ::grpc::internal::ClientReaderFactory< ::fedtree::GHPair>::Create(channel_.get(), rpcmethod_GetRange_, context, request);
+}
+
+void FedTree::Stub::experimental_async::GetRange(::grpc::ClientContext* context, ::fedtree::PID* request, ::grpc::experimental::ClientReadReactor< ::fedtree::GHPair>* reactor) {
+  ::grpc::internal::ClientCallbackReaderFactory< ::fedtree::GHPair>::Create(stub_->channel_.get(), stub_->rpcmethod_GetRange_, context, request, reactor);
+}
+
+::grpc::ClientAsyncReader< ::fedtree::GHPair>* FedTree::Stub::AsyncGetRangeRaw(::grpc::ClientContext* context, const ::fedtree::PID& request, ::grpc::CompletionQueue* cq, void* tag) {
+  return ::grpc::internal::ClientAsyncReaderFactory< ::fedtree::GHPair>::Create(channel_.get(), cq, rpcmethod_GetRange_, context, request, true, tag);
+}
+
+::grpc::ClientAsyncReader< ::fedtree::GHPair>* FedTree::Stub::PrepareAsyncGetRangeRaw(::grpc::ClientContext* context, const ::fedtree::PID& request, ::grpc::CompletionQueue* cq) {
+  return ::grpc::internal::ClientAsyncReaderFactory< ::fedtree::GHPair>::Create(channel_.get(), cq, rpcmethod_GetRange_, context, request, false, nullptr);
+}
+
 FedTree::Service::Service() {
   AddMethod(new ::grpc::internal::RpcServiceMethod(
       FedTree_method_names[0],
@@ -475,6 +536,36 @@ FedTree::Service::Service() {
              ::fedtree::Ready* resp) {
                return service->TriggerPrune(ctx, req, resp);
              }, this)));
+  AddMethod(new ::grpc::internal::RpcServiceMethod(
+      FedTree_method_names[14],
+      ::grpc::internal::RpcMethod::CLIENT_STREAMING,
+      new ::grpc::internal::ClientStreamingHandler< FedTree::Service, ::fedtree::GHPair, ::fedtree::PID>(
+          [](FedTree::Service* service,
+             ::grpc::ServerContext* ctx,
+             ::grpc::ServerReader<::fedtree::GHPair>* reader,
+             ::fedtree::PID* resp) {
+               return service->SendRange(ctx, reader, resp);
+             }, this)));
+  AddMethod(new ::grpc::internal::RpcServiceMethod(
+      FedTree_method_names[15],
+      ::grpc::internal::RpcMethod::NORMAL_RPC,
+      new ::grpc::internal::RpcMethodHandler< FedTree::Service, ::fedtree::PID, ::fedtree::Ready, ::grpc::protobuf::MessageLite, ::grpc::protobuf::MessageLite>(
+          [](FedTree::Service* service,
+             ::grpc::ServerContext* ctx,
+             const ::fedtree::PID* req,
+             ::fedtree::Ready* resp) {
+               return service->TriggerCut(ctx, req, resp);
+             }, this)));
+  AddMethod(new ::grpc::internal::RpcServiceMethod(
+      FedTree_method_names[16],
+      ::grpc::internal::RpcMethod::SERVER_STREAMING,
+      new ::grpc::internal::ServerStreamingHandler< FedTree::Service, ::fedtree::PID, ::fedtree::GHPair>(
+          [](FedTree::Service* service,
+             ::grpc::ServerContext* ctx,
+             const ::fedtree::PID* req,
+             ::grpc::ServerWriter<::fedtree::GHPair>* writer) {
+               return service->GetRange(ctx, req, writer);
+             }, this)));
 }
 
 FedTree::Service::~Service() {
@@ -575,6 +666,27 @@ FedTree::Service::~Service() {
   (void) context;
   (void) request;
   (void) response;
+  return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
+}
+
+::grpc::Status FedTree::Service::SendRange(::grpc::ServerContext* context, ::grpc::ServerReader< ::fedtree::GHPair>* reader, ::fedtree::PID* response) {
+  (void) context;
+  (void) reader;
+  (void) response;
+  return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
+}
+
+::grpc::Status FedTree::Service::TriggerCut(::grpc::ServerContext* context, const ::fedtree::PID* request, ::fedtree::Ready* response) {
+  (void) context;
+  (void) request;
+  (void) response;
+  return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
+}
+
+::grpc::Status FedTree::Service::GetRange(::grpc::ServerContext* context, const ::fedtree::PID* request, ::grpc::ServerWriter< ::fedtree::GHPair>* writer) {
+  (void) context;
+  (void) request;
+  (void) writer;
   return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
 }
 

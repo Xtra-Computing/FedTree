@@ -23,6 +23,10 @@ service FedTree {
   rpc GetIns2NodeID(PID) returns (stream Ins2NodeID) {}
   rpc CheckIfContinue(PID) returns (Ready) {}
   rpc TriggerPrune(PID) returns (Ready) {}
+  
+  rpc SendRange(stream GHPair) returns (PID) {}
+  rpc TriggerCut(PID) returns (Ready) {}
+  rpc GetRange(PID) returns(stream GHPair) {}
 }
 
 message PID {
