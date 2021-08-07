@@ -362,6 +362,150 @@ void DistributedParty::GetRangeAndSet(int n_bins) {
 
 }
 
+void DistributedParty::SendGH(GHPair party_gh) {
+    fedtree::GHPair pair;
+    fedtree::PID id;
+    grpc::ClientContext context;
+    context.AddMetadata("pid", std::to_string(pid));
+    pair.set_g(party_gh.g);
+    pair.set_h(party_gh.h);
+    grpc::Status status = stub_->SendGH(&context, pair, &id);
+    if (status.ok()) {
+        std::cout << "party_gh sent." << std::endl;
+    }
+    else {
+        std::cout << "party_gh rpc failed" << std::endl;
+    }
+}
+
+void DistributedParty::TriggerBuildUsingGH(int k) {
+    grpc::ClientContext context;
+    context.AddMetadata("k", std::to_string(k));
+    fedtree::PID id;
+    fedtree::Ready ready;
+    grpc::Status status = stub_->TriggerBuildUsingGH(&context, id, &ready);
+    if (status.ok()) {
+        LOG(DEBUG) << "Triggered the server to build use gh.";
+
+    }
+    else {
+        LOG(DEBUG) << "TriggerBuildUsingGH failed";
+    }
+}
+
+void DistributedParty::TriggerCalcTree(int l) {
+    grpc::ClientContext context;
+    context.AddMetadata("l", std::to_string(l));
+    fedtree::PID id;
+    fedtree::Ready ready;
+    grpc::Status status = stub_->TriggerCalcTree(&context, id, &ready);
+    if (status.ok()) {
+        LOG(DEBUG) << "Triggerd the server to calc tree.";
+    }
+    else {
+        LOG(DEBUG) << "TriggerCalcTree failed.";
+    }
+}
+
+void DistributedParty::GetRootNode() {
+    grpc::ClientContext context;
+    fedtree::PID id;
+    fedtree::Node node;
+    grpc::Status status = stub_->GetRootNode(&context, id, &node);
+    auto & root = booster.fbuilder->trees.nodes.host_data()[0];
+    root.final_id = node.final_id();
+    root.lch_index = node.lch_index();
+    root.rch_index = node.rch_index();
+    root.parent_index = node.parent_index();
+    root.gain = node.gain();
+    root.base_weight = node.base_weight();
+    root.split_feature_id = node.split_feature_id();
+    root.pid = node.pid();
+    root.split_value = node.split_value();
+    root.split_bid = node.split_bid();
+    root.default_right = node.default_right();
+    root.is_leaf = node.is_leaf();
+    root.is_valid = node.is_valid();
+    root.is_pruned = node.is_pruned();
+    root.sum_gh_pair.g = node.sum_gh_pair_g();
+    root.sum_gh_pair.h = node.sum_gh_pair_h();
+    root.n_instances = node.n_instances();
+    if (status.ok()) {
+        std::cout << "RootNode received." << std::endl;
+    } else {
+        std::cout << "GetRootNode rpc failed." << std::endl;
+    }
+}
+
+void DistributedParty::GetSplitPoints() {
+    grpc::ClientContext context;
+    fedtree::PID id;
+    id.set_id(pid);
+    std::unique_ptr<grpc::ClientReader<fedtree::SplitPoint>> reader(stub_->GetSplitPoints(&context, id));
+    // TODO
+    vector<SplitPoint> sp_points;
+    fedtree::SplitPoint sp_recv;
+    while(reader->Read(&sp_recv)) {
+        SplitPoint sp_point;
+        sp_point.gain = sp_recv.gain();
+        sp_point.fea_missing_gh = {sp_recv.fea_missing_g(), sp_recv.fea_missing_h()};
+        sp_point.rch_sum_gh = {sp_recv.rch_sum_g(), sp_recv.rch_sum_h()};
+        sp_point.default_right = sp_recv.default_right();
+        sp_point.nid = sp_recv.nid();
+        sp_point.split_fea_id = sp_recv.split_fea_id();
+        sp_point.fval = sp_recv.fval();
+        sp_point.split_bid = sp_recv.split_bid();
+        sp_point.no_split_value_update = sp_recv.no_split_value_update();
+        sp_points.push_back(sp_point);
+    }
+
+    grpc::Status status = reader->Finish();
+    if (status.ok()) {
+        std::cout << "SplitPoints received." << std::endl;
+    } else {
+        std::cout << "GetSplitPoints rpc failed." << std::endl;
+    }
+    booster.fbuilder->sp.resize(sp_points.size());
+    auto sp_data = booster.fbuilder->sp.host_data();
+    for (int i = 0; i < sp_points.size(); i++) {
+        sp_data[i] = sp_points[i];
+    }
+
+}
+
+bool DistributedParty::HCheckIfContinue() {
+    fedtree::PID id;
+    fedtree::Ready ready;
+    grpc::ClientContext context;
+    context.AddMetadata("cont", std::to_string(booster.fbuilder->has_split));
+    grpc::Status status = stub_->HCheckIfContinue(&context, id, &ready);
+    if (!status.ok()) {
+        LOG(DEBUG) << "HCheckIfContinue rpc failed.";
+        return false;
+    } else if (!ready.ready()) {
+        LOG(DEBUG) << "No further splits, stop.";
+        return false;
+    } else {
+        return true;
+    }
+}
+
+float DistributedParty::GetAvgScore(float score) {
+    grpc::ClientContext context;
+    context.AddMetadata("pid", std::to_string(pid));
+    fedtree::Score s;
+    s.set_content(score);
+    fedtree::Score avg;
+    grpc::Status status = stub_->ScoreReduce(&context, s, &avg);
+    if (status.ok()) {
+        LOG(DEBUG) << "Average score received";
+    }
+    else {
+        LOG(DEBUG) << "ScoreReduce rpc failed";
+    }
+    return avg.content();
+}
+
 void distributed_vertical_train(DistributedParty& party, FLParam &fl_param) {
     GBDTParam &param = fl_param.gbdt_param;
     party.SendDatasetInfo(party.booster.fbuilder->cut.cut_points_val.size(), party.dataset.n_features());
@@ -450,7 +594,7 @@ void distributed_vertical_train(DistributedParty& party, FLParam &fl_param) {
             if (party.pid == 0)
                 party.TriggerPrune(t);
         }
-        LOG(DEBUG) << party.booster.metric->get_name() << " = "
+        LOG(INFO) << party.booster.metric->get_name() << " = "
                    << party.booster.metric->get_score(party.booster.fbuilder->get_y_predict());
     }
 }
@@ -463,7 +607,7 @@ void distributed_horizontal_train(DistributedParty& party, FLParam &fl_param) {
         dp_manager.init(fl_param);
     }
     int n_bins = fl_param.gbdt_param.max_num_bin;
-    // FIXME 获得本地最大最小，传递feature range
+    // get and send feature range
     vector<vector<float>> feature_range(party.get_num_feature());
     for (int i = 0; i < party.get_num_feature(); i++) {
         feature_range[i] = party.get_feature_range_by_feature_index(i);
@@ -471,19 +615,108 @@ void distributed_horizontal_train(DistributedParty& party, FLParam &fl_param) {
 
     party.SendRange(feature_range);
     if (party.pid == 0) {
-        // FIXME trigger send (模仿aggregate)
+        //trigger send
         party.TriggerCut(n_bins);
     }
-    // FIXME GetRangeOrCut 简单做法
+    // GetRange
     party.GetRangeAndSet(n_bins);
     // initialization end
 
-    // for (int i = 0; i < fl_param.gbdt_param.n_trees; i++) {
+    for (int i = 0; i < fl_param.gbdt_param.n_trees; i++) {
+        vector<Tree> trees(fl_param.gbdt_param.tree_per_rounds);
+        party.booster.update_gradients();
+        if (fl_param.privacy_tech == "dp") {
+            // TODO 加密
+            // auto gradient_data = party.booster.gradients.host_data();
+            // for(int i = 0; i < party.booster.gradients.size(); i++){
+            //     dp_manager.clip_gradient_value(gradient_data[i].g);
+            // }
+        }
+        GHPair party_gh = thrust::reduce(thrust::host, party.booster.gradients.host_data(), party.booster.gradients.host_end());
+        // send party_gh to server
+        party.SendGH(party_gh);
+        for (int k = 0; k < fl_param.gbdt_param.tree_per_rounds; k++) {
+            party.booster.fbuilder->build_init(party.booster.gradients, k);
+            if (party.pid == 0) {
+                party.TriggerBuildUsingGH(k);
+            }
+            for (int d = 0; d < fl_param.gbdt_param.depth; d++) {
+                int n_nodes_in_level = 1 << d;
+                int n_max_nodes = 2 << fl_param.gbdt_param.depth;
+                int n_column = party.dataset.n_features();
+                int n_partition = n_column * n_nodes_in_level;
+                int n_bins = party.booster.fbuilder->cut.cut_points_val.size();      
+                auto cut_fid_data = party.booster.fbuilder->cut.cut_fid.host_data();
+                int n_max_splits = n_max_nodes * n_bins;
+                SyncArray<int> hist_fid(n_nodes_in_level * n_bins);
+                auto hist_fid_data = hist_fid.host_data();                    
+                for (int i = 0; i < hist_fid.size(); i++)
+                    hist_fid_data[i] = cut_fid_data[i % n_bins];
 
-    // }
+                // send party_hist_fid
+                party.SendHistFid(hist_fid);
+                SyncArray <GHPair> missing_gh(n_partition);
+                SyncArray <GHPair> hist(n_max_splits);
+                party.booster.fbuilder->compute_histogram_in_a_level(d, n_max_splits, n_bins,
+                                                                              n_nodes_in_level,
+                                                                              hist_fid_data, missing_gh, hist);
+                // TODO encrypt the histogram
+                // if (fl_param.privacy_tech == "he") {
+
+                // }
+                // append hist
+                party.SendHistograms(hist, 0);
+                party.SendHistograms(missing_gh, 1);
+                if (party.pid == 0) {
+                    // send current d
+                    party.TriggerCalcTree(d);
+                }
+                // get split points 
+                party.GetSplitPoints();
+                if (d == 0) {
+                    party.GetRootNode();
+                }
+                party.booster.fbuilder->update_tree();
+                party.booster.fbuilder->update_ins2node_id();
+                // check if continue
+                if (!party.HCheckIfContinue()) {
+                    break;
+                }
+            }
+            // server prune
+            if (party.pid == 0) {
+                party.TriggerPrune(k);
+            }
+            Tree &tree = trees[k];
+            tree = party.booster.fbuilder->get_tree();
+            party.booster.fbuilder->trees.prune_self(fl_param.gbdt_param.gamma);
+            party.booster.fbuilder->predict_in_training(k);
+            
+            
+            tree.nodes.resize(party.booster.fbuilder->trees.nodes.size());
+            tree.nodes.copy_from(party.booster.fbuilder->trees.nodes);
+            // trigger prune
+        }
+        
+        party.gbdt.trees.push_back(trees);
+        float score = party.booster.metric->get_score(party.booster.fbuilder->get_y_predict());
+        float avg_score = party.GetAvgScore(score);
+        LOG(INFO) << "averaged " << party.booster.metric->get_name() << " = "
+                  << avg_score;
+    }
 }
 
+#ifdef _WIN32
+INITIALIZE_EASYLOGGINGPP
+#endif
+
 int main(int argc, char **argv) {
+    el::Loggers::reconfigureAllLoggers(el::ConfigurationType::Format, "%datetime %level %fbase:%line : %msg");
+    el::Loggers::addFlag(el::LoggingFlag::ColoredTerminalOutput);
+    el::Loggers::addFlag(el::LoggingFlag::FixedTimeFormat);
+    el::Loggers::reconfigureAllLoggers(el::Level::Trace, el::ConfigurationType::Enabled, "false");
+    el::Loggers::reconfigureAllLoggers(el::Level::Debug, el::ConfigurationType::Enabled, "false");
+
     int pid;
     FLParam fl_param;
     Parser parser;

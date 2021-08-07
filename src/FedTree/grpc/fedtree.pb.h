@@ -46,7 +46,7 @@ struct TableStruct_fedtree_2eproto {
     PROTOBUF_SECTION_VARIABLE(protodesc_cold);
   static const ::PROTOBUF_NAMESPACE_ID::internal::AuxiliaryParseTableField aux[]
     PROTOBUF_SECTION_VARIABLE(protodesc_cold);
-  static const ::PROTOBUF_NAMESPACE_ID::internal::ParseTable schema[8]
+  static const ::PROTOBUF_NAMESPACE_ID::internal::ParseTable schema[10]
     PROTOBUF_SECTION_VARIABLE(protodesc_cold);
   static const ::PROTOBUF_NAMESPACE_ID::internal::FieldMetadata field_metadata[];
   static const ::PROTOBUF_NAMESPACE_ID::internal::SerializationTable serialization_table[];
@@ -78,6 +78,12 @@ extern PIDDefaultTypeInternal _PID_default_instance_;
 class Ready;
 class ReadyDefaultTypeInternal;
 extern ReadyDefaultTypeInternal _Ready_default_instance_;
+class Score;
+class ScoreDefaultTypeInternal;
+extern ScoreDefaultTypeInternal _Score_default_instance_;
+class SplitPoint;
+class SplitPointDefaultTypeInternal;
+extern SplitPointDefaultTypeInternal _SplitPoint_default_instance_;
 }  // namespace fedtree
 PROTOBUF_NAMESPACE_OPEN
 template<> ::fedtree::BestInfo* Arena::CreateMaybeMessage<::fedtree::BestInfo>(Arena*);
@@ -88,10 +94,394 @@ template<> ::fedtree::Ins2NodeID* Arena::CreateMaybeMessage<::fedtree::Ins2NodeI
 template<> ::fedtree::Node* Arena::CreateMaybeMessage<::fedtree::Node>(Arena*);
 template<> ::fedtree::PID* Arena::CreateMaybeMessage<::fedtree::PID>(Arena*);
 template<> ::fedtree::Ready* Arena::CreateMaybeMessage<::fedtree::Ready>(Arena*);
+template<> ::fedtree::Score* Arena::CreateMaybeMessage<::fedtree::Score>(Arena*);
+template<> ::fedtree::SplitPoint* Arena::CreateMaybeMessage<::fedtree::SplitPoint>(Arena*);
 PROTOBUF_NAMESPACE_CLOSE
 namespace fedtree {
 
 // ===================================================================
+
+class SplitPoint PROTOBUF_FINAL :
+    public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:fedtree.SplitPoint) */ {
+ public:
+  inline SplitPoint() : SplitPoint(nullptr) {}
+  virtual ~SplitPoint();
+
+  SplitPoint(const SplitPoint& from);
+  SplitPoint(SplitPoint&& from) noexcept
+    : SplitPoint() {
+    *this = ::std::move(from);
+  }
+
+  inline SplitPoint& operator=(const SplitPoint& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  inline SplitPoint& operator=(SplitPoint&& from) noexcept {
+    if (GetArena() == from.GetArena()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* descriptor() {
+    return GetDescriptor();
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* GetDescriptor() {
+    return GetMetadataStatic().descriptor;
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
+    return GetMetadataStatic().reflection;
+  }
+  static const SplitPoint& default_instance();
+
+  static inline const SplitPoint* internal_default_instance() {
+    return reinterpret_cast<const SplitPoint*>(
+               &_SplitPoint_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages =
+    0;
+
+  friend void swap(SplitPoint& a, SplitPoint& b) {
+    a.Swap(&b);
+  }
+  inline void Swap(SplitPoint* other) {
+    if (other == this) return;
+    if (GetArena() == other->GetArena()) {
+      InternalSwap(other);
+    } else {
+      ::PROTOBUF_NAMESPACE_ID::internal::GenericSwap(this, other);
+    }
+  }
+  void UnsafeArenaSwap(SplitPoint* other) {
+    if (other == this) return;
+    GOOGLE_DCHECK(GetArena() == other->GetArena());
+    InternalSwap(other);
+  }
+
+  // implements Message ----------------------------------------------
+
+  inline SplitPoint* New() const final {
+    return CreateMaybeMessage<SplitPoint>(nullptr);
+  }
+
+  SplitPoint* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+    return CreateMaybeMessage<SplitPoint>(arena);
+  }
+  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void CopyFrom(const SplitPoint& from);
+  void MergeFrom(const SplitPoint& from);
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
+  bool IsInitialized() const final;
+
+  size_t ByteSizeLong() const final;
+  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
+  ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
+      ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
+  int GetCachedSize() const final { return _cached_size_.Get(); }
+
+  private:
+  inline void SharedCtor();
+  inline void SharedDtor();
+  void SetCachedSize(int size) const final;
+  void InternalSwap(SplitPoint* other);
+  friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
+  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
+    return "fedtree.SplitPoint";
+  }
+  protected:
+  explicit SplitPoint(::PROTOBUF_NAMESPACE_ID::Arena* arena);
+  private:
+  static void ArenaDtor(void* object);
+  inline void RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
+  public:
+
+  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
+  private:
+  static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
+    ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_fedtree_2eproto);
+    return ::descriptor_table_fedtree_2eproto.file_level_metadata[kIndexInFileMessages];
+  }
+
+  public:
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  enum : int {
+    kGainFieldNumber = 1,
+    kFeaMissingGFieldNumber = 2,
+    kFeaMissingHFieldNumber = 3,
+    kRchSumGFieldNumber = 4,
+    kRchSumHFieldNumber = 5,
+    kNidFieldNumber = 7,
+    kSplitFeaIdFieldNumber = 8,
+    kDefaultRightFieldNumber = 6,
+    kNoSplitValueUpdateFieldNumber = 11,
+    kFvalFieldNumber = 9,
+    kSplitBidFieldNumber = 10,
+  };
+  // float gain = 1;
+  void clear_gain();
+  float gain() const;
+  void set_gain(float value);
+  private:
+  float _internal_gain() const;
+  void _internal_set_gain(float value);
+  public:
+
+  // float fea_missing_g = 2;
+  void clear_fea_missing_g();
+  float fea_missing_g() const;
+  void set_fea_missing_g(float value);
+  private:
+  float _internal_fea_missing_g() const;
+  void _internal_set_fea_missing_g(float value);
+  public:
+
+  // float fea_missing_h = 3;
+  void clear_fea_missing_h();
+  float fea_missing_h() const;
+  void set_fea_missing_h(float value);
+  private:
+  float _internal_fea_missing_h() const;
+  void _internal_set_fea_missing_h(float value);
+  public:
+
+  // float rch_sum_g = 4;
+  void clear_rch_sum_g();
+  float rch_sum_g() const;
+  void set_rch_sum_g(float value);
+  private:
+  float _internal_rch_sum_g() const;
+  void _internal_set_rch_sum_g(float value);
+  public:
+
+  // float rch_sum_h = 5;
+  void clear_rch_sum_h();
+  float rch_sum_h() const;
+  void set_rch_sum_h(float value);
+  private:
+  float _internal_rch_sum_h() const;
+  void _internal_set_rch_sum_h(float value);
+  public:
+
+  // int32 nid = 7;
+  void clear_nid();
+  ::PROTOBUF_NAMESPACE_ID::int32 nid() const;
+  void set_nid(::PROTOBUF_NAMESPACE_ID::int32 value);
+  private:
+  ::PROTOBUF_NAMESPACE_ID::int32 _internal_nid() const;
+  void _internal_set_nid(::PROTOBUF_NAMESPACE_ID::int32 value);
+  public:
+
+  // int32 split_fea_id = 8;
+  void clear_split_fea_id();
+  ::PROTOBUF_NAMESPACE_ID::int32 split_fea_id() const;
+  void set_split_fea_id(::PROTOBUF_NAMESPACE_ID::int32 value);
+  private:
+  ::PROTOBUF_NAMESPACE_ID::int32 _internal_split_fea_id() const;
+  void _internal_set_split_fea_id(::PROTOBUF_NAMESPACE_ID::int32 value);
+  public:
+
+  // bool default_right = 6;
+  void clear_default_right();
+  bool default_right() const;
+  void set_default_right(bool value);
+  private:
+  bool _internal_default_right() const;
+  void _internal_set_default_right(bool value);
+  public:
+
+  // bool no_split_value_update = 11;
+  void clear_no_split_value_update();
+  bool no_split_value_update() const;
+  void set_no_split_value_update(bool value);
+  private:
+  bool _internal_no_split_value_update() const;
+  void _internal_set_no_split_value_update(bool value);
+  public:
+
+  // float fval = 9;
+  void clear_fval();
+  float fval() const;
+  void set_fval(float value);
+  private:
+  float _internal_fval() const;
+  void _internal_set_fval(float value);
+  public:
+
+  // int32 split_bid = 10;
+  void clear_split_bid();
+  ::PROTOBUF_NAMESPACE_ID::int32 split_bid() const;
+  void set_split_bid(::PROTOBUF_NAMESPACE_ID::int32 value);
+  private:
+  ::PROTOBUF_NAMESPACE_ID::int32 _internal_split_bid() const;
+  void _internal_set_split_bid(::PROTOBUF_NAMESPACE_ID::int32 value);
+  public:
+
+  // @@protoc_insertion_point(class_scope:fedtree.SplitPoint)
+ private:
+  class _Internal;
+
+  template <typename T> friend class ::PROTOBUF_NAMESPACE_ID::Arena::InternalHelper;
+  typedef void InternalArenaConstructable_;
+  typedef void DestructorSkippable_;
+  float gain_;
+  float fea_missing_g_;
+  float fea_missing_h_;
+  float rch_sum_g_;
+  float rch_sum_h_;
+  ::PROTOBUF_NAMESPACE_ID::int32 nid_;
+  ::PROTOBUF_NAMESPACE_ID::int32 split_fea_id_;
+  bool default_right_;
+  bool no_split_value_update_;
+  float fval_;
+  ::PROTOBUF_NAMESPACE_ID::int32 split_bid_;
+  mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
+  friend struct ::TableStruct_fedtree_2eproto;
+};
+// -------------------------------------------------------------------
+
+class Score PROTOBUF_FINAL :
+    public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:fedtree.Score) */ {
+ public:
+  inline Score() : Score(nullptr) {}
+  virtual ~Score();
+
+  Score(const Score& from);
+  Score(Score&& from) noexcept
+    : Score() {
+    *this = ::std::move(from);
+  }
+
+  inline Score& operator=(const Score& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  inline Score& operator=(Score&& from) noexcept {
+    if (GetArena() == from.GetArena()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* descriptor() {
+    return GetDescriptor();
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* GetDescriptor() {
+    return GetMetadataStatic().descriptor;
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
+    return GetMetadataStatic().reflection;
+  }
+  static const Score& default_instance();
+
+  static inline const Score* internal_default_instance() {
+    return reinterpret_cast<const Score*>(
+               &_Score_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages =
+    1;
+
+  friend void swap(Score& a, Score& b) {
+    a.Swap(&b);
+  }
+  inline void Swap(Score* other) {
+    if (other == this) return;
+    if (GetArena() == other->GetArena()) {
+      InternalSwap(other);
+    } else {
+      ::PROTOBUF_NAMESPACE_ID::internal::GenericSwap(this, other);
+    }
+  }
+  void UnsafeArenaSwap(Score* other) {
+    if (other == this) return;
+    GOOGLE_DCHECK(GetArena() == other->GetArena());
+    InternalSwap(other);
+  }
+
+  // implements Message ----------------------------------------------
+
+  inline Score* New() const final {
+    return CreateMaybeMessage<Score>(nullptr);
+  }
+
+  Score* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+    return CreateMaybeMessage<Score>(arena);
+  }
+  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void CopyFrom(const Score& from);
+  void MergeFrom(const Score& from);
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
+  bool IsInitialized() const final;
+
+  size_t ByteSizeLong() const final;
+  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
+  ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
+      ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
+  int GetCachedSize() const final { return _cached_size_.Get(); }
+
+  private:
+  inline void SharedCtor();
+  inline void SharedDtor();
+  void SetCachedSize(int size) const final;
+  void InternalSwap(Score* other);
+  friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
+  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
+    return "fedtree.Score";
+  }
+  protected:
+  explicit Score(::PROTOBUF_NAMESPACE_ID::Arena* arena);
+  private:
+  static void ArenaDtor(void* object);
+  inline void RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
+  public:
+
+  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
+  private:
+  static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
+    ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_fedtree_2eproto);
+    return ::descriptor_table_fedtree_2eproto.file_level_metadata[kIndexInFileMessages];
+  }
+
+  public:
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  enum : int {
+    kContentFieldNumber = 1,
+  };
+  // float content = 1;
+  void clear_content();
+  float content() const;
+  void set_content(float value);
+  private:
+  float _internal_content() const;
+  void _internal_set_content(float value);
+  public:
+
+  // @@protoc_insertion_point(class_scope:fedtree.Score)
+ private:
+  class _Internal;
+
+  template <typename T> friend class ::PROTOBUF_NAMESPACE_ID::Arena::InternalHelper;
+  typedef void InternalArenaConstructable_;
+  typedef void DestructorSkippable_;
+  float content_;
+  mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
+  friend struct ::TableStruct_fedtree_2eproto;
+};
+// -------------------------------------------------------------------
 
 class PID PROTOBUF_FINAL :
     public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:fedtree.PID) */ {
@@ -134,7 +524,7 @@ class PID PROTOBUF_FINAL :
                &_PID_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    0;
+    2;
 
   friend void swap(PID& a, PID& b) {
     a.Swap(&b);
@@ -270,7 +660,7 @@ class Ready PROTOBUF_FINAL :
                &_Ready_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    1;
+    3;
 
   friend void swap(Ready& a, Ready& b) {
     a.Swap(&b);
@@ -406,7 +796,7 @@ class DatasetInfo PROTOBUF_FINAL :
                &_DatasetInfo_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    2;
+    4;
 
   friend void swap(DatasetInfo& a, DatasetInfo& b) {
     a.Swap(&b);
@@ -553,7 +943,7 @@ class GHPair PROTOBUF_FINAL :
                &_GHPair_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    3;
+    5;
 
   friend void swap(GHPair& a, GHPair& b) {
     a.Swap(&b);
@@ -700,7 +1090,7 @@ class FID PROTOBUF_FINAL :
                &_FID_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    4;
+    6;
 
   friend void swap(FID& a, FID& b) {
     a.Swap(&b);
@@ -836,7 +1226,7 @@ class BestInfo PROTOBUF_FINAL :
                &_BestInfo_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    5;
+    7;
 
   friend void swap(BestInfo& a, BestInfo& b) {
     a.Swap(&b);
@@ -1016,7 +1406,7 @@ class Node PROTOBUF_FINAL :
                &_Node_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    6;
+    8;
 
   friend void swap(Node& a, Node& b) {
     a.Swap(&b);
@@ -1328,7 +1718,7 @@ class Ins2NodeID PROTOBUF_FINAL :
                &_Ins2NodeID_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    7;
+    9;
 
   friend void swap(Ins2NodeID& a, Ins2NodeID& b) {
     a.Swap(&b);
@@ -1441,6 +1831,254 @@ class Ins2NodeID PROTOBUF_FINAL :
   #pragma GCC diagnostic push
   #pragma GCC diagnostic ignored "-Wstrict-aliasing"
 #endif  // __GNUC__
+// SplitPoint
+
+// float gain = 1;
+inline void SplitPoint::clear_gain() {
+  gain_ = 0;
+}
+inline float SplitPoint::_internal_gain() const {
+  return gain_;
+}
+inline float SplitPoint::gain() const {
+  // @@protoc_insertion_point(field_get:fedtree.SplitPoint.gain)
+  return _internal_gain();
+}
+inline void SplitPoint::_internal_set_gain(float value) {
+  
+  gain_ = value;
+}
+inline void SplitPoint::set_gain(float value) {
+  _internal_set_gain(value);
+  // @@protoc_insertion_point(field_set:fedtree.SplitPoint.gain)
+}
+
+// float fea_missing_g = 2;
+inline void SplitPoint::clear_fea_missing_g() {
+  fea_missing_g_ = 0;
+}
+inline float SplitPoint::_internal_fea_missing_g() const {
+  return fea_missing_g_;
+}
+inline float SplitPoint::fea_missing_g() const {
+  // @@protoc_insertion_point(field_get:fedtree.SplitPoint.fea_missing_g)
+  return _internal_fea_missing_g();
+}
+inline void SplitPoint::_internal_set_fea_missing_g(float value) {
+  
+  fea_missing_g_ = value;
+}
+inline void SplitPoint::set_fea_missing_g(float value) {
+  _internal_set_fea_missing_g(value);
+  // @@protoc_insertion_point(field_set:fedtree.SplitPoint.fea_missing_g)
+}
+
+// float fea_missing_h = 3;
+inline void SplitPoint::clear_fea_missing_h() {
+  fea_missing_h_ = 0;
+}
+inline float SplitPoint::_internal_fea_missing_h() const {
+  return fea_missing_h_;
+}
+inline float SplitPoint::fea_missing_h() const {
+  // @@protoc_insertion_point(field_get:fedtree.SplitPoint.fea_missing_h)
+  return _internal_fea_missing_h();
+}
+inline void SplitPoint::_internal_set_fea_missing_h(float value) {
+  
+  fea_missing_h_ = value;
+}
+inline void SplitPoint::set_fea_missing_h(float value) {
+  _internal_set_fea_missing_h(value);
+  // @@protoc_insertion_point(field_set:fedtree.SplitPoint.fea_missing_h)
+}
+
+// float rch_sum_g = 4;
+inline void SplitPoint::clear_rch_sum_g() {
+  rch_sum_g_ = 0;
+}
+inline float SplitPoint::_internal_rch_sum_g() const {
+  return rch_sum_g_;
+}
+inline float SplitPoint::rch_sum_g() const {
+  // @@protoc_insertion_point(field_get:fedtree.SplitPoint.rch_sum_g)
+  return _internal_rch_sum_g();
+}
+inline void SplitPoint::_internal_set_rch_sum_g(float value) {
+  
+  rch_sum_g_ = value;
+}
+inline void SplitPoint::set_rch_sum_g(float value) {
+  _internal_set_rch_sum_g(value);
+  // @@protoc_insertion_point(field_set:fedtree.SplitPoint.rch_sum_g)
+}
+
+// float rch_sum_h = 5;
+inline void SplitPoint::clear_rch_sum_h() {
+  rch_sum_h_ = 0;
+}
+inline float SplitPoint::_internal_rch_sum_h() const {
+  return rch_sum_h_;
+}
+inline float SplitPoint::rch_sum_h() const {
+  // @@protoc_insertion_point(field_get:fedtree.SplitPoint.rch_sum_h)
+  return _internal_rch_sum_h();
+}
+inline void SplitPoint::_internal_set_rch_sum_h(float value) {
+  
+  rch_sum_h_ = value;
+}
+inline void SplitPoint::set_rch_sum_h(float value) {
+  _internal_set_rch_sum_h(value);
+  // @@protoc_insertion_point(field_set:fedtree.SplitPoint.rch_sum_h)
+}
+
+// bool default_right = 6;
+inline void SplitPoint::clear_default_right() {
+  default_right_ = false;
+}
+inline bool SplitPoint::_internal_default_right() const {
+  return default_right_;
+}
+inline bool SplitPoint::default_right() const {
+  // @@protoc_insertion_point(field_get:fedtree.SplitPoint.default_right)
+  return _internal_default_right();
+}
+inline void SplitPoint::_internal_set_default_right(bool value) {
+  
+  default_right_ = value;
+}
+inline void SplitPoint::set_default_right(bool value) {
+  _internal_set_default_right(value);
+  // @@protoc_insertion_point(field_set:fedtree.SplitPoint.default_right)
+}
+
+// int32 nid = 7;
+inline void SplitPoint::clear_nid() {
+  nid_ = 0;
+}
+inline ::PROTOBUF_NAMESPACE_ID::int32 SplitPoint::_internal_nid() const {
+  return nid_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::int32 SplitPoint::nid() const {
+  // @@protoc_insertion_point(field_get:fedtree.SplitPoint.nid)
+  return _internal_nid();
+}
+inline void SplitPoint::_internal_set_nid(::PROTOBUF_NAMESPACE_ID::int32 value) {
+  
+  nid_ = value;
+}
+inline void SplitPoint::set_nid(::PROTOBUF_NAMESPACE_ID::int32 value) {
+  _internal_set_nid(value);
+  // @@protoc_insertion_point(field_set:fedtree.SplitPoint.nid)
+}
+
+// int32 split_fea_id = 8;
+inline void SplitPoint::clear_split_fea_id() {
+  split_fea_id_ = 0;
+}
+inline ::PROTOBUF_NAMESPACE_ID::int32 SplitPoint::_internal_split_fea_id() const {
+  return split_fea_id_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::int32 SplitPoint::split_fea_id() const {
+  // @@protoc_insertion_point(field_get:fedtree.SplitPoint.split_fea_id)
+  return _internal_split_fea_id();
+}
+inline void SplitPoint::_internal_set_split_fea_id(::PROTOBUF_NAMESPACE_ID::int32 value) {
+  
+  split_fea_id_ = value;
+}
+inline void SplitPoint::set_split_fea_id(::PROTOBUF_NAMESPACE_ID::int32 value) {
+  _internal_set_split_fea_id(value);
+  // @@protoc_insertion_point(field_set:fedtree.SplitPoint.split_fea_id)
+}
+
+// float fval = 9;
+inline void SplitPoint::clear_fval() {
+  fval_ = 0;
+}
+inline float SplitPoint::_internal_fval() const {
+  return fval_;
+}
+inline float SplitPoint::fval() const {
+  // @@protoc_insertion_point(field_get:fedtree.SplitPoint.fval)
+  return _internal_fval();
+}
+inline void SplitPoint::_internal_set_fval(float value) {
+  
+  fval_ = value;
+}
+inline void SplitPoint::set_fval(float value) {
+  _internal_set_fval(value);
+  // @@protoc_insertion_point(field_set:fedtree.SplitPoint.fval)
+}
+
+// int32 split_bid = 10;
+inline void SplitPoint::clear_split_bid() {
+  split_bid_ = 0;
+}
+inline ::PROTOBUF_NAMESPACE_ID::int32 SplitPoint::_internal_split_bid() const {
+  return split_bid_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::int32 SplitPoint::split_bid() const {
+  // @@protoc_insertion_point(field_get:fedtree.SplitPoint.split_bid)
+  return _internal_split_bid();
+}
+inline void SplitPoint::_internal_set_split_bid(::PROTOBUF_NAMESPACE_ID::int32 value) {
+  
+  split_bid_ = value;
+}
+inline void SplitPoint::set_split_bid(::PROTOBUF_NAMESPACE_ID::int32 value) {
+  _internal_set_split_bid(value);
+  // @@protoc_insertion_point(field_set:fedtree.SplitPoint.split_bid)
+}
+
+// bool no_split_value_update = 11;
+inline void SplitPoint::clear_no_split_value_update() {
+  no_split_value_update_ = false;
+}
+inline bool SplitPoint::_internal_no_split_value_update() const {
+  return no_split_value_update_;
+}
+inline bool SplitPoint::no_split_value_update() const {
+  // @@protoc_insertion_point(field_get:fedtree.SplitPoint.no_split_value_update)
+  return _internal_no_split_value_update();
+}
+inline void SplitPoint::_internal_set_no_split_value_update(bool value) {
+  
+  no_split_value_update_ = value;
+}
+inline void SplitPoint::set_no_split_value_update(bool value) {
+  _internal_set_no_split_value_update(value);
+  // @@protoc_insertion_point(field_set:fedtree.SplitPoint.no_split_value_update)
+}
+
+// -------------------------------------------------------------------
+
+// Score
+
+// float content = 1;
+inline void Score::clear_content() {
+  content_ = 0;
+}
+inline float Score::_internal_content() const {
+  return content_;
+}
+inline float Score::content() const {
+  // @@protoc_insertion_point(field_get:fedtree.Score.content)
+  return _internal_content();
+}
+inline void Score::_internal_set_content(float value) {
+  
+  content_ = value;
+}
+inline void Score::set_content(float value) {
+  _internal_set_content(value);
+  // @@protoc_insertion_point(field_set:fedtree.Score.content)
+}
+
+// -------------------------------------------------------------------
+
 // PID
 
 // int32 id = 1;
@@ -2094,6 +2732,10 @@ inline void Ins2NodeID::set_nid(::PROTOBUF_NAMESPACE_ID::int32 value) {
 #ifdef __GNUC__
   #pragma GCC diagnostic pop
 #endif  // __GNUC__
+// -------------------------------------------------------------------
+
+// -------------------------------------------------------------------
+
 // -------------------------------------------------------------------
 
 // -------------------------------------------------------------------

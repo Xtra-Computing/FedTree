@@ -394,6 +394,16 @@ void DistributedServer::HorizontalInitVectors(int n_parties) {
     // TODO
     range_received.resize(n_parties, 0);
     party_feature_range.resize(n_parties);
+    
+    hist_fid_received.resize(n_parties, 0);
+    hists_received.resize(n_parties, 0);
+    missing_gh_received.resize(n_parties, 0);
+
+    party_gh_received.resize(n_parties, 0);
+    party_ghs.resize(n_parties);
+    
+    score_received.resize(n_parties, 0);
+    party_scores.resize(n_parties, 0);
 }
 
 void RunServer(DistributedServer &service) {
@@ -485,6 +495,229 @@ grpc::Status DistributedServer::GetRange(grpc::ServerContext* context, const fed
     return grpc::Status::OK;
 }
 
+grpc::Status DistributedServer::SendGH(grpc::ServerContext* context, const fedtree::GHPair* request, 
+                                fedtree::PID* response) {
+
+    std::multimap<grpc::string_ref, grpc::string_ref> metadata = context->client_metadata();
+    auto pid_itr = metadata.find("pid");
+    int pid = std::stoi(pid_itr->second.data());
+    party_gh_received[pid] += 1;
+    party_ghs[pid] = {request->g(), request->h()};
+    LOG(DEBUG) << "Receive gh from " << pid;
+
+    unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+    std::default_random_engine generator(seed);
+    std::uniform_int_distribution<int> delay_distribution(10, 20);
+    while (true) {
+        bool cont = true;
+        for (int i = 0; i < param.n_parties; i++) {
+            if (party_gh_received[i] < gh_rounds) {
+                cont = false;
+            }
+        }
+        if (cont) {
+            break;
+        }
+        std::this_thread::sleep_for(
+                std::chrono::milliseconds(delay_distribution(generator)));
+    }
+    if (gh_cnt == 0) {
+        score_rounds += 1;
+    }
+    gh_cnt = (gh_cnt + 1) % param.n_parties;
+    return grpc::Status::OK;
+}
+
+grpc::Status DistributedServer::TriggerBuildUsingGH(grpc::ServerContext* context, const fedtree::PID* request,
+                                fedtree::Ready* response) {
+    // TODO
+    GHPair sum_gh;
+    for (auto e: party_ghs) {
+        sum_gh = sum_gh + e;
+    }
+    std::multimap<grpc::string_ref, grpc::string_ref> metadata = context->client_metadata();
+    auto k_itr = metadata.find("k");
+    int k = std::stoi(k_itr->second.data());
+    booster.fbuilder->build_init(sum_gh, k);
+    build_gh_success = true;
+    return grpc::Status::OK;
+}
+
+grpc::Status DistributedServer::TriggerCalcTree(grpc::ServerContext* context, const fedtree::PID* request, fedtree::Ready* response) {
+    std::multimap<grpc::string_ref, grpc::string_ref> metadata = context->client_metadata();
+    auto itr = metadata.find("l");
+    int l = std::stoi(itr->second.data());
+    int n_nodes_in_level = 1 << l;
+
+    unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+    std::default_random_engine generator(seed);
+    std::uniform_int_distribution<int> delay_distribution(10, 20);
+
+    LOG(DEBUG) << hists_received << "/" << missing_gh_received << "/" << hist_fid_received;
+
+    bool cont = true;
+    while (cont) {
+        cont = false;
+        for (int i = 0; i < param.n_parties; ++i) {
+            if (hists_received[i] < cur_round || missing_gh_received[i] < cur_round || hist_fid_received[i] < cur_round)
+                cont = true;
+        }
+        std::this_thread::sleep_for(
+                std::chrono::milliseconds(delay_distribution(generator)));
+    }
+    cur_round += 1;
+    // 
+    SyncArray <GHPair> missing_gh;
+    SyncArray <GHPair> hist;
+    booster.fbuilder->merge_histograms_server_propose(hist, missing_gh);
+    int n_bins = booster.fbuilder->cut.cut_points_val.size();
+    int n_max_nodes = 2 << model_param.depth;
+    int n_max_splits = n_max_nodes * n_bins;
+
+    SyncArray <float_type> gain(n_max_splits);
+    // if privacy tech == 'he', decrypt histogram
+    auto hist_fid_data = booster.fbuilder->parties_hist_fid[0].host_data();
+    booster.fbuilder->compute_gain_in_a_level(gain, n_nodes_in_level, n_bins, hist_fid_data,
+                                                                 missing_gh, hist);
+    SyncArray <int_float> best_idx_gain(n_nodes_in_level);
+    // if(params.privacy_tech == "dp"){
+    //     SyncArray<float_type> prob_exponent(n_max_splits);    //the exponent of probability mass for each split point
+    //     dp_manager.compute_split_point_probability(gain, prob_exponent);
+    //     dp_manager.exponential_select_split_point(prob_exponent, gain, best_idx_gain, n_nodes_in_level, n_bins);
+    // } else 
+    booster.fbuilder->get_best_gain_in_a_level(gain, best_idx_gain, n_nodes_in_level, n_bins);
+    booster.fbuilder->get_split_points(best_idx_gain, n_nodes_in_level, hist_fid_data, missing_gh, hist);
+    // SP ready 
+
+    calc_success = true;
+    booster.fbuilder->update_tree();
+    return grpc::Status::OK;
+}
+
+grpc::Status DistributedServer::GetRootNode(grpc::ServerContext* context, const fedtree::PID *request, fedtree::Node* response) {
+    auto & root_node = booster.fbuilder->trees.nodes.host_data()[0];
+    response->set_final_id(root_node.final_id);
+    response->set_lch_index(root_node.lch_index);
+    response->set_rch_index(root_node.rch_index);
+    response->set_parent_index(root_node.parent_index);
+    response->set_gain(root_node.gain);
+    response->set_base_weight(root_node.base_weight);
+    response->set_split_feature_id(root_node.split_feature_id);
+    response->set_pid(root_node.pid);
+    response->set_split_value(root_node.split_value);
+    response->set_split_bid(root_node.split_bid);
+    response->set_default_right(root_node.default_right);
+    response->set_is_leaf(root_node.is_leaf);
+    response->set_is_valid(root_node.is_valid);
+    response->set_is_pruned(root_node.is_pruned);
+    response->set_sum_gh_pair_g(root_node.sum_gh_pair.g);
+    response->set_sum_gh_pair_h(root_node.sum_gh_pair.h);
+    response->set_n_instances(root_node.n_instances);
+    return grpc::Status::OK;
+}
+
+grpc::Status DistributedServer::GetSplitPoints(grpc::ServerContext* context, const fedtree::PID* request,
+                                grpc::ServerWriter<fedtree::SplitPoint>* writer) {
+    unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+    std::default_random_engine generator(seed);
+    std::uniform_int_distribution<int> delay_distribution(10, 20);
+    while (!calc_success) {
+        std::this_thread::sleep_for(
+                std::chrono::milliseconds(delay_distribution(generator)));
+    }
+    if (sp_cnt == 0) {
+        cont_votes.clear();
+    }
+    sp_cnt = (sp_cnt + 1) % param.n_parties;
+    if (sp_cnt == 0) {
+        calc_success = false;
+    }
+    // SP
+    auto &sp = booster.fbuilder->sp;
+    auto sp_data = sp.host_data();
+    for (int i = 0; i < sp.size(); i++) {
+        fedtree::SplitPoint sp_point;
+        sp_point.set_gain(sp_data[i].gain);
+        sp_point.set_fea_missing_g(sp_data[i].fea_missing_gh.g);
+        sp_point.set_fea_missing_h(sp_data[i].fea_missing_gh.h);
+        sp_point.set_rch_sum_g(sp_data[i].rch_sum_gh.g);
+        sp_point.set_rch_sum_h(sp_data[i].rch_sum_gh.h);
+        sp_point.set_default_right(sp_data[i].default_right);
+        sp_point.set_nid(sp_data[i].nid);
+        sp_point.set_split_fea_id(sp_data[i].split_fea_id);
+        sp_point.set_fval(sp_data[i].fval);
+        sp_point.set_split_bid(sp_data[i].split_bid);
+        sp_point.set_no_split_value_update(sp_data[i].no_split_value_update);
+        writer->Write(sp_point);
+
+    }
+    LOG(DEBUG) << "Send split points to " << request->id();
+    return grpc::Status::OK;
+}
+
+grpc::Status DistributedServer::HCheckIfContinue(grpc::ServerContext *context, const fedtree::PID *pid,
+                                                fedtree::Ready *ready) {
+    std::multimap<grpc::string_ref, grpc::string_ref> metadata = context->client_metadata();
+    auto itr = metadata.find("cont");
+    int cont = std::stoi(itr->second.data());
+    cont_votes.push_back(cont);
+    unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+    std::default_random_engine generator(seed);
+    std::uniform_int_distribution<int> delay_distribution(10, 20);
+
+    while (cont_votes.size() < param.n_parties) {
+        std::this_thread::sleep_for(
+                std::chrono::milliseconds(delay_distribution(generator)));
+    }
+    hvote_cnt = (hvote_cnt + 1) % param.n_parties;
+    ready->set_ready(true);
+    for (auto vote: cont_votes) {
+        if (vote == 0) {
+            ready->set_ready(false);
+            break;
+        }
+    }
+    if (hvote_cnt == 0) {
+        cont_votes.clear();
+    }
+    return grpc::Status::OK;
+}
+
+grpc::Status DistributedServer::ScoreReduce(grpc::ServerContext* context, const fedtree::Score* request, 
+                                fedtree::Score* response) {
+    // emm
+    std::multimap<grpc::string_ref, grpc::string_ref> metadata = context->client_metadata();
+    auto pid_itr = metadata.find("pid");
+    int pid = std::stoi(pid_itr->second.data());
+    party_scores[pid] = request->content();
+    score_received[pid] += 1;
+    unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+    std::default_random_engine generator(seed);
+    std::uniform_int_distribution<int> delay_distribution(10, 20);
+    while (true) {
+        bool cont = true;
+        for (int i = 0; i < param.n_parties; i++) {
+            if (score_received[i] < score_rounds) {
+                cont = false;
+            }
+        }
+        if (cont) {
+            break;
+        }
+        std::this_thread::sleep_for(
+                std::chrono::milliseconds(delay_distribution(generator)));
+    }
+    if (cnt == 0) {
+        gh_rounds += 1;
+    }
+    cnt = (cnt + 1) % param.n_parties;
+    float sum_score = 0;
+    for (auto e: party_scores) {
+        sum_score += e;
+    }
+    response->set_content(sum_score/param.n_parties);
+    return grpc::Status::OK;
+}
 
 int main(int argc, char **argv) {
     int pid;
@@ -533,6 +766,7 @@ int main(int argc, char **argv) {
         // FIXME server不应该知道全局dataset
         server.param = fl_param;
         server.horizontal_init(fl_param, dataset.n_instances(), n_instances_per_party, dataset);
+        server.booster.fbuilder->party_containers_init(fl_param.n_parties);
     }
     
     RunServer(server);

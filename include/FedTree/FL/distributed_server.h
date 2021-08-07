@@ -80,6 +80,23 @@ public:
     grpc::Status GetRange(grpc::ServerContext* context, const fedtree::PID* request,
                                 grpc::ServerWriter<fedtree::GHPair>* writer) override;
     
+
+    grpc::Status SendGH(grpc::ServerContext* context, const fedtree::GHPair* request, fedtree::PID* response) override;
+
+    grpc::Status TriggerBuildUsingGH(grpc::ServerContext* context, const fedtree::PID* request, fedtree::Ready* response) override;
+    
+    grpc::Status ScoreReduce(grpc::ServerContext* context, const fedtree::Score* request, fedtree::Score* response) override;
+    
+    grpc::Status TriggerCalcTree(grpc::ServerContext* context, const fedtree::PID* request, fedtree::Ready* response) override;
+
+    grpc::Status GetSplitPoints(grpc::ServerContext* context, const fedtree::PID* request,
+                                grpc::ServerWriter<fedtree::SplitPoint>* writer) override;
+
+    grpc::Status GetRootNode(grpc::ServerContext* context, const fedtree::PID *request, fedtree::Node* response) override;
+
+    grpc::Status HCheckIfContinue(grpc::ServerContext *context, const fedtree::PID *pid,
+                                 fedtree::Ready *ready) override;
+
     void VerticalInitVectors(int n_parties);
 
     void HorizontalInitVectors(int n_parties);
@@ -115,6 +132,25 @@ private:
     vector<vector<GHPair>> party_feature_range;
     vector<int> range_received;
     bool range_success = false;
+
+    vector<int> party_gh_received;
+    vector<GHPair> party_ghs;
+    int gh_rounds = 1;
+    bool build_gh_success = false;
+
+    bool calc_success = false;
+    
+    vector<int> score_received;
+    vector<float> party_scores;
+    bool score_success = false;
+    int score_rounds = 0;
+
+    int cnt = 0;
+    int gh_cnt = 0;
+    int sp_cnt = 0;
+    int hvote_cnt = 0;
+    
+
 };
 
 #endif //FEDTREE_DISTRIBUTED_SERVER_H

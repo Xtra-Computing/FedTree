@@ -27,6 +27,33 @@ service FedTree {
   rpc SendRange(stream GHPair) returns (PID) {}
   rpc TriggerCut(PID) returns (Ready) {}
   rpc GetRange(PID) returns(stream GHPair) {}
+  rpc SendGH(GHPair) returns (PID) {}
+  // TODO sendGHEncrypted 
+  rpc TriggerBuildUsingGH(PID) returns (Ready) {}
+  rpc TriggerCalcTree(PID) returns (Ready) {}
+  rpc GetRootNode(PID) returns (Node);
+  rpc GetSplitPoints(PID) returns (stream SplitPoint) {}
+  rpc HCheckIfContinue(PID) returns (Ready) {}
+  rpc ScoreReduce(Score) returns (Score) {}
+
+}
+
+message SplitPoint {
+  float gain = 1;
+  float fea_missing_g = 2;
+  float fea_missing_h = 3;
+  float rch_sum_g = 4;
+  float rch_sum_h = 5;
+  bool default_right = 6;
+  int32 nid = 7;
+  int32 split_fea_id = 8;
+  float fval = 9;
+  int32 split_bid = 10;
+  bool no_split_value_update = 11;
+}
+
+message Score {
+  float content = 1;
 }
 
 message PID {

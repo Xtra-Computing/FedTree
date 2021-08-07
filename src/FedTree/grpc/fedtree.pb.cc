@@ -15,6 +15,14 @@
 // @@protoc_insertion_point(includes)
 #include <google/protobuf/port_def.inc>
 namespace fedtree {
+class SplitPointDefaultTypeInternal {
+ public:
+  ::PROTOBUF_NAMESPACE_ID::internal::ExplicitlyConstructed<SplitPoint> _instance;
+} _SplitPoint_default_instance_;
+class ScoreDefaultTypeInternal {
+ public:
+  ::PROTOBUF_NAMESPACE_ID::internal::ExplicitlyConstructed<Score> _instance;
+} _Score_default_instance_;
 class PIDDefaultTypeInternal {
  public:
   ::PROTOBUF_NAMESPACE_ID::internal::ExplicitlyConstructed<PID> _instance;
@@ -152,11 +160,59 @@ static void InitDefaultsscc_info_Ready_fedtree_2eproto() {
 ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_Ready_fedtree_2eproto =
     {{ATOMIC_VAR_INIT(::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase::kUninitialized), 0, 0, InitDefaultsscc_info_Ready_fedtree_2eproto}, {}};
 
-static ::PROTOBUF_NAMESPACE_ID::Metadata file_level_metadata_fedtree_2eproto[8];
+static void InitDefaultsscc_info_Score_fedtree_2eproto() {
+  GOOGLE_PROTOBUF_VERIFY_VERSION;
+
+  {
+    void* ptr = &::fedtree::_Score_default_instance_;
+    new (ptr) ::fedtree::Score();
+    ::PROTOBUF_NAMESPACE_ID::internal::OnShutdownDestroyMessage(ptr);
+  }
+}
+
+::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_Score_fedtree_2eproto =
+    {{ATOMIC_VAR_INIT(::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase::kUninitialized), 0, 0, InitDefaultsscc_info_Score_fedtree_2eproto}, {}};
+
+static void InitDefaultsscc_info_SplitPoint_fedtree_2eproto() {
+  GOOGLE_PROTOBUF_VERIFY_VERSION;
+
+  {
+    void* ptr = &::fedtree::_SplitPoint_default_instance_;
+    new (ptr) ::fedtree::SplitPoint();
+    ::PROTOBUF_NAMESPACE_ID::internal::OnShutdownDestroyMessage(ptr);
+  }
+}
+
+::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_SplitPoint_fedtree_2eproto =
+    {{ATOMIC_VAR_INIT(::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase::kUninitialized), 0, 0, InitDefaultsscc_info_SplitPoint_fedtree_2eproto}, {}};
+
+static ::PROTOBUF_NAMESPACE_ID::Metadata file_level_metadata_fedtree_2eproto[10];
 static constexpr ::PROTOBUF_NAMESPACE_ID::EnumDescriptor const** file_level_enum_descriptors_fedtree_2eproto = nullptr;
 static constexpr ::PROTOBUF_NAMESPACE_ID::ServiceDescriptor const** file_level_service_descriptors_fedtree_2eproto = nullptr;
 
 const ::PROTOBUF_NAMESPACE_ID::uint32 TableStruct_fedtree_2eproto::offsets[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) = {
+  ~0u,  // no _has_bits_
+  PROTOBUF_FIELD_OFFSET(::fedtree::SplitPoint, _internal_metadata_),
+  ~0u,  // no _extensions_
+  ~0u,  // no _oneof_case_
+  ~0u,  // no _weak_field_map_
+  PROTOBUF_FIELD_OFFSET(::fedtree::SplitPoint, gain_),
+  PROTOBUF_FIELD_OFFSET(::fedtree::SplitPoint, fea_missing_g_),
+  PROTOBUF_FIELD_OFFSET(::fedtree::SplitPoint, fea_missing_h_),
+  PROTOBUF_FIELD_OFFSET(::fedtree::SplitPoint, rch_sum_g_),
+  PROTOBUF_FIELD_OFFSET(::fedtree::SplitPoint, rch_sum_h_),
+  PROTOBUF_FIELD_OFFSET(::fedtree::SplitPoint, default_right_),
+  PROTOBUF_FIELD_OFFSET(::fedtree::SplitPoint, nid_),
+  PROTOBUF_FIELD_OFFSET(::fedtree::SplitPoint, split_fea_id_),
+  PROTOBUF_FIELD_OFFSET(::fedtree::SplitPoint, fval_),
+  PROTOBUF_FIELD_OFFSET(::fedtree::SplitPoint, split_bid_),
+  PROTOBUF_FIELD_OFFSET(::fedtree::SplitPoint, no_split_value_update_),
+  ~0u,  // no _has_bits_
+  PROTOBUF_FIELD_OFFSET(::fedtree::Score, _internal_metadata_),
+  ~0u,  // no _extensions_
+  ~0u,  // no _oneof_case_
+  ~0u,  // no _weak_field_map_
+  PROTOBUF_FIELD_OFFSET(::fedtree::Score, content_),
   ~0u,  // no _has_bits_
   PROTOBUF_FIELD_OFFSET(::fedtree::PID, _internal_metadata_),
   ~0u,  // no _extensions_
@@ -230,17 +286,21 @@ const ::PROTOBUF_NAMESPACE_ID::uint32 TableStruct_fedtree_2eproto::offsets[] PRO
   PROTOBUF_FIELD_OFFSET(::fedtree::Ins2NodeID, nid_),
 };
 static const ::PROTOBUF_NAMESPACE_ID::internal::MigrationSchema schemas[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) = {
-  { 0, -1, sizeof(::fedtree::PID)},
-  { 6, -1, sizeof(::fedtree::Ready)},
-  { 12, -1, sizeof(::fedtree::DatasetInfo)},
-  { 19, -1, sizeof(::fedtree::GHPair)},
-  { 26, -1, sizeof(::fedtree::FID)},
-  { 32, -1, sizeof(::fedtree::BestInfo)},
-  { 42, -1, sizeof(::fedtree::Node)},
-  { 64, -1, sizeof(::fedtree::Ins2NodeID)},
+  { 0, -1, sizeof(::fedtree::SplitPoint)},
+  { 16, -1, sizeof(::fedtree::Score)},
+  { 22, -1, sizeof(::fedtree::PID)},
+  { 28, -1, sizeof(::fedtree::Ready)},
+  { 34, -1, sizeof(::fedtree::DatasetInfo)},
+  { 41, -1, sizeof(::fedtree::GHPair)},
+  { 48, -1, sizeof(::fedtree::FID)},
+  { 54, -1, sizeof(::fedtree::BestInfo)},
+  { 64, -1, sizeof(::fedtree::Node)},
+  { 86, -1, sizeof(::fedtree::Ins2NodeID)},
 };
 
 static ::PROTOBUF_NAMESPACE_ID::Message const * const file_default_instances[] = {
+  reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::fedtree::_SplitPoint_default_instance_),
+  reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::fedtree::_Score_default_instance_),
   reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::fedtree::_PID_default_instance_),
   reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::fedtree::_Ready_default_instance_),
   reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::fedtree::_DatasetInfo_default_instance_),
@@ -252,49 +312,64 @@ static ::PROTOBUF_NAMESPACE_ID::Message const * const file_default_instances[] =
 };
 
 const char descriptor_table_protodef_fedtree_2eproto[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) =
-  "\n\rfedtree.proto\022\007fedtree\"\021\n\003PID\022\n\n\002id\030\001 "
-  "\001(\005\"\026\n\005Ready\022\r\n\005ready\030\001 \001(\010\"0\n\013DatasetIn"
-  "fo\022\016\n\006n_bins\030\001 \001(\005\022\021\n\tn_columns\030\002 \001(\005\"\036\n"
-  "\006GHPair\022\t\n\001g\030\001 \001(\001\022\t\n\001h\030\002 \001(\001\"\021\n\003FID\022\n\n\002"
-  "id\030\001 \001(\005\"S\n\010BestInfo\022\013\n\003pid\030\001 \001(\005\022\013\n\003nid"
-  "\030\002 \001(\005\022\013\n\003idx\030\003 \001(\005\022\022\n\nglobal_fid\030\004 \001(\005\022"
-  "\014\n\004gain\030\005 \001(\001\"\326\002\n\004Node\022\020\n\010final_id\030\001 \001(\005"
-  "\022\021\n\tlch_index\030\002 \001(\005\022\021\n\trch_index\030\003 \001(\005\022\024"
-  "\n\014parent_index\030\004 \001(\005\022\014\n\004gain\030\005 \001(\002\022\023\n\013ba"
-  "se_weight\030\006 \001(\002\022\030\n\020split_feature_id\030\007 \001("
-  "\005\022\013\n\003pid\030\010 \001(\005\022\023\n\013split_value\030\t \001(\002\022\021\n\ts"
-  "plit_bid\030\n \001(\005\022\025\n\rdefault_right\030\013 \001(\010\022\017\n"
-  "\007is_leaf\030\014 \001(\010\022\020\n\010is_valid\030\r \001(\010\022\021\n\tis_p"
-  "runed\030\016 \001(\010\022\025\n\rsum_gh_pair_g\030\017 \001(\002\022\025\n\rsu"
-  "m_gh_pair_h\030\020 \001(\002\022\023\n\013n_instances\030\021 \001(\005\"&"
-  "\n\nIns2NodeID\022\013\n\003iid\030\001 \001(\005\022\013\n\003nid\030\002 \001(\0052\350"
-  "\006\n\007FedTree\0228\n\026TriggerUpdateGradients\022\014.f"
-  "edtree.PID\032\016.fedtree.Ready\"\000\0222\n\020TriggerB"
-  "uildInit\022\014.fedtree.PID\032\016.fedtree.Ready\"\000"
-  "\0221\n\014GetGradients\022\014.fedtree.PID\032\017.fedtree"
-  ".GHPair\"\0000\001\0227\n\017SendDatasetInfo\022\024.fedtree"
-  ".DatasetInfo\032\014.fedtree.PID\"\000\0223\n\016SendHist"
-  "ograms\022\017.fedtree.GHPair\032\014.fedtree.PID\"\000("
-  "\001\022-\n\013SendHistFid\022\014.fedtree.FID\032\014.fedtree"
-  ".PID\"\000(\001\0222\n\020TriggerAggregate\022\014.fedtree.P"
-  "ID\032\016.fedtree.Ready\"\000\0222\n\013GetBestInfo\022\014.fe"
-  "dtree.PID\032\021.fedtree.BestInfo\"\0000\001\022)\n\010Send"
-  "Node\022\r.fedtree.Node\032\014.fedtree.PID\"\000\0227\n\016S"
-  "endIns2NodeID\022\023.fedtree.Ins2NodeID\032\014.fed"
-  "tree.PID\"\000(\001\022+\n\010GetNodes\022\014.fedtree.PID\032\r"
-  ".fedtree.Node\"\0000\001\0226\n\rGetIns2NodeID\022\014.fed"
-  "tree.PID\032\023.fedtree.Ins2NodeID\"\0000\001\0221\n\017Che"
-  "ckIfContinue\022\014.fedtree.PID\032\016.fedtree.Rea"
-  "dy\"\000\022.\n\014TriggerPrune\022\014.fedtree.PID\032\016.fed"
-  "tree.Ready\"\000\022.\n\tSendRange\022\017.fedtree.GHPa"
-  "ir\032\014.fedtree.PID\"\000(\001\022,\n\nTriggerCut\022\014.fed"
-  "tree.PID\032\016.fedtree.Ready\"\000\022-\n\010GetRange\022\014"
-  ".fedtree.PID\032\017.fedtree.GHPair\"\0000\001b\006proto"
-  "3"
+  "\n\rfedtree.proto\022\007fedtree\"\350\001\n\nSplitPoint\022"
+  "\014\n\004gain\030\001 \001(\002\022\025\n\rfea_missing_g\030\002 \001(\002\022\025\n\r"
+  "fea_missing_h\030\003 \001(\002\022\021\n\trch_sum_g\030\004 \001(\002\022\021"
+  "\n\trch_sum_h\030\005 \001(\002\022\025\n\rdefault_right\030\006 \001(\010"
+  "\022\013\n\003nid\030\007 \001(\005\022\024\n\014split_fea_id\030\010 \001(\005\022\014\n\004f"
+  "val\030\t \001(\002\022\021\n\tsplit_bid\030\n \001(\005\022\035\n\025no_split"
+  "_value_update\030\013 \001(\010\"\030\n\005Score\022\017\n\007content\030"
+  "\001 \001(\002\"\021\n\003PID\022\n\n\002id\030\001 \001(\005\"\026\n\005Ready\022\r\n\005rea"
+  "dy\030\001 \001(\010\"0\n\013DatasetInfo\022\016\n\006n_bins\030\001 \001(\005\022"
+  "\021\n\tn_columns\030\002 \001(\005\"\036\n\006GHPair\022\t\n\001g\030\001 \001(\001\022"
+  "\t\n\001h\030\002 \001(\001\"\021\n\003FID\022\n\n\002id\030\001 \001(\005\"S\n\010BestInf"
+  "o\022\013\n\003pid\030\001 \001(\005\022\013\n\003nid\030\002 \001(\005\022\013\n\003idx\030\003 \001(\005"
+  "\022\022\n\nglobal_fid\030\004 \001(\005\022\014\n\004gain\030\005 \001(\001\"\326\002\n\004N"
+  "ode\022\020\n\010final_id\030\001 \001(\005\022\021\n\tlch_index\030\002 \001(\005"
+  "\022\021\n\trch_index\030\003 \001(\005\022\024\n\014parent_index\030\004 \001("
+  "\005\022\014\n\004gain\030\005 \001(\002\022\023\n\013base_weight\030\006 \001(\002\022\030\n\020"
+  "split_feature_id\030\007 \001(\005\022\013\n\003pid\030\010 \001(\005\022\023\n\013s"
+  "plit_value\030\t \001(\002\022\021\n\tsplit_bid\030\n \001(\005\022\025\n\rd"
+  "efault_right\030\013 \001(\010\022\017\n\007is_leaf\030\014 \001(\010\022\020\n\010i"
+  "s_valid\030\r \001(\010\022\021\n\tis_pruned\030\016 \001(\010\022\025\n\rsum_"
+  "gh_pair_g\030\017 \001(\002\022\025\n\rsum_gh_pair_h\030\020 \001(\002\022\023"
+  "\n\013n_instances\030\021 \001(\005\"&\n\nIns2NodeID\022\013\n\003iid"
+  "\030\001 \001(\005\022\013\n\003nid\030\002 \001(\0052\307\t\n\007FedTree\0228\n\026Trigg"
+  "erUpdateGradients\022\014.fedtree.PID\032\016.fedtre"
+  "e.Ready\"\000\0222\n\020TriggerBuildInit\022\014.fedtree."
+  "PID\032\016.fedtree.Ready\"\000\0221\n\014GetGradients\022\014."
+  "fedtree.PID\032\017.fedtree.GHPair\"\0000\001\0227\n\017Send"
+  "DatasetInfo\022\024.fedtree.DatasetInfo\032\014.fedt"
+  "ree.PID\"\000\0223\n\016SendHistograms\022\017.fedtree.GH"
+  "Pair\032\014.fedtree.PID\"\000(\001\022-\n\013SendHistFid\022\014."
+  "fedtree.FID\032\014.fedtree.PID\"\000(\001\0222\n\020Trigger"
+  "Aggregate\022\014.fedtree.PID\032\016.fedtree.Ready\""
+  "\000\0222\n\013GetBestInfo\022\014.fedtree.PID\032\021.fedtree"
+  ".BestInfo\"\0000\001\022)\n\010SendNode\022\r.fedtree.Node"
+  "\032\014.fedtree.PID\"\000\0227\n\016SendIns2NodeID\022\023.fed"
+  "tree.Ins2NodeID\032\014.fedtree.PID\"\000(\001\022+\n\010Get"
+  "Nodes\022\014.fedtree.PID\032\r.fedtree.Node\"\0000\001\0226"
+  "\n\rGetIns2NodeID\022\014.fedtree.PID\032\023.fedtree."
+  "Ins2NodeID\"\0000\001\0221\n\017CheckIfContinue\022\014.fedt"
+  "ree.PID\032\016.fedtree.Ready\"\000\022.\n\014TriggerPrun"
+  "e\022\014.fedtree.PID\032\016.fedtree.Ready\"\000\022.\n\tSen"
+  "dRange\022\017.fedtree.GHPair\032\014.fedtree.PID\"\000("
+  "\001\022,\n\nTriggerCut\022\014.fedtree.PID\032\016.fedtree."
+  "Ready\"\000\022-\n\010GetRange\022\014.fedtree.PID\032\017.fedt"
+  "ree.GHPair\"\0000\001\022)\n\006SendGH\022\017.fedtree.GHPai"
+  "r\032\014.fedtree.PID\"\000\0225\n\023TriggerBuildUsingGH"
+  "\022\014.fedtree.PID\032\016.fedtree.Ready\"\000\0221\n\017Trig"
+  "gerCalcTree\022\014.fedtree.PID\032\016.fedtree.Read"
+  "y\"\000\022*\n\013GetRootNode\022\014.fedtree.PID\032\r.fedtr"
+  "ee.Node\0227\n\016GetSplitPoints\022\014.fedtree.PID\032"
+  "\023.fedtree.SplitPoint\"\0000\001\0222\n\020HCheckIfCont"
+  "inue\022\014.fedtree.PID\032\016.fedtree.Ready\"\000\022/\n\013"
+  "ScoreReduce\022\016.fedtree.Score\032\016.fedtree.Sc"
+  "ore\"\000b\006proto3"
   ;
 static const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable*const descriptor_table_fedtree_2eproto_deps[1] = {
 };
-static ::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase*const descriptor_table_fedtree_2eproto_sccs[8] = {
+static ::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase*const descriptor_table_fedtree_2eproto_sccs[10] = {
   &scc_info_BestInfo_fedtree_2eproto.base,
   &scc_info_DatasetInfo_fedtree_2eproto.base,
   &scc_info_FID_fedtree_2eproto.base,
@@ -303,18 +378,632 @@ static ::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase*const descriptor_table_fed
   &scc_info_Node_fedtree_2eproto.base,
   &scc_info_PID_fedtree_2eproto.base,
   &scc_info_Ready_fedtree_2eproto.base,
+  &scc_info_Score_fedtree_2eproto.base,
+  &scc_info_SplitPoint_fedtree_2eproto.base,
 };
 static ::PROTOBUF_NAMESPACE_ID::internal::once_flag descriptor_table_fedtree_2eproto_once;
 const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable descriptor_table_fedtree_2eproto = {
-  false, false, descriptor_table_protodef_fedtree_2eproto, "fedtree.proto", 1521,
-  &descriptor_table_fedtree_2eproto_once, descriptor_table_fedtree_2eproto_sccs, descriptor_table_fedtree_2eproto_deps, 8, 0,
+  false, false, descriptor_table_protodef_fedtree_2eproto, "fedtree.proto", 2133,
+  &descriptor_table_fedtree_2eproto_once, descriptor_table_fedtree_2eproto_sccs, descriptor_table_fedtree_2eproto_deps, 10, 0,
   schemas, file_default_instances, TableStruct_fedtree_2eproto::offsets,
-  file_level_metadata_fedtree_2eproto, 8, file_level_enum_descriptors_fedtree_2eproto, file_level_service_descriptors_fedtree_2eproto,
+  file_level_metadata_fedtree_2eproto, 10, file_level_enum_descriptors_fedtree_2eproto, file_level_service_descriptors_fedtree_2eproto,
 };
 
 // Force running AddDescriptors() at dynamic initialization time.
 static bool dynamic_init_dummy_fedtree_2eproto = (static_cast<void>(::PROTOBUF_NAMESPACE_ID::internal::AddDescriptors(&descriptor_table_fedtree_2eproto)), true);
 namespace fedtree {
+
+// ===================================================================
+
+class SplitPoint::_Internal {
+ public:
+};
+
+SplitPoint::SplitPoint(::PROTOBUF_NAMESPACE_ID::Arena* arena)
+  : ::PROTOBUF_NAMESPACE_ID::Message(arena) {
+  SharedCtor();
+  RegisterArenaDtor(arena);
+  // @@protoc_insertion_point(arena_constructor:fedtree.SplitPoint)
+}
+SplitPoint::SplitPoint(const SplitPoint& from)
+  : ::PROTOBUF_NAMESPACE_ID::Message() {
+  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
+  ::memcpy(&gain_, &from.gain_,
+    static_cast<size_t>(reinterpret_cast<char*>(&split_bid_) -
+    reinterpret_cast<char*>(&gain_)) + sizeof(split_bid_));
+  // @@protoc_insertion_point(copy_constructor:fedtree.SplitPoint)
+}
+
+void SplitPoint::SharedCtor() {
+  ::memset(reinterpret_cast<char*>(this) + static_cast<size_t>(
+      reinterpret_cast<char*>(&gain_) - reinterpret_cast<char*>(this)),
+      0, static_cast<size_t>(reinterpret_cast<char*>(&split_bid_) -
+      reinterpret_cast<char*>(&gain_)) + sizeof(split_bid_));
+}
+
+SplitPoint::~SplitPoint() {
+  // @@protoc_insertion_point(destructor:fedtree.SplitPoint)
+  SharedDtor();
+  _internal_metadata_.Delete<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
+}
+
+void SplitPoint::SharedDtor() {
+  GOOGLE_DCHECK(GetArena() == nullptr);
+}
+
+void SplitPoint::ArenaDtor(void* object) {
+  SplitPoint* _this = reinterpret_cast< SplitPoint* >(object);
+  (void)_this;
+}
+void SplitPoint::RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena*) {
+}
+void SplitPoint::SetCachedSize(int size) const {
+  _cached_size_.Set(size);
+}
+const SplitPoint& SplitPoint::default_instance() {
+  ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&::scc_info_SplitPoint_fedtree_2eproto.base);
+  return *internal_default_instance();
+}
+
+
+void SplitPoint::Clear() {
+// @@protoc_insertion_point(message_clear_start:fedtree.SplitPoint)
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void) cached_has_bits;
+
+  ::memset(&gain_, 0, static_cast<size_t>(
+      reinterpret_cast<char*>(&split_bid_) -
+      reinterpret_cast<char*>(&gain_)) + sizeof(split_bid_));
+  _internal_metadata_.Clear<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
+}
+
+const char* SplitPoint::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) {
+#define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
+  while (!ctx->Done(&ptr)) {
+    ::PROTOBUF_NAMESPACE_ID::uint32 tag;
+    ptr = ::PROTOBUF_NAMESPACE_ID::internal::ReadTag(ptr, &tag);
+    CHK_(ptr);
+    switch (tag >> 3) {
+      // float gain = 1;
+      case 1:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 13)) {
+          gain_ = ::PROTOBUF_NAMESPACE_ID::internal::UnalignedLoad<float>(ptr);
+          ptr += sizeof(float);
+        } else goto handle_unusual;
+        continue;
+      // float fea_missing_g = 2;
+      case 2:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 21)) {
+          fea_missing_g_ = ::PROTOBUF_NAMESPACE_ID::internal::UnalignedLoad<float>(ptr);
+          ptr += sizeof(float);
+        } else goto handle_unusual;
+        continue;
+      // float fea_missing_h = 3;
+      case 3:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 29)) {
+          fea_missing_h_ = ::PROTOBUF_NAMESPACE_ID::internal::UnalignedLoad<float>(ptr);
+          ptr += sizeof(float);
+        } else goto handle_unusual;
+        continue;
+      // float rch_sum_g = 4;
+      case 4:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 37)) {
+          rch_sum_g_ = ::PROTOBUF_NAMESPACE_ID::internal::UnalignedLoad<float>(ptr);
+          ptr += sizeof(float);
+        } else goto handle_unusual;
+        continue;
+      // float rch_sum_h = 5;
+      case 5:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 45)) {
+          rch_sum_h_ = ::PROTOBUF_NAMESPACE_ID::internal::UnalignedLoad<float>(ptr);
+          ptr += sizeof(float);
+        } else goto handle_unusual;
+        continue;
+      // bool default_right = 6;
+      case 6:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 48)) {
+          default_right_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
+      // int32 nid = 7;
+      case 7:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 56)) {
+          nid_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
+      // int32 split_fea_id = 8;
+      case 8:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 64)) {
+          split_fea_id_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
+      // float fval = 9;
+      case 9:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 77)) {
+          fval_ = ::PROTOBUF_NAMESPACE_ID::internal::UnalignedLoad<float>(ptr);
+          ptr += sizeof(float);
+        } else goto handle_unusual;
+        continue;
+      // int32 split_bid = 10;
+      case 10:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 80)) {
+          split_bid_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
+      // bool no_split_value_update = 11;
+      case 11:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 88)) {
+          no_split_value_update_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
+      default: {
+      handle_unusual:
+        if ((tag & 7) == 4 || tag == 0) {
+          ctx->SetLastTag(tag);
+          goto success;
+        }
+        ptr = UnknownFieldParse(tag,
+            _internal_metadata_.mutable_unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(),
+            ptr, ctx);
+        CHK_(ptr != nullptr);
+        continue;
+      }
+    }  // switch
+  }  // while
+success:
+  return ptr;
+failure:
+  ptr = nullptr;
+  goto success;
+#undef CHK_
+}
+
+::PROTOBUF_NAMESPACE_ID::uint8* SplitPoint::_InternalSerialize(
+    ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
+  // @@protoc_insertion_point(serialize_to_array_start:fedtree.SplitPoint)
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
+
+  // float gain = 1;
+  if (!(this->gain() <= 0 && this->gain() >= 0)) {
+    target = stream->EnsureSpace(target);
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteFloatToArray(1, this->_internal_gain(), target);
+  }
+
+  // float fea_missing_g = 2;
+  if (!(this->fea_missing_g() <= 0 && this->fea_missing_g() >= 0)) {
+    target = stream->EnsureSpace(target);
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteFloatToArray(2, this->_internal_fea_missing_g(), target);
+  }
+
+  // float fea_missing_h = 3;
+  if (!(this->fea_missing_h() <= 0 && this->fea_missing_h() >= 0)) {
+    target = stream->EnsureSpace(target);
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteFloatToArray(3, this->_internal_fea_missing_h(), target);
+  }
+
+  // float rch_sum_g = 4;
+  if (!(this->rch_sum_g() <= 0 && this->rch_sum_g() >= 0)) {
+    target = stream->EnsureSpace(target);
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteFloatToArray(4, this->_internal_rch_sum_g(), target);
+  }
+
+  // float rch_sum_h = 5;
+  if (!(this->rch_sum_h() <= 0 && this->rch_sum_h() >= 0)) {
+    target = stream->EnsureSpace(target);
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteFloatToArray(5, this->_internal_rch_sum_h(), target);
+  }
+
+  // bool default_right = 6;
+  if (this->default_right() != 0) {
+    target = stream->EnsureSpace(target);
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteBoolToArray(6, this->_internal_default_right(), target);
+  }
+
+  // int32 nid = 7;
+  if (this->nid() != 0) {
+    target = stream->EnsureSpace(target);
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteInt32ToArray(7, this->_internal_nid(), target);
+  }
+
+  // int32 split_fea_id = 8;
+  if (this->split_fea_id() != 0) {
+    target = stream->EnsureSpace(target);
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteInt32ToArray(8, this->_internal_split_fea_id(), target);
+  }
+
+  // float fval = 9;
+  if (!(this->fval() <= 0 && this->fval() >= 0)) {
+    target = stream->EnsureSpace(target);
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteFloatToArray(9, this->_internal_fval(), target);
+  }
+
+  // int32 split_bid = 10;
+  if (this->split_bid() != 0) {
+    target = stream->EnsureSpace(target);
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteInt32ToArray(10, this->_internal_split_bid(), target);
+  }
+
+  // bool no_split_value_update = 11;
+  if (this->no_split_value_update() != 0) {
+    target = stream->EnsureSpace(target);
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteBoolToArray(11, this->_internal_no_split_value_update(), target);
+  }
+
+  if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormat::InternalSerializeUnknownFieldsToArray(
+        _internal_metadata_.unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(::PROTOBUF_NAMESPACE_ID::UnknownFieldSet::default_instance), target, stream);
+  }
+  // @@protoc_insertion_point(serialize_to_array_end:fedtree.SplitPoint)
+  return target;
+}
+
+size_t SplitPoint::ByteSizeLong() const {
+// @@protoc_insertion_point(message_byte_size_start:fedtree.SplitPoint)
+  size_t total_size = 0;
+
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void) cached_has_bits;
+
+  // float gain = 1;
+  if (!(this->gain() <= 0 && this->gain() >= 0)) {
+    total_size += 1 + 4;
+  }
+
+  // float fea_missing_g = 2;
+  if (!(this->fea_missing_g() <= 0 && this->fea_missing_g() >= 0)) {
+    total_size += 1 + 4;
+  }
+
+  // float fea_missing_h = 3;
+  if (!(this->fea_missing_h() <= 0 && this->fea_missing_h() >= 0)) {
+    total_size += 1 + 4;
+  }
+
+  // float rch_sum_g = 4;
+  if (!(this->rch_sum_g() <= 0 && this->rch_sum_g() >= 0)) {
+    total_size += 1 + 4;
+  }
+
+  // float rch_sum_h = 5;
+  if (!(this->rch_sum_h() <= 0 && this->rch_sum_h() >= 0)) {
+    total_size += 1 + 4;
+  }
+
+  // int32 nid = 7;
+  if (this->nid() != 0) {
+    total_size += 1 +
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::Int32Size(
+        this->_internal_nid());
+  }
+
+  // int32 split_fea_id = 8;
+  if (this->split_fea_id() != 0) {
+    total_size += 1 +
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::Int32Size(
+        this->_internal_split_fea_id());
+  }
+
+  // bool default_right = 6;
+  if (this->default_right() != 0) {
+    total_size += 1 + 1;
+  }
+
+  // bool no_split_value_update = 11;
+  if (this->no_split_value_update() != 0) {
+    total_size += 1 + 1;
+  }
+
+  // float fval = 9;
+  if (!(this->fval() <= 0 && this->fval() >= 0)) {
+    total_size += 1 + 4;
+  }
+
+  // int32 split_bid = 10;
+  if (this->split_bid() != 0) {
+    total_size += 1 +
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::Int32Size(
+        this->_internal_split_bid());
+  }
+
+  if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
+    return ::PROTOBUF_NAMESPACE_ID::internal::ComputeUnknownFieldsSize(
+        _internal_metadata_, total_size, &_cached_size_);
+  }
+  int cached_size = ::PROTOBUF_NAMESPACE_ID::internal::ToCachedSize(total_size);
+  SetCachedSize(cached_size);
+  return total_size;
+}
+
+void SplitPoint::MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
+// @@protoc_insertion_point(generalized_merge_from_start:fedtree.SplitPoint)
+  GOOGLE_DCHECK_NE(&from, this);
+  const SplitPoint* source =
+      ::PROTOBUF_NAMESPACE_ID::DynamicCastToGenerated<SplitPoint>(
+          &from);
+  if (source == nullptr) {
+  // @@protoc_insertion_point(generalized_merge_from_cast_fail:fedtree.SplitPoint)
+    ::PROTOBUF_NAMESPACE_ID::internal::ReflectionOps::Merge(from, this);
+  } else {
+  // @@protoc_insertion_point(generalized_merge_from_cast_success:fedtree.SplitPoint)
+    MergeFrom(*source);
+  }
+}
+
+void SplitPoint::MergeFrom(const SplitPoint& from) {
+// @@protoc_insertion_point(class_specific_merge_from_start:fedtree.SplitPoint)
+  GOOGLE_DCHECK_NE(&from, this);
+  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
+
+  if (!(from.gain() <= 0 && from.gain() >= 0)) {
+    _internal_set_gain(from._internal_gain());
+  }
+  if (!(from.fea_missing_g() <= 0 && from.fea_missing_g() >= 0)) {
+    _internal_set_fea_missing_g(from._internal_fea_missing_g());
+  }
+  if (!(from.fea_missing_h() <= 0 && from.fea_missing_h() >= 0)) {
+    _internal_set_fea_missing_h(from._internal_fea_missing_h());
+  }
+  if (!(from.rch_sum_g() <= 0 && from.rch_sum_g() >= 0)) {
+    _internal_set_rch_sum_g(from._internal_rch_sum_g());
+  }
+  if (!(from.rch_sum_h() <= 0 && from.rch_sum_h() >= 0)) {
+    _internal_set_rch_sum_h(from._internal_rch_sum_h());
+  }
+  if (from.nid() != 0) {
+    _internal_set_nid(from._internal_nid());
+  }
+  if (from.split_fea_id() != 0) {
+    _internal_set_split_fea_id(from._internal_split_fea_id());
+  }
+  if (from.default_right() != 0) {
+    _internal_set_default_right(from._internal_default_right());
+  }
+  if (from.no_split_value_update() != 0) {
+    _internal_set_no_split_value_update(from._internal_no_split_value_update());
+  }
+  if (!(from.fval() <= 0 && from.fval() >= 0)) {
+    _internal_set_fval(from._internal_fval());
+  }
+  if (from.split_bid() != 0) {
+    _internal_set_split_bid(from._internal_split_bid());
+  }
+}
+
+void SplitPoint::CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
+// @@protoc_insertion_point(generalized_copy_from_start:fedtree.SplitPoint)
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+void SplitPoint::CopyFrom(const SplitPoint& from) {
+// @@protoc_insertion_point(class_specific_copy_from_start:fedtree.SplitPoint)
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+bool SplitPoint::IsInitialized() const {
+  return true;
+}
+
+void SplitPoint::InternalSwap(SplitPoint* other) {
+  using std::swap;
+  _internal_metadata_.Swap<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(&other->_internal_metadata_);
+  ::PROTOBUF_NAMESPACE_ID::internal::memswap<
+      PROTOBUF_FIELD_OFFSET(SplitPoint, split_bid_)
+      + sizeof(SplitPoint::split_bid_)
+      - PROTOBUF_FIELD_OFFSET(SplitPoint, gain_)>(
+          reinterpret_cast<char*>(&gain_),
+          reinterpret_cast<char*>(&other->gain_));
+}
+
+::PROTOBUF_NAMESPACE_ID::Metadata SplitPoint::GetMetadata() const {
+  return GetMetadataStatic();
+}
+
+
+// ===================================================================
+
+class Score::_Internal {
+ public:
+};
+
+Score::Score(::PROTOBUF_NAMESPACE_ID::Arena* arena)
+  : ::PROTOBUF_NAMESPACE_ID::Message(arena) {
+  SharedCtor();
+  RegisterArenaDtor(arena);
+  // @@protoc_insertion_point(arena_constructor:fedtree.Score)
+}
+Score::Score(const Score& from)
+  : ::PROTOBUF_NAMESPACE_ID::Message() {
+  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
+  content_ = from.content_;
+  // @@protoc_insertion_point(copy_constructor:fedtree.Score)
+}
+
+void Score::SharedCtor() {
+  content_ = 0;
+}
+
+Score::~Score() {
+  // @@protoc_insertion_point(destructor:fedtree.Score)
+  SharedDtor();
+  _internal_metadata_.Delete<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
+}
+
+void Score::SharedDtor() {
+  GOOGLE_DCHECK(GetArena() == nullptr);
+}
+
+void Score::ArenaDtor(void* object) {
+  Score* _this = reinterpret_cast< Score* >(object);
+  (void)_this;
+}
+void Score::RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena*) {
+}
+void Score::SetCachedSize(int size) const {
+  _cached_size_.Set(size);
+}
+const Score& Score::default_instance() {
+  ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&::scc_info_Score_fedtree_2eproto.base);
+  return *internal_default_instance();
+}
+
+
+void Score::Clear() {
+// @@protoc_insertion_point(message_clear_start:fedtree.Score)
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void) cached_has_bits;
+
+  content_ = 0;
+  _internal_metadata_.Clear<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
+}
+
+const char* Score::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) {
+#define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
+  while (!ctx->Done(&ptr)) {
+    ::PROTOBUF_NAMESPACE_ID::uint32 tag;
+    ptr = ::PROTOBUF_NAMESPACE_ID::internal::ReadTag(ptr, &tag);
+    CHK_(ptr);
+    switch (tag >> 3) {
+      // float content = 1;
+      case 1:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 13)) {
+          content_ = ::PROTOBUF_NAMESPACE_ID::internal::UnalignedLoad<float>(ptr);
+          ptr += sizeof(float);
+        } else goto handle_unusual;
+        continue;
+      default: {
+      handle_unusual:
+        if ((tag & 7) == 4 || tag == 0) {
+          ctx->SetLastTag(tag);
+          goto success;
+        }
+        ptr = UnknownFieldParse(tag,
+            _internal_metadata_.mutable_unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(),
+            ptr, ctx);
+        CHK_(ptr != nullptr);
+        continue;
+      }
+    }  // switch
+  }  // while
+success:
+  return ptr;
+failure:
+  ptr = nullptr;
+  goto success;
+#undef CHK_
+}
+
+::PROTOBUF_NAMESPACE_ID::uint8* Score::_InternalSerialize(
+    ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
+  // @@protoc_insertion_point(serialize_to_array_start:fedtree.Score)
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
+
+  // float content = 1;
+  if (!(this->content() <= 0 && this->content() >= 0)) {
+    target = stream->EnsureSpace(target);
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteFloatToArray(1, this->_internal_content(), target);
+  }
+
+  if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormat::InternalSerializeUnknownFieldsToArray(
+        _internal_metadata_.unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(::PROTOBUF_NAMESPACE_ID::UnknownFieldSet::default_instance), target, stream);
+  }
+  // @@protoc_insertion_point(serialize_to_array_end:fedtree.Score)
+  return target;
+}
+
+size_t Score::ByteSizeLong() const {
+// @@protoc_insertion_point(message_byte_size_start:fedtree.Score)
+  size_t total_size = 0;
+
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void) cached_has_bits;
+
+  // float content = 1;
+  if (!(this->content() <= 0 && this->content() >= 0)) {
+    total_size += 1 + 4;
+  }
+
+  if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
+    return ::PROTOBUF_NAMESPACE_ID::internal::ComputeUnknownFieldsSize(
+        _internal_metadata_, total_size, &_cached_size_);
+  }
+  int cached_size = ::PROTOBUF_NAMESPACE_ID::internal::ToCachedSize(total_size);
+  SetCachedSize(cached_size);
+  return total_size;
+}
+
+void Score::MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
+// @@protoc_insertion_point(generalized_merge_from_start:fedtree.Score)
+  GOOGLE_DCHECK_NE(&from, this);
+  const Score* source =
+      ::PROTOBUF_NAMESPACE_ID::DynamicCastToGenerated<Score>(
+          &from);
+  if (source == nullptr) {
+  // @@protoc_insertion_point(generalized_merge_from_cast_fail:fedtree.Score)
+    ::PROTOBUF_NAMESPACE_ID::internal::ReflectionOps::Merge(from, this);
+  } else {
+  // @@protoc_insertion_point(generalized_merge_from_cast_success:fedtree.Score)
+    MergeFrom(*source);
+  }
+}
+
+void Score::MergeFrom(const Score& from) {
+// @@protoc_insertion_point(class_specific_merge_from_start:fedtree.Score)
+  GOOGLE_DCHECK_NE(&from, this);
+  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
+
+  if (!(from.content() <= 0 && from.content() >= 0)) {
+    _internal_set_content(from._internal_content());
+  }
+}
+
+void Score::CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
+// @@protoc_insertion_point(generalized_copy_from_start:fedtree.Score)
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+void Score::CopyFrom(const Score& from) {
+// @@protoc_insertion_point(class_specific_copy_from_start:fedtree.Score)
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+bool Score::IsInitialized() const {
+  return true;
+}
+
+void Score::InternalSwap(Score* other) {
+  using std::swap;
+  _internal_metadata_.Swap<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(&other->_internal_metadata_);
+  swap(content_, other->content_);
+}
+
+::PROTOBUF_NAMESPACE_ID::Metadata Score::GetMetadata() const {
+  return GetMetadataStatic();
+}
+
 
 // ===================================================================
 
@@ -2434,6 +3123,12 @@ void Ins2NodeID::InternalSwap(Ins2NodeID* other) {
 // @@protoc_insertion_point(namespace_scope)
 }  // namespace fedtree
 PROTOBUF_NAMESPACE_OPEN
+template<> PROTOBUF_NOINLINE ::fedtree::SplitPoint* Arena::CreateMaybeMessage< ::fedtree::SplitPoint >(Arena* arena) {
+  return Arena::CreateMessageInternal< ::fedtree::SplitPoint >(arena);
+}
+template<> PROTOBUF_NOINLINE ::fedtree::Score* Arena::CreateMaybeMessage< ::fedtree::Score >(Arena* arena) {
+  return Arena::CreateMessageInternal< ::fedtree::Score >(arena);
+}
 template<> PROTOBUF_NOINLINE ::fedtree::PID* Arena::CreateMaybeMessage< ::fedtree::PID >(Arena* arena) {
   return Arena::CreateMessageInternal< ::fedtree::PID >(arena);
 }
