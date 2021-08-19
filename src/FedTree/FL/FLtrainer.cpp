@@ -51,7 +51,9 @@ void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FL
             feature_range[n] = min_max;
         }
 //        // once we have feature_range, we can generate cut points
+        LOG(INFO) << feature_range;
         server.booster.fbuilder->cut.get_cut_points_by_feature_range(feature_range, n_bins);
+        LOG(INFO) << server.booster.fbuilder->cut.cut_col_ptr;
 //        server.booster.fbuilder->get_bin_ids();
 
 
@@ -88,6 +90,7 @@ void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FL
         for (int p = 0; p < parties.size(); p++) {
             auto dataset = parties[p].dataset;
             parties[p].booster.fbuilder->cut.get_cut_points_fast(dataset, n_bins, dataset.n_instances());
+            parties[p].booster.fbuilder->get_bin_ids();
             aggregator.booster.fbuilder->append_to_parties_cut(parties[p].booster.fbuilder->cut, p);
         }
 //        LOG(INFO)<<"not supported yet";
@@ -197,6 +200,7 @@ void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FL
                     parties[j].booster.fbuilder->compute_histogram_in_a_level(d, n_max_splits, n_bins,
                                                                               n_nodes_in_level,
                                                                               hist_fid_data, missing_gh, hist);
+                    LOG(INFO) << "compute histogram";
                     //todo: encrypt the histogram
                     if (params.privacy_tech == "he") {
                         parties[j].encrypt_histogram(hist);
@@ -209,6 +213,9 @@ void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FL
 
                 SyncArray <GHPair> missing_gh;
                 SyncArray <GHPair> hist;
+                // set these parameters to fit merged histogram
+                n_bins = aggregator.booster.fbuilder->cut.cut_points_val.size();
+                int n_max_splits = n_max_nodes * n_bins;
 
                 if (params.propose_split == "server") {
                     aggregator.booster.fbuilder->merge_histograms_server_propose(hist, missing_gh);
@@ -216,22 +223,20 @@ void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FL
 //                    LOG(INFO) << hist;
                 }else if (params.propose_split == "client") {
                     // TODO: Fix this to make use of missing_gh
-//                    aggregator.booster.fbuilder->merge_histograms_client_propose();
-                    LOG(INFO)<<"not supported yet";
-                    exit(1);
+                    aggregator.booster.fbuilder->merge_histograms_client_propose(hist, missing_gh, n_max_splits);
+//                    LOG(INFO)<<"not supported yet";
+//                    exit(1);
                 }
 
-                // set these parameters to fit merged histogram
-                int n_max_splits = n_max_nodes * n_bins;
-                n_bins = aggregator.booster.fbuilder->cut.cut_points_val.size();
 
                 // server compute gain
                 SyncArray <float_type> gain(n_max_splits);
 
                 // if privacy tech == 'he', decrypt histogram
-                if (params.privacy_tech == "he")
+                if (params.privacy_tech == "he") {
                     server.decrypt_gh_pairs(hist);
                     server.decrypt_gh_pairs(missing_gh);
+                }
 
                 // if server propose cut, hist_fid for each party should be the same
                 auto hist_fid_data = parties_hist_fid[0].host_data();
