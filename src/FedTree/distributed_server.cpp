@@ -6,7 +6,7 @@
 #include "FedTree/FL/partition.h"
 #include "FedTree/parser.h"
 #include "FedTree/DP/differential_privacy.h"
-
+#include <sstream>
 grpc::Status DistributedServer::TriggerUpdateGradients(::grpc::ServerContext *context, const ::fedtree::PID *request,
                                                        ::fedtree::Ready *response) {
     booster.update_gradients();
@@ -544,17 +544,13 @@ grpc::Status DistributedServer::TriggerBuildUsingGH(grpc::ServerContext* context
 }
 
 grpc::Status DistributedServer::TriggerCalcTree(grpc::ServerContext* context, const fedtree::PID* request, fedtree::Ready* response) {
-    std::multimap<grpc::string_ref, grpc::string_ref> metadata = context->client_metadata();
-    auto itr = metadata.find("l");
-    int l = std::stoi(itr->second.data());
-    int n_nodes_in_level = 1 << l;
-
     unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
     std::default_random_engine generator(seed);
     std::uniform_int_distribution<int> delay_distribution(10, 20);
 
     LOG(DEBUG) << hists_received << "/" << missing_gh_received << "/" << hist_fid_received;
-
+    {
+        TIMED_SCOPE(timerObj, "calc_wait");
     bool cont = true;
     while (cont) {
         cont = false;
@@ -565,17 +561,30 @@ grpc::Status DistributedServer::TriggerCalcTree(grpc::ServerContext* context, co
         std::this_thread::sleep_for(
                 std::chrono::milliseconds(delay_distribution(generator)));
     }
+    }
     cur_round += 1;
+    std::multimap<grpc::string_ref, grpc::string_ref> metadata = context->client_metadata();
+    auto itr = metadata.find("l");
+    int l = std::stoi(itr->second.data());
+    int n_nodes_in_level = 1 << l;
     // 
     SyncArray <GHPair> missing_gh;
     SyncArray <GHPair> hist;
+    {
+        TIMED_SCOPE(timerObj, "homo_add_time");
     booster.fbuilder->merge_histograms_server_propose(hist, missing_gh);
+    }
     int n_bins = booster.fbuilder->cut.cut_points_val.size();
     int n_max_nodes = 2 << model_param.depth;
     int n_max_splits = n_max_nodes * n_bins;
 
     SyncArray <float_type> gain(n_max_splits);
     // if privacy tech == 'he', decrypt histogram
+    if (param.privacy_tech == "he") {
+        TIMED_SCOPE(timerObj, "decrypting time");
+        decrypt_gh_pairs(hist);
+        decrypt_gh_pairs(missing_gh);
+    }
     auto hist_fid_data = booster.fbuilder->parties_hist_fid[0].host_data();
     booster.fbuilder->compute_gain_in_a_level(gain, n_nodes_in_level, n_bins, hist_fid_data,
                                                                  missing_gh, hist);
@@ -719,7 +728,88 @@ grpc::Status DistributedServer::ScoreReduce(grpc::ServerContext* context, const 
     return grpc::Status::OK;
 }
 
+grpc::Status DistributedServer::TriggerHomoInit(grpc::ServerContext *context, const fedtree::PID *request,
+                                fedtree::Ready *response) {
+    LOG(INFO) << "begin homo init";
+    homo_init();
+    homo_init_success = true;
+    LOG(INFO) << "end homo init";
+    return grpc::Status::OK;
+}
+
+grpc::Status DistributedServer::GetPaillier(grpc::ServerContext *context, const fedtree::PID *request,
+                                fedtree::Paillier * response) {
+    unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+    std::default_random_engine generator(seed);
+    std::uniform_int_distribution<int> delay_distribution(10, 20);
+
+    while (!homo_init_success) {
+        std::this_thread::sleep_for(
+                std::chrono::milliseconds(delay_distribution(generator)));
+    }
+
+    stringstream stream;
+    stream << paillier.modulus;
+    response->set_modulus(stream.str());
+    stream.clear();
+    stream.str("");
+    stream << paillier.generator;
+    response->set_generator(stream.str());
+    return grpc::Status::OK;
+}
+
+grpc::Status DistributedServer::SendHistogramsEnc(grpc::ServerContext *context, grpc::ServerReader<fedtree::GHPairEnc> *reader,
+                                fedtree::PID *id) {
+    fedtree::GHPairEnc hist;
+    std::multimap<grpc::string_ref, grpc::string_ref> metadata = context->client_metadata();
+    auto pid_itr = metadata.find("pid");
+    int pid = std::stoi(pid_itr->second.data());
+    auto type_itr = metadata.find("type");
+    int type = std::stoi(type_itr->second.data());
+
+    vector<fedtree::GHPairEnc> hists_vector;
+    while (reader->Read(&hist)) {
+        hists_vector.push_back(hist);
+    }
+    if (type == 0) {
+        SyncArray<GHPair> &hists = booster.fbuilder->parties_hist[pid];
+        hists.resize(hists_vector.size());
+        auto hist_data = hists.host_data();
+        for (int i = 0; i < hists_vector.size(); i++) {
+            hist_data[i].encrypted = true;
+            hist_data[i].g_enc = NTL::to_ZZ(hists_vector[i].g_enc().c_str());
+            hist_data[i].h_enc = NTL::to_ZZ(hists_vector[i].h_enc().c_str());
+            hist_data[i].paillier = paillier;
+        }
+    } else {
+        SyncArray<GHPair> &hists = booster.fbuilder->parties_missing_gh[pid];
+        hists.resize(hists_vector.size());
+        auto hist_data = hists.host_data();
+        for (int i = 0; i < hists_vector.size(); i++) {
+            hist_data[i].encrypted = true;
+            hist_data[i].g_enc = NTL::to_ZZ(hists_vector[i].g_enc().c_str());
+            hist_data[i].h_enc = NTL::to_ZZ(hists_vector[i].h_enc().c_str());
+            hist_data[i].paillier = paillier;
+        }
+    }
+    LOG(DEBUG) << "Receive encrypted hist from " << pid;
+    if (type == 0)
+        hists_received[pid] += 1;
+    else
+        missing_gh_received[pid] += 1;
+    
+    return grpc::Status::OK;
+}
+
+#ifdef _WIN32
+INITIALIZE_EASYLOGGINGPP
+#endif
 int main(int argc, char **argv) {
+    el::Loggers::reconfigureAllLoggers(el::ConfigurationType::Format, "%datetime %level %fbase:%line : %msg");
+    el::Loggers::addFlag(el::LoggingFlag::ColoredTerminalOutput);
+    el::Loggers::addFlag(el::LoggingFlag::FixedTimeFormat);
+    el::Loggers::reconfigureAllLoggers(el::Level::Trace, el::ConfigurationType::Enabled, "false");
+    el::Loggers::reconfigureAllLoggers(el::Level::Debug, el::ConfigurationType::Enabled, "false");
     int pid;
     FLParam fl_param;
     Parser parser;

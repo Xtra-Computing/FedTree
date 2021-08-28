@@ -132,6 +132,7 @@ void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FL
                     int n_bins = parties[j].booster.fbuilder->cut.cut_points_val.size();
                     auto cut_fid_data = parties[j].booster.fbuilder->cut.cut_fid.host_data();
                     int n_max_splits = n_max_nodes * n_bins;
+                    int n_splits = n_nodes_in_level * n_bins;
                     SyncArray<int> hist_fid(n_nodes_in_level * n_bins);
                     auto hist_fid_data = hist_fid.host_data();
 
@@ -142,7 +143,8 @@ void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FL
                     parties_hist_fid[j].copy_from(hist_fid);
 
                     SyncArray <GHPair> missing_gh(n_partition);
-                    SyncArray <GHPair> hist(n_max_splits);
+                    SyncArray <GHPair> hist(n_splits);
+                    // FIXME n_max_splits has no effect in this function
                     parties[j].booster.fbuilder->compute_histogram_in_a_level(d, n_max_splits, n_bins,
                                                                               n_nodes_in_level,
                                                                               hist_fid_data, missing_gh, hist);
@@ -156,7 +158,7 @@ void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FL
                         parties[j].encrypt_histogram(missing_gh);
                     }
 
-                    aggregator.booster.fbuilder->append_hist(hist, missing_gh, n_partition, n_max_splits, j);
+                    aggregator.booster.fbuilder->append_hist(hist, missing_gh, n_partition, n_splits, j);
 
                     t_end = timer.now();
                     used_time = t_end - t_start;
@@ -214,8 +216,14 @@ void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FL
 
                 #pragma omp parallel for
                 for (int j = 0; j < n_parties; j++) {
-                    parties_trees[j][k] = server.booster.fbuilder->get_tree();
-                    parties[j].booster.fbuilder->set_tree(parties_trees[j][k]);
+                    // parties_trees[j][k] = server.booster.fbuilder->get_tree();
+                    // parties[j].booster.fbuilder->set_tree(parties_trees[j][k]);
+                    if (d==0)
+                        parties[j].booster.fbuilder->trees.nodes.host_data()[0] = server.booster.fbuilder->trees.nodes.host_data()[0];
+                    parties[j].booster.fbuilder->sp.resize(server.booster.fbuilder->sp.size());
+                    parties[j].booster.fbuilder->sp.copy_from(server.booster.fbuilder->sp);
+                    parties[j].booster.fbuilder->update_tree();
+                    parties_trees[j][k] = parties[j].booster.fbuilder->get_tree();
                     parties[j].booster.fbuilder->update_ins2node_id();
                }
 

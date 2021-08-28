@@ -68,6 +68,11 @@ public:
     
     float GetAvgScore(float score);
 
+    void TriggerHomoInit();
+
+    void GetPaillier();
+
+    void SendHistogramsEnc(const SyncArray<GHPair> &hist, int type);
 private:
     std::unique_ptr<fedtree::FedTree::Stub> stub_;
 };

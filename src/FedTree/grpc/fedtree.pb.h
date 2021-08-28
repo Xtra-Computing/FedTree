@@ -46,7 +46,7 @@ struct TableStruct_fedtree_2eproto {
     PROTOBUF_SECTION_VARIABLE(protodesc_cold);
   static const ::PROTOBUF_NAMESPACE_ID::internal::AuxiliaryParseTableField aux[]
     PROTOBUF_SECTION_VARIABLE(protodesc_cold);
-  static const ::PROTOBUF_NAMESPACE_ID::internal::ParseTable schema[10]
+  static const ::PROTOBUF_NAMESPACE_ID::internal::ParseTable schema[12]
     PROTOBUF_SECTION_VARIABLE(protodesc_cold);
   static const ::PROTOBUF_NAMESPACE_ID::internal::FieldMetadata field_metadata[];
   static const ::PROTOBUF_NAMESPACE_ID::internal::SerializationTable serialization_table[];
@@ -66,6 +66,9 @@ extern FIDDefaultTypeInternal _FID_default_instance_;
 class GHPair;
 class GHPairDefaultTypeInternal;
 extern GHPairDefaultTypeInternal _GHPair_default_instance_;
+class GHPairEnc;
+class GHPairEncDefaultTypeInternal;
+extern GHPairEncDefaultTypeInternal _GHPairEnc_default_instance_;
 class Ins2NodeID;
 class Ins2NodeIDDefaultTypeInternal;
 extern Ins2NodeIDDefaultTypeInternal _Ins2NodeID_default_instance_;
@@ -75,6 +78,9 @@ extern NodeDefaultTypeInternal _Node_default_instance_;
 class PID;
 class PIDDefaultTypeInternal;
 extern PIDDefaultTypeInternal _PID_default_instance_;
+class Paillier;
+class PaillierDefaultTypeInternal;
+extern PaillierDefaultTypeInternal _Paillier_default_instance_;
 class Ready;
 class ReadyDefaultTypeInternal;
 extern ReadyDefaultTypeInternal _Ready_default_instance_;
@@ -90,9 +96,11 @@ template<> ::fedtree::BestInfo* Arena::CreateMaybeMessage<::fedtree::BestInfo>(A
 template<> ::fedtree::DatasetInfo* Arena::CreateMaybeMessage<::fedtree::DatasetInfo>(Arena*);
 template<> ::fedtree::FID* Arena::CreateMaybeMessage<::fedtree::FID>(Arena*);
 template<> ::fedtree::GHPair* Arena::CreateMaybeMessage<::fedtree::GHPair>(Arena*);
+template<> ::fedtree::GHPairEnc* Arena::CreateMaybeMessage<::fedtree::GHPairEnc>(Arena*);
 template<> ::fedtree::Ins2NodeID* Arena::CreateMaybeMessage<::fedtree::Ins2NodeID>(Arena*);
 template<> ::fedtree::Node* Arena::CreateMaybeMessage<::fedtree::Node>(Arena*);
 template<> ::fedtree::PID* Arena::CreateMaybeMessage<::fedtree::PID>(Arena*);
+template<> ::fedtree::Paillier* Arena::CreateMaybeMessage<::fedtree::Paillier>(Arena*);
 template<> ::fedtree::Ready* Arena::CreateMaybeMessage<::fedtree::Ready>(Arena*);
 template<> ::fedtree::Score* Arena::CreateMaybeMessage<::fedtree::Score>(Arena*);
 template<> ::fedtree::SplitPoint* Arena::CreateMaybeMessage<::fedtree::SplitPoint>(Arena*);
@@ -100,6 +108,328 @@ PROTOBUF_NAMESPACE_CLOSE
 namespace fedtree {
 
 // ===================================================================
+
+class GHPairEnc PROTOBUF_FINAL :
+    public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:fedtree.GHPairEnc) */ {
+ public:
+  inline GHPairEnc() : GHPairEnc(nullptr) {}
+  virtual ~GHPairEnc();
+
+  GHPairEnc(const GHPairEnc& from);
+  GHPairEnc(GHPairEnc&& from) noexcept
+    : GHPairEnc() {
+    *this = ::std::move(from);
+  }
+
+  inline GHPairEnc& operator=(const GHPairEnc& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  inline GHPairEnc& operator=(GHPairEnc&& from) noexcept {
+    if (GetArena() == from.GetArena()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* descriptor() {
+    return GetDescriptor();
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* GetDescriptor() {
+    return GetMetadataStatic().descriptor;
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
+    return GetMetadataStatic().reflection;
+  }
+  static const GHPairEnc& default_instance();
+
+  static inline const GHPairEnc* internal_default_instance() {
+    return reinterpret_cast<const GHPairEnc*>(
+               &_GHPairEnc_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages =
+    0;
+
+  friend void swap(GHPairEnc& a, GHPairEnc& b) {
+    a.Swap(&b);
+  }
+  inline void Swap(GHPairEnc* other) {
+    if (other == this) return;
+    if (GetArena() == other->GetArena()) {
+      InternalSwap(other);
+    } else {
+      ::PROTOBUF_NAMESPACE_ID::internal::GenericSwap(this, other);
+    }
+  }
+  void UnsafeArenaSwap(GHPairEnc* other) {
+    if (other == this) return;
+    GOOGLE_DCHECK(GetArena() == other->GetArena());
+    InternalSwap(other);
+  }
+
+  // implements Message ----------------------------------------------
+
+  inline GHPairEnc* New() const final {
+    return CreateMaybeMessage<GHPairEnc>(nullptr);
+  }
+
+  GHPairEnc* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+    return CreateMaybeMessage<GHPairEnc>(arena);
+  }
+  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void CopyFrom(const GHPairEnc& from);
+  void MergeFrom(const GHPairEnc& from);
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
+  bool IsInitialized() const final;
+
+  size_t ByteSizeLong() const final;
+  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
+  ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
+      ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
+  int GetCachedSize() const final { return _cached_size_.Get(); }
+
+  private:
+  inline void SharedCtor();
+  inline void SharedDtor();
+  void SetCachedSize(int size) const final;
+  void InternalSwap(GHPairEnc* other);
+  friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
+  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
+    return "fedtree.GHPairEnc";
+  }
+  protected:
+  explicit GHPairEnc(::PROTOBUF_NAMESPACE_ID::Arena* arena);
+  private:
+  static void ArenaDtor(void* object);
+  inline void RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
+  public:
+
+  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
+  private:
+  static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
+    ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_fedtree_2eproto);
+    return ::descriptor_table_fedtree_2eproto.file_level_metadata[kIndexInFileMessages];
+  }
+
+  public:
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  enum : int {
+    kGEncFieldNumber = 1,
+    kHEncFieldNumber = 2,
+  };
+  // string g_enc = 1;
+  void clear_g_enc();
+  const std::string& g_enc() const;
+  void set_g_enc(const std::string& value);
+  void set_g_enc(std::string&& value);
+  void set_g_enc(const char* value);
+  void set_g_enc(const char* value, size_t size);
+  std::string* mutable_g_enc();
+  std::string* release_g_enc();
+  void set_allocated_g_enc(std::string* g_enc);
+  private:
+  const std::string& _internal_g_enc() const;
+  void _internal_set_g_enc(const std::string& value);
+  std::string* _internal_mutable_g_enc();
+  public:
+
+  // string h_enc = 2;
+  void clear_h_enc();
+  const std::string& h_enc() const;
+  void set_h_enc(const std::string& value);
+  void set_h_enc(std::string&& value);
+  void set_h_enc(const char* value);
+  void set_h_enc(const char* value, size_t size);
+  std::string* mutable_h_enc();
+  std::string* release_h_enc();
+  void set_allocated_h_enc(std::string* h_enc);
+  private:
+  const std::string& _internal_h_enc() const;
+  void _internal_set_h_enc(const std::string& value);
+  std::string* _internal_mutable_h_enc();
+  public:
+
+  // @@protoc_insertion_point(class_scope:fedtree.GHPairEnc)
+ private:
+  class _Internal;
+
+  template <typename T> friend class ::PROTOBUF_NAMESPACE_ID::Arena::InternalHelper;
+  typedef void InternalArenaConstructable_;
+  typedef void DestructorSkippable_;
+  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr g_enc_;
+  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr h_enc_;
+  mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
+  friend struct ::TableStruct_fedtree_2eproto;
+};
+// -------------------------------------------------------------------
+
+class Paillier PROTOBUF_FINAL :
+    public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:fedtree.Paillier) */ {
+ public:
+  inline Paillier() : Paillier(nullptr) {}
+  virtual ~Paillier();
+
+  Paillier(const Paillier& from);
+  Paillier(Paillier&& from) noexcept
+    : Paillier() {
+    *this = ::std::move(from);
+  }
+
+  inline Paillier& operator=(const Paillier& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  inline Paillier& operator=(Paillier&& from) noexcept {
+    if (GetArena() == from.GetArena()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* descriptor() {
+    return GetDescriptor();
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* GetDescriptor() {
+    return GetMetadataStatic().descriptor;
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
+    return GetMetadataStatic().reflection;
+  }
+  static const Paillier& default_instance();
+
+  static inline const Paillier* internal_default_instance() {
+    return reinterpret_cast<const Paillier*>(
+               &_Paillier_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages =
+    1;
+
+  friend void swap(Paillier& a, Paillier& b) {
+    a.Swap(&b);
+  }
+  inline void Swap(Paillier* other) {
+    if (other == this) return;
+    if (GetArena() == other->GetArena()) {
+      InternalSwap(other);
+    } else {
+      ::PROTOBUF_NAMESPACE_ID::internal::GenericSwap(this, other);
+    }
+  }
+  void UnsafeArenaSwap(Paillier* other) {
+    if (other == this) return;
+    GOOGLE_DCHECK(GetArena() == other->GetArena());
+    InternalSwap(other);
+  }
+
+  // implements Message ----------------------------------------------
+
+  inline Paillier* New() const final {
+    return CreateMaybeMessage<Paillier>(nullptr);
+  }
+
+  Paillier* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+    return CreateMaybeMessage<Paillier>(arena);
+  }
+  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void CopyFrom(const Paillier& from);
+  void MergeFrom(const Paillier& from);
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
+  bool IsInitialized() const final;
+
+  size_t ByteSizeLong() const final;
+  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
+  ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
+      ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
+  int GetCachedSize() const final { return _cached_size_.Get(); }
+
+  private:
+  inline void SharedCtor();
+  inline void SharedDtor();
+  void SetCachedSize(int size) const final;
+  void InternalSwap(Paillier* other);
+  friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
+  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
+    return "fedtree.Paillier";
+  }
+  protected:
+  explicit Paillier(::PROTOBUF_NAMESPACE_ID::Arena* arena);
+  private:
+  static void ArenaDtor(void* object);
+  inline void RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
+  public:
+
+  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
+  private:
+  static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
+    ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_fedtree_2eproto);
+    return ::descriptor_table_fedtree_2eproto.file_level_metadata[kIndexInFileMessages];
+  }
+
+  public:
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  enum : int {
+    kModulusFieldNumber = 1,
+    kGeneratorFieldNumber = 2,
+  };
+  // string modulus = 1;
+  void clear_modulus();
+  const std::string& modulus() const;
+  void set_modulus(const std::string& value);
+  void set_modulus(std::string&& value);
+  void set_modulus(const char* value);
+  void set_modulus(const char* value, size_t size);
+  std::string* mutable_modulus();
+  std::string* release_modulus();
+  void set_allocated_modulus(std::string* modulus);
+  private:
+  const std::string& _internal_modulus() const;
+  void _internal_set_modulus(const std::string& value);
+  std::string* _internal_mutable_modulus();
+  public:
+
+  // string generator = 2;
+  void clear_generator();
+  const std::string& generator() const;
+  void set_generator(const std::string& value);
+  void set_generator(std::string&& value);
+  void set_generator(const char* value);
+  void set_generator(const char* value, size_t size);
+  std::string* mutable_generator();
+  std::string* release_generator();
+  void set_allocated_generator(std::string* generator);
+  private:
+  const std::string& _internal_generator() const;
+  void _internal_set_generator(const std::string& value);
+  std::string* _internal_mutable_generator();
+  public:
+
+  // @@protoc_insertion_point(class_scope:fedtree.Paillier)
+ private:
+  class _Internal;
+
+  template <typename T> friend class ::PROTOBUF_NAMESPACE_ID::Arena::InternalHelper;
+  typedef void InternalArenaConstructable_;
+  typedef void DestructorSkippable_;
+  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr modulus_;
+  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr generator_;
+  mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
+  friend struct ::TableStruct_fedtree_2eproto;
+};
+// -------------------------------------------------------------------
 
 class SplitPoint PROTOBUF_FINAL :
     public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:fedtree.SplitPoint) */ {
@@ -142,7 +472,7 @@ class SplitPoint PROTOBUF_FINAL :
                &_SplitPoint_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    0;
+    2;
 
   friend void swap(SplitPoint& a, SplitPoint& b) {
     a.Swap(&b);
@@ -388,7 +718,7 @@ class Score PROTOBUF_FINAL :
                &_Score_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    1;
+    3;
 
   friend void swap(Score& a, Score& b) {
     a.Swap(&b);
@@ -524,7 +854,7 @@ class PID PROTOBUF_FINAL :
                &_PID_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    2;
+    4;
 
   friend void swap(PID& a, PID& b) {
     a.Swap(&b);
@@ -660,7 +990,7 @@ class Ready PROTOBUF_FINAL :
                &_Ready_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    3;
+    5;
 
   friend void swap(Ready& a, Ready& b) {
     a.Swap(&b);
@@ -796,7 +1126,7 @@ class DatasetInfo PROTOBUF_FINAL :
                &_DatasetInfo_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    4;
+    6;
 
   friend void swap(DatasetInfo& a, DatasetInfo& b) {
     a.Swap(&b);
@@ -943,7 +1273,7 @@ class GHPair PROTOBUF_FINAL :
                &_GHPair_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    5;
+    7;
 
   friend void swap(GHPair& a, GHPair& b) {
     a.Swap(&b);
@@ -1090,7 +1420,7 @@ class FID PROTOBUF_FINAL :
                &_FID_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    6;
+    8;
 
   friend void swap(FID& a, FID& b) {
     a.Swap(&b);
@@ -1226,7 +1556,7 @@ class BestInfo PROTOBUF_FINAL :
                &_BestInfo_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    7;
+    9;
 
   friend void swap(BestInfo& a, BestInfo& b) {
     a.Swap(&b);
@@ -1406,7 +1736,7 @@ class Node PROTOBUF_FINAL :
                &_Node_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    8;
+    10;
 
   friend void swap(Node& a, Node& b) {
     a.Swap(&b);
@@ -1718,7 +2048,7 @@ class Ins2NodeID PROTOBUF_FINAL :
                &_Ins2NodeID_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    9;
+    11;
 
   friend void swap(Ins2NodeID& a, Ins2NodeID& b) {
     a.Swap(&b);
@@ -1831,6 +2161,258 @@ class Ins2NodeID PROTOBUF_FINAL :
   #pragma GCC diagnostic push
   #pragma GCC diagnostic ignored "-Wstrict-aliasing"
 #endif  // __GNUC__
+// GHPairEnc
+
+// string g_enc = 1;
+inline void GHPairEnc::clear_g_enc() {
+  g_enc_.ClearToEmpty();
+}
+inline const std::string& GHPairEnc::g_enc() const {
+  // @@protoc_insertion_point(field_get:fedtree.GHPairEnc.g_enc)
+  return _internal_g_enc();
+}
+inline void GHPairEnc::set_g_enc(const std::string& value) {
+  _internal_set_g_enc(value);
+  // @@protoc_insertion_point(field_set:fedtree.GHPairEnc.g_enc)
+}
+inline std::string* GHPairEnc::mutable_g_enc() {
+  // @@protoc_insertion_point(field_mutable:fedtree.GHPairEnc.g_enc)
+  return _internal_mutable_g_enc();
+}
+inline const std::string& GHPairEnc::_internal_g_enc() const {
+  return g_enc_.Get();
+}
+inline void GHPairEnc::_internal_set_g_enc(const std::string& value) {
+  
+  g_enc_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, value, GetArena());
+}
+inline void GHPairEnc::set_g_enc(std::string&& value) {
+  
+  g_enc_.Set(
+    ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::move(value), GetArena());
+  // @@protoc_insertion_point(field_set_rvalue:fedtree.GHPairEnc.g_enc)
+}
+inline void GHPairEnc::set_g_enc(const char* value) {
+  GOOGLE_DCHECK(value != nullptr);
+  
+  g_enc_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::string(value), GetArena());
+  // @@protoc_insertion_point(field_set_char:fedtree.GHPairEnc.g_enc)
+}
+inline void GHPairEnc::set_g_enc(const char* value,
+    size_t size) {
+  
+  g_enc_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::string(
+      reinterpret_cast<const char*>(value), size), GetArena());
+  // @@protoc_insertion_point(field_set_pointer:fedtree.GHPairEnc.g_enc)
+}
+inline std::string* GHPairEnc::_internal_mutable_g_enc() {
+  
+  return g_enc_.Mutable(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, GetArena());
+}
+inline std::string* GHPairEnc::release_g_enc() {
+  // @@protoc_insertion_point(field_release:fedtree.GHPairEnc.g_enc)
+  return g_enc_.Release(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+}
+inline void GHPairEnc::set_allocated_g_enc(std::string* g_enc) {
+  if (g_enc != nullptr) {
+    
+  } else {
+    
+  }
+  g_enc_.SetAllocated(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), g_enc,
+      GetArena());
+  // @@protoc_insertion_point(field_set_allocated:fedtree.GHPairEnc.g_enc)
+}
+
+// string h_enc = 2;
+inline void GHPairEnc::clear_h_enc() {
+  h_enc_.ClearToEmpty();
+}
+inline const std::string& GHPairEnc::h_enc() const {
+  // @@protoc_insertion_point(field_get:fedtree.GHPairEnc.h_enc)
+  return _internal_h_enc();
+}
+inline void GHPairEnc::set_h_enc(const std::string& value) {
+  _internal_set_h_enc(value);
+  // @@protoc_insertion_point(field_set:fedtree.GHPairEnc.h_enc)
+}
+inline std::string* GHPairEnc::mutable_h_enc() {
+  // @@protoc_insertion_point(field_mutable:fedtree.GHPairEnc.h_enc)
+  return _internal_mutable_h_enc();
+}
+inline const std::string& GHPairEnc::_internal_h_enc() const {
+  return h_enc_.Get();
+}
+inline void GHPairEnc::_internal_set_h_enc(const std::string& value) {
+  
+  h_enc_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, value, GetArena());
+}
+inline void GHPairEnc::set_h_enc(std::string&& value) {
+  
+  h_enc_.Set(
+    ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::move(value), GetArena());
+  // @@protoc_insertion_point(field_set_rvalue:fedtree.GHPairEnc.h_enc)
+}
+inline void GHPairEnc::set_h_enc(const char* value) {
+  GOOGLE_DCHECK(value != nullptr);
+  
+  h_enc_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::string(value), GetArena());
+  // @@protoc_insertion_point(field_set_char:fedtree.GHPairEnc.h_enc)
+}
+inline void GHPairEnc::set_h_enc(const char* value,
+    size_t size) {
+  
+  h_enc_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::string(
+      reinterpret_cast<const char*>(value), size), GetArena());
+  // @@protoc_insertion_point(field_set_pointer:fedtree.GHPairEnc.h_enc)
+}
+inline std::string* GHPairEnc::_internal_mutable_h_enc() {
+  
+  return h_enc_.Mutable(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, GetArena());
+}
+inline std::string* GHPairEnc::release_h_enc() {
+  // @@protoc_insertion_point(field_release:fedtree.GHPairEnc.h_enc)
+  return h_enc_.Release(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+}
+inline void GHPairEnc::set_allocated_h_enc(std::string* h_enc) {
+  if (h_enc != nullptr) {
+    
+  } else {
+    
+  }
+  h_enc_.SetAllocated(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), h_enc,
+      GetArena());
+  // @@protoc_insertion_point(field_set_allocated:fedtree.GHPairEnc.h_enc)
+}
+
+// -------------------------------------------------------------------
+
+// Paillier
+
+// string modulus = 1;
+inline void Paillier::clear_modulus() {
+  modulus_.ClearToEmpty();
+}
+inline const std::string& Paillier::modulus() const {
+  // @@protoc_insertion_point(field_get:fedtree.Paillier.modulus)
+  return _internal_modulus();
+}
+inline void Paillier::set_modulus(const std::string& value) {
+  _internal_set_modulus(value);
+  // @@protoc_insertion_point(field_set:fedtree.Paillier.modulus)
+}
+inline std::string* Paillier::mutable_modulus() {
+  // @@protoc_insertion_point(field_mutable:fedtree.Paillier.modulus)
+  return _internal_mutable_modulus();
+}
+inline const std::string& Paillier::_internal_modulus() const {
+  return modulus_.Get();
+}
+inline void Paillier::_internal_set_modulus(const std::string& value) {
+  
+  modulus_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, value, GetArena());
+}
+inline void Paillier::set_modulus(std::string&& value) {
+  
+  modulus_.Set(
+    ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::move(value), GetArena());
+  // @@protoc_insertion_point(field_set_rvalue:fedtree.Paillier.modulus)
+}
+inline void Paillier::set_modulus(const char* value) {
+  GOOGLE_DCHECK(value != nullptr);
+  
+  modulus_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::string(value), GetArena());
+  // @@protoc_insertion_point(field_set_char:fedtree.Paillier.modulus)
+}
+inline void Paillier::set_modulus(const char* value,
+    size_t size) {
+  
+  modulus_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::string(
+      reinterpret_cast<const char*>(value), size), GetArena());
+  // @@protoc_insertion_point(field_set_pointer:fedtree.Paillier.modulus)
+}
+inline std::string* Paillier::_internal_mutable_modulus() {
+  
+  return modulus_.Mutable(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, GetArena());
+}
+inline std::string* Paillier::release_modulus() {
+  // @@protoc_insertion_point(field_release:fedtree.Paillier.modulus)
+  return modulus_.Release(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+}
+inline void Paillier::set_allocated_modulus(std::string* modulus) {
+  if (modulus != nullptr) {
+    
+  } else {
+    
+  }
+  modulus_.SetAllocated(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), modulus,
+      GetArena());
+  // @@protoc_insertion_point(field_set_allocated:fedtree.Paillier.modulus)
+}
+
+// string generator = 2;
+inline void Paillier::clear_generator() {
+  generator_.ClearToEmpty();
+}
+inline const std::string& Paillier::generator() const {
+  // @@protoc_insertion_point(field_get:fedtree.Paillier.generator)
+  return _internal_generator();
+}
+inline void Paillier::set_generator(const std::string& value) {
+  _internal_set_generator(value);
+  // @@protoc_insertion_point(field_set:fedtree.Paillier.generator)
+}
+inline std::string* Paillier::mutable_generator() {
+  // @@protoc_insertion_point(field_mutable:fedtree.Paillier.generator)
+  return _internal_mutable_generator();
+}
+inline const std::string& Paillier::_internal_generator() const {
+  return generator_.Get();
+}
+inline void Paillier::_internal_set_generator(const std::string& value) {
+  
+  generator_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, value, GetArena());
+}
+inline void Paillier::set_generator(std::string&& value) {
+  
+  generator_.Set(
+    ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::move(value), GetArena());
+  // @@protoc_insertion_point(field_set_rvalue:fedtree.Paillier.generator)
+}
+inline void Paillier::set_generator(const char* value) {
+  GOOGLE_DCHECK(value != nullptr);
+  
+  generator_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::string(value), GetArena());
+  // @@protoc_insertion_point(field_set_char:fedtree.Paillier.generator)
+}
+inline void Paillier::set_generator(const char* value,
+    size_t size) {
+  
+  generator_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::string(
+      reinterpret_cast<const char*>(value), size), GetArena());
+  // @@protoc_insertion_point(field_set_pointer:fedtree.Paillier.generator)
+}
+inline std::string* Paillier::_internal_mutable_generator() {
+  
+  return generator_.Mutable(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, GetArena());
+}
+inline std::string* Paillier::release_generator() {
+  // @@protoc_insertion_point(field_release:fedtree.Paillier.generator)
+  return generator_.Release(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+}
+inline void Paillier::set_allocated_generator(std::string* generator) {
+  if (generator != nullptr) {
+    
+  } else {
+    
+  }
+  generator_.SetAllocated(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), generator,
+      GetArena());
+  // @@protoc_insertion_point(field_set_allocated:fedtree.Paillier.generator)
+}
+
+// -------------------------------------------------------------------
+
 // SplitPoint
 
 // float gain = 1;
@@ -2732,6 +3314,10 @@ inline void Ins2NodeID::set_nid(::PROTOBUF_NAMESPACE_ID::int32 value) {
 #ifdef __GNUC__
   #pragma GCC diagnostic pop
 #endif  // __GNUC__
+// -------------------------------------------------------------------
+
+// -------------------------------------------------------------------
+
 // -------------------------------------------------------------------
 
 // -------------------------------------------------------------------

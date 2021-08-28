@@ -46,6 +46,9 @@ static const char* FedTree_method_names[] = {
   "/fedtree.FedTree/GetSplitPoints",
   "/fedtree.FedTree/HCheckIfContinue",
   "/fedtree.FedTree/ScoreReduce",
+  "/fedtree.FedTree/TriggerHomoInit",
+  "/fedtree.FedTree/GetPaillier",
+  "/fedtree.FedTree/SendHistogramsEnc",
 };
 
 std::unique_ptr< FedTree::Stub> FedTree::NewStub(const std::shared_ptr< ::grpc::ChannelInterface>& channel, const ::grpc::StubOptions& options) {
@@ -79,6 +82,9 @@ FedTree::Stub::Stub(const std::shared_ptr< ::grpc::ChannelInterface>& channel)
   , rpcmethod_GetSplitPoints_(FedTree_method_names[21], ::grpc::internal::RpcMethod::SERVER_STREAMING, channel)
   , rpcmethod_HCheckIfContinue_(FedTree_method_names[22], ::grpc::internal::RpcMethod::NORMAL_RPC, channel)
   , rpcmethod_ScoreReduce_(FedTree_method_names[23], ::grpc::internal::RpcMethod::NORMAL_RPC, channel)
+  , rpcmethod_TriggerHomoInit_(FedTree_method_names[24], ::grpc::internal::RpcMethod::NORMAL_RPC, channel)
+  , rpcmethod_GetPaillier_(FedTree_method_names[25], ::grpc::internal::RpcMethod::NORMAL_RPC, channel)
+  , rpcmethod_SendHistogramsEnc_(FedTree_method_names[26], ::grpc::internal::RpcMethod::CLIENT_STREAMING, channel)
   {}
 
 ::grpc::Status FedTree::Stub::TriggerUpdateGradients(::grpc::ClientContext* context, const ::fedtree::PID& request, ::fedtree::Ready* response) {
@@ -563,6 +569,68 @@ void FedTree::Stub::experimental_async::ScoreReduce(::grpc::ClientContext* conte
   return result;
 }
 
+::grpc::Status FedTree::Stub::TriggerHomoInit(::grpc::ClientContext* context, const ::fedtree::PID& request, ::fedtree::Ready* response) {
+  return ::grpc::internal::BlockingUnaryCall< ::fedtree::PID, ::fedtree::Ready, ::grpc::protobuf::MessageLite, ::grpc::protobuf::MessageLite>(channel_.get(), rpcmethod_TriggerHomoInit_, context, request, response);
+}
+
+void FedTree::Stub::experimental_async::TriggerHomoInit(::grpc::ClientContext* context, const ::fedtree::PID* request, ::fedtree::Ready* response, std::function<void(::grpc::Status)> f) {
+  ::grpc::internal::CallbackUnaryCall< ::fedtree::PID, ::fedtree::Ready, ::grpc::protobuf::MessageLite, ::grpc::protobuf::MessageLite>(stub_->channel_.get(), stub_->rpcmethod_TriggerHomoInit_, context, request, response, std::move(f));
+}
+
+void FedTree::Stub::experimental_async::TriggerHomoInit(::grpc::ClientContext* context, const ::fedtree::PID* request, ::fedtree::Ready* response, ::grpc::experimental::ClientUnaryReactor* reactor) {
+  ::grpc::internal::ClientCallbackUnaryFactory::Create< ::grpc::protobuf::MessageLite, ::grpc::protobuf::MessageLite>(stub_->channel_.get(), stub_->rpcmethod_TriggerHomoInit_, context, request, response, reactor);
+}
+
+::grpc::ClientAsyncResponseReader< ::fedtree::Ready>* FedTree::Stub::PrepareAsyncTriggerHomoInitRaw(::grpc::ClientContext* context, const ::fedtree::PID& request, ::grpc::CompletionQueue* cq) {
+  return ::grpc::internal::ClientAsyncResponseReaderHelper::Create< ::fedtree::Ready, ::fedtree::PID, ::grpc::protobuf::MessageLite, ::grpc::protobuf::MessageLite>(channel_.get(), cq, rpcmethod_TriggerHomoInit_, context, request);
+}
+
+::grpc::ClientAsyncResponseReader< ::fedtree::Ready>* FedTree::Stub::AsyncTriggerHomoInitRaw(::grpc::ClientContext* context, const ::fedtree::PID& request, ::grpc::CompletionQueue* cq) {
+  auto* result =
+    this->PrepareAsyncTriggerHomoInitRaw(context, request, cq);
+  result->StartCall();
+  return result;
+}
+
+::grpc::Status FedTree::Stub::GetPaillier(::grpc::ClientContext* context, const ::fedtree::PID& request, ::fedtree::Paillier* response) {
+  return ::grpc::internal::BlockingUnaryCall< ::fedtree::PID, ::fedtree::Paillier, ::grpc::protobuf::MessageLite, ::grpc::protobuf::MessageLite>(channel_.get(), rpcmethod_GetPaillier_, context, request, response);
+}
+
+void FedTree::Stub::experimental_async::GetPaillier(::grpc::ClientContext* context, const ::fedtree::PID* request, ::fedtree::Paillier* response, std::function<void(::grpc::Status)> f) {
+  ::grpc::internal::CallbackUnaryCall< ::fedtree::PID, ::fedtree::Paillier, ::grpc::protobuf::MessageLite, ::grpc::protobuf::MessageLite>(stub_->channel_.get(), stub_->rpcmethod_GetPaillier_, context, request, response, std::move(f));
+}
+
+void FedTree::Stub::experimental_async::GetPaillier(::grpc::ClientContext* context, const ::fedtree::PID* request, ::fedtree::Paillier* response, ::grpc::experimental::ClientUnaryReactor* reactor) {
+  ::grpc::internal::ClientCallbackUnaryFactory::Create< ::grpc::protobuf::MessageLite, ::grpc::protobuf::MessageLite>(stub_->channel_.get(), stub_->rpcmethod_GetPaillier_, context, request, response, reactor);
+}
+
+::grpc::ClientAsyncResponseReader< ::fedtree::Paillier>* FedTree::Stub::PrepareAsyncGetPaillierRaw(::grpc::ClientContext* context, const ::fedtree::PID& request, ::grpc::CompletionQueue* cq) {
+  return ::grpc::internal::ClientAsyncResponseReaderHelper::Create< ::fedtree::Paillier, ::fedtree::PID, ::grpc::protobuf::MessageLite, ::grpc::protobuf::MessageLite>(channel_.get(), cq, rpcmethod_GetPaillier_, context, request);
+}
+
+::grpc::ClientAsyncResponseReader< ::fedtree::Paillier>* FedTree::Stub::AsyncGetPaillierRaw(::grpc::ClientContext* context, const ::fedtree::PID& request, ::grpc::CompletionQueue* cq) {
+  auto* result =
+    this->PrepareAsyncGetPaillierRaw(context, request, cq);
+  result->StartCall();
+  return result;
+}
+
+::grpc::ClientWriter< ::fedtree::GHPairEnc>* FedTree::Stub::SendHistogramsEncRaw(::grpc::ClientContext* context, ::fedtree::PID* response) {
+  return ::grpc::internal::ClientWriterFactory< ::fedtree::GHPairEnc>::Create(channel_.get(), rpcmethod_SendHistogramsEnc_, context, response);
+}
+
+void FedTree::Stub::experimental_async::SendHistogramsEnc(::grpc::ClientContext* context, ::fedtree::PID* response, ::grpc::experimental::ClientWriteReactor< ::fedtree::GHPairEnc>* reactor) {
+  ::grpc::internal::ClientCallbackWriterFactory< ::fedtree::GHPairEnc>::Create(stub_->channel_.get(), stub_->rpcmethod_SendHistogramsEnc_, context, response, reactor);
+}
+
+::grpc::ClientAsyncWriter< ::fedtree::GHPairEnc>* FedTree::Stub::AsyncSendHistogramsEncRaw(::grpc::ClientContext* context, ::fedtree::PID* response, ::grpc::CompletionQueue* cq, void* tag) {
+  return ::grpc::internal::ClientAsyncWriterFactory< ::fedtree::GHPairEnc>::Create(channel_.get(), cq, rpcmethod_SendHistogramsEnc_, context, response, true, tag);
+}
+
+::grpc::ClientAsyncWriter< ::fedtree::GHPairEnc>* FedTree::Stub::PrepareAsyncSendHistogramsEncRaw(::grpc::ClientContext* context, ::fedtree::PID* response, ::grpc::CompletionQueue* cq) {
+  return ::grpc::internal::ClientAsyncWriterFactory< ::fedtree::GHPairEnc>::Create(channel_.get(), cq, rpcmethod_SendHistogramsEnc_, context, response, false, nullptr);
+}
+
 FedTree::Service::Service() {
   AddMethod(new ::grpc::internal::RpcServiceMethod(
       FedTree_method_names[0],
@@ -804,6 +872,36 @@ FedTree::Service::Service() {
              ::fedtree::Score* resp) {
                return service->ScoreReduce(ctx, req, resp);
              }, this)));
+  AddMethod(new ::grpc::internal::RpcServiceMethod(
+      FedTree_method_names[24],
+      ::grpc::internal::RpcMethod::NORMAL_RPC,
+      new ::grpc::internal::RpcMethodHandler< FedTree::Service, ::fedtree::PID, ::fedtree::Ready, ::grpc::protobuf::MessageLite, ::grpc::protobuf::MessageLite>(
+          [](FedTree::Service* service,
+             ::grpc::ServerContext* ctx,
+             const ::fedtree::PID* req,
+             ::fedtree::Ready* resp) {
+               return service->TriggerHomoInit(ctx, req, resp);
+             }, this)));
+  AddMethod(new ::grpc::internal::RpcServiceMethod(
+      FedTree_method_names[25],
+      ::grpc::internal::RpcMethod::NORMAL_RPC,
+      new ::grpc::internal::RpcMethodHandler< FedTree::Service, ::fedtree::PID, ::fedtree::Paillier, ::grpc::protobuf::MessageLite, ::grpc::protobuf::MessageLite>(
+          [](FedTree::Service* service,
+             ::grpc::ServerContext* ctx,
+             const ::fedtree::PID* req,
+             ::fedtree::Paillier* resp) {
+               return service->GetPaillier(ctx, req, resp);
+             }, this)));
+  AddMethod(new ::grpc::internal::RpcServiceMethod(
+      FedTree_method_names[26],
+      ::grpc::internal::RpcMethod::CLIENT_STREAMING,
+      new ::grpc::internal::ClientStreamingHandler< FedTree::Service, ::fedtree::GHPairEnc, ::fedtree::PID>(
+          [](FedTree::Service* service,
+             ::grpc::ServerContext* ctx,
+             ::grpc::ServerReader<::fedtree::GHPairEnc>* reader,
+             ::fedtree::PID* resp) {
+               return service->SendHistogramsEnc(ctx, reader, resp);
+             }, this)));
 }
 
 FedTree::Service::~Service() {
@@ -973,6 +1071,27 @@ FedTree::Service::~Service() {
 ::grpc::Status FedTree::Service::ScoreReduce(::grpc::ServerContext* context, const ::fedtree::Score* request, ::fedtree::Score* response) {
   (void) context;
   (void) request;
+  (void) response;
+  return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
+}
+
+::grpc::Status FedTree::Service::TriggerHomoInit(::grpc::ServerContext* context, const ::fedtree::PID* request, ::fedtree::Ready* response) {
+  (void) context;
+  (void) request;
+  (void) response;
+  return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
+}
+
+::grpc::Status FedTree::Service::GetPaillier(::grpc::ServerContext* context, const ::fedtree::PID* request, ::fedtree::Paillier* response) {
+  (void) context;
+  (void) request;
+  (void) response;
+  return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
+}
+
+::grpc::Status FedTree::Service::SendHistogramsEnc(::grpc::ServerContext* context, ::grpc::ServerReader< ::fedtree::GHPairEnc>* reader, ::fedtree::PID* response) {
+  (void) context;
+  (void) reader;
   (void) response;
   return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
 }

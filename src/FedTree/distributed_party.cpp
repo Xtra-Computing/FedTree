@@ -7,6 +7,7 @@
 #include "FedTree/parser.h"
 #include "FedTree/DP/differential_privacy.h"
 
+#include <sstream>
 void DistributedParty::TriggerUpdateGradients() {
     fedtree::PID id;
     fedtree::Ready ready;
@@ -76,6 +77,7 @@ void DistributedParty::SendHistograms(const SyncArray<GHPair> &hist, int type) {
     grpc::ClientContext context;
     context.AddMetadata("pid", std::to_string(pid));
     context.AddMetadata("type", std::to_string(type));
+    TIMED_SCOPE(timerObj, "SendHistogramsTime");
     std::unique_ptr<grpc::ClientWriter<fedtree::GHPair> > writer(
             stub_->SendHistograms(&context, &id));
 
@@ -89,11 +91,12 @@ void DistributedParty::SendHistograms(const SyncArray<GHPair> &hist, int type) {
         }
     }
     writer->WritesDone();
+    // LOG(INFO) << "before finish";
     grpc::Status status = writer->Finish();
     if (status.ok()) {
         LOG(DEBUG) << "All " << type << " sent.";
     } else {
-        LOG(DEBUG) << "SendHistograms rpc failed.";
+        LOG(ERROR) << "SendHistograms rpc failed.";
     }
 }
 
@@ -353,9 +356,9 @@ void DistributedParty::GetRangeAndSet(int n_bins) {
     }
     grpc::Status status = reader->Finish();
     if (status.ok()) {
-        std::cout << "All range received." << std::endl;
+        LOG(DEBUG) << "All range received.";
     } else {
-        std::cout << "GetRange rpc failed." << std::endl;
+        LOG(DEBUG) << "GetRange rpc failed.";
     }
     booster.fbuilder->cut.get_cut_points_by_feature_range(feature_range, n_bins);
     booster.fbuilder->get_bin_ids();
@@ -371,10 +374,10 @@ void DistributedParty::SendGH(GHPair party_gh) {
     pair.set_h(party_gh.h);
     grpc::Status status = stub_->SendGH(&context, pair, &id);
     if (status.ok()) {
-        std::cout << "party_gh sent." << std::endl;
+        LOG(DEBUG) << "party_gh sent.";
     }
     else {
-        std::cout << "party_gh rpc failed" << std::endl;
+        LOG(ERROR) << "party_gh rpc failed";
     }
 }
 
@@ -431,9 +434,9 @@ void DistributedParty::GetRootNode() {
     root.sum_gh_pair.h = node.sum_gh_pair_h();
     root.n_instances = node.n_instances();
     if (status.ok()) {
-        std::cout << "RootNode received." << std::endl;
+        LOG(DEBUG) << "RootNode received." << std::endl;
     } else {
-        std::cout << "GetRootNode rpc failed." << std::endl;
+        LOG(ERROR) << "GetRootNode rpc failed." << std::endl;
     }
 }
 
@@ -445,6 +448,8 @@ void DistributedParty::GetSplitPoints() {
     // TODO
     vector<SplitPoint> sp_points;
     fedtree::SplitPoint sp_recv;
+    {
+        TIMED_SCOPE(timerObj, "GetSPsTime");
     while(reader->Read(&sp_recv)) {
         SplitPoint sp_point;
         sp_point.gain = sp_recv.gain();
@@ -461,9 +466,10 @@ void DistributedParty::GetSplitPoints() {
 
     grpc::Status status = reader->Finish();
     if (status.ok()) {
-        std::cout << "SplitPoints received." << std::endl;
+        LOG(INFO) << "SplitPoints received.";
     } else {
-        std::cout << "GetSplitPoints rpc failed." << std::endl;
+        LOG(ERROR) << "GetSplitPoints rpc failed.";
+    }
     }
     booster.fbuilder->sp.resize(sp_points.size());
     auto sp_data = booster.fbuilder->sp.host_data();
@@ -504,6 +510,73 @@ float DistributedParty::GetAvgScore(float score) {
         LOG(DEBUG) << "ScoreReduce rpc failed";
     }
     return avg.content();
+}
+
+void DistributedParty::TriggerHomoInit() {
+    grpc::ClientContext context;
+    fedtree::PID id;
+    fedtree::Ready ready;
+    grpc::Status status = stub_->TriggerHomoInit(&context, id, &ready);
+    if (status.ok()) {
+        LOG(DEBUG) << "Trigger Server to homo init";
+    }
+    else {
+        LOG(ERROR) << "TriggerHomoInit rpc failed";
+    }
+}
+
+void DistributedParty::GetPaillier() {
+    grpc::ClientContext context;
+    fedtree::PID id;
+    fedtree::Paillier pubkey;
+    grpc::Status status = stub_->GetPaillier(&context, id, &pubkey);
+    if (status.ok()) {
+        paillier.modulus = NTL::to_ZZ(pubkey.modulus().c_str());
+        paillier.generator = NTL::to_ZZ(pubkey.generator().c_str());
+        LOG(INFO) << "Get public key from server";
+        LOG(INFO) << paillier.modulus;
+        LOG(INFO) << paillier.generator;
+    }
+    else {
+        LOG(ERROR) << "GetPaillier rpc failed";
+    }
+}
+
+void DistributedParty::SendHistogramsEnc(const SyncArray<GHPair> &hist, int type) {
+    fedtree::PID id;
+    grpc::ClientContext context;
+    context.AddMetadata("pid", std::to_string(pid));
+    context.AddMetadata("type", std::to_string(type));
+    
+    TIMED_SCOPE(timerObj, "SendHistogramsEncTime");
+    std::unique_ptr<grpc::ClientWriter<fedtree::GHPairEnc> > writer(
+            stub_->SendHistogramsEnc(&context, &id));
+    
+    auto hist_data = hist.host_data();
+    stringstream stream;
+    for (int i = 0; i < hist.size(); ++i) {
+        fedtree::GHPairEnc gh;
+        stream << hist_data[i].g_enc;
+        gh.set_g_enc(stream.str());
+        stream.clear();
+        stream.str("");
+        stream << hist_data[i].h_enc;
+        gh.set_h_enc(stream.str());
+        stream.clear();
+        stream.str("");
+        if (!writer->Write(gh)) {
+            break;
+        }
+    }
+    writer->WritesDone();
+    
+    grpc::Status status = writer->Finish();
+    if (status.ok()) {
+        LOG(DEBUG) << "All Encrypted" << type << " sent.";
+    } else {
+        LOG(ERROR) << "SendHistogramsEnc rpc failed.";
+    }
+
 }
 
 void distributed_vertical_train(DistributedParty& party, FLParam &fl_param) {
@@ -601,11 +674,18 @@ void distributed_vertical_train(DistributedParty& party, FLParam &fl_param) {
 
 void distributed_horizontal_train(DistributedParty& party, FLParam &fl_param) {
     // initialization
+    if (fl_param.privacy_tech == "he") {
+        if (party.pid == 0) {
+            party.TriggerHomoInit();
+        }
+        party.GetPaillier();
+    }
     DifferentialPrivacy dp_manager = DifferentialPrivacy();
     if (fl_param.privacy_tech == "dp") {
         LOG(INFO) << "Start DP init";
         dp_manager.init(fl_param);
     }
+
     int n_bins = fl_param.gbdt_param.max_num_bin;
     // get and send feature range
     vector<vector<float>> feature_range(party.get_num_feature());
@@ -653,10 +733,9 @@ void distributed_horizontal_train(DistributedParty& party, FLParam &fl_param) {
                 for (int i = 0; i < hist_fid.size(); i++)
                     hist_fid_data[i] = cut_fid_data[i % n_bins];
 
-                // send party_hist_fid
-                party.SendHistFid(hist_fid);
+                
                 SyncArray <GHPair> missing_gh(n_partition);
-                SyncArray <GHPair> hist(n_max_splits);
+                SyncArray <GHPair> hist(n_nodes_in_level * n_bins);
                 party.booster.fbuilder->compute_histogram_in_a_level(d, n_max_splits, n_bins,
                                                                               n_nodes_in_level,
                                                                               hist_fid_data, missing_gh, hist);
@@ -665,8 +744,21 @@ void distributed_horizontal_train(DistributedParty& party, FLParam &fl_param) {
 
                 // }
                 // append hist
-                party.SendHistograms(hist, 0);
-                party.SendHistograms(missing_gh, 1);
+                if (fl_param.privacy_tech == "he") {
+                    {
+                        TIMED_SCOPE(timerObj, "encrypting time");
+                        party.encrypt_histogram(hist);
+                        party.encrypt_histogram(missing_gh);
+                    }
+                    party.SendHistogramsEnc(hist, 0);
+                    party.SendHistogramsEnc(missing_gh, 1);
+                }
+                else {
+                    party.SendHistograms(hist, 0);
+                    party.SendHistograms(missing_gh, 1);
+                }
+                // send party_hist_fid
+                party.SendHistFid(hist_fid);
                 if (party.pid == 0) {
                     // send current d
                     party.TriggerCalcTree(d);

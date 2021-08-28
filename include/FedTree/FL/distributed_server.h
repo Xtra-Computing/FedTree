@@ -97,6 +97,13 @@ public:
     grpc::Status HCheckIfContinue(grpc::ServerContext *context, const fedtree::PID *pid,
                                  fedtree::Ready *ready) override;
 
+    grpc::Status TriggerHomoInit(grpc::ServerContext *context, const fedtree::PID *request, fedtree::Ready *response) override;
+
+    grpc::Status GetPaillier(grpc::ServerContext *context, const fedtree::PID *request, fedtree::Paillier * response) override;
+    
+    grpc::Status SendHistogramsEnc(grpc::ServerContext *context, grpc::ServerReader<fedtree::GHPairEnc> *reader,
+                                fedtree::PID *id) override;
+    
     void VerticalInitVectors(int n_parties);
 
     void HorizontalInitVectors(int n_parties);
@@ -145,11 +152,13 @@ private:
     bool score_success = false;
     int score_rounds = 0;
 
+    bool homo_init_success = false;
+
     int cnt = 0;
     int gh_cnt = 0;
     int sp_cnt = 0;
     int hvote_cnt = 0;
-    
+
 
 };
 

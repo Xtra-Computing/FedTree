@@ -36,6 +36,19 @@ service FedTree {
   rpc HCheckIfContinue(PID) returns (Ready) {}
   rpc ScoreReduce(Score) returns (Score) {}
 
+  rpc TriggerHomoInit(PID) returns (Ready) {} 
+  rpc GetPaillier(PID) returns (Paillier) {}
+  
+  rpc SendHistogramsEnc(stream GHPairEnc) returns(PID) {}
+}
+message GHPairEnc {
+  string g_enc = 1;
+  string h_enc = 2;
+}
+
+message Paillier {
+  string modulus = 1;
+  string generator = 2;
 }
 
 message SplitPoint {
