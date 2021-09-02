@@ -54,7 +54,7 @@ public:
 
     void merge_histograms_server_propose(SyncArray<GHPair> &hist, SyncArray<GHPair> &missing_gh);
 
-    void merge_histograms_client_propose(SyncArray<GHPair> &hist, SyncArray<GHPair> &missing_gh, int max_splits);
+    void merge_histograms_client_propose(SyncArray<GHPair> &hist, SyncArray<GHPair> &missing_gh, vector<vector<float>> feature_range, int max_splits);
 
     void concat_histograms() override;
 

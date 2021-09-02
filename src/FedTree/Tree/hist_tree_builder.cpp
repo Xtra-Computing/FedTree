@@ -1076,7 +1076,8 @@ void HistTreeBuilder::merge_histograms_server_propose(SyncArray<GHPair> &hist, S
 }
 
 
-void HistTreeBuilder::merge_histograms_client_propose(SyncArray<GHPair> &hist, SyncArray<GHPair> &missing_gh, int n_max_splits) {
+void HistTreeBuilder::merge_histograms_client_propose(SyncArray<GHPair> &hist, SyncArray<GHPair> &missing_gh, vector<vector<float>> feature_range, int n_max_splits) {
+
     float inf = std::numeric_limits<float>::infinity();
     // find feature range of each feature for each party
     int n_columns = parties_cut[0].cut_col_ptr.size() - 1;
@@ -1084,39 +1085,33 @@ void HistTreeBuilder::merge_histograms_client_propose(SyncArray<GHPair> &hist, S
 
     // Finding the feature range of each parties' local histogram
     for (int n = 0; n < n_columns; n++) {
-        vector<float> feature_range = {inf, -inf};
         for (int p = 0; p < parties_hist.size(); p++) {
             auto cut_col_data = parties_cut[p].cut_col_ptr.host_data();
             auto cut_points_val_data = parties_cut[p].cut_points_val.host_data();
 
             int column_start = cut_col_data[n];
             int column_end = cut_col_data[n+1];
-            float temp_max = cut_points_val_data[column_start];
-            float temp_min = cut_points_val_data[column_end-1];
 
-            if (feature_range[0] > temp_min) {
-                feature_range[0] = temp_min;
-            }
-            if (feature_range[1] < temp_max) {
-                feature_range[1] = temp_max;
+            for (int i = column_start; i < column_end; i++) {
+                ranges[n].push_back(cut_points_val_data[i]);
             }
         }
-        ranges[n] = feature_range;
     }
+
+    LOG(INFO) << ranges;
 
     SyncArray<float> cut_points_val;
     SyncArray<int> cut_col_ptr;
 
+    int n_features = ranges.size();
     int max_num_bins = parties_cut[0].cut_points_val.size() / n_columns + 1;
-    cut_points_val.resize(n_columns * max_num_bins);
-    cut_col_ptr.resize(n_columns + 1);
-    auto cut_col_ptr_data = cut_col_ptr.host_data();
-    auto cut_points_val_data = cut_points_val.host_data();
-    CHECK_EQ(parties_cut[0].cut_col_ptr.size(), cut_col_ptr.size());
+    cut_points_val.resize(n_features * max_num_bins);
+    cut_col_ptr.resize(n_features + 1);
 
-    // Generate cut points based on the feature ranges
+    auto cut_points_val_data = cut_points_val.host_data();
+    auto cut_col_ptr_data = cut_col_ptr.host_data();
 #pragma omp parallel for
-    for(int fid = 0; fid < n_columns; fid ++) {
+    for(int fid = 0; fid < n_features; fid ++) {
         cut_col_ptr_data[fid] = fid * max_num_bins;
         float val_range = ranges[fid][1] - ranges[fid][0];
         float val_step = val_range / max_num_bins;
@@ -1125,9 +1120,13 @@ void HistTreeBuilder::merge_histograms_client_propose(SyncArray<GHPair> &hist, S
             cut_points_val_data[fid * max_num_bins + i] = ranges[fid][1] - i * val_step;
         }
     }
-    cut_col_ptr_data[n_columns] = n_columns * max_num_bins;
+    cut_col_ptr_data[n_features] = n_features * max_num_bins;
+
     LOG(INFO) << "NEW_CUT_POINT_VAL" << cut_points_val;
     LOG(INFO) << "NEW_CUT_POINT_COL" << cut_col_ptr;
+    LOG(INFO) << "OLD_CUT_POiNT_VAL" << parties_cut[0].cut_points_val;
+    LOG(INFO) << "OLD_CUT_POiNT_VAL" << parties_cut[0].cut_col_ptr;
+
 
 
     SyncArray<GHPair> merged_hist(n_max_splits);
@@ -1173,47 +1172,49 @@ void HistTreeBuilder::merge_histograms_client_propose(SyncArray<GHPair> &hist, S
 
                 // For each global range of current feature
                 for (int index = 0; index < cut_points_range.size(); index++) {
-                    float_type upper_bound = cut_points_range_data[index];
-                    float_type lower_bound = cut_points_range_data[index + 1];
-                    // for each range pair of current feature
-                    for (int i = 0; i < party_cut_points_range.size() - 1; i++) {
-                        float_type client_high = party_cut_points_range_data[i];
-                        float_type client_low = party_cut_points_range_data[i + 1];
+                        float_type upper_bound = cut_points_range_data[index];
+                        float_type lower_bound = cut_points_range_data[index + 1];
 
-                        int node_offset_index = node_offset * (max_num_bins * n_columns);
-                        int feature_offset_index = fid * max_num_bins;
-                        int dest_index = node_offset_index + feature_offset_index + index;
-                        int src_index = node_offset_index + feature_offset_index + i;
+                        // for each range pair of current feature
+                        for (int i = 0; i < party_cut_points_range.size(); i++) {
 
-                        if (client_low >= lower_bound && upper_bound <= client_high) {
-                            GHPair &dest = merged_hist_data[dest_index];
-                            GHPair &src = parties_hist_data[src_index];
-                            dest.g += src.g;
-                            dest.h += src.h;
-                        } else if (client_low < lower_bound && upper_bound <= client_high) {
-                            float_type factor = (client_high - lower_bound) / (client_high - client_low);
-                            GHPair &dest = merged_hist_data[dest_index];
-                            GHPair &src = parties_hist_data[src_index];
-                            dest.g += src.g * factor;
-                            dest.h += src.h * factor;
-                        } else if (client_high > upper_bound && lower_bound <= client_low) {
-                            float_type factor = (upper_bound - client_low) / (client_high - client_low);
-                            GHPair &dest = merged_hist_data[dest_index];
-                            GHPair &src = parties_hist_data[src_index];
-                            dest.g += src.g * factor;
-                            dest.h += src.h * factor;
-                        } else if (client_low < lower_bound && client_high > upper_bound) {
-                            float_type factor = (upper_bound - lower_bound) / (client_high - client_low);
-                            GHPair &dest = merged_hist_data[dest_index];
-                            GHPair &src = parties_hist_data[src_index];
-                            dest.g += src.g * factor;
-                            dest.h += src.h * factor;
+                                float_type client_high = party_cut_points_range_data[i];
+                                float_type client_low = party_cut_points_range_data[i + 1];
+
+                                int node_offset_index = node_offset * (max_num_bins * n_columns);
+                                int feature_offset_index = fid * max_num_bins;
+                                int dest_index = node_offset_index + feature_offset_index + index;
+                                int src_index = node_offset_index + feature_offset_index + i;
+
+                                if (client_low >= lower_bound && upper_bound <= client_high) {
+                                    GHPair &dest = merged_hist_data[dest_index];
+                                    GHPair &src = parties_hist_data[src_index];
+                                    dest.g += src.g;
+                                    dest.h += src.h;
+                                } else if (client_low < lower_bound && upper_bound <= client_high) {
+                                    float_type factor = (client_high - lower_bound) / (client_high - client_low);
+                                    GHPair &dest = merged_hist_data[dest_index];
+                                    GHPair &src = parties_hist_data[src_index];
+                                    dest.g += src.g * factor;
+                                    dest.h += src.h * factor;
+                                } else if (client_high > upper_bound && lower_bound <= client_low) {
+                                    float_type factor = (upper_bound - client_low) / (client_high - client_low);
+                                    GHPair &dest = merged_hist_data[dest_index];
+                                    GHPair &src = parties_hist_data[src_index];
+                                    dest.g += src.g * factor;
+                                    dest.h += src.h * factor;
+                                } else if (client_low < lower_bound && client_high > upper_bound) {
+                                    float_type factor = (upper_bound - lower_bound) / (client_high - client_low);
+                                    GHPair &dest = merged_hist_data[dest_index];
+                                    GHPair &src = parties_hist_data[src_index];
+                                    dest.g += src.g * factor;
+                                    dest.h += src.h * factor;
+                                }
                         }
                     }
                 }
             }
         }
-    }
 
     // Merge missing gh by summing
     int n_size = parties_missing_gh[0].size();

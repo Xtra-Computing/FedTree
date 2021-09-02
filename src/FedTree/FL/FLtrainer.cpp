@@ -33,25 +33,26 @@ void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FL
     // Generate HistCut by server or each party
     int n_bins = model_param.max_num_bin;
 
-    if (params.propose_split == "server") {
-        // loop through all party to find max and min for each feature
-        float inf = std::numeric_limits<float>::infinity();
-        vector<vector<float>> feature_range(parties[0].get_num_feature());
+    // loop through all party to find max and min for each feature
+    float inf = std::numeric_limits<float>::infinity();
+    vector<vector<float>> feature_range(parties[0].get_num_feature());
 //        for(int i = 0; i < parties[0].dataset.csr_val.size(); i++)
 //            std::cout<<parties[0].dataset.csr_val[i]<<" ";
-        for (int n = 0; n < parties[0].get_num_feature(); n++) {
-            vector<float> min_max = {inf, -inf};
-            for (int p = 0; p < parties.size(); p++) {
-                vector<float> temp = parties[p].get_feature_range_by_feature_index(n);
-                if (temp[0] <= min_max[0])
-                    min_max[0] = temp[0];
-                if (temp[1] >= min_max[1])
-                    min_max[1] = temp[1];
-            }
-            feature_range[n] = min_max;
+    for (int n = 0; n < parties[0].get_num_feature(); n++) {
+        vector<float> min_max = {inf, -inf};
+        for (int p = 0; p < parties.size(); p++) {
+            vector<float> temp = parties[p].get_feature_range_by_feature_index(n);
+            if (temp[0] <= min_max[0])
+                min_max[0] = temp[0];
+            if (temp[1] >= min_max[1])
+                min_max[1] = temp[1];
         }
-//        // once we have feature_range, we can generate cut points
-        LOG(INFO) << feature_range;
+        feature_range[n] = min_max;
+    }
+    // once we have feature_range, we can generate cut points
+    LOG(INFO) << feature_range;
+
+    if (params.propose_split == "server") {
         server.booster.fbuilder->cut.get_cut_points_by_feature_range(feature_range, n_bins);
         LOG(INFO) << server.booster.fbuilder->cut.cut_col_ptr;
 //        server.booster.fbuilder->get_bin_ids();
@@ -222,8 +223,7 @@ void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FL
 ////                    server.booster.fbuilder->set_last_missing_gh(missing_gh);
 //                    LOG(INFO) << hist;
                 }else if (params.propose_split == "client") {
-                    // TODO: Fix this to make use of missing_gh
-                    aggregator.booster.fbuilder->merge_histograms_client_propose(hist, missing_gh, n_max_splits);
+                    aggregator.booster.fbuilder->merge_histograms_client_propose(hist, missing_gh, feature_range, n_max_splits);
 //                    LOG(INFO)<<"not supported yet";
 //                    exit(1);
                 }
