@@ -13,8 +13,11 @@
 #include "thrust/execution_policy.h"
 #include "FedTree/util/multi_device.h"
 #include "FedTree/common.h"
+
 #include <math.h>
+#include <iterator>
 #include <algorithm>
+#include <random>
 
 
 using namespace thrust;
@@ -1076,14 +1079,14 @@ void HistTreeBuilder::merge_histograms_server_propose(SyncArray<GHPair> &hist, S
 }
 
 
-void HistTreeBuilder::merge_histograms_client_propose(SyncArray<GHPair> &hist, SyncArray<GHPair> &missing_gh, vector<vector<float>> feature_range, int n_max_splits) {
+void HistTreeBuilder::merge_histograms_client_propose(SyncArray<GHPair> &hist, SyncArray<GHPair> &missing_gh, vector<vector<vector<float>>> feature_range, int n_max_splits) {
 
     float inf = std::numeric_limits<float>::infinity();
     // find feature range of each feature for each party
     int n_columns = parties_cut[0].cut_col_ptr.size() - 1;
     vector<vector<float>> ranges(n_columns);
 
-    // Finding the feature range of each parties' local histogram
+    // Merging all cut points into one single cut points
     for (int n = 0; n < n_columns; n++) {
         for (int p = 0; p < parties_hist.size(); p++) {
             auto cut_col_data = parties_cut[p].cut_col_ptr.host_data();
@@ -1098,11 +1101,9 @@ void HistTreeBuilder::merge_histograms_client_propose(SyncArray<GHPair> &hist, S
         }
     }
 
-    LOG(INFO) << ranges;
-
+    // Once we have gathered the sorted range, we can randomly sample the cut points to match with the number of bins
     SyncArray<float> cut_points_val;
     SyncArray<int> cut_col_ptr;
-
     int n_features = ranges.size();
     int max_num_bins = parties_cut[0].cut_points_val.size() / n_columns + 1;
     cut_points_val.resize(n_features * max_num_bins);
@@ -1110,37 +1111,63 @@ void HistTreeBuilder::merge_histograms_client_propose(SyncArray<GHPair> &hist, S
 
     auto cut_points_val_data = cut_points_val.host_data();
     auto cut_col_ptr_data = cut_col_ptr.host_data();
-#pragma omp parallel for
-    for(int fid = 0; fid < n_features; fid ++) {
-        cut_col_ptr_data[fid] = fid * max_num_bins;
-        float val_range = ranges[fid][1] - ranges[fid][0];
-        float val_step = val_range / max_num_bins;
 
-        for(int i = 0; i < max_num_bins; i ++) {
-            cut_points_val_data[fid * max_num_bins + i] = ranges[fid][1] - i * val_step;
+    int index = 0;
+
+    for (int fid = 0; fid < n_features; fid++) {
+        vector<float> sample;
+        cut_col_ptr_data[fid] = index;
+
+        // Always keep the maximum value
+        auto max_element = *std::max_element(ranges[fid].begin(), ranges[fid].end());
+        sample.push_back(max_element);
+
+        // Randomly sample number of cut point according to max num bins
+        unsigned seed = 0;
+        std::shuffle(ranges[fid].begin(), ranges[fid].end(), std::default_random_engine(seed));
+
+        struct compare
+        {
+            int key;
+            compare(int const &i): key(i) {}
+
+            bool operator()(int const &i) {
+                return (i == key);
+            }
+        };
+
+
+        for (int i = 0; i < ranges[fid].size(); i++) {
+
+            if (sample.size() == max_num_bins)
+                break;
+
+            auto element = ranges[fid][i];
+            // Check if element already in cut points val data
+            if (not (std::find(sample.begin(), sample.end(), element) != sample.end()))
+                sample.push_back(element);
+        }
+
+        // Sort the sample in descending order
+        std::sort(sample.begin(), sample.end(), std::greater<float>());
+
+        // Populate cut points val with samples
+        for (int i = 0; i < sample.size(); i++) {
+            cut_points_val_data[index] = sample[i];
+            index++;
         }
     }
-    cut_col_ptr_data[n_features] = n_features * max_num_bins;
-
-    LOG(INFO) << "NEW_CUT_POINT_VAL" << cut_points_val;
-    LOG(INFO) << "NEW_CUT_POINT_COL" << cut_col_ptr;
-    LOG(INFO) << "OLD_CUT_POiNT_VAL" << parties_cut[0].cut_points_val;
-    LOG(INFO) << "OLD_CUT_POiNT_VAL" << parties_cut[0].cut_col_ptr;
-
-
+    cut_col_ptr_data[n_features] = index;
 
     SyncArray<GHPair> merged_hist(n_max_splits);
     auto merged_hist_data = merged_hist.host_data();
     int n_max_nodes = n_max_splits / (n_columns * max_num_bins);
 
 
-    // Populate histogram based on cut points
-    // Assume it is distributed uniformly
-    // For each node
+    // Populate histogram based on generated cut points
     for (int node_offset = 0; node_offset < n_max_nodes; node_offset++) {
         // For each feature
         for (int fid = 0; fid < n_columns; fid++) {
-
             // Get global columns and values of feature
             auto cut_col_ptr_data = cut_col_ptr.host_data();
             auto cut_points_val_data = cut_points_val.host_data();
@@ -1154,9 +1181,11 @@ void HistTreeBuilder::merge_histograms_client_propose(SyncArray<GHPair> &hist, S
                 cut_points_range_data[p - column_start] = cut_points_val_data[p];
             }
 
+            // Get minimum value of feature
+            auto global_feature_min_value = *std::min_element(ranges[fid].begin(), ranges[fid].end());
+
             // For each party histogram
             for (int pid = 0; pid < parties_hist.size(); pid++) {
-
                 // Get corresponding column and value array
                 auto parties_hist_data = parties_hist[pid].host_data();
                 auto parties_cut_col_ptr_data = parties_cut[pid].cut_col_ptr.host_data();
@@ -1173,36 +1202,50 @@ void HistTreeBuilder::merge_histograms_client_propose(SyncArray<GHPair> &hist, S
                 // For each global range of current feature
                 for (int index = 0; index < cut_points_range.size(); index++) {
                         float_type upper_bound = cut_points_range_data[index];
-                        float_type lower_bound = cut_points_range_data[index + 1];
+                        float_type lower_bound;
+                        if (index == cut_points_range.size() - 1) {
+                            lower_bound = global_feature_min_value;
+                        }else {
+                            lower_bound = cut_points_range_data[index + 1];
+                        }
+
 
                         // for each range pair of current feature
                         for (int i = 0; i < party_cut_points_range.size(); i++) {
 
                                 float_type client_high = party_cut_points_range_data[i];
-                                float_type client_low = party_cut_points_range_data[i + 1];
+                                float_type client_low;
+                                if (i == party_cut_points_range.size() - 1) {
+                                     client_low = feature_range[fid][pid][0];
+                                }else {
+                                     client_low = party_cut_points_range_data[i + 1];
+                                }
 
                                 int node_offset_index = node_offset * (max_num_bins * n_columns);
-                                int feature_offset_index = fid * max_num_bins;
-                                int dest_index = node_offset_index + feature_offset_index + index;
-                                int src_index = node_offset_index + feature_offset_index + i;
+                                int dest_index = node_offset_index + column_start + index;
+                                int src_index = node_offset_index + party_column_start + i;
 
+                                // Case 1
                                 if (client_low >= lower_bound && upper_bound <= client_high) {
                                     GHPair &dest = merged_hist_data[dest_index];
                                     GHPair &src = parties_hist_data[src_index];
                                     dest.g += src.g;
                                     dest.h += src.h;
+                                // Case 3
                                 } else if (client_low < lower_bound && upper_bound <= client_high) {
                                     float_type factor = (client_high - lower_bound) / (client_high - client_low);
                                     GHPair &dest = merged_hist_data[dest_index];
                                     GHPair &src = parties_hist_data[src_index];
                                     dest.g += src.g * factor;
                                     dest.h += src.h * factor;
+                                // Case 2
                                 } else if (client_high > upper_bound && lower_bound <= client_low) {
                                     float_type factor = (upper_bound - client_low) / (client_high - client_low);
                                     GHPair &dest = merged_hist_data[dest_index];
                                     GHPair &src = parties_hist_data[src_index];
                                     dest.g += src.g * factor;
                                     dest.h += src.h * factor;
+                                // Case 4
                                 } else if (client_low < lower_bound && client_high > upper_bound) {
                                     float_type factor = (upper_bound - lower_bound) / (client_high - client_low);
                                     GHPair &dest = merged_hist_data[dest_index];

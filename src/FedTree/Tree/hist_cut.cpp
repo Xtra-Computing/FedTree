@@ -8,6 +8,10 @@
 #include "thrust/unique.h"
 #include "thrust/execution_policy.h"
 
+#include <algorithm>
+#include <random>
+
+
 
 void HistCut::get_cut_points_by_data_range(DataSet &dataset, int max_num_bins, int n_instances){
     int n_column = dataset.n_features();
@@ -186,6 +190,96 @@ void HistCut::get_cut_points_fast(DataSet &dataset, int max_num_bins, int n_inst
     LOG(DEBUG) << "--->>>> cut fid: " << cut_fid;
     LOG(DEBUG) << "TOTAL CP:" << cut_fid.size();
     LOG(DEBUG) << "NNZ: " << dataset.csc_val.size();
+}
+
+/**
+ * Generate cut points for each feature based on the generated cut points of all parties
+ * @param parties_cut
+ * @param max_num_bins
+ */
+void HistCut::get_cut_points_by_parties_cut_sampling(vector<HistCut> parties_cut) {
+
+    LOG(INFO) << "Start get cut points by parties";
+
+    // find feature range of each feature for each party
+    int n_columns = parties_cut[0].cut_col_ptr.size() - 1;
+    vector<vector<float>> ranges(n_columns);
+
+    // Merging all cut points into one single cut points
+    for (int n = 0; n < n_columns; n++) {
+        for (int p = 0; p < parties_cut.size(); p++) {
+            auto parties_cut_col_data = parties_cut[p].cut_col_ptr.host_data();
+            auto parties_cut_points_val_data = parties_cut[p].cut_points_val.host_data();
+
+            int column_start = parties_cut_col_data[n];
+            int column_end = parties_cut_col_data[n+1];
+
+            for (int i = column_start; i < column_end; i++) {
+                ranges[n].push_back(parties_cut_points_val_data[i]);
+            }
+        }
+    }
+
+    // Once we have gathered the sorted range, we can randomly sample the cut points to match with the number of bins
+    int n_features = ranges.size();
+    int max_num_bins = parties_cut[0].cut_points_val.size() / n_columns + 1;
+    cut_points_val.resize(n_features * max_num_bins);
+    cut_col_ptr.resize(n_features + 1);
+    cut_fid.resize(n_features * max_num_bins);
+    auto cut_points_val_data = cut_points_val.host_data();
+    auto cut_col_ptr_data = cut_col_ptr.host_data();
+    auto cut_fid_data = cut_fid.host_data();
+
+    int index = 0;
+
+    for (int fid = 0; fid < n_features; fid++) {
+        vector<float> sample;
+        cut_col_ptr_data[fid] = index;
+
+        // Always keep the maximum value
+        auto max_element = *std::max_element(ranges[fid].begin(), ranges[fid].end());
+        sample.push_back(max_element);
+
+        // Randomly sample number of cut point according to max num bins
+        unsigned seed = 0;
+        std::shuffle(ranges[fid].begin(), ranges[fid].end(), std::default_random_engine(seed));
+
+        struct compare
+        {
+            int key;
+            compare(int const &i): key(i) {}
+
+            bool operator()(int const &i) {
+                return (i == key);
+            }
+        };
+
+
+        for (int i = 0; i < ranges[fid].size(); i++) {
+
+            if (sample.size() == max_num_bins)
+                break;
+
+            auto element = ranges[fid][i];
+            // Check if element already in cut points val data
+            if (not (std::find(sample.begin(), sample.end(), element) != sample.end()))
+                sample.push_back(element);
+        }
+
+        // Sort the sample in descending order
+        std::sort(sample.begin(), sample.end(), std::greater<float>());
+
+        // Populate cut points val with samples
+        for (int i = 0; i < sample.size(); i++) {
+            cut_points_val_data[index] = sample[i];
+            cut_fid_data[index] = fid;
+            index++;
+        }
+    }
+    cut_col_ptr_data[n_features] = index;
+    LOG(INFO) << cut_col_ptr;
+    LOG(INFO) << cut_points_val;
+    LOG(INFO) << cut_fid;
 }
 
 /**
