@@ -13,15 +13,19 @@ and **secure**. It has the following features.
 - Stand-alone simulation and distributed learning.
 - Support of homomorphic encryption and differential privacy.
 - Federated training algorithms of gradient boosting decision trees and random forests.
+.. image:: ./images/fedtree_archi.png
+   :align: center
+   :target: ./images/fedtree_archi.png
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :caption: Contents:
 
       Installation <Installation>
       Quick Start <Quick-Start>
       Parameters <Parameters>
       Frameworks <Frameworks>
+      Experiments <Experiments>
 
 Indices and tables
 ==================

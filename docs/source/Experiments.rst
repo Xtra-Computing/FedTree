@@ -1,6 +1,5 @@
-Frameworks
-==========
-
+Experiments
+===========
 
 Horizontal Federated GBDTs
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -8,3 +7,4 @@ Horizontal Federated GBDTs
 
 Vertical Federated GBDTs
 ~~~~~~~~~~~~~~~~~~~~~~~~
+
