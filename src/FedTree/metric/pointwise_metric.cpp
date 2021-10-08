@@ -2,6 +2,8 @@
 // Created by liqinbin on 12/11/20.
 //
 
+#define THRUST_IGNORE_DEPRECATED_CPP_DIALECT
+
 #include "thrust/reduce.h"
 #include "thrust/execution_policy.h"
 #include "FedTree/util/device_lambda.h"

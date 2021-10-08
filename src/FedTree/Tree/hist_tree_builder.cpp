@@ -24,19 +24,6 @@ using namespace thrust;
 
 void HistTreeBuilder::init(DataSet &dataset, const GBDTParam &param) {
     TreeBuilder::init(dataset, param);
-    //TODO refactor
-    //init shards
-//    shards = vector<Shard>(n_device);
-//    vector<std::unique_ptr<SparseColumns>> v_columns(param.n_device);
-//    for (int i = 0; i < param.n_device; ++i) {
-//        v_columns[i].reset(&shards[i].columns);
-//        shards[i].ignored_set = SyncArray<bool>(dataset.n_features());
-//    }
-//    SparseColumns columns;
-//    if(dataset.use_cpu)
-//        columns.csr2csc_cpu(dataset, v_columns);
-//    else
-//        columns.csr2csc_gpu(dataset, v_columns);
     if (dataset.n_features_ > 0) {
         cut.get_cut_points_fast(sorted_dataset, param.max_num_bin, n_instances);
         last_hist.resize((2 << param.depth) * cut.cut_points_val.size());
@@ -46,25 +33,6 @@ void HistTreeBuilder::init(DataSet &dataset, const GBDTParam &param) {
 
 void HistTreeBuilder::init_nocutpoints(DataSet &dataset, const GBDTParam &param) {
     TreeBuilder::init_nosortdataset(dataset, param);
-//    if (dataset.n_features_ > 0) {
-//        cut.get_cut_points_fast(sorted_dataset, param.max_num_bin, n_instances);
-//        LOG(INFO) << "after get cut points";
-//        last_hist.resize((2 << param.depth) * cut.cut_points_val.size());
-////        get_bin_ids();
-//    }
-    //TODO refactor
-    //init shards
-//    shards = vector<Shard>(n_device);
-//    vector<std::unique_ptr<SparseColumns>> v_columns(param.n_device);
-//    for (int i = 0; i < param.n_device; ++i) {
-//        v_columns[i].reset(&shards[i].columns);
-//        shards[i].ignored_set = SyncArray<bool>(dataset.n_features());
-//    }
-//    SparseColumns columns;
-//    if(dataset.use_cpu)
-//        columns.csr2csc_cpu(dataset, v_columns);
-//    else
-//        columns.csr2csc_gpu(dataset, v_columns);
 }
 
 SyncArray<GHPair> HistTreeBuilder::get_gradients() {
@@ -78,33 +46,33 @@ void HistTreeBuilder::set_gradients(SyncArray<GHPair> &gh) {
 }
 
 
-Tree *HistTreeBuilder::build_tree_level_approximate(int level, int round) {
-    Tree tree;
-    TIMED_FUNC(timerObj);
-    //Todo: add column sampling
-
-    this->ins2node_id.resize(n_instances);
-    this->gradients.set_host_data(const_cast<GHPair *>(gradients.host_data() + round * n_instances));
-    this->trees.init_CPU(this->gradients, param);
-    find_split(level);
-//        split_point_all_reduce(level);
-    {
-        TIMED_SCOPE(timerObj, "apply sp");
-        update_tree();
-        update_ins2node_id();
-        {
-            LOG(TRACE) << "gathering ins2node id";
-            //get final result of the reset instance id to node id
-            if (!has_split) {
-                LOG(INFO) << "no splittable nodes, stop";
-                return nullptr;
-            }
-        }
-//                ins2node_id_all_reduce(level);
-    }
-
-    return &tree;
-}
+//Tree *HistTreeBuilder::build_tree_level_approximate(int level, int round) {
+//    Tree tree;
+//    TIMED_FUNC(timerObj);
+//    //Todo: add column sampling
+//
+//    this->ins2node_id.resize(n_instances);
+//    this->gradients.set_host_data(const_cast<GHPair *>(gradients.host_data() + round * n_instances));
+//    this->trees.init_CPU(this->gradients, param);
+//    find_split(level);
+////        split_point_all_reduce(level);
+//    {
+//        TIMED_SCOPE(timerObj, "apply sp");
+//        update_tree();
+//        update_ins2node_id();
+//        {
+//            LOG(TRACE) << "gathering ins2node id";
+//            //get final result of the reset instance id to node id
+//            if (!has_split) {
+//                LOG(INFO) << "no splittable nodes, stop";
+//                return nullptr;
+//            }
+//        }
+////                ins2node_id_all_reduce(level);
+//    }
+//
+//    return &tree;
+//}
 
 void HistTreeBuilder::get_bin_ids() {
 //    SparseColumns &columns = shards[device_id].columns;
@@ -621,14 +589,16 @@ void HistTreeBuilder::compute_histogram_in_a_level(int level, int n_max_splits, 
                     int feature_offset = cut_col_ptr_data[fid];
                     const GHPair src = gh_data[iid];
                     GHPair &dest = hist_data[feature_offset + bid];
-                    if (src.h != 0) {
-//                        #pragma omp atomic
-                        dest.h += src.h;
-                    }
-                    if (src.g != 0) {
-//                        #pragma omp atomic
-                        dest.g += src.g;
-                    }
+                    dest = dest + src;
+//                    g and h values are 0 if after HE encryption
+//                    if (src.h != 0) {
+////                        #pragma omp atomic
+//                        dest.h += src.h;
+//                    }
+//                    if (src.g != 0) {
+////                        #pragma omp atomic
+//                        dest.g += src.g;
+//                    }
 
                 }
             }
@@ -888,7 +858,7 @@ void HistTreeBuilder::get_split_points_in_a_node(int node_id, int best_idx, floa
     auto missing_gh_data = missing_gh.host_data();
     auto cut_val_data = cut.cut_points_val.host_data();
 
-    sp.resize(n_nodes_in_level);
+//    sp.resize(n_nodes_in_level);
     auto sp_data = sp.host_data();
     auto nodes_data = trees.nodes.host_data();
 
@@ -897,7 +867,6 @@ void HistTreeBuilder::get_split_points_in_a_node(int node_id, int best_idx, floa
     if (!nodes_data[node_id].is_valid) {
         sp_data[node_id].split_fea_id = -1;
         sp_data[node_id].nid = -1;
-        // todo: check, ThunderGBM uses return;
         return;
     }
     int fid = hist_fid[best_idx];
@@ -1052,6 +1021,9 @@ void HistTreeBuilder::merge_histograms_server_propose(SyncArray<GHPair> &merged_
 
     for (int i = 0; i < parties_hist.size(); i++) {
         auto hist_data = parties_hist[i].host_data();
+        int n_bins = parties_hist[i].size();
+        //thrust::transform(merged_hist_data, merged_hist_data + n_bins,
+        //                  hist_data, merged_hist_data, thrust::plus<GHPair>());
 #pragma omp parallel for
         for (int j = 0; j < n_bins; j++) {
             GHPair &src = hist_data[j];
@@ -1059,9 +1031,11 @@ void HistTreeBuilder::merge_histograms_server_propose(SyncArray<GHPair> &merged_
             hist_dest = hist_dest + src;
         }
     }
-#pragma omp parallel for
+
     for (int i = 0; i < parties_missing_gh.size(); i++) {
         auto missing_gh_data =  parties_missing_gh[i].host_data();
+        //thrust::transform(merged_missing_gh_data, merged_missing_gh_data + n_size,
+        //        missing_gh_data, merged_missing_gh_data, thrust::plus<GHPair>());
 #pragma omp parallel for
         for (int j = 0; j < n_size; j++) {
             GHPair &missing_gh = missing_gh_data[j];

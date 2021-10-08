@@ -7,6 +7,8 @@
 
 #include "tree_builder.h"
 #include "hist_cut.h"
+#include <thrust/copy.h>
+#include <thrust/execution_policy.h>
 
 class HistTreeBuilder : public TreeBuilder {
 public:
@@ -19,8 +21,6 @@ public:
     void init_nocutpoints(DataSet &dataset, const GBDTParam &param);
 
     void get_bin_ids();
-
-    Tree* build_tree_level_approximate(int level, int round) override;
 
     void find_split(int level) override;
 
@@ -91,6 +91,7 @@ public:
 
     void append_hist(SyncArray<GHPair> &hist, SyncArray<GHPair> &missing_gh,int n_partition, int n_max_splits, int party_idx) override{
         parties_missing_gh[party_idx].resize(n_partition);
+        //thrust::copy(thrust::host, missing_gh.host_data(), missing_gh.host_end(), parties_missing_gh[party_idx].host_data());
         parties_missing_gh[party_idx].copy_from(missing_gh);
         parties_hist[party_idx].resize(n_max_splits);
         parties_hist[party_idx].copy_from(hist);

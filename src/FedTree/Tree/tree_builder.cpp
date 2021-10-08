@@ -316,7 +316,6 @@ void TreeBuilder::update_tree_in_a_node(int node_id) {
     float_type best_split_gain = sp_data[node_id].gain;
     if (best_split_gain > rt_eps) {
         //do split
-        //todo: check, thundergbm uses return
         if (sp_data[node_id].nid == -1) return;
         int nid = sp_data[node_id].nid;
         Tree::TreeNode &node = nodes_data[nid];

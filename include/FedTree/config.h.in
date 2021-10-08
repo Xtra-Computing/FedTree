@@ -1,2 +1,3 @@
 #cmakedefine DATASET_DIR "@DATASET_DIR@"
 #cmakedefine USE_CUDA
+#cmakedefine THRUST_IGNORE_DEPRECATED_CPP_DIALECT

@@ -8,45 +8,45 @@
 #include "FedTree/objective/objective_function.h"
 
 // Loading from sparse data copied from ThunderGBM
-void DataSet::load_from_sparse(int n_instances, float *csr_val, int *csr_row_ptr, int *csr_col_idx, float *y,
-                               int *group, int num_group, FLParam &param) {
-    n_features_ = 0;
-    this->y.clear();
-    this->label.clear();
-    this->csr_val.clear();
-    this->csr_row_ptr.clear();
-    this->csr_col_idx.clear();
-    int nnz = csr_row_ptr[n_instances];
-    this->y.resize(n_instances);
-    //this->label.resize(n_instances);
-    this->csr_val.resize(nnz);
-    this->csr_row_ptr.resize(n_instances + 1);
-    this->csr_col_idx.resize(nnz);
-
-    CHECK_EQ(sizeof(float_type), sizeof(float));
-
-    if(y != NULL)
-        memcpy(this->y.data(), y, sizeof(float) * n_instances);
-    memcpy(this->csr_val.data(), csr_val, sizeof(float) * nnz);
-    memcpy(this->csr_col_idx.data(), csr_col_idx, sizeof(int) * nnz);
-    memcpy(this->csr_row_ptr.data(), csr_row_ptr, sizeof(int) * (n_instances + 1));
-    for (int i = 0; i < nnz; ++i) {
-        if (csr_col_idx[i] > n_features_) n_features_ = csr_col_idx[i];
-    }
-    n_features_++;//convert from zero-based
-    LOG(INFO) << "#instances = " << this->n_instances() << ", #features = " << this->n_features();
-
-    if (y != NULL && ObjectiveFunction::need_group_label(param.objective)){
-        group_label();
-        param.num_class = label.size();
-    }
-
-    if (ObjectiveFunction::need_load_group_file(param.objective)) {
-        for(int i = 0; i < num_group; i++)
-            this->group.emplace_back(group[i]);
-        LOG(INFO) << "#groups = " << this->group.size();
-    }
-}
+//void DataSet::load_from_sparse(int n_instances, float *csr_val, int *csr_row_ptr, int *csr_col_idx, float *y,
+//                               int *group, int num_group, FLParam &param) {
+//    n_features_ = 0;
+//    this->y.clear();
+//    this->label.clear();
+//    this->csr_val.clear();
+//    this->csr_row_ptr.clear();
+//    this->csr_col_idx.clear();
+//    int nnz = csr_row_ptr[n_instances];
+//    this->y.resize(n_instances);
+//    //this->label.resize(n_instances);
+//    this->csr_val.resize(nnz);
+//    this->csr_row_ptr.resize(n_instances + 1);
+//    this->csr_col_idx.resize(nnz);
+//
+//    CHECK_EQ(sizeof(float_type), sizeof(float));
+//
+//    if(y != NULL)
+//        memcpy(this->y.data(), y, sizeof(float) * n_instances);
+//    memcpy(this->csr_val.data(), csr_val, sizeof(float) * nnz);
+//    memcpy(this->csr_col_idx.data(), csr_col_idx, sizeof(int) * nnz);
+//    memcpy(this->csr_row_ptr.data(), csr_row_ptr, sizeof(int) * (n_instances + 1));
+//    for (int i = 0; i < nnz; ++i) {
+//        if (csr_col_idx[i] > n_features_) n_features_ = csr_col_idx[i];
+//    }
+//    n_features_++;//convert from zero-based
+//    LOG(INFO) << "#instances = " << this->n_instances() << ", #features = " << this->n_features();
+//
+//    if (y != NULL && ObjectiveFunction::need_group_label(param.objective)){
+//        group_label();
+//        param.num_class = label.size();
+//    }
+//
+//    if (ObjectiveFunction::need_load_group_file(param.objective)) {
+//        for(int i = 0; i < num_group; i++)
+//            this->group.emplace_back(group[i]);
+//        LOG(INFO) << "#groups = " << this->group.size();
+//    }
+//}
 
 void DataSet::load_group_file(string file_name) {
     LOG(INFO) << "loading group info from file \"" << file_name << "\"";
@@ -316,7 +316,7 @@ void DataSet::load_from_file(string file_name, FLParam &param) {
         }
         for (int i = 0; i < nthread; i++) {
             this->y.insert(y.end(), y_[i].begin(), y_[i].end());
-            this->label.insert(label.end(), y_[i].begin(), y_[i].end());
+//            this->label.insert(label.end(), y_[i].begin(), y_[i].end());
         }
     } // end while
 
@@ -326,6 +326,7 @@ void DataSet::load_from_file(string file_name, FLParam &param) {
     if (ObjectiveFunction::need_load_group_file(param.gbdt_param.objective)) load_group_file(file_name + ".group");
     if (ObjectiveFunction::need_group_label(param.gbdt_param.objective) || param.gbdt_param.metric == "error") {
         group_label();
+        is_classification = true;
         param.gbdt_param.num_class = label.size();
     }
 

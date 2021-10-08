@@ -14,7 +14,7 @@
 #include "FedTree/Tree/gbdt.h"
 #include <algorithm>
 
-// Todo: the party structure
+
 class Party {
 public:
     void init(int pid, DataSet &dataset, FLParam &param, SyncArray<bool> &feature_map) {
@@ -104,6 +104,7 @@ public:
             feature_range[1] = *minmax.second;
             feature_range[0] = *minmax.first;
         }else{
+            // Does not have any value for this feature
             feature_range[0] = inf;
             feature_range[1] = -inf;
         }
