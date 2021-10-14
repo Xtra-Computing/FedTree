@@ -156,5 +156,4 @@ extern "C" {
             group_label[i] = training_set.label[i];
         }
     }
-
 }

@@ -15,3 +15,7 @@ dataset/breast-cancer_scale
 dataset/diabetes_scale
 
 dataset/mnist.scale
+
+python/FedTree/libFedTree.dylib
+python/FedTree/libFedTree.so
+python/FedTree/libFedTree.dll
