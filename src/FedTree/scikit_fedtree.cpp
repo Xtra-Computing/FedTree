@@ -6,6 +6,8 @@
 #include "FedTree/FL/FLparam.h"
 #include "FedTree/Tree/GBDTparam.h"
 #include "FedTree/FL/partition.h"
+#include "FedTree/predictor.h"
+
 
 
 
@@ -143,7 +145,7 @@ extern "C" {
         }
 
         // Return boosted model
-        vector<vector<Tree> > boosted_model = server.global_trees.trees;
+        vector<vector<Tree>> boosted_model = server.global_trees.trees;
         *tree_per_iter = (int)(boosted_model[0].size());
         model = new Tree[n_trees * (*tree_per_iter)];
         for(int i = 0; i < n_trees; i++)
@@ -155,5 +157,44 @@ extern "C" {
         for (int i = 0; i < training_set.label.size(); ++i) {
             group_label[i] = training_set.label[i];
         }
+    }
+
+void predict(int row_size, float *val, int *row_ptr, int *col_ptr, float *y_pred, Tree *&model,
+                           int n_trees, int trees_per_iter, char *objective, int num_class, float learning_rate, float *group_label,
+                           int *group, int num_group=0, int verbose=1) {
+        //load model
+        GBDTParam model_param;
+        model_param.objective = objective;
+        model_param.learning_rate = learning_rate;
+        model_param.num_class = num_class;
+        DataSet test_dataset;
+        test_dataset.load_from_sparse(row_size, val, row_ptr, col_ptr, NULL, group, num_group, model_param);
+        set_logger(verbose);
+        test_dataset.label.clear();
+        for (int i = 0; i < num_class; ++i) {
+            test_dataset.label.emplace_back(group_label[i]);
+        }
+        // predict
+        SyncArray<float_type> y_predict;
+        vector<vector<Tree>> boosted_model_in_mem;
+        for(int i = 0; i < n_trees; i++){
+            boosted_model_in_mem.push_back(vector<Tree>());
+            CHECK_NE(model, NULL) << "model is null!";
+            for(int j = 0; j < trees_per_iter; j++) {
+                boosted_model_in_mem[i].push_back(model[i * trees_per_iter + j]);
+            }
+        }
+        GBDT gbdt_tree(boosted_model_in_mem);
+        gbdt_tree.predict_raw(model_param, test_dataset, y_predict);
+        //convert the aggregated values to labels, probabilities or ranking scores.
+        std::unique_ptr<ObjectiveFunction> obj;
+        obj.reset(ObjectiveFunction::create(model_param.objective));
+        obj->configure(model_param, test_dataset);
+        obj->predict_transform(y_predict);
+        vector<float_type> y_pred_vec(y_predict.size());
+        memcpy(y_pred_vec.data(), y_predict.host_data(), sizeof(float_type) * y_predict.size());
+        for(int i = 0; i < y_pred_vec.size(); i++) {
+            y_pred[i] = y_pred_vec[i];
+        }//float_type may be double/float, so convert to float for both cases.
     }
 }
