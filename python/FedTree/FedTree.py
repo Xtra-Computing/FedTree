@@ -118,15 +118,6 @@ class FLModel(FedTreeBase):
         n_class[0] = self.num_class
         tree_per_iter_ptr = (c_int * 1)()
         self.model = (c_long * 1)()
-        FedTree.sparse_train_scikit(X.shape[0], data, indptr, indices, label, self.depth, self.n_trees,
-                                       self.n_gpus, c_float(self.min_child_weight), c_float(self.lambda_tgbm),
-                                       c_float(self.gamma),
-                                       self.max_num_bin, self.verbose, c_float(self.column_sampling_rate), self.bagging,
-                                       self.n_parallel_trees, c_float(self.learning_rate),
-                                       self.objective.encode('utf-8'),
-                                       n_class, self.tree_method.encode('utf-8'), byref(self.model), tree_per_iter_ptr,
-                                       group_label,
-                                       in_groups, num_groups)
         FedTree.fit(self.n_parties, self.partition, self.alpha, self.n_hori, self.n_verti, self.mode.encode('utf-8'),
                     self.partition_mode.encode('utf-8'), self.privacy_tech.encode('utf-8'), self.propose_split.encode('utf-8'), self.merge_histogram.encode('utf-8'), c_float(self.variance), c_float(self.privacy_budget),
                     self.depth, self.n_trees, c_float(self.min_child_weight), c_float(self.lambda_ft), c_float(self.gamma), c_float(self.column_sampling_rate),
