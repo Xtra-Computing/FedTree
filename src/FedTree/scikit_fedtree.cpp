@@ -27,7 +27,7 @@ extern "C" {
 
     void fit (int n_parties, int partition, float alpha, int n_hori, int n_verti, char *mode, char *partition_mode, char *privacy_tech, char *propose_split, char *merge_histogram, float variance, float privacy_budget,
               int depth, int n_trees, float min_child_weight, float lambda, float gamma, float column_sampling_rate, int verbose, int bagging, int n_parallel_trees, float learning_rate,
-              char *objective, int num_class, int n_device, int max_num_bin, char *metric,
+              char *objective, int num_class, int n_device, int max_num_bin,
               // DataSet info
               int row_size, float *val, int *row_ptr, int *col_ptr, float *label,
               // Tree info
@@ -38,7 +38,7 @@ extern "C" {
         // Initialize model params
         FLParam fl_param;
         fl_param.n_parties = n_parties;
-        fl_param.partition = partition;
+        fl_param.partition = partition == 1? true : false;
         fl_param.alpha = alpha;
         fl_param.n_hori = n_hori;
         fl_param.n_verti = n_verti;
@@ -58,7 +58,7 @@ extern "C" {
         gbdt_param.gamma = gamma;
         gbdt_param.column_sampling_rate = column_sampling_rate;
         gbdt_param.verbose = verbose;
-        gbdt_param.bagging = bagging;
+        gbdt_param.bagging = bagging == 1? true : false;
         gbdt_param.n_parallel_trees = n_parallel_trees;
         gbdt_param.learning_rate = learning_rate;
         gbdt_param.objective = objective;
@@ -67,7 +67,6 @@ extern "C" {
         gbdt_param.n_device = n_device;
         gbdt_param.tree_per_rounds = 1;
         gbdt_param.max_num_bin = max_num_bin;
-        gbdt_param.metric = metric;
         gbdt_param.rt_eps = 1e-6;
         fl_param.gbdt_param = gbdt_param;
 
