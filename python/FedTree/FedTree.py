@@ -85,7 +85,7 @@ class FLModel(FedTreeBase):
     def fit(self, X, y, groups=None):
         if self.model is not None:
             self.model = None
-        sparse = sp.ismatrix(X)
+        sparse = sp.issparse(X)
         if sparse is False:
             X = sp.csr_matrix(X)
         X, y = check_X_y(X, y, dtype=np.float64, order='C', accept_sparse='csr')
