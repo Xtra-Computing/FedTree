@@ -81,6 +81,7 @@ class FLModel(FedTreeBase):
         self.model = None
         self.tree_per_iter = -1
         self.group_label = None
+        self.bagging = False
 
     def fit(self, X, y, groups=None):
         if self.model is not None:
@@ -239,7 +240,7 @@ def cv(self, X, y, folds=None, nfold=5, shuffle=True, seed=0):
 class FLClassifier(FLModel, FedTreeClassifierBase):
     _impl = 'classifier'
 
-    def __init__(self, n_parties=2, partition="true", alpha=100, n_hori=2, n_verti=2, mode="horizontal",
+    def __init__(self, n_parties=2, partition=True, alpha=100, n_hori=2, n_verti=2, mode="horizontal",
                  partition_mode="horizontal", privacy_tech="none", propose_split="server", merge_histogram="server",
                  variance=200, privacy_budget=10, depth=6, n_trees=40, min_child_weight=1, lambda_ft=1,
                  gamma=1, column_sampling_rate=1, verbose=1, n_parallel_trees=1, learning_rate=1, objective="reg:linear",
@@ -248,7 +249,7 @@ class FLClassifier(FLModel, FedTreeClassifierBase):
 
 class FLRegressor(FLModel, FedTreeRegressorBase):
     _impl = 'regressor'
-    def __init__(self, n_parties=2, partition="true", alpha=100, n_hori=2, n_verti=2, mode="horizontal",
+    def __init__(self, n_parties=2, partition=True, alpha=100, n_hori=2, n_verti=2, mode="horizontal",
                  partition_mode="", privacy_tech="none", propose_split="server", merge_histogram="server",
                  variance=200, privacy_budget=10, depth=6, n_trees=40, min_child_weight=1, lambda_ft=1,
                  gamma=1, column_sampling_rate=1, verbose=1, n_parallel_trees=1, learning_rate=1, objective="reg:linear",
