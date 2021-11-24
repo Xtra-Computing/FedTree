@@ -119,7 +119,7 @@ class FLModel(FedTreeBase):
         n_class[0] = self.num_class
         tree_per_iter_ptr = (c_int * 1)()
         self.model = (c_long * 1)()
-        FedTree.fit(self.n_parties, self.partition, self.alpha, self.n_hori, self.n_verti, self.mode.encode('utf-8'),
+        FedTree.fit(self.n_parties, self.partition, c_float(self.alpha), self.n_hori, self.n_verti, self.mode.encode('utf-8'),
                     self.partition_mode.encode('utf-8'), self.privacy_tech.encode('utf-8'), self.propose_split.encode('utf-8'), self.merge_histogram.encode('utf-8'), c_float(self.variance), c_float(self.privacy_budget),
                     self.depth, self.n_trees, c_float(self.min_child_weight), c_float(self.lambda_ft), c_float(self.gamma), c_float(self.column_sampling_rate),
                     self.verbose, self.bagging, self.n_parallel_trees, c_float(self.learning_rate),
