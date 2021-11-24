@@ -34,6 +34,7 @@ extern "C" {
               char *tree_method, Tree *&model, int *tree_per_iter, float *group_label,
               int *group, int num_group=0
               ) {
+        LOG(INFO) << "Start training";
 
         // Initialize model params
         FLParam fl_param;
@@ -73,10 +74,12 @@ extern "C" {
         set_logger(verbose);
         el::Loggers::reconfigureAllLoggers(el::ConfigurationType::PerformanceTracking, "false");
 
+        LOG(INFO) << "Load Sparse Data to Training Set"
         DataSet training_set;
         training_set.load_from_sparse(row_size, val, row_ptr, col_ptr, label, group, num_group, gbdt_param);
         num_class = gbdt_param.num_class;
 
+        LOG(INFO) << "Partition the Data"
         // Partition the dataset
         n_parties = fl_param.n_parties;
         vector<DataSet> subsets(n_parties);
@@ -106,6 +109,7 @@ extern "C" {
         }
         fl_param.gbdt_param.tree_per_rounds = fl_param.gbdt_param.num_class;
 
+        LOG(INFO) << "Initialize parties";
         // Initialize parties
         vector<Party> parties(n_parties);
         vector<int> n_instances_per_party(n_parties);
@@ -126,6 +130,7 @@ extern "C" {
             server.init(fl_param, training_set.n_instances(), n_instances_per_party);
         }
 
+        LOG(INFO) << "Run the trainer"
         // Run different training methods based on mode
         FLtrainer trainer;
         if(fl_param.mode == "hybrid") {
