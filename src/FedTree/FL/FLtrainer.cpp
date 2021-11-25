@@ -44,7 +44,7 @@ void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FL
     // Generate HistCut by server or each party
     int n_bins = model_param.max_num_bin;
 
-    LOG(INFO) << "Generate feature range"
+    LOG(INFO) << "Generate feature range";
     // loop through all party to find max and min for each feature
     float inf = std::numeric_limits<float>::infinity();
     vector<vector<float>> feature_range(parties[0].get_num_feature());
