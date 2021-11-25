@@ -96,7 +96,7 @@ extern "C" {
         LOG(INFO) << "max_num_bin:" << max_num_bin;
         gbdt_param.max_num_bin = max_num_bin;
         gbdt_param.rt_eps = 1e-6;
-        gdbt_param.metric = "default";
+        gbdt_param.metric = "default";
         fl_param.gbdt_param = gbdt_param;
 
         set_logger(verbose);
