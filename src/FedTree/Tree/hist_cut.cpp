@@ -288,7 +288,6 @@ void HistCut::get_cut_points_by_parties_cut_sampling(vector<HistCut> parties_cut
  */
 void HistCut::get_cut_points_by_feature_range(vector<vector<float>> f_range, int max_num_bins) {
     int n_features = f_range.size();
-    LOG(INFO) << n_features;
     cut_points_val.resize(n_features * max_num_bins);
     cut_col_ptr.resize(n_features + 1);
     cut_fid.resize(n_features * max_num_bins);
