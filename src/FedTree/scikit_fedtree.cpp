@@ -140,7 +140,6 @@ extern "C" {
         // Initialize parties
         vector<Party> parties(n_parties);
         vector<int> n_instances_per_party(n_parties);
-        LOG(INFO)<<"initialize parties";
         for(int i = 0; i < n_parties; i++){
             parties[i].init(i, subsets[i], fl_param, feature_map[i]);
             n_instances_per_party[i] = subsets[i].n_instances();

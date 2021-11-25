@@ -243,7 +243,7 @@ class FLClassifier(FLModel, FedTreeClassifierBase):
     def __init__(self, n_parties=2, partition=1, alpha=100, n_hori=2, n_verti=2, mode="horizontal",
                  partition_mode="horizontal", privacy_tech="none", propose_split="server", merge_histogram="server",
                  variance=200, privacy_budget=10, depth=6, n_trees=40, min_child_weight=1, lambda_ft=1,
-                 gamma=1, column_sampling_rate=1, verbose=1, n_parallel_trees=1, learning_rate=1, objective="reg:linear",
+                 gamma=1, column_sampling_rate=1, verbose=1, n_parallel_trees=1, learning_rate=1, objective="multi:softmax",
                  num_class=1, n_device=1, max_num_bin=255, tree_method="auto"):
         super().__init__(n_parties=n_parties, partition=partition, alpha=alpha, n_hori=n_hori, n_verti=n_verti, mode=mode, partition_mode=partition_mode, privacy_tech=privacy_tech, propose_split=propose_split, merge_histogram=merge_histogram, variance=variance, privacy_budget=privacy_budget, depth=depth, n_trees=n_trees, min_child_weight=min_child_weight, lambda_ft=lambda_ft, gamma=gamma, column_sampling_rate=column_sampling_rate, verbose=verbose, n_parallel_trees=n_parallel_trees, learning_rate=learning_rate, objective=objective, num_class=num_class, n_device=n_device, max_num_bin=max_num_bin, tree_method=tree_method)
 
