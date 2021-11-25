@@ -104,12 +104,6 @@ extern "C" {
             partitioning.homo_partition(training_set, n_parties, true, subsets, batch_idxs);
         }
         // Update tree per rounds to match with number of class
-        num_class = training_set.label.size();
-        LOG(INFO) << "LABEL: " << training_set.label;
-        if (fl_param.gbdt_param.num_class != num_class) {
-            LOG(INFO) << "updating number of classes from " << fl_param.gbdt_param.num_class << " to " << num_class;
-            fl_param.gbdt_param.num_class = num_class;
-        }
         fl_param.gbdt_param.tree_per_rounds = fl_param.gbdt_param.num_class;
 
         LOG(INFO) << "Initialize parties";
