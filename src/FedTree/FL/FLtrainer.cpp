@@ -14,6 +14,7 @@
 using namespace thrust;
 
 void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FLParam &params) {
+    LOG(INFO) << "Start horizontal training";
     std::chrono::high_resolution_clock timer;
     auto t_start = timer.now();
     auto start = t_start;
@@ -43,6 +44,7 @@ void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FL
     // Generate HistCut by server or each party
     int n_bins = model_param.max_num_bin;
 
+    LOG(INFO) << "Generate feature range"
     // loop through all party to find max and min for each feature
     float inf = std::numeric_limits<float>::infinity();
     vector<vector<float>> feature_range(parties[0].get_num_feature());
@@ -65,10 +67,11 @@ void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FL
 
     // once we have feature_range, we can generate cut points
     if (params.propose_split == "server") {
+        LOG(INFO) << "Get cut points by feature range";
         server.booster.fbuilder->cut.get_cut_points_by_feature_range(feature_range, n_bins);
 //        server.booster.fbuilder->get_bin_ids();
 
-
+        LOG(INFO) << "Set cut of each parties";
         for (int p = 0; p < n_parties; p++) {
             parties[p].booster.fbuilder->set_cut(server.booster.fbuilder->cut);
             parties[p].booster.fbuilder->get_bin_ids();
