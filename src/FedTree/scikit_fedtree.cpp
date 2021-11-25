@@ -101,6 +101,7 @@ extern "C" {
             training_set.csr_to_csc();
             partitioning.homo_partition(training_set, n_parties, false, subsets, batch_idxs);
         }else if (fl_param.partition_mode == "horizontal") {
+            training_set.csr_to_csc();
             partitioning.homo_partition(training_set, n_parties, true, subsets, batch_idxs);
         }
         // Update tree per rounds to match with number of class
