@@ -114,6 +114,7 @@ extern "C" {
             parties[i].init(i, subsets[i], fl_param, feature_map[i]);
             n_instances_per_party[i] = subsets[i].n_instances();
         }
+        LOG(INFO) << n_instances_per_party;
 
         // Initialize server
         LOG(INFO) << "initialize server";
