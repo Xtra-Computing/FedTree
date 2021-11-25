@@ -8,17 +8,11 @@
 #include "FedTree/objective/ranking_obj.h"
 
 ObjectiveFunction *ObjectiveFunction::create(string name) {
-    if (name == "reg:linear") {
-        LOG(INFO) << "LINEAR FUNCTION";
-        return new RegressionObj<SquareLoss>;
-    }
+    if (name == "reg:linear") return new RegressionObj<SquareLoss>;
     if (name == "reg:logistic") return new RegressionObj<LogisticLoss>;
     if (name == "binary:logistic") return new LogClsObj<LogisticLoss>;
     if (name == "multi:softprob") return new SoftmaxProb;
-    if (name == "multi:softmax") {
-        LOG(INFO) << "SOFTMAX FUNCTION";
-        return new Softmax;
-    }
+    if (name == "multi:softmax") return new Softmax;
     if (name == "rank:pairwise") return new LambdaRank;
     if (name == "rank:ndcg") return new LambdaRankNDCG;
     LOG(FATAL) << "undefined objective " << name;
