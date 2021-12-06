@@ -97,12 +97,13 @@ extern "C" {
                 partitioning.horizontal_vertical_dir_partition(training_set, n_parties, fl_param.alpha, feature_map, subsets,
                                                             fl_param.n_hori, fl_param.n_verti);
             }
-        }else if (fl_param.partition_mode == "vertical") {
-            training_set.csr_to_csc();
-            partitioning.homo_partition(training_set, n_parties, false, subsets, batch_idxs);
-        }else if (fl_param.partition_mode == "horizontal") {
-            training_set.csr_to_csc();
-            partitioning.homo_partition(training_set, n_parties, true, subsets, batch_idxs);
+            else if (fl_param.partition_mode == "vertical") {
+                training_set.csr_to_csc();
+                partitioning.homo_partition(training_set, n_parties, false, subsets, batch_idxs);
+            }else if (fl_param.partition_mode == "horizontal") {
+                training_set.csr_to_csc();
+                partitioning.homo_partition(training_set, n_parties, true, subsets, batch_idxs);
+            }
         }
         // Update tree per rounds to match with number of class
         fl_param.gbdt_param.tree_per_rounds = fl_param.gbdt_param.num_class;
