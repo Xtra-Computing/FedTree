@@ -71,7 +71,7 @@ extern "C" {
         gbdt_param.max_num_bin = max_num_bin;
         gbdt_param.rt_eps = 1e-6;
         gbdt_param.metric = "default";
-        fl_param.gbdt_param = gbdt_param;
+
 
         set_logger(verbose);
         el::Loggers::reconfigureAllLoggers(el::ConfigurationType::PerformanceTracking, "false");
@@ -80,6 +80,7 @@ extern "C" {
         DataSet training_set;
         training_set.load_from_sparse(row_size, val, row_ptr, col_ptr, label, group, num_group, gbdt_param);
         num_class = gbdt_param.num_class;
+        fl_param.gbdt_param = gbdt_param;
 
         LOG(INFO) << "Partition the Data";
         // Partition the dataset

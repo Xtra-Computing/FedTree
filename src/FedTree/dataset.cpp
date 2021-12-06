@@ -35,7 +35,6 @@ void DataSet::load_from_sparse(int n_instances, float *csr_val, int *csr_row_ptr
     }
     n_features_++;//convert from zero-based
     LOG(INFO) << "#instances = " << this->n_instances() << ", #features = " << this->n_features();
-
     if (y != NULL && ObjectiveFunction::need_group_label(param.objective)){
         group_label();
         param.num_class = label.size();
@@ -46,6 +45,12 @@ void DataSet::load_from_sparse(int n_instances, float *csr_val, int *csr_row_ptr
             this->group.emplace_back(group[i]);
         LOG(INFO) << "#groups = " << this->group.size();
     }
+
+    if (ObjectiveFunction::need_group_label(param.objective) || param.metric == "error") {
+        is_classification = true;
+    }
+
+
 }
 
 void DataSet::load_group_file(string file_name) {
