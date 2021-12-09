@@ -152,8 +152,7 @@ extern "C" {
         vector<vector<Tree>> boosted_model = server.global_trees.trees;
         *tree_per_iter = (int)(boosted_model[0].size());
         model = new Tree[n_trees * (*tree_per_iter)];
-        for(int i = 0; i < n_trees; i++)
-        {
+        for(int i = 0; i < n_trees; i++) {
             for(int j = 0; j < *tree_per_iter; j++){
                 model[i * (*tree_per_iter) + j] = boosted_model[i][j];
             }

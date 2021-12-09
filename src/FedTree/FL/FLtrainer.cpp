@@ -199,10 +199,12 @@ void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FL
 
     for (int i = 0; i < params.gbdt_param.n_trees; i++) {
         LOG(DEBUG) << "ROUND " << i;
-        vector<vector<Tree>> parties_trees(n_parties);
-        for (int p = 0; p < n_parties; p++) {
-            parties_trees[p].resize(params.gbdt_param.tree_per_rounds);
-        }
+//        vector<vector<Tree>> parties_trees(n_parties);
+//        for (int p = 0; p < n_parties; p++) {
+//            parties_trees[p].resize(params.gbdt_param.tree_per_rounds);
+//        }
+        vector<Tree> trees_this_round;
+        trees_this_round.resize(params.gbdt_param.tree_per_rounds);
 //        vector<Tree> trees(params.gbdt_param.tree_per_rounds);
 
         GHPair sum_gh;
@@ -334,10 +336,12 @@ void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FL
                 server.booster.fbuilder->update_tree();
 
 
+                trees_this_round[k] = server.booster.fbuilder->get_tree();
                 #pragma omp parallel for
                 for (int j = 0; j < n_parties; j++) {
-                    parties_trees[j][k] = server.booster.fbuilder->get_tree();
-                    parties[j].booster.fbuilder->set_tree(parties_trees[j][k]);
+//                    parties_trees[j][k] = server.booster.fbuilder->get_tree();
+//                    parties[j].booster.fbuilder->set_tree(parties_trees[j][k]);
+                    parties[j].booster.fbuilder->set_tree(trees_this_round[k]);
                     parties[j].booster.fbuilder->update_ins2node_id();
                }
 
@@ -360,9 +364,10 @@ void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FL
 
             // After training each tree, update vector of tree
             server.booster.fbuilder->trees.prune_self(model_param.gamma);
+
+            Tree &tree = trees_this_round[k];
 #pragma omp parallel for
             for (int p = 0; p < n_parties; p++) {
-                Tree &tree = parties_trees[p][k];
                 parties[p].booster.fbuilder->trees.prune_self(model_param.gamma);
                 parties[p].booster.fbuilder->predict_in_training(k);
                 tree.nodes.resize(parties[p].booster.fbuilder->trees.nodes.size());
@@ -376,8 +381,10 @@ void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FL
         }
 #pragma omp parallel for
         for (int p = 0; p < n_parties; p++) {
-            parties[p].gbdt.trees.push_back(parties_trees[p]);
+//            parties[p].gbdt.trees.push_back(parties_trees[p]);
+            parties[p].gbdt.trees.push_back(trees_this_round);
         }
+        server.global_trees.trees.push_back(trees_this_round);
        // LOG(INFO) <<  "Y_PREDICT" << parties[0].booster.fbuilder->get_y_predict();
        float score = 0.0;
        for (int p = 0; p < n_parties; p++){
