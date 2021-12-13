@@ -366,20 +366,20 @@ void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FL
             server.booster.fbuilder->trees.prune_self(model_param.gamma);
 
             Tree &tree = trees_this_round[k];
-#pragma omp parallel for
+            #pragma omp parallel for
             for (int p = 0; p < n_parties; p++) {
                 parties[p].booster.fbuilder->trees.prune_self(model_param.gamma);
                 parties[p].booster.fbuilder->predict_in_training(k);
-                tree.nodes.resize(parties[p].booster.fbuilder->trees.nodes.size());
-                tree.nodes.copy_from(parties[p].booster.fbuilder->trees.nodes);
             }
+            tree.nodes.resize(parties[0].booster.fbuilder->trees.nodes.size());
+            tree.nodes.copy_from(parties[0].booster.fbuilder->trees.nodes);
 
             t_end = timer.now();
             used_time = t_end - t_start;
             LOG(DEBUG) << "Pruning tree using time: " << used_time.count() << " s";
             t_start = t_end;
         }
-#pragma omp parallel for
+        #pragma omp parallel for
         for (int p = 0; p < n_parties; p++) {
 //            parties[p].gbdt.trees.push_back(parties_trees[p]);
             parties[p].gbdt.trees.push_back(trees_this_round);
