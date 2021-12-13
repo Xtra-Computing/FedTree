@@ -85,6 +85,7 @@ class FLModel(FedTreeBase):
 
     def fit(self, X, y, groups=None):
         if self.model is not None:
+            FedTree.model_free(byref(self.model))
             self.model = None
         sparse = sp.issparse(X)
         if sparse is False:
@@ -174,67 +175,71 @@ class FLModel(FedTreeBase):
         self.predict_label = np.asarray(predict_label)
         return self.predict_label
 
-# Cross Validation
-def cv(self, X, y, folds=None, nfold=5, shuffle=True, seed=0):
-    if self._impl == 'ranker':
-        print("Cross-validation for ## Ranker ## have not been supported yep..")
-        return
+    def __del__(self):
+        if self.model is not None:
+            FedTree.model_free(byref(self.model))
 
-    sparse = sp.isspmatrix(X)
-    if sparse is False:
-        X = sp.csr_matrix(X)
-    X, y = check_X_y(X, y, dtype=np.float64, order='C', accept_sparse='csr')
-    y = np.asarray(y, dtype=np.float32, order='C')
-    n_instances = X.shape[0]
-    if folds is not None:
-        #use specified validation set
-        train_idset = [x[0] for x in folds]
-        test_idset = [x[1] for x in folds]
-    else:
-        if shuffle:
-            randidx = np.random.RandomState(seed).permutation(n_instances)
+    # Cross Validation
+    def cv(self, X, y, folds=None, nfold=5, shuffle=True, seed=0):
+        if self._impl == 'ranker':
+            print("Cross-validation for ## Ranker ## have not been supported yep..")
+            return
+
+        sparse = sp.isspmatrix(X)
+        if sparse is False:
+            X = sp.csr_matrix(X)
+        X, y = check_X_y(X, y, dtype=np.float64, order='C', accept_sparse='csr')
+        y = np.asarray(y, dtype=np.float32, order='C')
+        n_instances = X.shape[0]
+        if folds is not None:
+            #use specified validation set
+            train_idset = [x[0] for x in folds]
+            test_idset = [x[1] for x in folds]
         else:
-            randidx = np.arange(n_instances)
-        kstep = int(n_instances / nfold)
-        test_idset = [randidx[i: i + kstep] for i in range(0, n_instances, kstep)]
-        train_idset = [np.concatenate([test_idset[i] for i in range(nfold) if k != i]) for k in range(nfold)]
-    # to be optimized: get score in fit; early stopping; more metrics;
-    train_score_list = []
-    test_score_list = []
-    for k in range(nfold):
-        X_train = X[train_idset[k],:]
-        X_test = X[test_idset[k],:]
-        y_train = y[train_idset[k]]
-        y_test = y[test_idset[k]]
-        self.fit(X_train, y_train)
-        y_train_pred = self.predict(X_train)
-        y_test_pred = self.predict(X_test)
+            if shuffle:
+                randidx = np.random.RandomState(seed).permutation(n_instances)
+            else:
+                randidx = np.arange(n_instances)
+            kstep = int(n_instances / nfold)
+            test_idset = [randidx[i: i + kstep] for i in range(0, n_instances, kstep)]
+            train_idset = [np.concatenate([test_idset[i] for i in range(nfold) if k != i]) for k in range(nfold)]
+        # to be optimized: get score in fit; early stopping; more metrics;
+        train_score_list = []
+        test_score_list = []
+        for k in range(nfold):
+            X_train = X[train_idset[k],:]
+            X_test = X[test_idset[k],:]
+            y_train = y[train_idset[k]]
+            y_test = y[test_idset[k]]
+            self.fit(X_train, y_train)
+            y_train_pred = self.predict(X_train)
+            y_test_pred = self.predict(X_test)
+            if self._impl == 'classifier':
+                train_score = accuracy_score(y_train, y_train_pred)
+                test_score = accuracy_score(y_test,y_test_pred)
+                train_score_list.append(train_score)
+                test_score_list.append(test_score)
+            elif self._impl == 'regressor':
+                train_score = mean_squared_error(y_train,y_train_pred)
+                test_score = mean_squared_error(y_test, y_test_pred)
+                train_score_list.append(train_score)
+                test_score_list.append(test_score)
+        self.eval_res = {}
         if self._impl == 'classifier':
-            train_score = accuracy_score(y_train, y_train_pred)
-            test_score = accuracy_score(y_test,y_test_pred)
-            train_score_list.append(train_score)
-            test_score_list.append(test_score)
+            self.eval_res['train-accuracy-mean']= statistics.mean(train_score_list)
+            self.eval_res['train-accuracy-std']= statistics.stdev(train_score_list)
+            self.eval_res['test-accuracy-mean'] = statistics.mean(test_score_list)
+            self.eval_res['test-accuracy-std'] = statistics.stdev(test_score_list)
+            print("mean train accuracy:%.6f+%.6f" %(statistics.mean(train_score_list), statistics.stdev(train_score_list)))
+            print("mean test accuracy:%.6f+%.6f" %(statistics.mean(test_score_list), statistics.stdev(test_score_list)))
         elif self._impl == 'regressor':
-            train_score = mean_squared_error(y_train,y_train_pred)
-            test_score = mean_squared_error(y_test, y_test_pred)
-            train_score_list.append(train_score)
-            test_score_list.append(test_score)
-    self.eval_res = {}
-    if self._impl == 'classifier':
-        self.eval_res['train-accuracy-mean']= statistics.mean(train_score_list)
-        self.eval_res['train-accuracy-std']= statistics.stdev(train_score_list)
-        self.eval_res['test-accuracy-mean'] = statistics.mean(test_score_list)
-        self.eval_res['test-accuracy-std'] = statistics.stdev(test_score_list)
-        print("mean train accuracy:%.6f+%.6f" %(statistics.mean(train_score_list), statistics.stdev(train_score_list)))
-        print("mean test accuracy:%.6f+%.6f" %(statistics.mean(test_score_list), statistics.stdev(test_score_list)))
-    elif self._impl == 'regressor':
-        self.eval_res['train-RMSE-mean']= statistics.mean(train_score_list)
-        self.eval_res['train-RMSE-std']= statistics.stdev(train_score_list)
-        self.eval_res['test-RMSE-mean'] = statistics.mean(test_score_list)
-        self.eval_res['test-RMSE-std'] = statistics.stdev(test_score_list)
-        print("mean train RMSE:%.6f+%.6f" %(statistics.mean(train_score_list), statistics.stdev(train_score_list)))
-        print("mean test RMSE:%.6f+%.6f" %(statistics.mean(test_score_list), statistics.stdev(test_score_list)))
-    return self.eval_res
+            self.eval_res['train-RMSE-mean']= statistics.mean(train_score_list)
+            self.eval_res['train-RMSE-std']= statistics.stdev(train_score_list)
+            self.eval_res['test-RMSE-mean'] = statistics.mean(test_score_list)
+            self.eval_res['test-RMSE-std'] = statistics.stdev(test_score_list)
+            print("mean train RMSE:%.6f+%.6f" %(statistics.mean(train_score_list), statistics.stdev(train_score_list)))
+            print("mean test RMSE:%.6f+%.6f" %(statistics.mean(test_score_list), statistics.stdev(test_score_list)))
+        return self.eval_res
 
 # TODO: Fix init parameters
 class FLClassifier(FLModel, FedTreeClassifierBase):

@@ -69,7 +69,7 @@ void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FL
         server.booster.fbuilder->cut.get_cut_points_by_feature_range(feature_range, n_bins);
 //        server.booster.fbuilder->get_bin_ids();
 
-        LOG(INFO) << "Set cut of each parties";
+        LOG(INFO) << "Set cut of each party";
         for (int p = 0; p < n_parties; p++) {
             parties[p].booster.fbuilder->set_cut(server.booster.fbuilder->cut);
             parties[p].booster.fbuilder->get_bin_ids();

@@ -162,9 +162,9 @@ extern "C" {
         }
     }
 
-void predict(int row_size, float *val, int *row_ptr, int *col_ptr, float *y_pred, Tree *&model,
-                           int n_trees, int trees_per_iter, char *objective, int num_class, float learning_rate, float *group_label,
-                           int *group, int num_group=0, int verbose=1) {
+    void predict(int row_size, float *val, int *row_ptr, int *col_ptr, float *y_pred, Tree *&model,
+             int n_trees, int trees_per_iter, char *objective, int num_class, float learning_rate, float *group_label,
+             int *group, int num_group=0, int verbose=1) {
         //load model
         GBDTParam model_param;
         model_param.objective = objective;
@@ -200,4 +200,11 @@ void predict(int row_size, float *val, int *row_ptr, int *col_ptr, float *y_pred
             y_pred[i] = y_pred_vec[i];
         }//float_type may be double/float, so convert to float for both cases.
     }
+
+    void model_free(Tree* &model){
+        if(model){
+            delete []model;
+        }
+    }
+
 }
