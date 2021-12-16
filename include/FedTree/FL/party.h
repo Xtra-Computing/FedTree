@@ -104,6 +104,7 @@ public:
             feature_range[1] = *minmax.second;
             feature_range[0] = *minmax.first;
         }else{
+            // Does not have any value for this feature
             feature_range[0] = inf;
             feature_range[1] = -inf;
         }
@@ -113,10 +114,10 @@ public:
 
     void encrypt_histogram(SyncArray<GHPair> &hist) {
         auto hist_data = hist.host_data();
-        #pragma omp parallel for
-            for (int i = 0; i < hist.size(); i++) {
-                hist_data[i].homo_encrypt(paillier);
-            }
+#pragma omp parallel for
+        for (int i = 0; i < hist.size(); i++) {
+            hist_data[i].homo_encrypt(paillier);
+        }
     }
 
     void encrypt_gradient(GHPair &ghpair) {

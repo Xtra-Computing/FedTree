@@ -1,4 +1,5 @@
 #include "FedTree/Encryption/paillier.h"
+#include <stdlib.h>
 
 using namespace std;
 
