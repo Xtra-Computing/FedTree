@@ -14,6 +14,7 @@ class HistTreeBuilder : public TreeBuilder {
 public:
 
     HistCut cut;
+    vector<HistCut> parties_cut;
 
     void init(DataSet &dataset, const GBDTParam &param) override;
 
@@ -54,7 +55,7 @@ public:
 
     void merge_histograms_server_propose(SyncArray<GHPair> &hist, SyncArray<GHPair> &missing_gh);
 
-    void merge_histograms_client_propose(SyncArray<GHPair> &hist, SyncArray<GHPair> &missing_gh, int max_splits);
+    void merge_histograms_client_propose(SyncArray<GHPair> &hist, SyncArray<GHPair> &missing_gh, vector<vector<vector<float>>> feature_range, int max_splits);
 
     void concat_histograms() override;
 
@@ -144,7 +145,6 @@ public:
 
 
 private:
-    vector<HistCut> parties_cut;
     // MSyncArray<unsigned char> char_dense_bin_id;
     SyncArray<unsigned char> dense_bin_id;
     SyncArray<GHPair> last_hist;

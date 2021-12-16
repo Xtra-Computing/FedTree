@@ -122,6 +122,7 @@ int main(int argc, char** argv){
                     }
             }
         }else if (fl_param.partition_mode=="horizontal") {
+            dataset.csr_to_csc();
             partition.homo_partition(dataset, n_parties, true, subsets, batch_idxs);
             if (!use_global_test_set) {
                 LOG(INFO) << "train test split";

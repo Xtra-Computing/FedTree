@@ -14,6 +14,7 @@
 using namespace thrust;
 
 void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FLParam &params) {
+    LOG(INFO) << "Start horizontal training";
     std::chrono::high_resolution_clock timer;
     auto t_start = timer.now();
     auto start = t_start;
@@ -43,34 +44,151 @@ void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FL
     // Generate HistCut by server or each party
     int n_bins = model_param.max_num_bin;
 
-    if (params.propose_split == "server") {
-        // loop through all party to find max and min for each feature
-        float inf = std::numeric_limits<float>::infinity();
-        vector<vector<float>> feature_range(parties[0].get_num_feature());
-        for (int n = 0; n < parties[0].get_num_feature(); n++) {
-            vector<float> min_max = {inf, -inf};
-            for (int p = 0; p < n_parties; p++) {
-                vector<float> temp = parties[p].get_feature_range_by_feature_index(n);
-                if (temp[0] <= min_max[0])
-                    min_max[0] = temp[0];
-                if (temp[1] >= min_max[1])
-                    min_max[1] = temp[1];
-            }
-            feature_range[n] = min_max;
+    LOG(INFO) << "Generate feature range";
+    // loop through all party to find max and min for each feature
+    float inf = std::numeric_limits<float>::infinity();
+    vector<vector<float>> feature_range(parties[0].get_num_feature());
+    vector<vector<vector<float>>> feature_range_for_client(parties[0].get_num_feature());
+    for (int n = 0; n < parties[0].get_num_feature(); n++) {
+        vector<float> min_max = {inf, -inf};
+        feature_range_for_client[n].resize(parties.size());
+        for (int p = 0; p < parties.size(); p++) {
+            vector<float> temp = parties[p].get_feature_range_by_feature_index(n);
+            feature_range_for_client[n][p] = temp;
+            if (temp[0] <= min_max[0])
+                min_max[0] = temp[0];
+            if (temp[1] >= min_max[1])
+                min_max[1] = temp[1];
         }
-//        // once we have feature_range, we can generate cut points
-        server.booster.fbuilder->cut.get_cut_points_by_feature_range(feature_range, n_bins);
+        feature_range[n] = min_max;
+    }
 
+    // once we have feature_range, we can generate cut points
+    if (params.propose_split == "server") {
+        LOG(INFO) << "Get cut points by feature range";
+        server.booster.fbuilder->cut.get_cut_points_by_feature_range(feature_range, n_bins);
+//        server.booster.fbuilder->get_bin_ids();
+
+        LOG(INFO) << "Set cut of each party";
         for (int p = 0; p < n_parties; p++) {
             parties[p].booster.fbuilder->set_cut(server.booster.fbuilder->cut);
             parties[p].booster.fbuilder->get_bin_ids();
         }
-
-    } else if (params.propose_split == "client") {
-        for (int p = 0; p < n_parties; p++) {
+//        auto party_cut_points_val_data = parties[0].booster.fbuilder->cut.cut_points_val.host_data();
+//        auto party_cut_col_ptr_data = parties[0].booster.fbuilder->cut.cut_col_ptr.host_data();
+//        std::cout<<"party0 first column cut points:"<<std::endl;
+//        for(int i = party_cut_col_ptr_data[0]; i < party_cut_col_ptr_data[1]; i++){
+//            std::cout<<party_cut_points_val_data[i]<<" ";
+//        }
+    } else if (params.propose_split == "client_pre" || params.propose_split == "client_post") {
+        for (int p = 0; p < parties.size(); p++) {
             auto dataset = parties[p].dataset;
             parties[p].booster.fbuilder->cut.get_cut_points_fast(dataset, n_bins, dataset.n_instances());
             aggregator.booster.fbuilder->append_to_parties_cut(parties[p].booster.fbuilder->cut, p);
+        }
+        // If client preprocessing, then find common cut here
+        if (params.propose_split == "client_pre") {
+            // find feature range of each feature for each party
+            int n_columns = aggregator.booster.fbuilder->parties_cut[0].cut_col_ptr.size() - 1;
+            vector<vector<float>> ranges(n_columns);
+
+            // Merging all cut points into one single cut points
+            for (int n = 0; n < n_columns; n++) {
+                for (int p = 0; p < aggregator.booster.fbuilder->parties_cut.size(); p++) {
+                    auto parties_cut_col_data = aggregator.booster.fbuilder->parties_cut[p].cut_col_ptr.host_data();
+                    auto parties_cut_points_val_data = aggregator.booster.fbuilder->parties_cut[p].cut_points_val.host_data();
+
+                    int column_start = parties_cut_col_data[n];
+                    int column_end = parties_cut_col_data[n+1];
+
+                    for (int i = column_start; i < column_end; i++) {
+                        ranges[n].push_back(parties_cut_points_val_data[i]);
+                    }
+                }
+            }
+
+            // Once we have gathered the sorted range, we can randomly sample the cut points to match with the number of bins
+            int n_features = ranges.size();
+            int max_num_bins = aggregator.booster.fbuilder->parties_cut[0].cut_points_val.size() / n_columns + 1;
+            // The vales of cut points
+            SyncArray<float_type> cut_points_val;
+            // The number of accumulated cut points for current feature
+            SyncArray<int> cut_col_ptr;
+            // The feature id for current cut point
+            SyncArray<int> cut_fid;
+            cut_points_val.resize(n_features * max_num_bins);
+            cut_col_ptr.resize(n_features + 1);
+            cut_fid.resize(n_features * max_num_bins);
+            auto cut_points_val_data = cut_points_val.host_data();
+            auto cut_col_ptr_data = cut_col_ptr.host_data();
+            auto cut_fid_data = cut_fid.host_data();
+
+            int index = 0;
+
+            for (int fid = 0; fid < n_features; fid++) {
+                vector<float> sample;
+                cut_col_ptr_data[fid] = index;
+
+                // Always keep the maximum value
+                if (ranges[fid].size() > 0) {
+                    auto max_element = *std::max_element(ranges[fid].begin(), ranges[fid].end());
+                    sample.push_back(max_element);
+                } else continue;
+
+
+                // Randomly sample number of cut point according to max num bins
+                unsigned seed = chrono::steady_clock::now().time_since_epoch().count();
+                std::shuffle(ranges[fid].begin(), ranges[fid].end(), std::default_random_engine(seed));
+
+                struct compare
+                {
+                    int key;
+                    compare(int const &i): key(i) {}
+
+                    bool operator()(int const &i) {
+                        return (i == key);
+                    }
+                };
+
+
+                for (int i = 0; i < ranges[fid].size(); i++) {
+
+                    if (sample.size() == max_num_bins)
+                        break;
+
+                    auto element = ranges[fid][i];
+                    // Check if element already in cut points val data
+                    if (not (std::find(sample.begin(), sample.end(), element) != sample.end()))
+                        sample.push_back(element);
+                }
+
+                // Sort the sample in descending order
+                std::sort(sample.begin(), sample.end(), std::greater<float>());
+
+                // Populate cut points val with samples
+                for (int i = 0; i < sample.size(); i++) {
+                    cut_points_val_data[index] = sample[i];
+                    cut_fid_data[index] = fid;
+                    index++;
+                }
+            }
+            cut_col_ptr_data[n_features] = index;
+
+            HistCut cut;
+            cut.cut_points_val.resize(cut_points_val.size());
+            cut.cut_points_val.copy_from(cut_points_val);
+            cut.cut_fid.resize(cut_fid.size());
+            cut.cut_fid.copy_from(cut_fid);
+            cut.cut_col_ptr.resize(cut_col_ptr.size());
+            cut.cut_col_ptr.copy_from(cut_col_ptr);
+            server.booster.fbuilder->set_cut(cut);
+
+            // Distribute cut points to all parties
+
+            for (int p = 0; p < parties.size(); p++) {
+                parties[p].booster.fbuilder->set_cut(server.booster.fbuilder->cut);
+                parties[p].booster.fbuilder->get_bin_ids();
+            }
         }
     }
 
@@ -81,10 +199,12 @@ void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FL
 
     for (int i = 0; i < params.gbdt_param.n_trees; i++) {
         LOG(DEBUG) << "ROUND " << i;
-        vector<vector<Tree>> parties_trees(n_parties);
-        for (int p = 0; p < n_parties; p++) {
-            parties_trees[p].resize(params.gbdt_param.tree_per_rounds);
-        }
+//        vector<vector<Tree>> parties_trees(n_parties);
+//        for (int p = 0; p < n_parties; p++) {
+//            parties_trees[p].resize(params.gbdt_param.tree_per_rounds);
+//        }
+        vector<Tree> trees_this_round;
+        trees_this_round.resize(params.gbdt_param.tree_per_rounds);
 //        vector<Tree> trees(params.gbdt_param.tree_per_rounds);
 
         GHPair sum_gh;
@@ -150,6 +270,7 @@ void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FL
                     used_time = t_end - t_start;
                     LOG(DEBUG) << "Computing histogram using time: " << used_time.count() << " s";
                     t_start = t_end;
+
                     //todo: encrypt the histogram
                     if (params.privacy_tech == "he") {
                         parties[j].encrypt_histogram(hist);
@@ -169,20 +290,23 @@ void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FL
 
                 SyncArray <GHPair> missing_gh;
                 SyncArray <GHPair> hist;
-                if (params.propose_split == "server") {
+                // set these parameters to fit merged histogram
+                n_bins = aggregator.booster.fbuilder->cut.cut_points_val.size();
+                int n_max_splits = n_max_nodes * n_bins;
+
+                if (params.propose_split == "server" || params.propose_split=="client_pre") {
                     aggregator.booster.fbuilder->merge_histograms_server_propose(hist, missing_gh);
 //                    server.booster.fbuilder->set_last_missing_gh(missing_gh);
 //                    LOG(INFO) << hist;
-                }else if (params.propose_split == "client") {
-                    // TODO: Fix this to make use of missing_gh
-//                    aggregator.booster.fbuilder->merge_histograms_client_propose();
-                    LOG(INFO)<<"not supported yet";
-                    exit(1);
+                }else if (params.propose_split == "client_post") {
+                    aggregator.booster.fbuilder->merge_histograms_client_propose(hist, missing_gh, feature_range_for_client, n_max_splits);
+//                    LOG(INFO)<<"not supported yet";
+//                    exit(1);
                 }
 
                 // set these parameters to fit merged histogram
                 n_bins = aggregator.booster.fbuilder->cut.cut_points_val.size();
-                int n_max_splits = n_max_nodes * n_bins;
+
                 // server compute gain
                 SyncArray <float_type> gain(n_max_splits);
 
@@ -212,10 +336,12 @@ void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FL
                 server.booster.fbuilder->update_tree();
 
 
+                trees_this_round[k] = server.booster.fbuilder->get_tree();
                 #pragma omp parallel for
                 for (int j = 0; j < n_parties; j++) {
-                    parties_trees[j][k] = server.booster.fbuilder->get_tree();
-                    parties[j].booster.fbuilder->set_tree(parties_trees[j][k]);
+//                    parties_trees[j][k] = server.booster.fbuilder->get_tree();
+//                    parties[j].booster.fbuilder->set_tree(parties_trees[j][k]);
+                    parties[j].booster.fbuilder->set_tree(trees_this_round[k]);
                     parties[j].booster.fbuilder->update_ins2node_id();
                }
 
@@ -238,24 +364,27 @@ void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FL
 
             // After training each tree, update vector of tree
             server.booster.fbuilder->trees.prune_self(model_param.gamma);
-#pragma omp parallel for
+
+            Tree &tree = trees_this_round[k];
+            #pragma omp parallel for
             for (int p = 0; p < n_parties; p++) {
-                Tree &tree = parties_trees[p][k];
                 parties[p].booster.fbuilder->trees.prune_self(model_param.gamma);
                 parties[p].booster.fbuilder->predict_in_training(k);
-                tree.nodes.resize(parties[p].booster.fbuilder->trees.nodes.size());
-                tree.nodes.copy_from(parties[p].booster.fbuilder->trees.nodes);
             }
+            tree.nodes.resize(parties[0].booster.fbuilder->trees.nodes.size());
+            tree.nodes.copy_from(parties[0].booster.fbuilder->trees.nodes);
 
             t_end = timer.now();
             used_time = t_end - t_start;
             LOG(DEBUG) << "Pruning tree using time: " << used_time.count() << " s";
             t_start = t_end;
         }
-#pragma omp parallel for
+        #pragma omp parallel for
         for (int p = 0; p < n_parties; p++) {
-            parties[p].gbdt.trees.push_back(parties_trees[p]);
+//            parties[p].gbdt.trees.push_back(parties_trees[p]);
+            parties[p].gbdt.trees.push_back(trees_this_round);
         }
+        server.global_trees.trees.push_back(trees_this_round);
        // LOG(INFO) <<  "Y_PREDICT" << parties[0].booster.fbuilder->get_y_predict();
        float score = 0.0;
        for (int p = 0; p < n_parties; p++){
@@ -476,6 +605,7 @@ void FLtrainer::vertical_fl_trainer(vector<Party> &parties, Server &server, FLPa
                     // party update itself
                     parties[party_id].booster.fbuilder->update_tree_in_a_node(node);
                     parties[party_id].booster.fbuilder->update_ins2node_id_in_a_node(node_shifted);
+
                     // update local split_feature_id to global
                     auto party_global_hist_fid_data = parties_global_hist_fid[party_id].host_data();
                     int global_fid = party_global_hist_fid_data[local_idx];

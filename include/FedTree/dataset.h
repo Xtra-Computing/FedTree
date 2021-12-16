@@ -19,7 +19,8 @@ class DataSet{
     void load_from_files(vector<string>file_names, FLParam &param);
     void load_group_file(string file_name);
     void group_label();
-
+    void load_from_sparse(int n_instances, float *csr_val, int *csr_row_ptr, int *csr_col_idx, float *y,
+                                   int *group, int num_group, GBDTParam &param);
     void load_csc_from_file(string file_name, FLParam &param, int const nfeatures=500);
     void csr_to_csc();
 
