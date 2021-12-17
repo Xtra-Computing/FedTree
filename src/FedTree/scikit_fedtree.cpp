@@ -27,7 +27,7 @@ extern "C" {
 
     void fit (int n_parties, int partition, float alpha, int n_hori, int n_verti, char *mode, char *partition_mode, char *privacy_tech, char *propose_split, char *merge_histogram, float variance, float privacy_budget,
               int depth, int n_trees, float min_child_weight, float lambda, float gamma, float column_sampling_rate, int verbose, int bagging, int n_parallel_trees, float learning_rate,
-              char *objective, int num_class, int n_device, int max_num_bin,
+              char *objective, int* num_class, int n_device, int max_num_bin,
               // DataSet info
               int row_size, float *val, int *row_ptr, int *col_ptr, float *label,
               // Tree info
@@ -64,7 +64,7 @@ extern "C" {
         gbdt_param.n_parallel_trees = n_parallel_trees;
         gbdt_param.learning_rate = learning_rate;
         gbdt_param.objective = objective;
-        gbdt_param.num_class = num_class;
+        gbdt_param.num_class = num_class[0];
         gbdt_param.tree_method = "hist";
         gbdt_param.n_device = n_device;
         gbdt_param.tree_per_rounds = 1;
@@ -79,7 +79,7 @@ extern "C" {
         LOG(INFO) << "Load Sparse Data to Training Set";
         DataSet training_set;
         training_set.load_from_sparse(row_size, val, row_ptr, col_ptr, label, group, num_group, gbdt_param);
-        num_class = gbdt_param.num_class;
+        num_class[0] = gbdt_param.num_class;
         fl_param.gbdt_param = gbdt_param;
 
         LOG(INFO) << "Partition the Data";
