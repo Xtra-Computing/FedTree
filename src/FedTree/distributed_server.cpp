@@ -29,7 +29,7 @@ grpc::Status DistributedServer::GetGradients(grpc::ServerContext *context, const
                                              grpc::ServerWriter<fedtree::GHPair> *writer) {
     unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
     std::default_random_engine generator(seed);
-    std::uniform_int_distribution<int> delay_distribution(10, 20);
+    std::uniform_int_distribution<int> delay_distribution(5, 10);
 
     while (!update_gradients_success) {
         std::this_thread::sleep_for(
@@ -44,7 +44,7 @@ grpc::Status DistributedServer::GetGradients(grpc::ServerContext *context, const
         gh.set_h(gh_data[i].h);
         writer->Write(gh);
     }
-    LOG(DEBUG) << "Send gradients to " << pid;
+    LOG(INFO) << "Send " <<booster.gradients.size() <<" gradients to " << pid;
     return grpc::Status::OK;
 }
 
@@ -123,7 +123,7 @@ grpc::Status DistributedServer::TriggerAggregate(grpc::ServerContext *context, c
                                                  fedtree::Ready *ready) {
     unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
     std::default_random_engine generator(seed);
-    std::uniform_int_distribution<int> delay_distribution(10, 20);
+    std::uniform_int_distribution<int> delay_distribution(5, 10);
 
     LOG(DEBUG) << hists_received << "/" << missing_gh_received << "/" << hist_fid_received;
 
@@ -216,7 +216,7 @@ grpc::Status DistributedServer::GetBestInfo(grpc::ServerContext *context, const 
 
     unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
     std::default_random_engine generator(seed);
-    std::uniform_int_distribution<int> delay_distribution(10, 20);
+    std::uniform_int_distribution<int> delay_distribution(5, 10);
     while (!aggregate_success) {
         std::this_thread::sleep_for(
                 std::chrono::milliseconds(delay_distribution(generator)));
@@ -231,7 +231,7 @@ grpc::Status DistributedServer::GetBestInfo(grpc::ServerContext *context, const 
         best.set_gain(best_info.gain);
         writer->Write(best);
     }
-    std::cout << "Send best info to " << pid << std::endl;
+    LOG(DEBUG) << "Send best info to " << pid;
     return grpc::Status::OK;
 }
 
@@ -293,7 +293,7 @@ grpc::Status DistributedServer::GetNodes(grpc::ServerContext *context, const fed
 
     unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
     std::default_random_engine generator(seed);
-    std::uniform_int_distribution<int> delay_distribution(10, 20);
+    std::uniform_int_distribution<int> delay_distribution(5, 10);
 
     while (n_nodes_received < n_nodes_in_level) {
         std::this_thread::sleep_for(
@@ -322,7 +322,7 @@ grpc::Status DistributedServer::GetNodes(grpc::ServerContext *context, const fed
         node.set_n_instances(nodes_data[i].n_instances);
         writer->Write(node);
     }
-    std::cout << "Send nodes to " << id->id() << std::endl;
+    LOG(DEBUG) << "Send nodes to " << id->id();
     return grpc::Status::OK;
 }
 
@@ -335,7 +335,8 @@ grpc::Status DistributedServer::GetIns2NodeID(grpc::ServerContext *context, cons
         i2n.set_nid(ins2node_id_data[i]);
         writer->Write(i2n);
     }
-    std::cout << "Send ins2node_id to " << id->id() << std::endl;
+    // std::cout << "Send ins2node_id to " << id->id() << std::endl;
+    LOG(DEBUG) << "Send ins2node_id to " << id->id();
     return grpc::Status::OK;
 }
 
@@ -348,7 +349,7 @@ grpc::Status DistributedServer::CheckIfContinue(grpc::ServerContext *context, co
 
     unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
     std::default_random_engine generator(seed);
-    std::uniform_int_distribution<int> delay_distribution(10, 20);
+    std::uniform_int_distribution<int> delay_distribution(5, 10);
 
     while (cont_votes.size() < param.n_parties) {
         std::this_thread::sleep_for(
@@ -437,7 +438,7 @@ grpc::Status DistributedServer::TriggerCut(grpc::ServerContext* context, const f
     // cyz: request is n_bins
     unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
     std::default_random_engine generator(seed);
-    std::uniform_int_distribution<int> delay_distribution(10, 20);
+    std::uniform_int_distribution<int> delay_distribution(5, 10);
     while (true) {
         bool cont = true;
         for (int i = 0; i < param.n_parties; i++) {
@@ -480,7 +481,7 @@ grpc::Status DistributedServer::GetRange(grpc::ServerContext* context, const fed
                                 grpc::ServerWriter<fedtree::GHPair>* writer) {
     unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
     std::default_random_engine generator(seed);
-    std::uniform_int_distribution<int> delay_distribution(10, 20);
+    std::uniform_int_distribution<int> delay_distribution(5, 10);
     while (!range_success) {
         std::this_thread::sleep_for(
                 std::chrono::milliseconds(delay_distribution(generator)));
@@ -507,7 +508,7 @@ grpc::Status DistributedServer::SendGH(grpc::ServerContext* context, const fedtr
 
     unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
     std::default_random_engine generator(seed);
-    std::uniform_int_distribution<int> delay_distribution(10, 20);
+    std::uniform_int_distribution<int> delay_distribution(5, 10);
     while (true) {
         bool cont = true;
         for (int i = 0; i < param.n_parties; i++) {
@@ -546,7 +547,7 @@ grpc::Status DistributedServer::TriggerBuildUsingGH(grpc::ServerContext* context
 grpc::Status DistributedServer::TriggerCalcTree(grpc::ServerContext* context, const fedtree::PID* request, fedtree::Ready* response) {
     unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
     std::default_random_engine generator(seed);
-    std::uniform_int_distribution<int> delay_distribution(10, 20);
+    std::uniform_int_distribution<int> delay_distribution(5, 10);
 
     LOG(DEBUG) << hists_received << "/" << missing_gh_received << "/" << hist_fid_received;
     {
@@ -629,7 +630,7 @@ grpc::Status DistributedServer::GetSplitPoints(grpc::ServerContext* context, con
                                 grpc::ServerWriter<fedtree::SplitPoint>* writer) {
     unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
     std::default_random_engine generator(seed);
-    std::uniform_int_distribution<int> delay_distribution(10, 20);
+    std::uniform_int_distribution<int> delay_distribution(5, 10);
     while (!calc_success) {
         std::this_thread::sleep_for(
                 std::chrono::milliseconds(delay_distribution(generator)));
@@ -672,7 +673,7 @@ grpc::Status DistributedServer::HCheckIfContinue(grpc::ServerContext *context, c
     cont_votes.push_back(cont);
     unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
     std::default_random_engine generator(seed);
-    std::uniform_int_distribution<int> delay_distribution(10, 20);
+    std::uniform_int_distribution<int> delay_distribution(5, 10);
 
     while (cont_votes.size() < param.n_parties) {
         std::this_thread::sleep_for(
@@ -702,7 +703,7 @@ grpc::Status DistributedServer::ScoreReduce(grpc::ServerContext* context, const 
     score_received[pid] += 1;
     unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
     std::default_random_engine generator(seed);
-    std::uniform_int_distribution<int> delay_distribution(10, 20);
+    std::uniform_int_distribution<int> delay_distribution(5, 10);
     while (true) {
         bool cont = true;
         for (int i = 0; i < param.n_parties; i++) {
@@ -741,7 +742,7 @@ grpc::Status DistributedServer::GetPaillier(grpc::ServerContext *context, const 
                                 fedtree::Paillier * response) {
     unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
     std::default_random_engine generator(seed);
-    std::uniform_int_distribution<int> delay_distribution(10, 20);
+    std::uniform_int_distribution<int> delay_distribution(5, 10);
 
     while (!homo_init_success) {
         std::this_thread::sleep_for(
@@ -801,6 +802,171 @@ grpc::Status DistributedServer::SendHistogramsEnc(grpc::ServerContext *context, 
     return grpc::Status::OK;
 }
 
+grpc::Status DistributedServer::SendHistogramBatches(grpc::ServerContext *context, grpc::ServerReader<fedtree::GHBatch> *reader,
+                                fedtree::PID *id) {
+    std::multimap<grpc::string_ref, grpc::string_ref> metadata = context->client_metadata();
+    auto pid_itr = metadata.find("pid");
+    int pid = std::stoi(pid_itr->second.data());
+    auto type_itr = metadata.find("type");
+    int type = std::stoi(type_itr->second.data());
+    // std::cout << pid << " " << type << std::endl;
+    fedtree::GHBatch tmp;
+    fedtree::GHBatch all;
+    while(reader->Read(&tmp)) {
+        all.MergeFrom(tmp);
+    }
+    SyncArray<GHPair> &hists = (type == 0)? booster.fbuilder->parties_hist[pid]:booster.fbuilder->parties_missing_gh[pid];
+   
+    int len = all.g_size();
+    hists.resize(len);
+    auto hist_data = hists.host_data();
+    #pragma omp parallel for
+    for (int i = 0; i < len; i++) {
+        hist_data[i] = {static_cast<float_type>(all.g(i)), static_cast<float_type>(all.h(i))};
+    }
+    if (type == 0)
+        hists_received[pid] += 1;
+    else
+        missing_gh_received[pid] += 1;
+    
+    return grpc::Status::OK;
+}
+
+grpc::Status DistributedServer::SendHistFidBatches(grpc::ServerContext *context, grpc::ServerReader<fedtree::FIDBatch> *reader,
+                                fedtree::PID *id) {
+    
+    std::multimap<grpc::string_ref, grpc::string_ref> metadata = context->client_metadata();
+    auto pid_itr = metadata.find("pid");
+    int pid = std::stoi(pid_itr->second.data());
+
+    fedtree::FIDBatch tmp;
+    fedtree::FIDBatch all;
+    while(reader->Read(&tmp)) {
+        all.MergeFrom(tmp);
+    }
+
+    SyncArray<int> &hists = booster.fbuilder->parties_hist_fid[pid];
+    int len = all.id_size();
+    hists.resize(len);
+    auto hist_data = hists.host_data();
+    for (int i = 0; i < len; i++) {
+        hist_data[i] = all.id(i);
+    }
+
+    LOG(DEBUG) << "Receive hist_fid from " << pid;
+    hist_fid_received[pid] += 1;
+    return grpc::Status::OK;
+}
+
+grpc::Status DistributedServer::GetIns2NodeIDBatches(grpc::ServerContext *context, const fedtree::PID *id,
+                                              grpc::ServerWriter<fedtree::Ins2NodeIDBatch> *writer) {
+    auto ins2node_id_data = booster.fbuilder->ins2node_id.host_data();
+    const int BATCH_SIZE = 200000;
+    int len = booster.fbuilder->ins2node_id.size();
+    for (int beg = 0; beg < len; beg+=BATCH_SIZE) {
+        int end = min(beg+BATCH_SIZE, len);
+        fedtree::Ins2NodeIDBatch i2n;
+        for (int i = beg; i < end; i++) {
+            i2n.add_iid(i);
+            i2n.add_nid(ins2node_id_data[i]);
+        }
+        writer->Write(i2n);
+    }
+    LOG(DEBUG) <<len<<" "<< "Send ins2node_id to " << id->id();
+    
+    return grpc::Status::OK;
+}
+grpc::Status DistributedServer::SendIns2NodeIDBatches(grpc::ServerContext *context, grpc::ServerReader<fedtree::Ins2NodeIDBatch> *reader,
+                                fedtree::PID *id) {
+    std::multimap<grpc::string_ref, grpc::string_ref> metadata = context->client_metadata();
+    auto pid_itr = metadata.find("pid");
+    int pid = std::stoi(pid_itr->second.data());
+
+    fedtree::Ins2NodeIDBatch i2n;
+    auto ins2node_id_data = booster.fbuilder->ins2node_id.host_data();
+
+    while (reader->Read(&i2n)) {
+        int len = i2n.iid_size();
+        for (int i = 0; i < len; i++) {
+            int iid = i2n.iid(i);
+            int nid = i2n.nid(i);
+            ins2node_id_data[iid] = nid;
+        }
+    }
+
+    LOG(DEBUG) << "Receive ins2node_id batches from " << pid;
+    n_nodes_received += 1;
+    return grpc::Status::OK;
+}
+grpc::Status DistributedServer::GetGradientBatches(grpc::ServerContext *context, const fedtree::PID *id,
+                              grpc::ServerWriter<fedtree::GHBatch> *writer){
+    unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+    std::default_random_engine generator(seed);
+    std::uniform_int_distribution<int> delay_distribution(5, 10);
+
+    while (!update_gradients_success) {
+        std::this_thread::sleep_for(
+                std::chrono::milliseconds(delay_distribution(generator)));
+    }
+    
+    int pid = id->id();  // useless in vertical training
+    auto gh_data = booster.gradients.host_data();
+    int len = booster.gradients.size();
+    const int BATCH_SIZE = 200000;
+    for (int beg = 0; beg < len; beg+=BATCH_SIZE) {
+        int end = min(len, beg+BATCH_SIZE);
+        fedtree::GHBatch ghb;
+        for (int i = beg; i < end; i++) {
+            ghb.add_g(gh_data[i].g);
+            ghb.add_h(gh_data[i].h);
+        }
+        writer->Write(ghb);
+        // gh.set_g(gh_data[i].g);
+        // gh.set_h(gh_data[i].h);
+        // writer->Write(gh);
+    }
+    LOG(DEBUG) << "Send " <<booster.gradients.size() <<" gradients to " << pid << " by batching";
+    return grpc::Status::OK;
+}
+
+grpc::Status DistributedServer::SendHistogramBatchesEnc(grpc::ServerContext *context, grpc::ServerReader<fedtree::GHEncBatch> *reader,
+                                fedtree::PID *id) {
+    
+    std::multimap<grpc::string_ref, grpc::string_ref> metadata = context->client_metadata();
+    auto pid_itr = metadata.find("pid");
+    int pid = std::stoi(pid_itr->second.data());
+    auto type_itr = metadata.find("type");
+    int type = std::stoi(type_itr->second.data());
+    fedtree::GHEncBatch tmp;
+    fedtree::GHEncBatch all;
+    {
+        TIMED_SCOPE(timerObj, "receive time");
+    while(reader->Read(&tmp)) {
+        all.MergeFrom(tmp);
+    }
+    }
+    SyncArray<GHPair> &hists = (type == 0)? booster.fbuilder->parties_hist[pid]:booster.fbuilder->parties_missing_gh[pid];
+    int len = all.g_enc_size();
+    hists.resize(len);
+    auto hist_data = hists.host_data();
+    {
+        TIMED_SCOPE(timerObj, "decode time");
+    #pragma omp parallel for
+    for (int i = 0; i < len; i++) {
+        hist_data[i].encrypted = true;
+        hist_data[i].g_enc = NTL::to_ZZ(all.g_enc(i).c_str());
+        hist_data[i].h_enc = NTL::to_ZZ(all.h_enc(i).c_str());
+        hist_data[i].paillier = paillier;
+    }
+    }
+    if (type == 0)
+        hists_received[pid] += 1;
+    else
+        missing_gh_received[pid] += 1;
+    LOG(DEBUG) << "Receive encrypted hist batches from " << pid;
+    return grpc::Status::OK;
+}
+
 #ifdef _WIN32
 INITIALIZE_EASYLOGGINGPP
 #endif
@@ -810,6 +976,7 @@ int main(int argc, char **argv) {
     el::Loggers::addFlag(el::LoggingFlag::FixedTimeFormat);
     el::Loggers::reconfigureAllLoggers(el::Level::Trace, el::ConfigurationType::Enabled, "false");
     el::Loggers::reconfigureAllLoggers(el::Level::Debug, el::ConfigurationType::Enabled, "false");
+    // el::Loggers::reconfigureAllLoggers(el::ConfigurationType::PerformanceTracking, "false");
     int pid;
     FLParam fl_param;
     Parser parser;

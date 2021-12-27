@@ -103,6 +103,24 @@ public:
     
     grpc::Status SendHistogramsEnc(grpc::ServerContext *context, grpc::ServerReader<fedtree::GHPairEnc> *reader,
                                 fedtree::PID *id) override;
+
+    grpc::Status SendHistogramBatches(grpc::ServerContext *context, grpc::ServerReader<fedtree::GHBatch> *reader,
+                                fedtree::PID *id) override;
+    
+    grpc::Status SendHistFidBatches(grpc::ServerContext *context, grpc::ServerReader<fedtree::FIDBatch> *reader,
+                                fedtree::PID *id) override;
+    
+    grpc::Status GetIns2NodeIDBatches(grpc::ServerContext *context, const fedtree::PID *id,
+                                grpc::ServerWriter<fedtree::Ins2NodeIDBatch> *writer) override;
+    
+    grpc::Status SendIns2NodeIDBatches(grpc::ServerContext *context, grpc::ServerReader<fedtree::Ins2NodeIDBatch> *reader,
+                                fedtree::PID *id) override;
+
+    grpc::Status GetGradientBatches(grpc::ServerContext *context, const fedtree::PID *id,
+                              grpc::ServerWriter<fedtree::GHBatch> *writer) override;
+    
+    grpc::Status SendHistogramBatchesEnc(grpc::ServerContext *context, grpc::ServerReader<fedtree::GHEncBatch> *reader,
+                                fedtree::PID *id) override;
     
     void VerticalInitVectors(int n_parties);
 

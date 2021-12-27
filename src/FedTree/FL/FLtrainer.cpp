@@ -216,14 +216,14 @@ void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FL
 
                 #pragma omp parallel for
                 for (int j = 0; j < n_parties; j++) {
-                    // parties_trees[j][k] = server.booster.fbuilder->get_tree();
-                    // parties[j].booster.fbuilder->set_tree(parties_trees[j][k]);
-                    if (d==0)
-                        parties[j].booster.fbuilder->trees.nodes.host_data()[0] = server.booster.fbuilder->trees.nodes.host_data()[0];
-                    parties[j].booster.fbuilder->sp.resize(server.booster.fbuilder->sp.size());
-                    parties[j].booster.fbuilder->sp.copy_from(server.booster.fbuilder->sp);
-                    parties[j].booster.fbuilder->update_tree();
-                    parties_trees[j][k] = parties[j].booster.fbuilder->get_tree();
+                    parties_trees[j][k] = server.booster.fbuilder->get_tree();
+                    parties[j].booster.fbuilder->set_tree(parties_trees[j][k]);
+                    // if (d==0)
+                    //     parties[j].booster.fbuilder->trees.nodes.host_data()[0] = server.booster.fbuilder->trees.nodes.host_data()[0];
+                    // parties[j].booster.fbuilder->sp.resize(server.booster.fbuilder->sp.size());
+                    // parties[j].booster.fbuilder->sp.copy_from(server.booster.fbuilder->sp);
+                    // parties[j].booster.fbuilder->update_tree();
+                    // parties_trees[j][k] = parties[j].booster.fbuilder->get_tree();
                     parties[j].booster.fbuilder->update_ins2node_id();
                }
 

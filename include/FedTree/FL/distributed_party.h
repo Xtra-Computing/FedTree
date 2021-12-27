@@ -73,6 +73,19 @@ public:
     void GetPaillier();
 
     void SendHistogramsEnc(const SyncArray<GHPair> &hist, int type);
+
+    void SendHistogramBatches(const SyncArray<GHPair> &hist, int type);
+
+    void SendHistFidBatches(const SyncArray<int> &hist);
+
+    void GetIns2NodeIDBatches();
+
+    void SendIns2NodeIDBatches(SyncArray<int> &ins2node_id, int nid);
+
+    void GetGradientBatches();
+
+    void SendHistogramBatchesEnc(const SyncArray<GHPair> &hist, int type);
+    
 private:
     std::unique_ptr<fedtree::FedTree::Stub> stub_;
 };

@@ -15,6 +15,26 @@
 // @@protoc_insertion_point(includes)
 #include <google/protobuf/port_def.inc>
 namespace fedtree {
+class FIDBatchDefaultTypeInternal {
+ public:
+  ::PROTOBUF_NAMESPACE_ID::internal::ExplicitlyConstructed<FIDBatch> _instance;
+} _FIDBatch_default_instance_;
+class GHBatchDefaultTypeInternal {
+ public:
+  ::PROTOBUF_NAMESPACE_ID::internal::ExplicitlyConstructed<GHBatch> _instance;
+} _GHBatch_default_instance_;
+class GHEncBatchDefaultTypeInternal {
+ public:
+  ::PROTOBUF_NAMESPACE_ID::internal::ExplicitlyConstructed<GHEncBatch> _instance;
+} _GHEncBatch_default_instance_;
+class GHPairDefaultTypeInternal {
+ public:
+  ::PROTOBUF_NAMESPACE_ID::internal::ExplicitlyConstructed<GHPair> _instance;
+} _GHPair_default_instance_;
+class GHArrayDefaultTypeInternal {
+ public:
+  ::PROTOBUF_NAMESPACE_ID::internal::ExplicitlyConstructed<GHArray> _instance;
+} _GHArray_default_instance_;
 class GHPairEncDefaultTypeInternal {
  public:
   ::PROTOBUF_NAMESPACE_ID::internal::ExplicitlyConstructed<GHPairEnc> _instance;
@@ -43,10 +63,6 @@ class DatasetInfoDefaultTypeInternal {
  public:
   ::PROTOBUF_NAMESPACE_ID::internal::ExplicitlyConstructed<DatasetInfo> _instance;
 } _DatasetInfo_default_instance_;
-class GHPairDefaultTypeInternal {
- public:
-  ::PROTOBUF_NAMESPACE_ID::internal::ExplicitlyConstructed<GHPair> _instance;
-} _GHPair_default_instance_;
 class FIDDefaultTypeInternal {
  public:
   ::PROTOBUF_NAMESPACE_ID::internal::ExplicitlyConstructed<FID> _instance;
@@ -63,6 +79,10 @@ class Ins2NodeIDDefaultTypeInternal {
  public:
   ::PROTOBUF_NAMESPACE_ID::internal::ExplicitlyConstructed<Ins2NodeID> _instance;
 } _Ins2NodeID_default_instance_;
+class Ins2NodeIDBatchDefaultTypeInternal {
+ public:
+  ::PROTOBUF_NAMESPACE_ID::internal::ExplicitlyConstructed<Ins2NodeIDBatch> _instance;
+} _Ins2NodeIDBatch_default_instance_;
 }  // namespace fedtree
 static void InitDefaultsscc_info_BestInfo_fedtree_2eproto() {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
@@ -103,6 +123,58 @@ static void InitDefaultsscc_info_FID_fedtree_2eproto() {
 ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_FID_fedtree_2eproto =
     {{ATOMIC_VAR_INIT(::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase::kUninitialized), 0, 0, InitDefaultsscc_info_FID_fedtree_2eproto}, {}};
 
+static void InitDefaultsscc_info_FIDBatch_fedtree_2eproto() {
+  GOOGLE_PROTOBUF_VERIFY_VERSION;
+
+  {
+    void* ptr = &::fedtree::_FIDBatch_default_instance_;
+    new (ptr) ::fedtree::FIDBatch();
+    ::PROTOBUF_NAMESPACE_ID::internal::OnShutdownDestroyMessage(ptr);
+  }
+}
+
+::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_FIDBatch_fedtree_2eproto =
+    {{ATOMIC_VAR_INIT(::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase::kUninitialized), 0, 0, InitDefaultsscc_info_FIDBatch_fedtree_2eproto}, {}};
+
+static void InitDefaultsscc_info_GHArray_fedtree_2eproto() {
+  GOOGLE_PROTOBUF_VERIFY_VERSION;
+
+  {
+    void* ptr = &::fedtree::_GHArray_default_instance_;
+    new (ptr) ::fedtree::GHArray();
+    ::PROTOBUF_NAMESPACE_ID::internal::OnShutdownDestroyMessage(ptr);
+  }
+}
+
+::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_GHArray_fedtree_2eproto =
+    {{ATOMIC_VAR_INIT(::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase::kUninitialized), 0, 0, InitDefaultsscc_info_GHArray_fedtree_2eproto}, {}};
+
+static void InitDefaultsscc_info_GHBatch_fedtree_2eproto() {
+  GOOGLE_PROTOBUF_VERIFY_VERSION;
+
+  {
+    void* ptr = &::fedtree::_GHBatch_default_instance_;
+    new (ptr) ::fedtree::GHBatch();
+    ::PROTOBUF_NAMESPACE_ID::internal::OnShutdownDestroyMessage(ptr);
+  }
+}
+
+::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_GHBatch_fedtree_2eproto =
+    {{ATOMIC_VAR_INIT(::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase::kUninitialized), 0, 0, InitDefaultsscc_info_GHBatch_fedtree_2eproto}, {}};
+
+static void InitDefaultsscc_info_GHEncBatch_fedtree_2eproto() {
+  GOOGLE_PROTOBUF_VERIFY_VERSION;
+
+  {
+    void* ptr = &::fedtree::_GHEncBatch_default_instance_;
+    new (ptr) ::fedtree::GHEncBatch();
+    ::PROTOBUF_NAMESPACE_ID::internal::OnShutdownDestroyMessage(ptr);
+  }
+}
+
+::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_GHEncBatch_fedtree_2eproto =
+    {{ATOMIC_VAR_INIT(::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase::kUninitialized), 0, 0, InitDefaultsscc_info_GHEncBatch_fedtree_2eproto}, {}};
+
 static void InitDefaultsscc_info_GHPair_fedtree_2eproto() {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
 
@@ -141,6 +213,19 @@ static void InitDefaultsscc_info_Ins2NodeID_fedtree_2eproto() {
 
 ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_Ins2NodeID_fedtree_2eproto =
     {{ATOMIC_VAR_INIT(::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase::kUninitialized), 0, 0, InitDefaultsscc_info_Ins2NodeID_fedtree_2eproto}, {}};
+
+static void InitDefaultsscc_info_Ins2NodeIDBatch_fedtree_2eproto() {
+  GOOGLE_PROTOBUF_VERIFY_VERSION;
+
+  {
+    void* ptr = &::fedtree::_Ins2NodeIDBatch_default_instance_;
+    new (ptr) ::fedtree::Ins2NodeIDBatch();
+    ::PROTOBUF_NAMESPACE_ID::internal::OnShutdownDestroyMessage(ptr);
+  }
+}
+
+::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_Ins2NodeIDBatch_fedtree_2eproto =
+    {{ATOMIC_VAR_INIT(::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase::kUninitialized), 0, 0, InitDefaultsscc_info_Ins2NodeIDBatch_fedtree_2eproto}, {}};
 
 static void InitDefaultsscc_info_Node_fedtree_2eproto() {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
@@ -220,11 +305,44 @@ static void InitDefaultsscc_info_SplitPoint_fedtree_2eproto() {
 ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_SplitPoint_fedtree_2eproto =
     {{ATOMIC_VAR_INIT(::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase::kUninitialized), 0, 0, InitDefaultsscc_info_SplitPoint_fedtree_2eproto}, {}};
 
-static ::PROTOBUF_NAMESPACE_ID::Metadata file_level_metadata_fedtree_2eproto[12];
+static ::PROTOBUF_NAMESPACE_ID::Metadata file_level_metadata_fedtree_2eproto[17];
 static constexpr ::PROTOBUF_NAMESPACE_ID::EnumDescriptor const** file_level_enum_descriptors_fedtree_2eproto = nullptr;
 static constexpr ::PROTOBUF_NAMESPACE_ID::ServiceDescriptor const** file_level_service_descriptors_fedtree_2eproto = nullptr;
 
 const ::PROTOBUF_NAMESPACE_ID::uint32 TableStruct_fedtree_2eproto::offsets[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) = {
+  ~0u,  // no _has_bits_
+  PROTOBUF_FIELD_OFFSET(::fedtree::FIDBatch, _internal_metadata_),
+  ~0u,  // no _extensions_
+  ~0u,  // no _oneof_case_
+  ~0u,  // no _weak_field_map_
+  PROTOBUF_FIELD_OFFSET(::fedtree::FIDBatch, id_),
+  ~0u,  // no _has_bits_
+  PROTOBUF_FIELD_OFFSET(::fedtree::GHBatch, _internal_metadata_),
+  ~0u,  // no _extensions_
+  ~0u,  // no _oneof_case_
+  ~0u,  // no _weak_field_map_
+  PROTOBUF_FIELD_OFFSET(::fedtree::GHBatch, g_),
+  PROTOBUF_FIELD_OFFSET(::fedtree::GHBatch, h_),
+  ~0u,  // no _has_bits_
+  PROTOBUF_FIELD_OFFSET(::fedtree::GHEncBatch, _internal_metadata_),
+  ~0u,  // no _extensions_
+  ~0u,  // no _oneof_case_
+  ~0u,  // no _weak_field_map_
+  PROTOBUF_FIELD_OFFSET(::fedtree::GHEncBatch, g_enc_),
+  PROTOBUF_FIELD_OFFSET(::fedtree::GHEncBatch, h_enc_),
+  ~0u,  // no _has_bits_
+  PROTOBUF_FIELD_OFFSET(::fedtree::GHPair, _internal_metadata_),
+  ~0u,  // no _extensions_
+  ~0u,  // no _oneof_case_
+  ~0u,  // no _weak_field_map_
+  PROTOBUF_FIELD_OFFSET(::fedtree::GHPair, g_),
+  PROTOBUF_FIELD_OFFSET(::fedtree::GHPair, h_),
+  ~0u,  // no _has_bits_
+  PROTOBUF_FIELD_OFFSET(::fedtree::GHArray, _internal_metadata_),
+  ~0u,  // no _extensions_
+  ~0u,  // no _oneof_case_
+  ~0u,  // no _weak_field_map_
+  PROTOBUF_FIELD_OFFSET(::fedtree::GHArray, g_),
   ~0u,  // no _has_bits_
   PROTOBUF_FIELD_OFFSET(::fedtree::GHPairEnc, _internal_metadata_),
   ~0u,  // no _extensions_
@@ -281,13 +399,6 @@ const ::PROTOBUF_NAMESPACE_ID::uint32 TableStruct_fedtree_2eproto::offsets[] PRO
   PROTOBUF_FIELD_OFFSET(::fedtree::DatasetInfo, n_bins_),
   PROTOBUF_FIELD_OFFSET(::fedtree::DatasetInfo, n_columns_),
   ~0u,  // no _has_bits_
-  PROTOBUF_FIELD_OFFSET(::fedtree::GHPair, _internal_metadata_),
-  ~0u,  // no _extensions_
-  ~0u,  // no _oneof_case_
-  ~0u,  // no _weak_field_map_
-  PROTOBUF_FIELD_OFFSET(::fedtree::GHPair, g_),
-  PROTOBUF_FIELD_OFFSET(::fedtree::GHPair, h_),
-  ~0u,  // no _has_bits_
   PROTOBUF_FIELD_OFFSET(::fedtree::FID, _internal_metadata_),
   ~0u,  // no _extensions_
   ~0u,  // no _oneof_case_
@@ -332,23 +443,40 @@ const ::PROTOBUF_NAMESPACE_ID::uint32 TableStruct_fedtree_2eproto::offsets[] PRO
   ~0u,  // no _weak_field_map_
   PROTOBUF_FIELD_OFFSET(::fedtree::Ins2NodeID, iid_),
   PROTOBUF_FIELD_OFFSET(::fedtree::Ins2NodeID, nid_),
+  ~0u,  // no _has_bits_
+  PROTOBUF_FIELD_OFFSET(::fedtree::Ins2NodeIDBatch, _internal_metadata_),
+  ~0u,  // no _extensions_
+  ~0u,  // no _oneof_case_
+  ~0u,  // no _weak_field_map_
+  PROTOBUF_FIELD_OFFSET(::fedtree::Ins2NodeIDBatch, iid_),
+  PROTOBUF_FIELD_OFFSET(::fedtree::Ins2NodeIDBatch, nid_),
 };
 static const ::PROTOBUF_NAMESPACE_ID::internal::MigrationSchema schemas[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) = {
-  { 0, -1, sizeof(::fedtree::GHPairEnc)},
-  { 7, -1, sizeof(::fedtree::Paillier)},
-  { 14, -1, sizeof(::fedtree::SplitPoint)},
-  { 30, -1, sizeof(::fedtree::Score)},
-  { 36, -1, sizeof(::fedtree::PID)},
-  { 42, -1, sizeof(::fedtree::Ready)},
-  { 48, -1, sizeof(::fedtree::DatasetInfo)},
-  { 55, -1, sizeof(::fedtree::GHPair)},
-  { 62, -1, sizeof(::fedtree::FID)},
-  { 68, -1, sizeof(::fedtree::BestInfo)},
-  { 78, -1, sizeof(::fedtree::Node)},
-  { 100, -1, sizeof(::fedtree::Ins2NodeID)},
+  { 0, -1, sizeof(::fedtree::FIDBatch)},
+  { 6, -1, sizeof(::fedtree::GHBatch)},
+  { 13, -1, sizeof(::fedtree::GHEncBatch)},
+  { 20, -1, sizeof(::fedtree::GHPair)},
+  { 27, -1, sizeof(::fedtree::GHArray)},
+  { 33, -1, sizeof(::fedtree::GHPairEnc)},
+  { 40, -1, sizeof(::fedtree::Paillier)},
+  { 47, -1, sizeof(::fedtree::SplitPoint)},
+  { 63, -1, sizeof(::fedtree::Score)},
+  { 69, -1, sizeof(::fedtree::PID)},
+  { 75, -1, sizeof(::fedtree::Ready)},
+  { 81, -1, sizeof(::fedtree::DatasetInfo)},
+  { 88, -1, sizeof(::fedtree::FID)},
+  { 94, -1, sizeof(::fedtree::BestInfo)},
+  { 104, -1, sizeof(::fedtree::Node)},
+  { 126, -1, sizeof(::fedtree::Ins2NodeID)},
+  { 133, -1, sizeof(::fedtree::Ins2NodeIDBatch)},
 };
 
 static ::PROTOBUF_NAMESPACE_ID::Message const * const file_default_instances[] = {
+  reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::fedtree::_FIDBatch_default_instance_),
+  reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::fedtree::_GHBatch_default_instance_),
+  reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::fedtree::_GHEncBatch_default_instance_),
+  reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::fedtree::_GHPair_default_instance_),
+  reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::fedtree::_GHArray_default_instance_),
   reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::fedtree::_GHPairEnc_default_instance_),
   reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::fedtree::_Paillier_default_instance_),
   reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::fedtree::_SplitPoint_default_instance_),
@@ -356,84 +484,105 @@ static ::PROTOBUF_NAMESPACE_ID::Message const * const file_default_instances[] =
   reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::fedtree::_PID_default_instance_),
   reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::fedtree::_Ready_default_instance_),
   reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::fedtree::_DatasetInfo_default_instance_),
-  reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::fedtree::_GHPair_default_instance_),
   reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::fedtree::_FID_default_instance_),
   reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::fedtree::_BestInfo_default_instance_),
   reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::fedtree::_Node_default_instance_),
   reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::fedtree::_Ins2NodeID_default_instance_),
+  reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::fedtree::_Ins2NodeIDBatch_default_instance_),
 };
 
 const char descriptor_table_protodef_fedtree_2eproto[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) =
-  "\n\rfedtree.proto\022\007fedtree\")\n\tGHPairEnc\022\r\n"
-  "\005g_enc\030\001 \001(\t\022\r\n\005h_enc\030\002 \001(\t\".\n\010Paillier\022"
-  "\017\n\007modulus\030\001 \001(\t\022\021\n\tgenerator\030\002 \001(\t\"\350\001\n\n"
-  "SplitPoint\022\014\n\004gain\030\001 \001(\002\022\025\n\rfea_missing_"
-  "g\030\002 \001(\002\022\025\n\rfea_missing_h\030\003 \001(\002\022\021\n\trch_su"
-  "m_g\030\004 \001(\002\022\021\n\trch_sum_h\030\005 \001(\002\022\025\n\rdefault_"
-  "right\030\006 \001(\010\022\013\n\003nid\030\007 \001(\005\022\024\n\014split_fea_id"
-  "\030\010 \001(\005\022\014\n\004fval\030\t \001(\002\022\021\n\tsplit_bid\030\n \001(\005\022"
-  "\035\n\025no_split_value_update\030\013 \001(\010\"\030\n\005Score\022"
-  "\017\n\007content\030\001 \001(\002\"\021\n\003PID\022\n\n\002id\030\001 \001(\005\"\026\n\005R"
-  "eady\022\r\n\005ready\030\001 \001(\010\"0\n\013DatasetInfo\022\016\n\006n_"
-  "bins\030\001 \001(\005\022\021\n\tn_columns\030\002 \001(\005\"\036\n\006GHPair\022"
-  "\t\n\001g\030\001 \001(\001\022\t\n\001h\030\002 \001(\001\"\021\n\003FID\022\n\n\002id\030\001 \001(\005"
-  "\"S\n\010BestInfo\022\013\n\003pid\030\001 \001(\005\022\013\n\003nid\030\002 \001(\005\022\013"
-  "\n\003idx\030\003 \001(\005\022\022\n\nglobal_fid\030\004 \001(\005\022\014\n\004gain\030"
-  "\005 \001(\001\"\326\002\n\004Node\022\020\n\010final_id\030\001 \001(\005\022\021\n\tlch_"
-  "index\030\002 \001(\005\022\021\n\trch_index\030\003 \001(\005\022\024\n\014parent"
-  "_index\030\004 \001(\005\022\014\n\004gain\030\005 \001(\002\022\023\n\013base_weigh"
-  "t\030\006 \001(\002\022\030\n\020split_feature_id\030\007 \001(\005\022\013\n\003pid"
-  "\030\010 \001(\005\022\023\n\013split_value\030\t \001(\002\022\021\n\tsplit_bid"
-  "\030\n \001(\005\022\025\n\rdefault_right\030\013 \001(\010\022\017\n\007is_leaf"
-  "\030\014 \001(\010\022\020\n\010is_valid\030\r \001(\010\022\021\n\tis_pruned\030\016 "
-  "\001(\010\022\025\n\rsum_gh_pair_g\030\017 \001(\002\022\025\n\rsum_gh_pai"
-  "r_h\030\020 \001(\002\022\023\n\013n_instances\030\021 \001(\005\"&\n\nIns2No"
-  "deID\022\013\n\003iid\030\001 \001(\005\022\013\n\003nid\030\002 \001(\0052\347\n\n\007FedTr"
-  "ee\0228\n\026TriggerUpdateGradients\022\014.fedtree.P"
-  "ID\032\016.fedtree.Ready\"\000\0222\n\020TriggerBuildInit"
-  "\022\014.fedtree.PID\032\016.fedtree.Ready\"\000\0221\n\014GetG"
-  "radients\022\014.fedtree.PID\032\017.fedtree.GHPair\""
-  "\0000\001\0227\n\017SendDatasetInfo\022\024.fedtree.Dataset"
-  "Info\032\014.fedtree.PID\"\000\0223\n\016SendHistograms\022\017"
-  ".fedtree.GHPair\032\014.fedtree.PID\"\000(\001\022-\n\013Sen"
-  "dHistFid\022\014.fedtree.FID\032\014.fedtree.PID\"\000(\001"
-  "\0222\n\020TriggerAggregate\022\014.fedtree.PID\032\016.fed"
-  "tree.Ready\"\000\0222\n\013GetBestInfo\022\014.fedtree.PI"
-  "D\032\021.fedtree.BestInfo\"\0000\001\022)\n\010SendNode\022\r.f"
-  "edtree.Node\032\014.fedtree.PID\"\000\0227\n\016SendIns2N"
-  "odeID\022\023.fedtree.Ins2NodeID\032\014.fedtree.PID"
-  "\"\000(\001\022+\n\010GetNodes\022\014.fedtree.PID\032\r.fedtree"
-  ".Node\"\0000\001\0226\n\rGetIns2NodeID\022\014.fedtree.PID"
-  "\032\023.fedtree.Ins2NodeID\"\0000\001\0221\n\017CheckIfCont"
-  "inue\022\014.fedtree.PID\032\016.fedtree.Ready\"\000\022.\n\014"
-  "TriggerPrune\022\014.fedtree.PID\032\016.fedtree.Rea"
-  "dy\"\000\022.\n\tSendRange\022\017.fedtree.GHPair\032\014.fed"
-  "tree.PID\"\000(\001\022,\n\nTriggerCut\022\014.fedtree.PID"
-  "\032\016.fedtree.Ready\"\000\022-\n\010GetRange\022\014.fedtree"
-  ".PID\032\017.fedtree.GHPair\"\0000\001\022)\n\006SendGH\022\017.fe"
-  "dtree.GHPair\032\014.fedtree.PID\"\000\0225\n\023TriggerB"
-  "uildUsingGH\022\014.fedtree.PID\032\016.fedtree.Read"
-  "y\"\000\0221\n\017TriggerCalcTree\022\014.fedtree.PID\032\016.f"
-  "edtree.Ready\"\000\022*\n\013GetRootNode\022\014.fedtree."
-  "PID\032\r.fedtree.Node\0227\n\016GetSplitPoints\022\014.f"
-  "edtree.PID\032\023.fedtree.SplitPoint\"\0000\001\0222\n\020H"
-  "CheckIfContinue\022\014.fedtree.PID\032\016.fedtree."
-  "Ready\"\000\022/\n\013ScoreReduce\022\016.fedtree.Score\032\016"
-  ".fedtree.Score\"\000\0221\n\017TriggerHomoInit\022\014.fe"
-  "dtree.PID\032\016.fedtree.Ready\"\000\0220\n\013GetPailli"
-  "er\022\014.fedtree.PID\032\021.fedtree.Paillier\"\000\0229\n"
-  "\021SendHistogramsEnc\022\022.fedtree.GHPairEnc\032\014"
-  ".fedtree.PID\"\000(\001b\006proto3"
+  "\n\rfedtree.proto\022\007fedtree\"\032\n\010FIDBatch\022\016\n\002"
+  "id\030\001 \003(\005B\002\020\001\"\'\n\007GHBatch\022\r\n\001g\030\001 \003(\001B\002\020\001\022\r"
+  "\n\001h\030\002 \003(\001B\002\020\001\"*\n\nGHEncBatch\022\r\n\005g_enc\030\001 \003"
+  "(\t\022\r\n\005h_enc\030\002 \003(\t\"\036\n\006GHPair\022\t\n\001g\030\001 \001(\001\022\t"
+  "\n\001h\030\002 \001(\001\"\030\n\007GHArray\022\r\n\001g\030\001 \003(\001B\002\020\001\")\n\tG"
+  "HPairEnc\022\r\n\005g_enc\030\001 \001(\t\022\r\n\005h_enc\030\002 \001(\t\"."
+  "\n\010Paillier\022\017\n\007modulus\030\001 \001(\t\022\021\n\tgenerator"
+  "\030\002 \001(\t\"\350\001\n\nSplitPoint\022\014\n\004gain\030\001 \001(\002\022\025\n\rf"
+  "ea_missing_g\030\002 \001(\002\022\025\n\rfea_missing_h\030\003 \001("
+  "\002\022\021\n\trch_sum_g\030\004 \001(\002\022\021\n\trch_sum_h\030\005 \001(\002\022"
+  "\025\n\rdefault_right\030\006 \001(\010\022\013\n\003nid\030\007 \001(\005\022\024\n\014s"
+  "plit_fea_id\030\010 \001(\005\022\014\n\004fval\030\t \001(\002\022\021\n\tsplit"
+  "_bid\030\n \001(\005\022\035\n\025no_split_value_update\030\013 \001("
+  "\010\"\030\n\005Score\022\017\n\007content\030\001 \001(\002\"\021\n\003PID\022\n\n\002id"
+  "\030\001 \001(\005\"\026\n\005Ready\022\r\n\005ready\030\001 \001(\010\"0\n\013Datase"
+  "tInfo\022\016\n\006n_bins\030\001 \001(\005\022\021\n\tn_columns\030\002 \001(\005"
+  "\"\021\n\003FID\022\n\n\002id\030\001 \001(\005\"S\n\010BestInfo\022\013\n\003pid\030\001"
+  " \001(\005\022\013\n\003nid\030\002 \001(\005\022\013\n\003idx\030\003 \001(\005\022\022\n\nglobal"
+  "_fid\030\004 \001(\005\022\014\n\004gain\030\005 \001(\001\"\326\002\n\004Node\022\020\n\010fin"
+  "al_id\030\001 \001(\005\022\021\n\tlch_index\030\002 \001(\005\022\021\n\trch_in"
+  "dex\030\003 \001(\005\022\024\n\014parent_index\030\004 \001(\005\022\014\n\004gain\030"
+  "\005 \001(\002\022\023\n\013base_weight\030\006 \001(\002\022\030\n\020split_feat"
+  "ure_id\030\007 \001(\005\022\013\n\003pid\030\010 \001(\005\022\023\n\013split_value"
+  "\030\t \001(\002\022\021\n\tsplit_bid\030\n \001(\005\022\025\n\rdefault_rig"
+  "ht\030\013 \001(\010\022\017\n\007is_leaf\030\014 \001(\010\022\020\n\010is_valid\030\r "
+  "\001(\010\022\021\n\tis_pruned\030\016 \001(\010\022\025\n\rsum_gh_pair_g\030"
+  "\017 \001(\002\022\025\n\rsum_gh_pair_h\030\020 \001(\002\022\023\n\013n_instan"
+  "ces\030\021 \001(\005\"&\n\nIns2NodeID\022\013\n\003iid\030\001 \001(\005\022\013\n\003"
+  "nid\030\002 \001(\005\"3\n\017Ins2NodeIDBatch\022\017\n\003iid\030\001 \003("
+  "\005B\002\020\001\022\017\n\003nid\030\002 \003(\005B\002\020\0012\236\016\n\007FedTree\0228\n\026Tr"
+  "iggerUpdateGradients\022\014.fedtree.PID\032\016.fed"
+  "tree.Ready\"\000\0222\n\020TriggerBuildInit\022\014.fedtr"
+  "ee.PID\032\016.fedtree.Ready\"\000\0221\n\014GetGradients"
+  "\022\014.fedtree.PID\032\017.fedtree.GHPair\"\0000\001\0227\n\017S"
+  "endDatasetInfo\022\024.fedtree.DatasetInfo\032\014.f"
+  "edtree.PID\"\000\0223\n\016SendHistograms\022\017.fedtree"
+  ".GHPair\032\014.fedtree.PID\"\000(\001\022-\n\013SendHistFid"
+  "\022\014.fedtree.FID\032\014.fedtree.PID\"\000(\001\0222\n\020Trig"
+  "gerAggregate\022\014.fedtree.PID\032\016.fedtree.Rea"
+  "dy\"\000\0222\n\013GetBestInfo\022\014.fedtree.PID\032\021.fedt"
+  "ree.BestInfo\"\0000\001\022)\n\010SendNode\022\r.fedtree.N"
+  "ode\032\014.fedtree.PID\"\000\0227\n\016SendIns2NodeID\022\023."
+  "fedtree.Ins2NodeID\032\014.fedtree.PID\"\000(\001\022+\n\010"
+  "GetNodes\022\014.fedtree.PID\032\r.fedtree.Node\"\0000"
+  "\001\0226\n\rGetIns2NodeID\022\014.fedtree.PID\032\023.fedtr"
+  "ee.Ins2NodeID\"\0000\001\0221\n\017CheckIfContinue\022\014.f"
+  "edtree.PID\032\016.fedtree.Ready\"\000\022.\n\014TriggerP"
+  "rune\022\014.fedtree.PID\032\016.fedtree.Ready\"\000\022.\n\t"
+  "SendRange\022\017.fedtree.GHPair\032\014.fedtree.PID"
+  "\"\000(\001\022,\n\nTriggerCut\022\014.fedtree.PID\032\016.fedtr"
+  "ee.Ready\"\000\022-\n\010GetRange\022\014.fedtree.PID\032\017.f"
+  "edtree.GHPair\"\0000\001\022)\n\006SendGH\022\017.fedtree.GH"
+  "Pair\032\014.fedtree.PID\"\000\0225\n\023TriggerBuildUsin"
+  "gGH\022\014.fedtree.PID\032\016.fedtree.Ready\"\000\0221\n\017T"
+  "riggerCalcTree\022\014.fedtree.PID\032\016.fedtree.R"
+  "eady\"\000\022*\n\013GetRootNode\022\014.fedtree.PID\032\r.fe"
+  "dtree.Node\0227\n\016GetSplitPoints\022\014.fedtree.P"
+  "ID\032\023.fedtree.SplitPoint\"\0000\001\0222\n\020HCheckIfC"
+  "ontinue\022\014.fedtree.PID\032\016.fedtree.Ready\"\000\022"
+  "/\n\013ScoreReduce\022\016.fedtree.Score\032\016.fedtree"
+  ".Score\"\000\0221\n\017TriggerHomoInit\022\014.fedtree.PI"
+  "D\032\016.fedtree.Ready\"\000\0220\n\013GetPaillier\022\014.fed"
+  "tree.PID\032\021.fedtree.Paillier\"\000\0229\n\021SendHis"
+  "togramsEnc\022\022.fedtree.GHPairEnc\032\014.fedtree"
+  ".PID\"\000(\001\0229\n\025SendBatchedHistograms\022\020.fedt"
+  "ree.GHArray\032\014.fedtree.PID\"\000\022:\n\024SendHisto"
+  "gramBatches\022\020.fedtree.GHBatch\032\014.fedtree."
+  "PID\"\000(\001\0229\n\022SendHistFidBatches\022\021.fedtree."
+  "FIDBatch\032\014.fedtree.PID\"\000(\001\022B\n\024GetIns2Nod"
+  "eIDBatches\022\014.fedtree.PID\032\030.fedtree.Ins2N"
+  "odeIDBatch\"\0000\001\022C\n\025SendIns2NodeIDBatches\022"
+  "\030.fedtree.Ins2NodeIDBatch\032\014.fedtree.PID\""
+  "\000(\001\0228\n\022GetGradientBatches\022\014.fedtree.PID\032"
+  "\020.fedtree.GHBatch\"\0000\001\022@\n\027SendHistogramBa"
+  "tchesEnc\022\023.fedtree.GHEncBatch\032\014.fedtree."
+  "PID\"\000(\001b\006proto3"
   ;
 static const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable*const descriptor_table_fedtree_2eproto_deps[1] = {
 };
-static ::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase*const descriptor_table_fedtree_2eproto_sccs[12] = {
+static ::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase*const descriptor_table_fedtree_2eproto_sccs[17] = {
   &scc_info_BestInfo_fedtree_2eproto.base,
   &scc_info_DatasetInfo_fedtree_2eproto.base,
   &scc_info_FID_fedtree_2eproto.base,
+  &scc_info_FIDBatch_fedtree_2eproto.base,
+  &scc_info_GHArray_fedtree_2eproto.base,
+  &scc_info_GHBatch_fedtree_2eproto.base,
+  &scc_info_GHEncBatch_fedtree_2eproto.base,
   &scc_info_GHPair_fedtree_2eproto.base,
   &scc_info_GHPairEnc_fedtree_2eproto.base,
   &scc_info_Ins2NodeID_fedtree_2eproto.base,
+  &scc_info_Ins2NodeIDBatch_fedtree_2eproto.base,
   &scc_info_Node_fedtree_2eproto.base,
   &scc_info_PID_fedtree_2eproto.base,
   &scc_info_Paillier_fedtree_2eproto.base,
@@ -443,15 +592,1127 @@ static ::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase*const descriptor_table_fed
 };
 static ::PROTOBUF_NAMESPACE_ID::internal::once_flag descriptor_table_fedtree_2eproto_once;
 const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable descriptor_table_fedtree_2eproto = {
-  false, false, descriptor_table_protodef_fedtree_2eproto, "fedtree.proto", 2384,
-  &descriptor_table_fedtree_2eproto_once, descriptor_table_fedtree_2eproto_sccs, descriptor_table_fedtree_2eproto_deps, 12, 0,
+  false, false, descriptor_table_protodef_fedtree_2eproto, "fedtree.proto", 3015,
+  &descriptor_table_fedtree_2eproto_once, descriptor_table_fedtree_2eproto_sccs, descriptor_table_fedtree_2eproto_deps, 17, 0,
   schemas, file_default_instances, TableStruct_fedtree_2eproto::offsets,
-  file_level_metadata_fedtree_2eproto, 12, file_level_enum_descriptors_fedtree_2eproto, file_level_service_descriptors_fedtree_2eproto,
+  file_level_metadata_fedtree_2eproto, 17, file_level_enum_descriptors_fedtree_2eproto, file_level_service_descriptors_fedtree_2eproto,
 };
 
 // Force running AddDescriptors() at dynamic initialization time.
 static bool dynamic_init_dummy_fedtree_2eproto = (static_cast<void>(::PROTOBUF_NAMESPACE_ID::internal::AddDescriptors(&descriptor_table_fedtree_2eproto)), true);
 namespace fedtree {
+
+// ===================================================================
+
+class FIDBatch::_Internal {
+ public:
+};
+
+FIDBatch::FIDBatch(::PROTOBUF_NAMESPACE_ID::Arena* arena)
+  : ::PROTOBUF_NAMESPACE_ID::Message(arena),
+  id_(arena) {
+  SharedCtor();
+  RegisterArenaDtor(arena);
+  // @@protoc_insertion_point(arena_constructor:fedtree.FIDBatch)
+}
+FIDBatch::FIDBatch(const FIDBatch& from)
+  : ::PROTOBUF_NAMESPACE_ID::Message(),
+      id_(from.id_) {
+  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
+  // @@protoc_insertion_point(copy_constructor:fedtree.FIDBatch)
+}
+
+void FIDBatch::SharedCtor() {
+}
+
+FIDBatch::~FIDBatch() {
+  // @@protoc_insertion_point(destructor:fedtree.FIDBatch)
+  SharedDtor();
+  _internal_metadata_.Delete<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
+}
+
+void FIDBatch::SharedDtor() {
+  GOOGLE_DCHECK(GetArena() == nullptr);
+}
+
+void FIDBatch::ArenaDtor(void* object) {
+  FIDBatch* _this = reinterpret_cast< FIDBatch* >(object);
+  (void)_this;
+}
+void FIDBatch::RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena*) {
+}
+void FIDBatch::SetCachedSize(int size) const {
+  _cached_size_.Set(size);
+}
+const FIDBatch& FIDBatch::default_instance() {
+  ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&::scc_info_FIDBatch_fedtree_2eproto.base);
+  return *internal_default_instance();
+}
+
+
+void FIDBatch::Clear() {
+// @@protoc_insertion_point(message_clear_start:fedtree.FIDBatch)
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void) cached_has_bits;
+
+  id_.Clear();
+  _internal_metadata_.Clear<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
+}
+
+const char* FIDBatch::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) {
+#define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
+  while (!ctx->Done(&ptr)) {
+    ::PROTOBUF_NAMESPACE_ID::uint32 tag;
+    ptr = ::PROTOBUF_NAMESPACE_ID::internal::ReadTag(ptr, &tag);
+    CHK_(ptr);
+    switch (tag >> 3) {
+      // repeated int32 id = 1 [packed = true];
+      case 1:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 10)) {
+          ptr = ::PROTOBUF_NAMESPACE_ID::internal::PackedInt32Parser(_internal_mutable_id(), ptr, ctx);
+          CHK_(ptr);
+        } else if (static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 8) {
+          _internal_add_id(::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr));
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
+      default: {
+      handle_unusual:
+        if ((tag & 7) == 4 || tag == 0) {
+          ctx->SetLastTag(tag);
+          goto success;
+        }
+        ptr = UnknownFieldParse(tag,
+            _internal_metadata_.mutable_unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(),
+            ptr, ctx);
+        CHK_(ptr != nullptr);
+        continue;
+      }
+    }  // switch
+  }  // while
+success:
+  return ptr;
+failure:
+  ptr = nullptr;
+  goto success;
+#undef CHK_
+}
+
+::PROTOBUF_NAMESPACE_ID::uint8* FIDBatch::_InternalSerialize(
+    ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
+  // @@protoc_insertion_point(serialize_to_array_start:fedtree.FIDBatch)
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
+
+  // repeated int32 id = 1 [packed = true];
+  {
+    int byte_size = _id_cached_byte_size_.load(std::memory_order_relaxed);
+    if (byte_size > 0) {
+      target = stream->WriteInt32Packed(
+          1, _internal_id(), byte_size, target);
+    }
+  }
+
+  if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormat::InternalSerializeUnknownFieldsToArray(
+        _internal_metadata_.unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(::PROTOBUF_NAMESPACE_ID::UnknownFieldSet::default_instance), target, stream);
+  }
+  // @@protoc_insertion_point(serialize_to_array_end:fedtree.FIDBatch)
+  return target;
+}
+
+size_t FIDBatch::ByteSizeLong() const {
+// @@protoc_insertion_point(message_byte_size_start:fedtree.FIDBatch)
+  size_t total_size = 0;
+
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void) cached_has_bits;
+
+  // repeated int32 id = 1 [packed = true];
+  {
+    size_t data_size = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::
+      Int32Size(this->id_);
+    if (data_size > 0) {
+      total_size += 1 +
+        ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::Int32Size(
+            static_cast<::PROTOBUF_NAMESPACE_ID::int32>(data_size));
+    }
+    int cached_size = ::PROTOBUF_NAMESPACE_ID::internal::ToCachedSize(data_size);
+    _id_cached_byte_size_.store(cached_size,
+                                    std::memory_order_relaxed);
+    total_size += data_size;
+  }
+
+  if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
+    return ::PROTOBUF_NAMESPACE_ID::internal::ComputeUnknownFieldsSize(
+        _internal_metadata_, total_size, &_cached_size_);
+  }
+  int cached_size = ::PROTOBUF_NAMESPACE_ID::internal::ToCachedSize(total_size);
+  SetCachedSize(cached_size);
+  return total_size;
+}
+
+void FIDBatch::MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
+// @@protoc_insertion_point(generalized_merge_from_start:fedtree.FIDBatch)
+  GOOGLE_DCHECK_NE(&from, this);
+  const FIDBatch* source =
+      ::PROTOBUF_NAMESPACE_ID::DynamicCastToGenerated<FIDBatch>(
+          &from);
+  if (source == nullptr) {
+  // @@protoc_insertion_point(generalized_merge_from_cast_fail:fedtree.FIDBatch)
+    ::PROTOBUF_NAMESPACE_ID::internal::ReflectionOps::Merge(from, this);
+  } else {
+  // @@protoc_insertion_point(generalized_merge_from_cast_success:fedtree.FIDBatch)
+    MergeFrom(*source);
+  }
+}
+
+void FIDBatch::MergeFrom(const FIDBatch& from) {
+// @@protoc_insertion_point(class_specific_merge_from_start:fedtree.FIDBatch)
+  GOOGLE_DCHECK_NE(&from, this);
+  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
+
+  id_.MergeFrom(from.id_);
+}
+
+void FIDBatch::CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
+// @@protoc_insertion_point(generalized_copy_from_start:fedtree.FIDBatch)
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+void FIDBatch::CopyFrom(const FIDBatch& from) {
+// @@protoc_insertion_point(class_specific_copy_from_start:fedtree.FIDBatch)
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+bool FIDBatch::IsInitialized() const {
+  return true;
+}
+
+void FIDBatch::InternalSwap(FIDBatch* other) {
+  using std::swap;
+  _internal_metadata_.Swap<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(&other->_internal_metadata_);
+  id_.InternalSwap(&other->id_);
+}
+
+::PROTOBUF_NAMESPACE_ID::Metadata FIDBatch::GetMetadata() const {
+  return GetMetadataStatic();
+}
+
+
+// ===================================================================
+
+class GHBatch::_Internal {
+ public:
+};
+
+GHBatch::GHBatch(::PROTOBUF_NAMESPACE_ID::Arena* arena)
+  : ::PROTOBUF_NAMESPACE_ID::Message(arena),
+  g_(arena),
+  h_(arena) {
+  SharedCtor();
+  RegisterArenaDtor(arena);
+  // @@protoc_insertion_point(arena_constructor:fedtree.GHBatch)
+}
+GHBatch::GHBatch(const GHBatch& from)
+  : ::PROTOBUF_NAMESPACE_ID::Message(),
+      g_(from.g_),
+      h_(from.h_) {
+  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
+  // @@protoc_insertion_point(copy_constructor:fedtree.GHBatch)
+}
+
+void GHBatch::SharedCtor() {
+}
+
+GHBatch::~GHBatch() {
+  // @@protoc_insertion_point(destructor:fedtree.GHBatch)
+  SharedDtor();
+  _internal_metadata_.Delete<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
+}
+
+void GHBatch::SharedDtor() {
+  GOOGLE_DCHECK(GetArena() == nullptr);
+}
+
+void GHBatch::ArenaDtor(void* object) {
+  GHBatch* _this = reinterpret_cast< GHBatch* >(object);
+  (void)_this;
+}
+void GHBatch::RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena*) {
+}
+void GHBatch::SetCachedSize(int size) const {
+  _cached_size_.Set(size);
+}
+const GHBatch& GHBatch::default_instance() {
+  ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&::scc_info_GHBatch_fedtree_2eproto.base);
+  return *internal_default_instance();
+}
+
+
+void GHBatch::Clear() {
+// @@protoc_insertion_point(message_clear_start:fedtree.GHBatch)
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void) cached_has_bits;
+
+  g_.Clear();
+  h_.Clear();
+  _internal_metadata_.Clear<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
+}
+
+const char* GHBatch::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) {
+#define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
+  while (!ctx->Done(&ptr)) {
+    ::PROTOBUF_NAMESPACE_ID::uint32 tag;
+    ptr = ::PROTOBUF_NAMESPACE_ID::internal::ReadTag(ptr, &tag);
+    CHK_(ptr);
+    switch (tag >> 3) {
+      // repeated double g = 1 [packed = true];
+      case 1:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 10)) {
+          ptr = ::PROTOBUF_NAMESPACE_ID::internal::PackedDoubleParser(_internal_mutable_g(), ptr, ctx);
+          CHK_(ptr);
+        } else if (static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 9) {
+          _internal_add_g(::PROTOBUF_NAMESPACE_ID::internal::UnalignedLoad<double>(ptr));
+          ptr += sizeof(double);
+        } else goto handle_unusual;
+        continue;
+      // repeated double h = 2 [packed = true];
+      case 2:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 18)) {
+          ptr = ::PROTOBUF_NAMESPACE_ID::internal::PackedDoubleParser(_internal_mutable_h(), ptr, ctx);
+          CHK_(ptr);
+        } else if (static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 17) {
+          _internal_add_h(::PROTOBUF_NAMESPACE_ID::internal::UnalignedLoad<double>(ptr));
+          ptr += sizeof(double);
+        } else goto handle_unusual;
+        continue;
+      default: {
+      handle_unusual:
+        if ((tag & 7) == 4 || tag == 0) {
+          ctx->SetLastTag(tag);
+          goto success;
+        }
+        ptr = UnknownFieldParse(tag,
+            _internal_metadata_.mutable_unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(),
+            ptr, ctx);
+        CHK_(ptr != nullptr);
+        continue;
+      }
+    }  // switch
+  }  // while
+success:
+  return ptr;
+failure:
+  ptr = nullptr;
+  goto success;
+#undef CHK_
+}
+
+::PROTOBUF_NAMESPACE_ID::uint8* GHBatch::_InternalSerialize(
+    ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
+  // @@protoc_insertion_point(serialize_to_array_start:fedtree.GHBatch)
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
+
+  // repeated double g = 1 [packed = true];
+  if (this->_internal_g_size() > 0) {
+    target = stream->WriteFixedPacked(1, _internal_g(), target);
+  }
+
+  // repeated double h = 2 [packed = true];
+  if (this->_internal_h_size() > 0) {
+    target = stream->WriteFixedPacked(2, _internal_h(), target);
+  }
+
+  if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormat::InternalSerializeUnknownFieldsToArray(
+        _internal_metadata_.unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(::PROTOBUF_NAMESPACE_ID::UnknownFieldSet::default_instance), target, stream);
+  }
+  // @@protoc_insertion_point(serialize_to_array_end:fedtree.GHBatch)
+  return target;
+}
+
+size_t GHBatch::ByteSizeLong() const {
+// @@protoc_insertion_point(message_byte_size_start:fedtree.GHBatch)
+  size_t total_size = 0;
+
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void) cached_has_bits;
+
+  // repeated double g = 1 [packed = true];
+  {
+    unsigned int count = static_cast<unsigned int>(this->_internal_g_size());
+    size_t data_size = 8UL * count;
+    if (data_size > 0) {
+      total_size += 1 +
+        ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::Int32Size(
+            static_cast<::PROTOBUF_NAMESPACE_ID::int32>(data_size));
+    }
+    int cached_size = ::PROTOBUF_NAMESPACE_ID::internal::ToCachedSize(data_size);
+    _g_cached_byte_size_.store(cached_size,
+                                    std::memory_order_relaxed);
+    total_size += data_size;
+  }
+
+  // repeated double h = 2 [packed = true];
+  {
+    unsigned int count = static_cast<unsigned int>(this->_internal_h_size());
+    size_t data_size = 8UL * count;
+    if (data_size > 0) {
+      total_size += 1 +
+        ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::Int32Size(
+            static_cast<::PROTOBUF_NAMESPACE_ID::int32>(data_size));
+    }
+    int cached_size = ::PROTOBUF_NAMESPACE_ID::internal::ToCachedSize(data_size);
+    _h_cached_byte_size_.store(cached_size,
+                                    std::memory_order_relaxed);
+    total_size += data_size;
+  }
+
+  if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
+    return ::PROTOBUF_NAMESPACE_ID::internal::ComputeUnknownFieldsSize(
+        _internal_metadata_, total_size, &_cached_size_);
+  }
+  int cached_size = ::PROTOBUF_NAMESPACE_ID::internal::ToCachedSize(total_size);
+  SetCachedSize(cached_size);
+  return total_size;
+}
+
+void GHBatch::MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
+// @@protoc_insertion_point(generalized_merge_from_start:fedtree.GHBatch)
+  GOOGLE_DCHECK_NE(&from, this);
+  const GHBatch* source =
+      ::PROTOBUF_NAMESPACE_ID::DynamicCastToGenerated<GHBatch>(
+          &from);
+  if (source == nullptr) {
+  // @@protoc_insertion_point(generalized_merge_from_cast_fail:fedtree.GHBatch)
+    ::PROTOBUF_NAMESPACE_ID::internal::ReflectionOps::Merge(from, this);
+  } else {
+  // @@protoc_insertion_point(generalized_merge_from_cast_success:fedtree.GHBatch)
+    MergeFrom(*source);
+  }
+}
+
+void GHBatch::MergeFrom(const GHBatch& from) {
+// @@protoc_insertion_point(class_specific_merge_from_start:fedtree.GHBatch)
+  GOOGLE_DCHECK_NE(&from, this);
+  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
+
+  g_.MergeFrom(from.g_);
+  h_.MergeFrom(from.h_);
+}
+
+void GHBatch::CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
+// @@protoc_insertion_point(generalized_copy_from_start:fedtree.GHBatch)
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+void GHBatch::CopyFrom(const GHBatch& from) {
+// @@protoc_insertion_point(class_specific_copy_from_start:fedtree.GHBatch)
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+bool GHBatch::IsInitialized() const {
+  return true;
+}
+
+void GHBatch::InternalSwap(GHBatch* other) {
+  using std::swap;
+  _internal_metadata_.Swap<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(&other->_internal_metadata_);
+  g_.InternalSwap(&other->g_);
+  h_.InternalSwap(&other->h_);
+}
+
+::PROTOBUF_NAMESPACE_ID::Metadata GHBatch::GetMetadata() const {
+  return GetMetadataStatic();
+}
+
+
+// ===================================================================
+
+class GHEncBatch::_Internal {
+ public:
+};
+
+GHEncBatch::GHEncBatch(::PROTOBUF_NAMESPACE_ID::Arena* arena)
+  : ::PROTOBUF_NAMESPACE_ID::Message(arena),
+  g_enc_(arena),
+  h_enc_(arena) {
+  SharedCtor();
+  RegisterArenaDtor(arena);
+  // @@protoc_insertion_point(arena_constructor:fedtree.GHEncBatch)
+}
+GHEncBatch::GHEncBatch(const GHEncBatch& from)
+  : ::PROTOBUF_NAMESPACE_ID::Message(),
+      g_enc_(from.g_enc_),
+      h_enc_(from.h_enc_) {
+  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
+  // @@protoc_insertion_point(copy_constructor:fedtree.GHEncBatch)
+}
+
+void GHEncBatch::SharedCtor() {
+  ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&scc_info_GHEncBatch_fedtree_2eproto.base);
+}
+
+GHEncBatch::~GHEncBatch() {
+  // @@protoc_insertion_point(destructor:fedtree.GHEncBatch)
+  SharedDtor();
+  _internal_metadata_.Delete<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
+}
+
+void GHEncBatch::SharedDtor() {
+  GOOGLE_DCHECK(GetArena() == nullptr);
+}
+
+void GHEncBatch::ArenaDtor(void* object) {
+  GHEncBatch* _this = reinterpret_cast< GHEncBatch* >(object);
+  (void)_this;
+}
+void GHEncBatch::RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena*) {
+}
+void GHEncBatch::SetCachedSize(int size) const {
+  _cached_size_.Set(size);
+}
+const GHEncBatch& GHEncBatch::default_instance() {
+  ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&::scc_info_GHEncBatch_fedtree_2eproto.base);
+  return *internal_default_instance();
+}
+
+
+void GHEncBatch::Clear() {
+// @@protoc_insertion_point(message_clear_start:fedtree.GHEncBatch)
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void) cached_has_bits;
+
+  g_enc_.Clear();
+  h_enc_.Clear();
+  _internal_metadata_.Clear<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
+}
+
+const char* GHEncBatch::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) {
+#define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
+  while (!ctx->Done(&ptr)) {
+    ::PROTOBUF_NAMESPACE_ID::uint32 tag;
+    ptr = ::PROTOBUF_NAMESPACE_ID::internal::ReadTag(ptr, &tag);
+    CHK_(ptr);
+    switch (tag >> 3) {
+      // repeated string g_enc = 1;
+      case 1:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 10)) {
+          ptr -= 1;
+          do {
+            ptr += 1;
+            auto str = _internal_add_g_enc();
+            ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParser(str, ptr, ctx);
+            CHK_(::PROTOBUF_NAMESPACE_ID::internal::VerifyUTF8(str, "fedtree.GHEncBatch.g_enc"));
+            CHK_(ptr);
+            if (!ctx->DataAvailable(ptr)) break;
+          } while (::PROTOBUF_NAMESPACE_ID::internal::ExpectTag<10>(ptr));
+        } else goto handle_unusual;
+        continue;
+      // repeated string h_enc = 2;
+      case 2:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 18)) {
+          ptr -= 1;
+          do {
+            ptr += 1;
+            auto str = _internal_add_h_enc();
+            ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParser(str, ptr, ctx);
+            CHK_(::PROTOBUF_NAMESPACE_ID::internal::VerifyUTF8(str, "fedtree.GHEncBatch.h_enc"));
+            CHK_(ptr);
+            if (!ctx->DataAvailable(ptr)) break;
+          } while (::PROTOBUF_NAMESPACE_ID::internal::ExpectTag<18>(ptr));
+        } else goto handle_unusual;
+        continue;
+      default: {
+      handle_unusual:
+        if ((tag & 7) == 4 || tag == 0) {
+          ctx->SetLastTag(tag);
+          goto success;
+        }
+        ptr = UnknownFieldParse(tag,
+            _internal_metadata_.mutable_unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(),
+            ptr, ctx);
+        CHK_(ptr != nullptr);
+        continue;
+      }
+    }  // switch
+  }  // while
+success:
+  return ptr;
+failure:
+  ptr = nullptr;
+  goto success;
+#undef CHK_
+}
+
+::PROTOBUF_NAMESPACE_ID::uint8* GHEncBatch::_InternalSerialize(
+    ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
+  // @@protoc_insertion_point(serialize_to_array_start:fedtree.GHEncBatch)
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
+
+  // repeated string g_enc = 1;
+  for (int i = 0, n = this->_internal_g_enc_size(); i < n; i++) {
+    const auto& s = this->_internal_g_enc(i);
+    ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::VerifyUtf8String(
+      s.data(), static_cast<int>(s.length()),
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::SERIALIZE,
+      "fedtree.GHEncBatch.g_enc");
+    target = stream->WriteString(1, s, target);
+  }
+
+  // repeated string h_enc = 2;
+  for (int i = 0, n = this->_internal_h_enc_size(); i < n; i++) {
+    const auto& s = this->_internal_h_enc(i);
+    ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::VerifyUtf8String(
+      s.data(), static_cast<int>(s.length()),
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::SERIALIZE,
+      "fedtree.GHEncBatch.h_enc");
+    target = stream->WriteString(2, s, target);
+  }
+
+  if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormat::InternalSerializeUnknownFieldsToArray(
+        _internal_metadata_.unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(::PROTOBUF_NAMESPACE_ID::UnknownFieldSet::default_instance), target, stream);
+  }
+  // @@protoc_insertion_point(serialize_to_array_end:fedtree.GHEncBatch)
+  return target;
+}
+
+size_t GHEncBatch::ByteSizeLong() const {
+// @@protoc_insertion_point(message_byte_size_start:fedtree.GHEncBatch)
+  size_t total_size = 0;
+
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void) cached_has_bits;
+
+  // repeated string g_enc = 1;
+  total_size += 1 *
+      ::PROTOBUF_NAMESPACE_ID::internal::FromIntSize(g_enc_.size());
+  for (int i = 0, n = g_enc_.size(); i < n; i++) {
+    total_size += ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::StringSize(
+      g_enc_.Get(i));
+  }
+
+  // repeated string h_enc = 2;
+  total_size += 1 *
+      ::PROTOBUF_NAMESPACE_ID::internal::FromIntSize(h_enc_.size());
+  for (int i = 0, n = h_enc_.size(); i < n; i++) {
+    total_size += ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::StringSize(
+      h_enc_.Get(i));
+  }
+
+  if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
+    return ::PROTOBUF_NAMESPACE_ID::internal::ComputeUnknownFieldsSize(
+        _internal_metadata_, total_size, &_cached_size_);
+  }
+  int cached_size = ::PROTOBUF_NAMESPACE_ID::internal::ToCachedSize(total_size);
+  SetCachedSize(cached_size);
+  return total_size;
+}
+
+void GHEncBatch::MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
+// @@protoc_insertion_point(generalized_merge_from_start:fedtree.GHEncBatch)
+  GOOGLE_DCHECK_NE(&from, this);
+  const GHEncBatch* source =
+      ::PROTOBUF_NAMESPACE_ID::DynamicCastToGenerated<GHEncBatch>(
+          &from);
+  if (source == nullptr) {
+  // @@protoc_insertion_point(generalized_merge_from_cast_fail:fedtree.GHEncBatch)
+    ::PROTOBUF_NAMESPACE_ID::internal::ReflectionOps::Merge(from, this);
+  } else {
+  // @@protoc_insertion_point(generalized_merge_from_cast_success:fedtree.GHEncBatch)
+    MergeFrom(*source);
+  }
+}
+
+void GHEncBatch::MergeFrom(const GHEncBatch& from) {
+// @@protoc_insertion_point(class_specific_merge_from_start:fedtree.GHEncBatch)
+  GOOGLE_DCHECK_NE(&from, this);
+  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
+
+  g_enc_.MergeFrom(from.g_enc_);
+  h_enc_.MergeFrom(from.h_enc_);
+}
+
+void GHEncBatch::CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
+// @@protoc_insertion_point(generalized_copy_from_start:fedtree.GHEncBatch)
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+void GHEncBatch::CopyFrom(const GHEncBatch& from) {
+// @@protoc_insertion_point(class_specific_copy_from_start:fedtree.GHEncBatch)
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+bool GHEncBatch::IsInitialized() const {
+  return true;
+}
+
+void GHEncBatch::InternalSwap(GHEncBatch* other) {
+  using std::swap;
+  _internal_metadata_.Swap<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(&other->_internal_metadata_);
+  g_enc_.InternalSwap(&other->g_enc_);
+  h_enc_.InternalSwap(&other->h_enc_);
+}
+
+::PROTOBUF_NAMESPACE_ID::Metadata GHEncBatch::GetMetadata() const {
+  return GetMetadataStatic();
+}
+
+
+// ===================================================================
+
+class GHPair::_Internal {
+ public:
+};
+
+GHPair::GHPair(::PROTOBUF_NAMESPACE_ID::Arena* arena)
+  : ::PROTOBUF_NAMESPACE_ID::Message(arena) {
+  SharedCtor();
+  RegisterArenaDtor(arena);
+  // @@protoc_insertion_point(arena_constructor:fedtree.GHPair)
+}
+GHPair::GHPair(const GHPair& from)
+  : ::PROTOBUF_NAMESPACE_ID::Message() {
+  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
+  ::memcpy(&g_, &from.g_,
+    static_cast<size_t>(reinterpret_cast<char*>(&h_) -
+    reinterpret_cast<char*>(&g_)) + sizeof(h_));
+  // @@protoc_insertion_point(copy_constructor:fedtree.GHPair)
+}
+
+void GHPair::SharedCtor() {
+  ::memset(reinterpret_cast<char*>(this) + static_cast<size_t>(
+      reinterpret_cast<char*>(&g_) - reinterpret_cast<char*>(this)),
+      0, static_cast<size_t>(reinterpret_cast<char*>(&h_) -
+      reinterpret_cast<char*>(&g_)) + sizeof(h_));
+}
+
+GHPair::~GHPair() {
+  // @@protoc_insertion_point(destructor:fedtree.GHPair)
+  SharedDtor();
+  _internal_metadata_.Delete<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
+}
+
+void GHPair::SharedDtor() {
+  GOOGLE_DCHECK(GetArena() == nullptr);
+}
+
+void GHPair::ArenaDtor(void* object) {
+  GHPair* _this = reinterpret_cast< GHPair* >(object);
+  (void)_this;
+}
+void GHPair::RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena*) {
+}
+void GHPair::SetCachedSize(int size) const {
+  _cached_size_.Set(size);
+}
+const GHPair& GHPair::default_instance() {
+  ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&::scc_info_GHPair_fedtree_2eproto.base);
+  return *internal_default_instance();
+}
+
+
+void GHPair::Clear() {
+// @@protoc_insertion_point(message_clear_start:fedtree.GHPair)
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void) cached_has_bits;
+
+  ::memset(&g_, 0, static_cast<size_t>(
+      reinterpret_cast<char*>(&h_) -
+      reinterpret_cast<char*>(&g_)) + sizeof(h_));
+  _internal_metadata_.Clear<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
+}
+
+const char* GHPair::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) {
+#define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
+  while (!ctx->Done(&ptr)) {
+    ::PROTOBUF_NAMESPACE_ID::uint32 tag;
+    ptr = ::PROTOBUF_NAMESPACE_ID::internal::ReadTag(ptr, &tag);
+    CHK_(ptr);
+    switch (tag >> 3) {
+      // double g = 1;
+      case 1:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 9)) {
+          g_ = ::PROTOBUF_NAMESPACE_ID::internal::UnalignedLoad<double>(ptr);
+          ptr += sizeof(double);
+        } else goto handle_unusual;
+        continue;
+      // double h = 2;
+      case 2:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 17)) {
+          h_ = ::PROTOBUF_NAMESPACE_ID::internal::UnalignedLoad<double>(ptr);
+          ptr += sizeof(double);
+        } else goto handle_unusual;
+        continue;
+      default: {
+      handle_unusual:
+        if ((tag & 7) == 4 || tag == 0) {
+          ctx->SetLastTag(tag);
+          goto success;
+        }
+        ptr = UnknownFieldParse(tag,
+            _internal_metadata_.mutable_unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(),
+            ptr, ctx);
+        CHK_(ptr != nullptr);
+        continue;
+      }
+    }  // switch
+  }  // while
+success:
+  return ptr;
+failure:
+  ptr = nullptr;
+  goto success;
+#undef CHK_
+}
+
+::PROTOBUF_NAMESPACE_ID::uint8* GHPair::_InternalSerialize(
+    ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
+  // @@protoc_insertion_point(serialize_to_array_start:fedtree.GHPair)
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
+
+  // double g = 1;
+  if (!(this->g() <= 0 && this->g() >= 0)) {
+    target = stream->EnsureSpace(target);
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteDoubleToArray(1, this->_internal_g(), target);
+  }
+
+  // double h = 2;
+  if (!(this->h() <= 0 && this->h() >= 0)) {
+    target = stream->EnsureSpace(target);
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteDoubleToArray(2, this->_internal_h(), target);
+  }
+
+  if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormat::InternalSerializeUnknownFieldsToArray(
+        _internal_metadata_.unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(::PROTOBUF_NAMESPACE_ID::UnknownFieldSet::default_instance), target, stream);
+  }
+  // @@protoc_insertion_point(serialize_to_array_end:fedtree.GHPair)
+  return target;
+}
+
+size_t GHPair::ByteSizeLong() const {
+// @@protoc_insertion_point(message_byte_size_start:fedtree.GHPair)
+  size_t total_size = 0;
+
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void) cached_has_bits;
+
+  // double g = 1;
+  if (!(this->g() <= 0 && this->g() >= 0)) {
+    total_size += 1 + 8;
+  }
+
+  // double h = 2;
+  if (!(this->h() <= 0 && this->h() >= 0)) {
+    total_size += 1 + 8;
+  }
+
+  if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
+    return ::PROTOBUF_NAMESPACE_ID::internal::ComputeUnknownFieldsSize(
+        _internal_metadata_, total_size, &_cached_size_);
+  }
+  int cached_size = ::PROTOBUF_NAMESPACE_ID::internal::ToCachedSize(total_size);
+  SetCachedSize(cached_size);
+  return total_size;
+}
+
+void GHPair::MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
+// @@protoc_insertion_point(generalized_merge_from_start:fedtree.GHPair)
+  GOOGLE_DCHECK_NE(&from, this);
+  const GHPair* source =
+      ::PROTOBUF_NAMESPACE_ID::DynamicCastToGenerated<GHPair>(
+          &from);
+  if (source == nullptr) {
+  // @@protoc_insertion_point(generalized_merge_from_cast_fail:fedtree.GHPair)
+    ::PROTOBUF_NAMESPACE_ID::internal::ReflectionOps::Merge(from, this);
+  } else {
+  // @@protoc_insertion_point(generalized_merge_from_cast_success:fedtree.GHPair)
+    MergeFrom(*source);
+  }
+}
+
+void GHPair::MergeFrom(const GHPair& from) {
+// @@protoc_insertion_point(class_specific_merge_from_start:fedtree.GHPair)
+  GOOGLE_DCHECK_NE(&from, this);
+  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
+
+  if (!(from.g() <= 0 && from.g() >= 0)) {
+    _internal_set_g(from._internal_g());
+  }
+  if (!(from.h() <= 0 && from.h() >= 0)) {
+    _internal_set_h(from._internal_h());
+  }
+}
+
+void GHPair::CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
+// @@protoc_insertion_point(generalized_copy_from_start:fedtree.GHPair)
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+void GHPair::CopyFrom(const GHPair& from) {
+// @@protoc_insertion_point(class_specific_copy_from_start:fedtree.GHPair)
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+bool GHPair::IsInitialized() const {
+  return true;
+}
+
+void GHPair::InternalSwap(GHPair* other) {
+  using std::swap;
+  _internal_metadata_.Swap<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(&other->_internal_metadata_);
+  ::PROTOBUF_NAMESPACE_ID::internal::memswap<
+      PROTOBUF_FIELD_OFFSET(GHPair, h_)
+      + sizeof(GHPair::h_)
+      - PROTOBUF_FIELD_OFFSET(GHPair, g_)>(
+          reinterpret_cast<char*>(&g_),
+          reinterpret_cast<char*>(&other->g_));
+}
+
+::PROTOBUF_NAMESPACE_ID::Metadata GHPair::GetMetadata() const {
+  return GetMetadataStatic();
+}
+
+
+// ===================================================================
+
+class GHArray::_Internal {
+ public:
+};
+
+GHArray::GHArray(::PROTOBUF_NAMESPACE_ID::Arena* arena)
+  : ::PROTOBUF_NAMESPACE_ID::Message(arena),
+  g_(arena) {
+  SharedCtor();
+  RegisterArenaDtor(arena);
+  // @@protoc_insertion_point(arena_constructor:fedtree.GHArray)
+}
+GHArray::GHArray(const GHArray& from)
+  : ::PROTOBUF_NAMESPACE_ID::Message(),
+      g_(from.g_) {
+  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
+  // @@protoc_insertion_point(copy_constructor:fedtree.GHArray)
+}
+
+void GHArray::SharedCtor() {
+}
+
+GHArray::~GHArray() {
+  // @@protoc_insertion_point(destructor:fedtree.GHArray)
+  SharedDtor();
+  _internal_metadata_.Delete<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
+}
+
+void GHArray::SharedDtor() {
+  GOOGLE_DCHECK(GetArena() == nullptr);
+}
+
+void GHArray::ArenaDtor(void* object) {
+  GHArray* _this = reinterpret_cast< GHArray* >(object);
+  (void)_this;
+}
+void GHArray::RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena*) {
+}
+void GHArray::SetCachedSize(int size) const {
+  _cached_size_.Set(size);
+}
+const GHArray& GHArray::default_instance() {
+  ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&::scc_info_GHArray_fedtree_2eproto.base);
+  return *internal_default_instance();
+}
+
+
+void GHArray::Clear() {
+// @@protoc_insertion_point(message_clear_start:fedtree.GHArray)
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void) cached_has_bits;
+
+  g_.Clear();
+  _internal_metadata_.Clear<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
+}
+
+const char* GHArray::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) {
+#define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
+  while (!ctx->Done(&ptr)) {
+    ::PROTOBUF_NAMESPACE_ID::uint32 tag;
+    ptr = ::PROTOBUF_NAMESPACE_ID::internal::ReadTag(ptr, &tag);
+    CHK_(ptr);
+    switch (tag >> 3) {
+      // repeated double g = 1 [packed = true];
+      case 1:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 10)) {
+          ptr = ::PROTOBUF_NAMESPACE_ID::internal::PackedDoubleParser(_internal_mutable_g(), ptr, ctx);
+          CHK_(ptr);
+        } else if (static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 9) {
+          _internal_add_g(::PROTOBUF_NAMESPACE_ID::internal::UnalignedLoad<double>(ptr));
+          ptr += sizeof(double);
+        } else goto handle_unusual;
+        continue;
+      default: {
+      handle_unusual:
+        if ((tag & 7) == 4 || tag == 0) {
+          ctx->SetLastTag(tag);
+          goto success;
+        }
+        ptr = UnknownFieldParse(tag,
+            _internal_metadata_.mutable_unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(),
+            ptr, ctx);
+        CHK_(ptr != nullptr);
+        continue;
+      }
+    }  // switch
+  }  // while
+success:
+  return ptr;
+failure:
+  ptr = nullptr;
+  goto success;
+#undef CHK_
+}
+
+::PROTOBUF_NAMESPACE_ID::uint8* GHArray::_InternalSerialize(
+    ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
+  // @@protoc_insertion_point(serialize_to_array_start:fedtree.GHArray)
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
+
+  // repeated double g = 1 [packed = true];
+  if (this->_internal_g_size() > 0) {
+    target = stream->WriteFixedPacked(1, _internal_g(), target);
+  }
+
+  if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormat::InternalSerializeUnknownFieldsToArray(
+        _internal_metadata_.unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(::PROTOBUF_NAMESPACE_ID::UnknownFieldSet::default_instance), target, stream);
+  }
+  // @@protoc_insertion_point(serialize_to_array_end:fedtree.GHArray)
+  return target;
+}
+
+size_t GHArray::ByteSizeLong() const {
+// @@protoc_insertion_point(message_byte_size_start:fedtree.GHArray)
+  size_t total_size = 0;
+
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void) cached_has_bits;
+
+  // repeated double g = 1 [packed = true];
+  {
+    unsigned int count = static_cast<unsigned int>(this->_internal_g_size());
+    size_t data_size = 8UL * count;
+    if (data_size > 0) {
+      total_size += 1 +
+        ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::Int32Size(
+            static_cast<::PROTOBUF_NAMESPACE_ID::int32>(data_size));
+    }
+    int cached_size = ::PROTOBUF_NAMESPACE_ID::internal::ToCachedSize(data_size);
+    _g_cached_byte_size_.store(cached_size,
+                                    std::memory_order_relaxed);
+    total_size += data_size;
+  }
+
+  if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
+    return ::PROTOBUF_NAMESPACE_ID::internal::ComputeUnknownFieldsSize(
+        _internal_metadata_, total_size, &_cached_size_);
+  }
+  int cached_size = ::PROTOBUF_NAMESPACE_ID::internal::ToCachedSize(total_size);
+  SetCachedSize(cached_size);
+  return total_size;
+}
+
+void GHArray::MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
+// @@protoc_insertion_point(generalized_merge_from_start:fedtree.GHArray)
+  GOOGLE_DCHECK_NE(&from, this);
+  const GHArray* source =
+      ::PROTOBUF_NAMESPACE_ID::DynamicCastToGenerated<GHArray>(
+          &from);
+  if (source == nullptr) {
+  // @@protoc_insertion_point(generalized_merge_from_cast_fail:fedtree.GHArray)
+    ::PROTOBUF_NAMESPACE_ID::internal::ReflectionOps::Merge(from, this);
+  } else {
+  // @@protoc_insertion_point(generalized_merge_from_cast_success:fedtree.GHArray)
+    MergeFrom(*source);
+  }
+}
+
+void GHArray::MergeFrom(const GHArray& from) {
+// @@protoc_insertion_point(class_specific_merge_from_start:fedtree.GHArray)
+  GOOGLE_DCHECK_NE(&from, this);
+  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
+
+  g_.MergeFrom(from.g_);
+}
+
+void GHArray::CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
+// @@protoc_insertion_point(generalized_copy_from_start:fedtree.GHArray)
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+void GHArray::CopyFrom(const GHArray& from) {
+// @@protoc_insertion_point(class_specific_copy_from_start:fedtree.GHArray)
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+bool GHArray::IsInitialized() const {
+  return true;
+}
+
+void GHArray::InternalSwap(GHArray* other) {
+  using std::swap;
+  _internal_metadata_.Swap<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(&other->_internal_metadata_);
+  g_.InternalSwap(&other->g_);
+}
+
+::PROTOBUF_NAMESPACE_ID::Metadata GHArray::GetMetadata() const {
+  return GetMetadataStatic();
+}
+
 
 // ===================================================================
 
@@ -2170,231 +3431,6 @@ void DatasetInfo::InternalSwap(DatasetInfo* other) {
 
 // ===================================================================
 
-class GHPair::_Internal {
- public:
-};
-
-GHPair::GHPair(::PROTOBUF_NAMESPACE_ID::Arena* arena)
-  : ::PROTOBUF_NAMESPACE_ID::Message(arena) {
-  SharedCtor();
-  RegisterArenaDtor(arena);
-  // @@protoc_insertion_point(arena_constructor:fedtree.GHPair)
-}
-GHPair::GHPair(const GHPair& from)
-  : ::PROTOBUF_NAMESPACE_ID::Message() {
-  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
-  ::memcpy(&g_, &from.g_,
-    static_cast<size_t>(reinterpret_cast<char*>(&h_) -
-    reinterpret_cast<char*>(&g_)) + sizeof(h_));
-  // @@protoc_insertion_point(copy_constructor:fedtree.GHPair)
-}
-
-void GHPair::SharedCtor() {
-  ::memset(reinterpret_cast<char*>(this) + static_cast<size_t>(
-      reinterpret_cast<char*>(&g_) - reinterpret_cast<char*>(this)),
-      0, static_cast<size_t>(reinterpret_cast<char*>(&h_) -
-      reinterpret_cast<char*>(&g_)) + sizeof(h_));
-}
-
-GHPair::~GHPair() {
-  // @@protoc_insertion_point(destructor:fedtree.GHPair)
-  SharedDtor();
-  _internal_metadata_.Delete<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
-}
-
-void GHPair::SharedDtor() {
-  GOOGLE_DCHECK(GetArena() == nullptr);
-}
-
-void GHPair::ArenaDtor(void* object) {
-  GHPair* _this = reinterpret_cast< GHPair* >(object);
-  (void)_this;
-}
-void GHPair::RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena*) {
-}
-void GHPair::SetCachedSize(int size) const {
-  _cached_size_.Set(size);
-}
-const GHPair& GHPair::default_instance() {
-  ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&::scc_info_GHPair_fedtree_2eproto.base);
-  return *internal_default_instance();
-}
-
-
-void GHPair::Clear() {
-// @@protoc_insertion_point(message_clear_start:fedtree.GHPair)
-  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
-  // Prevent compiler warnings about cached_has_bits being unused
-  (void) cached_has_bits;
-
-  ::memset(&g_, 0, static_cast<size_t>(
-      reinterpret_cast<char*>(&h_) -
-      reinterpret_cast<char*>(&g_)) + sizeof(h_));
-  _internal_metadata_.Clear<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
-}
-
-const char* GHPair::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) {
-#define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
-  while (!ctx->Done(&ptr)) {
-    ::PROTOBUF_NAMESPACE_ID::uint32 tag;
-    ptr = ::PROTOBUF_NAMESPACE_ID::internal::ReadTag(ptr, &tag);
-    CHK_(ptr);
-    switch (tag >> 3) {
-      // double g = 1;
-      case 1:
-        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 9)) {
-          g_ = ::PROTOBUF_NAMESPACE_ID::internal::UnalignedLoad<double>(ptr);
-          ptr += sizeof(double);
-        } else goto handle_unusual;
-        continue;
-      // double h = 2;
-      case 2:
-        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 17)) {
-          h_ = ::PROTOBUF_NAMESPACE_ID::internal::UnalignedLoad<double>(ptr);
-          ptr += sizeof(double);
-        } else goto handle_unusual;
-        continue;
-      default: {
-      handle_unusual:
-        if ((tag & 7) == 4 || tag == 0) {
-          ctx->SetLastTag(tag);
-          goto success;
-        }
-        ptr = UnknownFieldParse(tag,
-            _internal_metadata_.mutable_unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(),
-            ptr, ctx);
-        CHK_(ptr != nullptr);
-        continue;
-      }
-    }  // switch
-  }  // while
-success:
-  return ptr;
-failure:
-  ptr = nullptr;
-  goto success;
-#undef CHK_
-}
-
-::PROTOBUF_NAMESPACE_ID::uint8* GHPair::_InternalSerialize(
-    ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
-  // @@protoc_insertion_point(serialize_to_array_start:fedtree.GHPair)
-  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
-  (void) cached_has_bits;
-
-  // double g = 1;
-  if (!(this->g() <= 0 && this->g() >= 0)) {
-    target = stream->EnsureSpace(target);
-    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteDoubleToArray(1, this->_internal_g(), target);
-  }
-
-  // double h = 2;
-  if (!(this->h() <= 0 && this->h() >= 0)) {
-    target = stream->EnsureSpace(target);
-    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteDoubleToArray(2, this->_internal_h(), target);
-  }
-
-  if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
-    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormat::InternalSerializeUnknownFieldsToArray(
-        _internal_metadata_.unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(::PROTOBUF_NAMESPACE_ID::UnknownFieldSet::default_instance), target, stream);
-  }
-  // @@protoc_insertion_point(serialize_to_array_end:fedtree.GHPair)
-  return target;
-}
-
-size_t GHPair::ByteSizeLong() const {
-// @@protoc_insertion_point(message_byte_size_start:fedtree.GHPair)
-  size_t total_size = 0;
-
-  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
-  // Prevent compiler warnings about cached_has_bits being unused
-  (void) cached_has_bits;
-
-  // double g = 1;
-  if (!(this->g() <= 0 && this->g() >= 0)) {
-    total_size += 1 + 8;
-  }
-
-  // double h = 2;
-  if (!(this->h() <= 0 && this->h() >= 0)) {
-    total_size += 1 + 8;
-  }
-
-  if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
-    return ::PROTOBUF_NAMESPACE_ID::internal::ComputeUnknownFieldsSize(
-        _internal_metadata_, total_size, &_cached_size_);
-  }
-  int cached_size = ::PROTOBUF_NAMESPACE_ID::internal::ToCachedSize(total_size);
-  SetCachedSize(cached_size);
-  return total_size;
-}
-
-void GHPair::MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
-// @@protoc_insertion_point(generalized_merge_from_start:fedtree.GHPair)
-  GOOGLE_DCHECK_NE(&from, this);
-  const GHPair* source =
-      ::PROTOBUF_NAMESPACE_ID::DynamicCastToGenerated<GHPair>(
-          &from);
-  if (source == nullptr) {
-  // @@protoc_insertion_point(generalized_merge_from_cast_fail:fedtree.GHPair)
-    ::PROTOBUF_NAMESPACE_ID::internal::ReflectionOps::Merge(from, this);
-  } else {
-  // @@protoc_insertion_point(generalized_merge_from_cast_success:fedtree.GHPair)
-    MergeFrom(*source);
-  }
-}
-
-void GHPair::MergeFrom(const GHPair& from) {
-// @@protoc_insertion_point(class_specific_merge_from_start:fedtree.GHPair)
-  GOOGLE_DCHECK_NE(&from, this);
-  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
-  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
-  (void) cached_has_bits;
-
-  if (!(from.g() <= 0 && from.g() >= 0)) {
-    _internal_set_g(from._internal_g());
-  }
-  if (!(from.h() <= 0 && from.h() >= 0)) {
-    _internal_set_h(from._internal_h());
-  }
-}
-
-void GHPair::CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
-// @@protoc_insertion_point(generalized_copy_from_start:fedtree.GHPair)
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
-}
-
-void GHPair::CopyFrom(const GHPair& from) {
-// @@protoc_insertion_point(class_specific_copy_from_start:fedtree.GHPair)
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
-}
-
-bool GHPair::IsInitialized() const {
-  return true;
-}
-
-void GHPair::InternalSwap(GHPair* other) {
-  using std::swap;
-  _internal_metadata_.Swap<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(&other->_internal_metadata_);
-  ::PROTOBUF_NAMESPACE_ID::internal::memswap<
-      PROTOBUF_FIELD_OFFSET(GHPair, h_)
-      + sizeof(GHPair::h_)
-      - PROTOBUF_FIELD_OFFSET(GHPair, g_)>(
-          reinterpret_cast<char*>(&g_),
-          reinterpret_cast<char*>(&other->g_));
-}
-
-::PROTOBUF_NAMESPACE_ID::Metadata GHPair::GetMetadata() const {
-  return GetMetadataStatic();
-}
-
-
-// ===================================================================
-
 class FID::_Internal {
  public:
 };
@@ -3668,9 +4704,269 @@ void Ins2NodeID::InternalSwap(Ins2NodeID* other) {
 }
 
 
+// ===================================================================
+
+class Ins2NodeIDBatch::_Internal {
+ public:
+};
+
+Ins2NodeIDBatch::Ins2NodeIDBatch(::PROTOBUF_NAMESPACE_ID::Arena* arena)
+  : ::PROTOBUF_NAMESPACE_ID::Message(arena),
+  iid_(arena),
+  nid_(arena) {
+  SharedCtor();
+  RegisterArenaDtor(arena);
+  // @@protoc_insertion_point(arena_constructor:fedtree.Ins2NodeIDBatch)
+}
+Ins2NodeIDBatch::Ins2NodeIDBatch(const Ins2NodeIDBatch& from)
+  : ::PROTOBUF_NAMESPACE_ID::Message(),
+      iid_(from.iid_),
+      nid_(from.nid_) {
+  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
+  // @@protoc_insertion_point(copy_constructor:fedtree.Ins2NodeIDBatch)
+}
+
+void Ins2NodeIDBatch::SharedCtor() {
+}
+
+Ins2NodeIDBatch::~Ins2NodeIDBatch() {
+  // @@protoc_insertion_point(destructor:fedtree.Ins2NodeIDBatch)
+  SharedDtor();
+  _internal_metadata_.Delete<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
+}
+
+void Ins2NodeIDBatch::SharedDtor() {
+  GOOGLE_DCHECK(GetArena() == nullptr);
+}
+
+void Ins2NodeIDBatch::ArenaDtor(void* object) {
+  Ins2NodeIDBatch* _this = reinterpret_cast< Ins2NodeIDBatch* >(object);
+  (void)_this;
+}
+void Ins2NodeIDBatch::RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena*) {
+}
+void Ins2NodeIDBatch::SetCachedSize(int size) const {
+  _cached_size_.Set(size);
+}
+const Ins2NodeIDBatch& Ins2NodeIDBatch::default_instance() {
+  ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&::scc_info_Ins2NodeIDBatch_fedtree_2eproto.base);
+  return *internal_default_instance();
+}
+
+
+void Ins2NodeIDBatch::Clear() {
+// @@protoc_insertion_point(message_clear_start:fedtree.Ins2NodeIDBatch)
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void) cached_has_bits;
+
+  iid_.Clear();
+  nid_.Clear();
+  _internal_metadata_.Clear<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
+}
+
+const char* Ins2NodeIDBatch::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) {
+#define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
+  while (!ctx->Done(&ptr)) {
+    ::PROTOBUF_NAMESPACE_ID::uint32 tag;
+    ptr = ::PROTOBUF_NAMESPACE_ID::internal::ReadTag(ptr, &tag);
+    CHK_(ptr);
+    switch (tag >> 3) {
+      // repeated int32 iid = 1 [packed = true];
+      case 1:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 10)) {
+          ptr = ::PROTOBUF_NAMESPACE_ID::internal::PackedInt32Parser(_internal_mutable_iid(), ptr, ctx);
+          CHK_(ptr);
+        } else if (static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 8) {
+          _internal_add_iid(::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr));
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
+      // repeated int32 nid = 2 [packed = true];
+      case 2:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 18)) {
+          ptr = ::PROTOBUF_NAMESPACE_ID::internal::PackedInt32Parser(_internal_mutable_nid(), ptr, ctx);
+          CHK_(ptr);
+        } else if (static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 16) {
+          _internal_add_nid(::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr));
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
+      default: {
+      handle_unusual:
+        if ((tag & 7) == 4 || tag == 0) {
+          ctx->SetLastTag(tag);
+          goto success;
+        }
+        ptr = UnknownFieldParse(tag,
+            _internal_metadata_.mutable_unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(),
+            ptr, ctx);
+        CHK_(ptr != nullptr);
+        continue;
+      }
+    }  // switch
+  }  // while
+success:
+  return ptr;
+failure:
+  ptr = nullptr;
+  goto success;
+#undef CHK_
+}
+
+::PROTOBUF_NAMESPACE_ID::uint8* Ins2NodeIDBatch::_InternalSerialize(
+    ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
+  // @@protoc_insertion_point(serialize_to_array_start:fedtree.Ins2NodeIDBatch)
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
+
+  // repeated int32 iid = 1 [packed = true];
+  {
+    int byte_size = _iid_cached_byte_size_.load(std::memory_order_relaxed);
+    if (byte_size > 0) {
+      target = stream->WriteInt32Packed(
+          1, _internal_iid(), byte_size, target);
+    }
+  }
+
+  // repeated int32 nid = 2 [packed = true];
+  {
+    int byte_size = _nid_cached_byte_size_.load(std::memory_order_relaxed);
+    if (byte_size > 0) {
+      target = stream->WriteInt32Packed(
+          2, _internal_nid(), byte_size, target);
+    }
+  }
+
+  if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormat::InternalSerializeUnknownFieldsToArray(
+        _internal_metadata_.unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(::PROTOBUF_NAMESPACE_ID::UnknownFieldSet::default_instance), target, stream);
+  }
+  // @@protoc_insertion_point(serialize_to_array_end:fedtree.Ins2NodeIDBatch)
+  return target;
+}
+
+size_t Ins2NodeIDBatch::ByteSizeLong() const {
+// @@protoc_insertion_point(message_byte_size_start:fedtree.Ins2NodeIDBatch)
+  size_t total_size = 0;
+
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void) cached_has_bits;
+
+  // repeated int32 iid = 1 [packed = true];
+  {
+    size_t data_size = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::
+      Int32Size(this->iid_);
+    if (data_size > 0) {
+      total_size += 1 +
+        ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::Int32Size(
+            static_cast<::PROTOBUF_NAMESPACE_ID::int32>(data_size));
+    }
+    int cached_size = ::PROTOBUF_NAMESPACE_ID::internal::ToCachedSize(data_size);
+    _iid_cached_byte_size_.store(cached_size,
+                                    std::memory_order_relaxed);
+    total_size += data_size;
+  }
+
+  // repeated int32 nid = 2 [packed = true];
+  {
+    size_t data_size = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::
+      Int32Size(this->nid_);
+    if (data_size > 0) {
+      total_size += 1 +
+        ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::Int32Size(
+            static_cast<::PROTOBUF_NAMESPACE_ID::int32>(data_size));
+    }
+    int cached_size = ::PROTOBUF_NAMESPACE_ID::internal::ToCachedSize(data_size);
+    _nid_cached_byte_size_.store(cached_size,
+                                    std::memory_order_relaxed);
+    total_size += data_size;
+  }
+
+  if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
+    return ::PROTOBUF_NAMESPACE_ID::internal::ComputeUnknownFieldsSize(
+        _internal_metadata_, total_size, &_cached_size_);
+  }
+  int cached_size = ::PROTOBUF_NAMESPACE_ID::internal::ToCachedSize(total_size);
+  SetCachedSize(cached_size);
+  return total_size;
+}
+
+void Ins2NodeIDBatch::MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
+// @@protoc_insertion_point(generalized_merge_from_start:fedtree.Ins2NodeIDBatch)
+  GOOGLE_DCHECK_NE(&from, this);
+  const Ins2NodeIDBatch* source =
+      ::PROTOBUF_NAMESPACE_ID::DynamicCastToGenerated<Ins2NodeIDBatch>(
+          &from);
+  if (source == nullptr) {
+  // @@protoc_insertion_point(generalized_merge_from_cast_fail:fedtree.Ins2NodeIDBatch)
+    ::PROTOBUF_NAMESPACE_ID::internal::ReflectionOps::Merge(from, this);
+  } else {
+  // @@protoc_insertion_point(generalized_merge_from_cast_success:fedtree.Ins2NodeIDBatch)
+    MergeFrom(*source);
+  }
+}
+
+void Ins2NodeIDBatch::MergeFrom(const Ins2NodeIDBatch& from) {
+// @@protoc_insertion_point(class_specific_merge_from_start:fedtree.Ins2NodeIDBatch)
+  GOOGLE_DCHECK_NE(&from, this);
+  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
+
+  iid_.MergeFrom(from.iid_);
+  nid_.MergeFrom(from.nid_);
+}
+
+void Ins2NodeIDBatch::CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
+// @@protoc_insertion_point(generalized_copy_from_start:fedtree.Ins2NodeIDBatch)
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+void Ins2NodeIDBatch::CopyFrom(const Ins2NodeIDBatch& from) {
+// @@protoc_insertion_point(class_specific_copy_from_start:fedtree.Ins2NodeIDBatch)
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+bool Ins2NodeIDBatch::IsInitialized() const {
+  return true;
+}
+
+void Ins2NodeIDBatch::InternalSwap(Ins2NodeIDBatch* other) {
+  using std::swap;
+  _internal_metadata_.Swap<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(&other->_internal_metadata_);
+  iid_.InternalSwap(&other->iid_);
+  nid_.InternalSwap(&other->nid_);
+}
+
+::PROTOBUF_NAMESPACE_ID::Metadata Ins2NodeIDBatch::GetMetadata() const {
+  return GetMetadataStatic();
+}
+
+
 // @@protoc_insertion_point(namespace_scope)
 }  // namespace fedtree
 PROTOBUF_NAMESPACE_OPEN
+template<> PROTOBUF_NOINLINE ::fedtree::FIDBatch* Arena::CreateMaybeMessage< ::fedtree::FIDBatch >(Arena* arena) {
+  return Arena::CreateMessageInternal< ::fedtree::FIDBatch >(arena);
+}
+template<> PROTOBUF_NOINLINE ::fedtree::GHBatch* Arena::CreateMaybeMessage< ::fedtree::GHBatch >(Arena* arena) {
+  return Arena::CreateMessageInternal< ::fedtree::GHBatch >(arena);
+}
+template<> PROTOBUF_NOINLINE ::fedtree::GHEncBatch* Arena::CreateMaybeMessage< ::fedtree::GHEncBatch >(Arena* arena) {
+  return Arena::CreateMessageInternal< ::fedtree::GHEncBatch >(arena);
+}
+template<> PROTOBUF_NOINLINE ::fedtree::GHPair* Arena::CreateMaybeMessage< ::fedtree::GHPair >(Arena* arena) {
+  return Arena::CreateMessageInternal< ::fedtree::GHPair >(arena);
+}
+template<> PROTOBUF_NOINLINE ::fedtree::GHArray* Arena::CreateMaybeMessage< ::fedtree::GHArray >(Arena* arena) {
+  return Arena::CreateMessageInternal< ::fedtree::GHArray >(arena);
+}
 template<> PROTOBUF_NOINLINE ::fedtree::GHPairEnc* Arena::CreateMaybeMessage< ::fedtree::GHPairEnc >(Arena* arena) {
   return Arena::CreateMessageInternal< ::fedtree::GHPairEnc >(arena);
 }
@@ -3692,9 +4988,6 @@ template<> PROTOBUF_NOINLINE ::fedtree::Ready* Arena::CreateMaybeMessage< ::fedt
 template<> PROTOBUF_NOINLINE ::fedtree::DatasetInfo* Arena::CreateMaybeMessage< ::fedtree::DatasetInfo >(Arena* arena) {
   return Arena::CreateMessageInternal< ::fedtree::DatasetInfo >(arena);
 }
-template<> PROTOBUF_NOINLINE ::fedtree::GHPair* Arena::CreateMaybeMessage< ::fedtree::GHPair >(Arena* arena) {
-  return Arena::CreateMessageInternal< ::fedtree::GHPair >(arena);
-}
 template<> PROTOBUF_NOINLINE ::fedtree::FID* Arena::CreateMaybeMessage< ::fedtree::FID >(Arena* arena) {
   return Arena::CreateMessageInternal< ::fedtree::FID >(arena);
 }
@@ -3706,6 +4999,9 @@ template<> PROTOBUF_NOINLINE ::fedtree::Node* Arena::CreateMaybeMessage< ::fedtr
 }
 template<> PROTOBUF_NOINLINE ::fedtree::Ins2NodeID* Arena::CreateMaybeMessage< ::fedtree::Ins2NodeID >(Arena* arena) {
   return Arena::CreateMessageInternal< ::fedtree::Ins2NodeID >(arena);
+}
+template<> PROTOBUF_NOINLINE ::fedtree::Ins2NodeIDBatch* Arena::CreateMaybeMessage< ::fedtree::Ins2NodeIDBatch >(Arena* arena) {
+  return Arena::CreateMessageInternal< ::fedtree::Ins2NodeIDBatch >(arena);
 }
 PROTOBUF_NAMESPACE_CLOSE
 

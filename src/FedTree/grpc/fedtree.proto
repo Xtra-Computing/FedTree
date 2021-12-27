@@ -40,7 +40,45 @@ service FedTree {
   rpc GetPaillier(PID) returns (Paillier) {}
   
   rpc SendHistogramsEnc(stream GHPairEnc) returns(PID) {}
+
+  rpc SendBatchedHistograms(GHArray) returns (PID) {}
+
+  rpc SendHistogramBatches(stream GHBatch) returns(PID) {}
+
+  rpc SendHistFidBatches(stream FIDBatch) returns (PID) {}
+
+  rpc GetIns2NodeIDBatches(PID) returns (stream Ins2NodeIDBatch) {}
+  rpc SendIns2NodeIDBatches(stream Ins2NodeIDBatch) returns (PID) {}
+  rpc GetGradientBatches(PID) returns (stream GHBatch) {}
+
+
+  rpc SendHistogramBatchesEnc(stream GHEncBatch) returns(PID) {}
+  
 }
+
+message FIDBatch {
+  repeated int32 id = 1 [packed=true];
+}
+
+message GHBatch {
+  repeated double g = 1 [packed=true];
+  repeated double h = 2 [packed=true];
+}
+
+message GHEncBatch {
+  repeated string g_enc = 1;
+  repeated string h_enc = 2;
+}
+
+message GHPair {
+  double g = 1;
+  double h = 2;
+}
+
+message GHArray {
+  repeated double g = 1 [packed=true]; 
+}
+
 message GHPairEnc {
   string g_enc = 1;
   string h_enc = 2;
@@ -82,11 +120,6 @@ message DatasetInfo {
   int32 n_columns = 2;
 }
 
-message GHPair {
-  double g = 1;
-  double h = 2;
-}
-
 message FID {
   int32 id = 1;
 }
@@ -122,4 +155,9 @@ message Node {
 message Ins2NodeID {
   int32 iid = 1;
   int32 nid = 2;
+}
+
+message Ins2NodeIDBatch {
+  repeated int32 iid = 1 [packed=true];
+  repeated int32 nid = 2 [packed=true];
 }

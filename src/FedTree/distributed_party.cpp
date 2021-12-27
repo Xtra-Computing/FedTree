@@ -104,6 +104,7 @@ void DistributedParty::SendHistFid(const SyncArray<int> &hist_fid) {
     fedtree::PID id;
     grpc::ClientContext context;
     context.AddMetadata("pid", std::to_string(pid));
+    TIMED_SCOPE(timerObj, "SendHistFidTime");
     std::unique_ptr<grpc::ClientWriter<fedtree::FID> > writer(
             stub_->SendHistFid(&context, &id));
 
@@ -147,7 +148,7 @@ void DistributedParty::GetBestInfo(vector<BestInfo> &bests) {
     fedtree::BestInfo best;
     grpc::ClientContext context;
     id.set_id(pid);
-    std::cout << "Receiving best info from the server." << std::endl;
+    LOG(DEBUG) << "Receiving best info from the server.";
 
     std::unique_ptr<grpc::ClientReader<fedtree::BestInfo> > reader(stub_->GetBestInfo(&context, id));
     while (reader->Read(&best)) {
@@ -155,7 +156,7 @@ void DistributedParty::GetBestInfo(vector<BestInfo> &bests) {
     }
     grpc::Status status = reader->Finish();
     if (status.ok()) {
-        std::cout << "All nodes updated using best info." << std::endl;
+        LOG(DEBUG) << "All nodes updated using best info.";
     } else {
         std::cout << "GetBestInfo rpc failed." << std::endl;
     }
@@ -185,7 +186,7 @@ void DistributedParty::SendNode(Tree::TreeNode &node_data) {
     node.set_n_instances(node_data.n_instances);
     grpc::Status status = stub_->SendNode(&context, node, &id);
     if (status.ok()) {
-        std::cout << "Node sent." << std::endl;
+        LOG(DEBUG) << "Node sent.";
     } else {
         std::cout << "SendNodes rpc failed." << std::endl;
     }
@@ -223,10 +224,12 @@ void DistributedParty::GetNodes(int l) {
     grpc::ClientContext context;
     context.AddMetadata("l", std::to_string(l));
     id.set_id(pid);
-    std::cout << "Receiving nodes from the server." << std::endl;
+    LOG(DEBUG) << "Receiving nodes from the server.";
 
     std::unique_ptr<grpc::ClientReader<fedtree::Node> > reader(stub_->GetNodes(&context, id));
+    int i = 0;
     while (reader->Read(&node)) {
+        i++;
         int nid = node.final_id();
         auto nodes_data = booster.fbuilder->trees.nodes.host_data();
         nodes_data[nid].final_id = node.final_id();
@@ -249,7 +252,7 @@ void DistributedParty::GetNodes(int l) {
     }
     grpc::Status status = reader->Finish();
     if (status.ok()) {
-        std::cout << "All nodes received." << std::endl;
+        LOG(DEBUG) << "All nodes received." << i;
     } else {
         std::cout << "GetNodes rpc failed." << std::endl;
     }
@@ -260,7 +263,7 @@ void DistributedParty::GetIns2NodeID() {
     fedtree::Ins2NodeID i2n;
     grpc::ClientContext context;
     id.set_id(pid);
-    std::cout << "Receiving ins2node_id from the server." << std::endl;
+    LOG(DEBUG) << "Receiving ins2node_id from the server.";// << std::endl;
 
     auto ins2node_id_data = booster.fbuilder->ins2node_id.host_data();
     std::unique_ptr<grpc::ClientReader<fedtree::Ins2NodeID> > reader(stub_->GetIns2NodeID(&context, id));
@@ -271,7 +274,7 @@ void DistributedParty::GetIns2NodeID() {
     }
     grpc::Status status = reader->Finish();
     if (status.ok()) {
-        std::cout << "All ins2node_id received." << std::endl;
+        LOG(DEBUG) << "All ins2node_id received.";// << std::endl;
     } else {
         std::cout << "GetIns2NodeID rpc failed." << std::endl;
     }
@@ -466,7 +469,7 @@ void DistributedParty::GetSplitPoints() {
 
     grpc::Status status = reader->Finish();
     if (status.ok()) {
-        LOG(INFO) << "SplitPoints received.";
+        LOG(DEBUG) << "SplitPoints received.";
     } else {
         LOG(ERROR) << "GetSplitPoints rpc failed.";
     }
@@ -579,13 +582,219 @@ void DistributedParty::SendHistogramsEnc(const SyncArray<GHPair> &hist, int type
 
 }
 
+void DistributedParty::SendHistogramBatches(const SyncArray<GHPair> &hist, int type) {
+    fedtree::PID id;
+    grpc::ClientContext context;
+    context.AddMetadata("pid", std::to_string(pid));
+    context.AddMetadata("type", std::to_string(type));
+    TIMED_SCOPE(timerObj, "SendHistogramBatchesTime");
+    auto hist_data = hist.host_data();
+    const int BATCH_SIZE = 200000;
+    vector<fedtree::GHBatch> tmp;
+    int len = hist.size();
+    tmp.resize((len + BATCH_SIZE - 1)/BATCH_SIZE);
+    
+    for (int beg = 0; beg < len; beg += BATCH_SIZE) {
+        int end = min(len, beg+BATCH_SIZE);
+        for (int i = beg; i < end; i++) {
+            tmp[beg/BATCH_SIZE].add_g(hist_data[i].g);
+            tmp[beg/BATCH_SIZE].add_h(hist_data[i].h);
+        }
+    }
+    std::unique_ptr<grpc::ClientWriter<fedtree::GHBatch> > writer(
+            stub_->SendHistogramBatches(&context, &id));
+    for (const auto &e: tmp) {
+        if (!writer->Write(e)) {
+            break;
+        }
+    }
+    
+    writer->WritesDone();
+    // LOG(INFO) << "before finish";
+    grpc::Status status = writer->Finish();
+    if (status.ok()) {
+        LOG(DEBUG) << "All " << type << " sent.";
+    } else {
+        LOG(ERROR) << "SendHistogramBatches rpc failed.";
+    }
+}
+
+void DistributedParty::SendHistFidBatches(const SyncArray<int> &hist) {
+    fedtree::PID id;
+    grpc::ClientContext context;
+    context.AddMetadata("pid", std::to_string(pid));
+    TIMED_SCOPE(timerObj, "SendHistFidBatchesTime");
+    std::unique_ptr<grpc::ClientWriter<fedtree::FIDBatch> > writer(
+            stub_->SendHistFidBatches(&context, &id));
+
+    auto hist_data = hist.host_data();
+    const int BATCH_SIZE = 200000;
+    
+    vector<fedtree::FIDBatch> tmp;
+    for (int beg = 0; beg < hist.size(); beg += BATCH_SIZE) {
+        int end = min((int)hist.size(), beg+BATCH_SIZE);
+        tmp.emplace_back();
+        for (int i = beg; i < end; i++) {
+            tmp.back().add_id(hist_data[i]);
+        }
+    }
+    for (const auto &e: tmp) {
+        if (!writer->Write(e)) {
+            break;
+        }
+    }
+    
+    writer->WritesDone();
+    // LOG(INFO) << "before finish";
+    grpc::Status status = writer->Finish();
+    if (status.ok()) {
+        LOG(DEBUG) << "All HistFid Batches sent";
+    } else {
+        LOG(ERROR) << "SendHistFIDBatches rpc failed.";
+    }
+}
+void DistributedParty::GetIns2NodeIDBatches() {
+    fedtree::PID id;
+    fedtree::Ins2NodeIDBatch i2n;
+    grpc::ClientContext context;
+    id.set_id(pid);
+    LOG(DEBUG) << "Receiving ins2node_id from the server.";// << std::endl;
+
+    auto ins2node_id_data = booster.fbuilder->ins2node_id.host_data();
+    std::unique_ptr<grpc::ClientReader<fedtree::Ins2NodeIDBatch> > reader(stub_->GetIns2NodeIDBatches(&context, id));
+    while (reader->Read(&i2n)) {
+        int len = i2n.iid_size();
+        for (int i = 0; i < len; i++) {
+            int iid = i2n.iid(i);
+            int nid = i2n.nid(i);
+            ins2node_id_data[iid] = nid;
+        }
+
+    }
+    grpc::Status status = reader->Finish();
+    if (status.ok()) {
+        LOG(DEBUG) << "All ins2node_id received.";// << std::endl;
+    } else {
+        std::cout << "GetIns2NodeIDBatches rpc failed." << std::endl;
+    }
+}
+void DistributedParty::SendIns2NodeIDBatches(SyncArray<int> &ins2node_id, int nid) {
+    fedtree::PID id;
+    grpc::ClientContext context;
+    context.AddMetadata("pid", std::to_string(pid));
+    std::unique_ptr<grpc::ClientWriter<fedtree::Ins2NodeIDBatch> > writer(
+            stub_->SendIns2NodeIDBatches(&context, &id));
+
+    auto ins2node_id_data = ins2node_id.host_data();
+    fedtree::Ins2NodeIDBatch i2n;
+    const int BATCH_SIZE = 200000;
+
+    // FIXME: cannot find out failures? 
+    for (int i = 0; i < ins2node_id.size(); ++i) {
+        if (ins2node_id_data[i] >= 2 * nid + 1 && ins2node_id_data[i] <= 2 * nid + 2) {
+            // fedtree::Ins2NodeID i2n;
+            i2n.add_iid(i);
+            i2n.add_nid(ins2node_id_data[i]);
+            if (i2n.iid_size() >= 200000){
+                if (!writer->Write(i2n))
+                    break;
+                i2n.clear_iid();
+                i2n.clear_nid();
+        }   }
+    }
+    if (i2n.iid_size() > 0) {
+        writer->Write(i2n);
+    }
+
+    writer->WritesDone();
+    grpc::Status status = writer->Finish();
+    if (status.ok()) {
+        LOG(DEBUG) << "ins2node_id of the current node sent.";
+    } else {
+        LOG(DEBUG) << "SendIns2NodeID rpc failed.";
+    }
+}
+
+void DistributedParty::GetGradientBatches() {
+    fedtree::PID id;
+    fedtree::GHBatch gh;
+    fedtree::GHBatch tot;
+    grpc::ClientContext context;
+    id.set_id(pid);
+    LOG(DEBUG) << "Receiving gradients from the server.";
+
+    std::unique_ptr<grpc::ClientReader<fedtree::GHBatch> > reader(stub_->GetGradientBatches(&context, id));
+
+    auto booster_gradients_data = booster.gradients.host_data();
+    
+    while (reader->Read(&gh)) {
+        tot.MergeFrom(gh);
+    }
+    grpc::Status status = reader->Finish();
+    for (int i = 0; i < booster.gradients.size(); i++) {
+        booster_gradients_data[i] = {static_cast<float_type>(tot.g(i)), static_cast<float_type>(tot.h(i))};
+    }
+    if (status.ok()) {
+        LOG(DEBUG) << "All gradients received.";
+    } else {
+        LOG(DEBUG) << "GetGradients rpc failed.";
+    }
+}
+
+void DistributedParty::SendHistogramBatchesEnc(const SyncArray<GHPair> &hist, int type) {
+    fedtree::PID id;
+    grpc::ClientContext context;
+    context.AddMetadata("pid", std::to_string(pid));
+    context.AddMetadata("type", std::to_string(type));
+    auto hist_data = hist.host_data();
+    vector<fedtree::GHEncBatch> tmp;
+    {
+    TIMED_SCOPE(timerObj, "encodeTime");
+    
+    const int BATCH_SIZE = 5000;
+    
+    int len = hist.size();
+    tmp.resize((len+BATCH_SIZE-1)/BATCH_SIZE);
+    #pragma omp parallel for
+    for (int beg = 0; beg < len; beg += BATCH_SIZE) {
+        stringstream stream;
+        int end = min((int)hist.size(), beg+BATCH_SIZE);
+        for (int i = beg; i < end; i++) {
+            stream << hist_data[i].g_enc;
+            tmp[beg/BATCH_SIZE].add_g_enc(stream.str());
+            stream.clear();
+            stream.str("");
+            stream << hist_data[i].h_enc;
+            tmp[beg/BATCH_SIZE].add_h_enc(stream.str());
+            stream.clear();
+            stream.str("");
+        }
+    }
+    }
+    std::unique_ptr<grpc::ClientWriter<fedtree::GHEncBatch> > writer(
+            stub_->SendHistogramBatchesEnc(&context, &id));
+    TIMED_SCOPE(timerObj, "SendHistogramBatchesEnc");
+    for (const auto &e: tmp) {
+        if (!writer->Write(e)) {
+            break;
+        }
+    }
+    writer->WritesDone();
+    
+    grpc::Status status = writer->Finish();
+    if (status.ok()) {
+        LOG(DEBUG) << "All " << type << " sent.";
+    } else {
+        LOG(ERROR) << "SendHistogramBatchesEnc rpc failed.";
+    }
+}
 void distributed_vertical_train(DistributedParty& party, FLParam &fl_param) {
     GBDTParam &param = fl_param.gbdt_param;
     party.SendDatasetInfo(party.booster.fbuilder->cut.cut_points_val.size(), party.dataset.n_features());
     for (int round = 0; round < param.n_trees; round++) {
         if (party.pid == 0)
             party.TriggerUpdateGradients();
-        party.GetGradients();
+        party.GetGradientBatches();
         for (int t = 0; t < param.tree_per_rounds; t++) {
             party.booster.fbuilder->build_init(party.booster.gradients, t);
             if (party.pid == 0)
@@ -608,9 +817,9 @@ void distributed_vertical_train(DistributedParty& party, FLParam &fl_param) {
                 party.booster.fbuilder->compute_histogram_in_a_level(l, n_max_splits, n_bins,
                                                                      n_nodes_in_level,
                                                                      hist_fid_data, missing_gh, hist);
-                party.SendHistograms(hist, 0); // 0 represents hist
-                party.SendHistograms(missing_gh, 1); // 1 represents missing_gh
-                party.SendHistFid(hist_fid);
+                party.SendHistogramBatches(hist, 0); // 0 represents hist
+                party.SendHistogramBatches(missing_gh, 1); // 1 represents missing_gh
+                party.SendHistFidBatches(hist_fid);
 
                 if (party.pid == 0)
                     party.TriggerAggregate(n_nodes_in_level);
@@ -642,11 +851,11 @@ void distributed_vertical_train(DistributedParty& party, FLParam &fl_param) {
                     party.SendNode(nodes_data[node_shifted]);
                     party.SendNode(nodes_data[lch]);
                     party.SendNode(nodes_data[rch]);
-                    party.SendIns2NodeID(party.booster.fbuilder->ins2node_id, node_shifted);
+                    party.SendIns2NodeIDBatches(party.booster.fbuilder->ins2node_id, node_shifted);
                 }
 
                 party.GetNodes(l);
-                party.GetIns2NodeID();
+                party.GetIns2NodeIDBatches();
 
                 bool cont;
                 if (updated) {
@@ -750,15 +959,15 @@ void distributed_horizontal_train(DistributedParty& party, FLParam &fl_param) {
                         party.encrypt_histogram(hist);
                         party.encrypt_histogram(missing_gh);
                     }
-                    party.SendHistogramsEnc(hist, 0);
-                    party.SendHistogramsEnc(missing_gh, 1);
+                    party.SendHistogramBatchesEnc(hist, 0);
+                    party.SendHistogramBatchesEnc(missing_gh, 1);
                 }
                 else {
-                    party.SendHistograms(hist, 0);
-                    party.SendHistograms(missing_gh, 1);
+                    party.SendHistogramBatches(hist, 0);
+                    party.SendHistogramBatches(missing_gh, 1);
                 }
                 // send party_hist_fid
-                party.SendHistFid(hist_fid);
+                party.SendHistFidBatches(hist_fid);
                 if (party.pid == 0) {
                     // send current d
                     party.TriggerCalcTree(d);
@@ -808,7 +1017,8 @@ int main(int argc, char **argv) {
     el::Loggers::addFlag(el::LoggingFlag::FixedTimeFormat);
     el::Loggers::reconfigureAllLoggers(el::Level::Trace, el::ConfigurationType::Enabled, "false");
     el::Loggers::reconfigureAllLoggers(el::Level::Debug, el::ConfigurationType::Enabled, "false");
-
+    // el::Loggers::reconfigureAllLoggers(el::ConfigurationType::PerformanceTracking, "false");
+    
     int pid;
     FLParam fl_param;
     Parser parser;
@@ -820,7 +1030,7 @@ int main(int argc, char **argv) {
         exit(0);
     }
 
-    DistributedParty party(grpc::CreateChannel("localhost:50051",
+    DistributedParty party(grpc::CreateChannel("192.168.141.1:50051",
                                                grpc::InsecureChannelCredentials()));
 
     GBDTParam &model_param = fl_param.gbdt_param;
