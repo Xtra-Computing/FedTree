@@ -96,6 +96,7 @@ void syncarray_resize_cpu(SyncArray<T> &buf_array, int new_size) {
     buf_array.copy_from(tmp_array);
 }
 
+//remove unique values by each flag
 void unique_by_flag(SyncArray<float> &target_arr, SyncArray<int> &flags, int n_columns) {
     using namespace thrust::placeholders;
 

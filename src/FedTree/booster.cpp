@@ -30,14 +30,12 @@ void Booster::init(DataSet &dataSet, const GBDTParam &param, bool get_cut_points
     else {
         fbuilder->init_nocutpoints(dataSet, param);
     }
-    LOG(INFO) << param.objective;
+//    LOG(INFO) << param.objective;
     obj.reset(ObjectiveFunction::create(param.objective));
     obj->configure(param, dataSet);
     if (param.metric == "default") {
-        LOG(INFO) << "default";
         metric.reset(Metric::create(obj->default_metric_name()));
     }else {
-        LOG(INFO) << "Hello";
         metric.reset(Metric::create(param.metric));
     }
     metric->configure(param, dataSet);
