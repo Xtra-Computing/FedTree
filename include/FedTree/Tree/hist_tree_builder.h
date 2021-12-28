@@ -48,7 +48,7 @@ public:
 
     void update_ins2node_id() override;
 
-    void update_ins2node_id_in_a_node(int node_id) override;
+    bool update_ins2node_id_in_a_node(int node_id);
 
 //support equal division or weighted division
     void propose_split_candidates();
@@ -78,7 +78,6 @@ public:
         parties_missing_gh.resize(party_size);
         parties_cut = vector<HistCut>(party_size);
         this->party_size = party_size;
-        party_idx = 0;
     }
 
     void append_hist(SyncArray<GHPair> &hist) override {
@@ -87,6 +86,70 @@ public:
         parties_hist[party_idx].copy_from(hist);
         party_idx += 1;
     }
+
+    MSyncArray<GHPair> parties_hist;
+    MSyncArray<GHPair> parties_missing_gh;
+    MSyncArray<int> parties_hist_fid;
+    void party_containers_init(int party_size) {
+        parties_hist = MSyncArray<GHPair>(party_size, 1);
+        parties_missing_gh = MSyncArray<GHPair>(party_size, 1);
+        parties_hist_fid = MSyncArray<int>(party_size, 1);
+        this->party_size = party_size;
+    }
+
+    void append_hist(SyncArray<GHPair> &hist, SyncArray<GHPair> &missing_gh,int n_partition, int n_max_splits, int party_idx) override{
+        parties_missing_gh[party_idx].resize(n_partition);
+        //thrust::copy(thrust::host, missing_gh.host_data(), missing_gh.host_end(), parties_missing_gh[party_idx].host_data());
+        parties_missing_gh[party_idx].copy_from(missing_gh);
+        parties_hist[party_idx].resize(n_max_splits);
+        parties_hist[party_idx].copy_from(hist);
+    }
+
+    void set_cut (HistCut &commonCut) {
+        cut.cut_points_val.resize(commonCut.cut_points_val.size());
+        cut.cut_col_ptr.resize(commonCut.cut_col_ptr.size());
+        cut.cut_fid.resize(commonCut.cut_fid.size());
+        cut.cut_points_val.copy_from(commonCut.cut_points_val);
+        cut.cut_col_ptr.copy_from(commonCut.cut_col_ptr);
+        cut.cut_fid.copy_from(commonCut.cut_fid);
+    }
+
+    void set_last_hist(SyncArray<GHPair> &last_hist_input) {
+        last_hist.resize(last_hist_input.size());
+        last_hist.copy_from(last_hist_input);
+    }
+
+    void set_last_missing_gh(SyncArray<GHPair> &last_missing_gh_input) {
+        last_missing_gh.resize(last_missing_gh_input.size());
+        last_missing_gh.copy_from(last_missing_gh_input);
+    }
+
+    SyncArray<GHPair> get_last_hist() {
+        SyncArray<GHPair> last_hist_return(last_hist.size());
+        last_hist_return.copy_from(last_hist);
+        return last_hist_return;
+    }
+
+    SyncArray<GHPair> get_last_missing_gh() {
+        SyncArray<GHPair> last_missing_gh_return(last_missing_gh.size());
+        last_missing_gh_return.copy_from(last_missing_gh);
+        return last_missing_gh_return;
+    }
+
+    void append_to_parties_cut(HistCut &cut, int index) {
+        parties_cut[index].cut_col_ptr = SyncArray<int>(cut.cut_col_ptr.size());
+        parties_cut[index].cut_col_ptr.copy_from(cut.cut_col_ptr);
+        parties_cut[index].cut_points_val = SyncArray<float_type>(cut.cut_points_val.size());
+        parties_cut[index].cut_points_val.copy_from(cut.cut_points_val);
+    }
+
+//    void decrypt_histogram(AdditivelyHE::PaillierPrivateKey privateKey) {
+//        int size = last_hist.size();
+//        auto hist_data = last_hist.host_data();
+//        for (int i = 0; i < size; i++) {
+//            hist_data[i].decrypt(privateKey);
+//        }
+//    }
 
 
     void append_hist(SyncArray<GHPair> &hist, SyncArray<GHPair> &missing_gh,int n_partition, int n_max_splits, int party_idx) override{
@@ -149,8 +212,8 @@ private:
     SyncArray<unsigned char> dense_bin_id;
     SyncArray<GHPair> last_hist;
     SyncArray<GHPair> last_missing_gh;
-    MSyncArray<GHPair> parties_hist;
-    MSyncArray<GHPair> parties_missing_gh;
+    // MSyncArray<GHPair> parties_hist;
+    // MSyncArray<GHPair> parties_missing_gh;
 
     int party_idx = 0;
     int party_size = 0;

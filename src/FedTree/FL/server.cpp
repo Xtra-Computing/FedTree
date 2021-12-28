@@ -45,7 +45,6 @@ void Server::vertical_init(FLParam &param, int n_total_instances, vector<int> &n
     booster.init(dataset, param.gbdt_param);
 }
 
-
 void Server::hybrid_merge_trees(){
 //    LOG(INFO)<<"tree 0 nodes"<<local_trees[0].trees[0][0].nodes;
 //    LOG(INFO)<<"tree 1 nodes"<<local_trees[1].trees[0][0].nodes;

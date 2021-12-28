@@ -13,6 +13,8 @@
 #include "thrust/execution_policy.h"
 #include "FedTree/util/multi_device.h"
 #include "FedTree/common.h"
+#include <math.h>
+#include <algorithm>
 
 #include <math.h>
 #include <iterator>
@@ -751,7 +753,7 @@ HistTreeBuilder::compute_gain_in_a_level(SyncArray<float_type> &gain, int n_node
     float_type mcw = param.min_child_weight;
     float_type l = param.lambda;
 
-#pragma omp parallel for
+//#pragma omp parallel for
     for (int i = 0; i < n_split; i++) {
         int nid0 = i / n_bins;
         int nid = nid0 + nid_offset;
@@ -882,7 +884,7 @@ void HistTreeBuilder::get_split_points_in_a_node(int node_id, int best_idx, floa
     sp_data[node_id].rch_sum_gh = hist_data[best_idx];
     sp_data[node_id].no_split_value_update = 0;
 
-    LOG(DEBUG) << "split points (gain/fea_id/nid): " << sp;
+//    LOG(DEBUG) << "split points (gain/fea_id/nid): " << sp;
 }
 
 void HistTreeBuilder::update_ins2node_id() {
@@ -931,7 +933,7 @@ void HistTreeBuilder::update_ins2node_id() {
     has_split = has_splittable.host_data()[0];
 }
 
-void HistTreeBuilder::update_ins2node_id_in_a_node(int node_id) {
+bool HistTreeBuilder::update_ins2node_id_in_a_node(int node_id) {
     TIMED_FUNC(timerObj);
     SyncArray<bool> has_splittable(1);
 //    auto &columns = shards.columns;
@@ -973,8 +975,8 @@ void HistTreeBuilder::update_ins2node_id_in_a_node(int node_id) {
             }
         }
     }
-    LOG(DEBUG) << "new tree_id = " << ins2node_id;
-    has_split = has_splittable.host_data()[0];
+//    LOG(DEBUG) << "new tree_id = " << ins2node_id;
+    return has_splittable.host_data()[0];
 }
 
 //for each node

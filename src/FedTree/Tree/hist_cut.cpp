@@ -12,7 +12,6 @@
 #include <random>
 
 
-
 void HistCut::get_cut_points_by_data_range(DataSet &dataset, int max_num_bins, int n_instances){
     int n_column = dataset.n_features();
     SyncArray<float> unique_vals(n_column * n_instances);

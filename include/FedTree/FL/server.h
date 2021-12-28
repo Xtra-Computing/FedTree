@@ -5,6 +5,7 @@
 #ifndef FEDTREE_SERVER_H
 #define FEDTREE_SERVER_H
 
+#include "FedTree/FL/party.h"
 #include "FedTree/dataset.h"
 #include "FedTree/Tree/tree_builder.h"
 //#include "FedTree/Encryption/HE.h"
@@ -34,6 +35,7 @@ public:
     GBDTParam model_param;
     int n_total_instances;
     vector<int> n_instances_per_party;
+    
 
 //    AdditivelyHE::PaillierPublicKey publicKey;
 //    vector<AdditivelyHE::PaillierPublicKey> pk_vector;

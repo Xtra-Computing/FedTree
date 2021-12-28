@@ -77,6 +77,19 @@ make -j
 ./build/bin/FedTree-train ./examples/vertical_example.conf
 ```
 
+
+# Run distributed training
+```bash
+# under 'FedTree' directory
+./build/bin/FedTree-distributed-server ./examples/vertical_example.conf
+# open a new terminal
+./build/bin/FedTree-distributed-client ./examples/vertical_example.conf 0
+# open another new terminal
+./build/bin/FedTree-distributed-client ./examples/vertical_example.conf 1
+# run multiple copies of the client based on the n_parties param you specified
+```
+
+
 # Features in development
 The following features are in development.
 
