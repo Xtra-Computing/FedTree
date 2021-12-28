@@ -67,13 +67,13 @@ void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FL
             parties[p].booster.fbuilder->get_bin_ids();
         }
 
-    } else if (params.propose_split == "client" || params.propose_split == "client_combine" || params.propose_split == "client_append") {
+    } else if (params.propose_split == "client" || params.propose_split == "client_pre" || params.propose_split == "client_post") {
         for (int p = 0; p < n_parties; p++) {
             auto dataset = parties[p].dataset;
             parties[p].booster.fbuilder->cut.get_cut_points_fast(dataset, n_bins, dataset.n_instances());
             aggregator.booster.fbuilder->append_to_parties_cut(parties[p].booster.fbuilder->cut, p);
         }
-        if (params.propose_split == "client_combine") {
+        if (params.propose_split == "client_pre") {
             // find feature range of each feature for each party
             int n_columns = aggregator.booster.fbuilder->parties_cut[0].cut_col_ptr.size() - 1;
             vector<vector<float>> ranges(n_columns);
@@ -276,13 +276,20 @@ void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FL
                 // set these parameters to fit merged histogram
                 n_bins = aggregator.booster.fbuilder->cut.cut_points_val.size();
                 int n_max_splits = n_max_nodes * n_bins;
-                if (params.propose_split == "server" || params.propose_split == "client_combine") {
+                if (params.propose_split == "server" || params.propose_split == "client_pre") {
                     aggregator.booster.fbuilder->merge_histograms_server_propose(hist, missing_gh);
 //                    server.booster.fbuilder->set_last_missing_gh(missing_gh);
 //                    LOG(INFO) << hist;
                 }else if (params.propose_split == "client_post") {
+                    vector<vector<vector<float>>> feature_range_for_client(parties[0].get_num_feature());
+                    for (int n = 0; n < parties[0].get_num_feature(); n++) {
+                        feature_range_for_client[n].resize(parties.size());
+                        for (int p = 0; p < parties.size(); p++) {
+                            vector<float> temp = parties[p].get_feature_range_by_feature_index(n);
+                            feature_range_for_client[n][p] = temp;
+                        }
+                    }
                     aggregator.booster.fbuilder->merge_histograms_client_propose(hist, missing_gh, feature_range_for_client, n_max_splits);
-
                 }
                 n_bins = aggregator.booster.fbuilder->cut.cut_points_val.size();
 
