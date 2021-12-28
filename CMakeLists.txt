@@ -8,7 +8,7 @@ if(MSVC)
     set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/bin)
 endif()
 
-#option(BUILD_SHARED_LIBS "Build as a shared library" ON)
+option(BUILD_SHARED_LIBS "Build as a shared library" ON)
 option(USE_CUDA "Compile with CUDA" OFF)
 set(BUILD_TESTS OFF CACHE BOOL "Build Tests")
 
