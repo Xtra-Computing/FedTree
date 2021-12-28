@@ -122,6 +122,7 @@ int main(int argc, char** argv){
                     }
             }
         }else if (fl_param.partition_mode=="horizontal") {
+            dataset.csr_to_csc();
             partition.homo_partition(dataset, n_parties, true, subsets, batch_idxs);
             if (!use_global_test_set) {
                 LOG(INFO) << "train test split";
@@ -181,6 +182,21 @@ int main(int argc, char** argv){
         } else {
             server.init(fl_param, dataset.n_instances(), n_instances_per_party);
         }
+    }
+
+
+    //correct the number of classes
+    if(param.objective.find("multi:") != std::string::npos || param.objective.find("binary:") != std::string::npos) {
+        int num_class = dataset.label.size();
+        if (param.num_class != num_class) {
+            LOG(INFO) << "updating number of classes from " << param.num_class << " to " << num_class;
+            param.num_class = num_class;
+        }
+        if(param.num_class > 2)
+            param.tree_per_rounds = param.num_class;
+    }
+    else if(param.objective.find("reg:") != std::string::npos){
+        param.num_class = 1;
     }
 
     LOG(INFO) << "start training";

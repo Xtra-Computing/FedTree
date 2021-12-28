@@ -34,6 +34,7 @@ else ()
     find_package(Thrust REQUIRED)
     thrust_create_target(ThrustOMP HOST CPP DEVICE OMP)
 endif ()
+
 # add_subdirectory(${PROJECT_SOURCE_DIR}/pybind11)
 
 include(FetchContent)
@@ -70,7 +71,8 @@ set(DATASET_DIR ${PROJECT_SOURCE_DIR}/dataset/)
 configure_file(include/FedTree/config.h.in config.h)
 
 include_directories(${COMMON_INCLUDES})
-include_directories($ENV{HOME}/usr/local/include/)
+include_directories(/usr/local/include)
+
 if (USE_CUDA)
     include_directories(${PROJECT_SOURCE_DIR}/cub)
 endif ()

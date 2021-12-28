@@ -52,7 +52,7 @@ private:
     int n_devices;
     std::unique_ptr<ObjectiveFunction> obj;
     SyncArray<float_type> y;
-//    RowSampler rowSampler;
+
     // GBDTParam param;
 
 };

@@ -32,10 +32,11 @@ void Booster::init(DataSet &dataSet, const GBDTParam &param, bool get_cut_points
     }
     obj.reset(ObjectiveFunction::create(param.objective));
     obj->configure(param, dataSet);
-    if (param.metric == "default")
+    if (param.metric == "default") {
         metric.reset(Metric::create(obj->default_metric_name()));
-    else
+    }else {
         metric.reset(Metric::create(param.metric));
+    }
     metric->configure(param, dataSet);
 
     n_devices = param.n_device;

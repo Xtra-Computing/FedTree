@@ -209,6 +209,8 @@ void GBDT::predict_raw(const GBDTParam &model_param, const DataSet &dataSet, Syn
                     curNode = node_data[cur_nid];
                 }
                 sum += lr * node_data[cur_nid].base_weight;
+                if (gbdt_param.bagging)
+                    sum /= num_iter;
             }
             predict_data_class[iid] += sum;
         }//end all tree prediction

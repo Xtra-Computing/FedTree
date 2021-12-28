@@ -26,6 +26,7 @@ public:
             this->feature_map.copy_from(feature_map.host_data(), feature_map.size());
         }
         booster.init(dataset, param.gbdt_param, param.mode != "horizontal");
+
     };
 
     void vertical_init(int pid, DataSet &dataset, FLParam &param) {
@@ -111,6 +112,7 @@ public:
             feature_range[1] = *minmax.second;
             feature_range[0] = *minmax.first;
         }else{
+            // Does not have any value for this feature
             feature_range[0] = inf;
             feature_range[1] = -inf;
         }
