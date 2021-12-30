@@ -81,6 +81,9 @@ make -j
 # Run distributed training
 ```bash
 # under 'FedTree' directory
+export CPLUS_INCLUDE_PATH=./build/_deps/grpc-src/include/:$CPLUS_INCLUDE_PATH
+export CPLUS_INCLUDE_PATH=./build/_deps/grpc-src/third_party/protobuf/src/:$CPLUS_INCLUDE_PATH
+
 ./build/bin/FedTree-distributed-server ./examples/vertical_example.conf
 # open a new terminal
 ./build/bin/FedTree-distributed-client ./examples/vertical_example.conf 0
