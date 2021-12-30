@@ -792,10 +792,12 @@ void distributed_vertical_train(DistributedParty& party, FLParam &fl_param) {
     GBDTParam &param = fl_param.gbdt_param;
     party.SendDatasetInfo(party.booster.fbuilder->cut.cut_points_val.size(), party.dataset.n_features());
     for (int round = 0; round < param.n_trees; round++) {
+        vector<Tree> trees(param.tree_per_rounds);
         if (party.pid == 0)
             party.TriggerUpdateGradients();
         party.GetGradientBatches();
         for (int t = 0; t < param.tree_per_rounds; t++) {
+            Tree &tree = trees[t];
             party.booster.fbuilder->build_init(party.booster.gradients, t);
             if (party.pid == 0)
                 party.TriggerBuildInit(t);
@@ -875,7 +877,9 @@ void distributed_vertical_train(DistributedParty& party, FLParam &fl_param) {
             party.booster.fbuilder->predict_in_training(t);
             if (party.pid == 0)
                 party.TriggerPrune(t);
+            tree = party.booster.fbuilder->trees;
         }
+        party.gbdt.trees.push_back(trees);
         LOG(INFO) << party.booster.metric->get_name() << " = "
                    << party.booster.metric->get_score(party.booster.fbuilder->get_y_predict());
     }
@@ -1033,32 +1037,36 @@ int main(int argc, char **argv) {
     DistributedParty party(grpc::CreateChannel("192.168.141.1:50051",
                                                grpc::InsecureChannelCredentials()));
 
-    GBDTParam &model_param = fl_param.gbdt_param;
+    GBDTParam &param = fl_param.gbdt_param;
     DataSet dataset;
-    dataset.load_from_file(model_param.path, fl_param);
+    dataset.load_from_file(param.path, fl_param);
+    DataSet test_dataset;
+    test_dataset.load_from_file(param.test_path, fl_param);
     Partition partition;
     vector<DataSet> subsets(fl_param.n_parties);
     std::map<int, vector<int>> batch_idxs;
+
+    if(param.objective.find("multi:") != std::string::npos || param.objective.find("binary:") != std::string::npos) {
+        int num_class = dataset.label.size();
+        if (param.num_class != num_class) {
+            LOG(INFO) << "updating number of classes from " << param.num_class << " to " << num_class;
+            param.num_class = num_class;
+        }
+        if(param.num_class > 2)
+            param.tree_per_rounds = param.num_class;
+    }
+    else if(param.objective.find("reg:") != std::string::npos){
+        param.num_class = 1;
+    }
+
     if (fl_param.mode == "vertical") {
         LOG(INFO) << "vertical dir";
         dataset.csr_to_csc();
         partition.homo_partition(dataset, fl_param.n_parties, false, subsets, batch_idxs);
-        GBDTParam &param = fl_param.gbdt_param;
-        if (param.objective.find("multi:") != std::string::npos || param.objective.find("binary:") != std::string::npos) {
-            dataset.group_label();
-            int num_class = dataset.label.size();
-            if (param.num_class != num_class) {
-                LOG(DEBUG) << "updating number of classes from " << param.num_class << " to " << num_class;
-                param.num_class = num_class;
-            }
-            if (param.num_class > 2)
-                param.tree_per_rounds = param.num_class;
-        } else if (param.objective.find("reg:") != std::string::npos) {
-            param.num_class = 1;
-        }
-
+        
         party.vertical_init(pid, subsets[pid], fl_param);
         distributed_vertical_train(party, fl_param);
+        party.gbdt.predict_score_vertical(fl_param.gbdt_param, test_dataset, batch_idxs);
     }
     else if (fl_param.mode == "horizontal") {
         // draft
@@ -1068,9 +1076,10 @@ int main(int argc, char **argv) {
         // horizontal does not need feature_map parameter
         party.init(pid, subsets[pid], fl_param, dummy_map);
         distributed_horizontal_train(party, fl_param);
-        
+        party.gbdt.predict_score(fl_param.gbdt_param, test_dataset);
     }
     
-
+   
+    
     return 0;
 }
