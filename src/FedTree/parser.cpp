@@ -85,7 +85,7 @@ void Parser::parse_param(FLParam &fl_param, int argc, char **argv) {
                 fl_param.n_verti = atoi(val);
             else if (str_name.compare("privacy_budget") == 0)
                 fl_param.privacy_budget = atof(val);
-            else if (str.name.compare("ip_address") == 0)
+            else if (str_name.compare("ip_address") == 0)
                 fl_param.ip_address = val;
             else if (str_name.compare("merge_histogram") == 0)
                 fl_param.merge_histogram = val;
