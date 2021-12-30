@@ -27,7 +27,7 @@ void Parser::parse_param(FLParam &fl_param, int argc, char **argv) {
     fl_param.merge_histogram = "server";
     fl_param.privacy_budget = 10;
     fl_param.variance = 200;
-    fl_param.ip_address = "local_host";
+    fl_param.ip_address = "localhost";
 
 
     GBDTParam *gbdt_param = &fl_param.gbdt_param;
