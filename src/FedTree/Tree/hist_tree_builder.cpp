@@ -976,7 +976,7 @@ bool HistTreeBuilder::update_ins2node_id_in_a_node(int node_id) {
         }
     }
 //    LOG(DEBUG) << "new tree_id = " << ins2node_id;
-    return has_splittable.host_data()[0];
+    has_split = has_splittable.host_data()[0];
 }
 
 //for each node

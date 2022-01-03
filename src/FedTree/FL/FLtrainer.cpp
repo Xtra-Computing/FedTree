@@ -555,7 +555,7 @@ void FLtrainer::vertical_fl_trainer(vector<Party> &parties, Server &server, FLPa
 
                 // parties who propose the best candidate update their trees accordingly
                 vector<vector<int>> party_node_map(parties.size());
-                bool split_further = false;
+
                 for (int node = 0; node < n_nodes_in_level; node++) {
                     // convert the global best index to party id & its local index
                     int best_idx = get < 0 > (best_idx_data[node]);
@@ -580,7 +580,7 @@ void FLtrainer::vertical_fl_trainer(vector<Party> &parties, Server &server, FLPa
                                                                                    parties_hist[party_id]);
                     // party update itself
                     parties[party_id].booster.fbuilder->update_tree_in_a_node(node);
-                    split_further = split_further || parties[party_id].booster.fbuilder->update_ins2node_id_in_a_node(node_shifted);
+                    parties[party_id].booster.fbuilder->update_ins2node_id_in_a_node(node_shifted);
                     // update local split_feature_id to global
                     auto party_global_hist_fid_data = parties_global_hist_fid[party_id].host_data();
                     int global_fid = party_global_hist_fid_data[local_idx];
@@ -616,13 +616,13 @@ void FLtrainer::vertical_fl_trainer(vector<Party> &parties, Server &server, FLPa
                         server.send_node(nid, n_nodes_in_level, parties[pid]);
                     }
                 }
-
-//                for (int pid:updated_parties) {
-//                    if (parties[pid].booster.fbuilder->has_split) {
-//                        split_further = true;
-//                        break;
-//                    }
-//                }
+                bool split_further = false;
+                for (int pid:updated_parties) {
+                    if (parties[pid].booster.fbuilder->has_split) {
+                        split_further = true;
+                        break;
+                    }
+                }
                 if (!split_further) {
                     // add Laplace noise to leaf node values
                     if (params.privacy_tech == "dp") {
