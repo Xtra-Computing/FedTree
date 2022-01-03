@@ -431,7 +431,7 @@ void FLtrainer::vertical_fl_trainer(vector<Party> &parties, Server &server, FLPa
             server.encrypt_gh_pairs(server.booster.gradients);
         }
 
-#pragma omp parallel for
+        #pragma omp parallel for
         for (int j = 0; j < parties.size(); j++) {
             server.send_booster_gradients(parties[j]);
         }
@@ -445,7 +445,7 @@ void FLtrainer::vertical_fl_trainer(vector<Party> &parties, Server &server, FLPa
             // each party initialize ins2node_id, gradients, etc.
             server.booster.fbuilder->build_init(server.booster.gradients, t);
 
-#pragma omp parallel for
+            #pragma omp parallel for
             for (int pid = 0; pid < parties.size(); pid++)
                 parties[pid].booster.fbuilder->build_init(parties[pid].booster.gradients, t);
 
@@ -462,11 +462,11 @@ void FLtrainer::vertical_fl_trainer(vector<Party> &parties, Server &server, FLPa
                 MSyncArray<int> parties_global_hist_fid(parties.size());
                 MSyncArray<GHPair> parties_hist(parties.size());
 
-                // each party compute hist, send hist to server
+                // each party computes hist, sends hist to server
                 for (int pid = 0; pid < parties.size(); pid++)
                     parties_n_columns[pid] = parties[pid].dataset.n_features();
 
-#pragma omp parallel for
+                #pragma omp parallel for
                 for (int pid = 0; pid < parties.size(); pid++) {
                     int n_bins = parties[pid].booster.fbuilder->cut.cut_points_val.size();
                     parties_n_bins[pid] = n_bins;
@@ -504,8 +504,6 @@ void FLtrainer::vertical_fl_trainer(vector<Party> &parties, Server &server, FLPa
                     parties[pid].booster.fbuilder->sp.resize(n_nodes_in_level);
                 }
 
-//                LOG(INFO) << parties_global_hist_fid[2];
-
                 server.booster.fbuilder->sp.resize(n_nodes_in_level);
                 // server concat hist_fid_data, missing_gh & histograms
                 int n_bins_new = accumulate(parties_n_bins.begin(), parties_n_bins.end(), 0);
@@ -519,7 +517,6 @@ void FLtrainer::vertical_fl_trainer(vector<Party> &parties, Server &server, FLPa
                 missing_gh.copy_from(
                         comm_helper.concat_msyncarray(parties_missing_gh, parties_n_columns, n_nodes_in_level));
                 hist.copy_from(comm_helper.concat_msyncarray(parties_hist, parties_n_bins, n_nodes_in_level));
-
                 // server compute gain
                 SyncArray<float_type> gain(n_max_splits_new);
                 if (params.privacy_tech == "he") {
@@ -530,12 +527,6 @@ void FLtrainer::vertical_fl_trainer(vector<Party> &parties, Server &server, FLPa
                 server.booster.fbuilder->compute_gain_in_a_level(gain, n_nodes_in_level, n_bins_new,
                                                                  global_hist_fid.host_data(),
                                                                  missing_gh, hist, n_column_new);
-//                LOG(INFO) << "gain:" << gain;
-//                for (int index = 0; index < gain.size(); index ++) {
-//                    if (gain.host_data()[index] != 0) {
-////                        LOG(INFO) << gain.host_data()[index];
-//                    }
-//                }
                 // server find the best gain and its index
                 SyncArray<int_float> best_idx_gain(n_nodes_in_level);
 
@@ -550,7 +541,6 @@ void FLtrainer::vertical_fl_trainer(vector<Party> &parties, Server &server, FLPa
                             LOG(INFO) << "prob expo: " << prob_exponent_data[index];
                         }
                     }
-//                    LOG(INFO)<<prob_exponent;
                     dp_manager.exponential_select_split_point(prob_exponent, gain, best_idx_gain, n_nodes_in_level,
                                                               n_bins_new);
 
@@ -560,14 +550,12 @@ void FLtrainer::vertical_fl_trainer(vector<Party> &parties, Server &server, FLPa
                     server.booster.fbuilder->get_best_gain_in_a_level(gain, best_idx_gain, n_nodes_in_level,
                                                                       n_bins_new);
                 }
-                LOG(DEBUG) << "best index gain: "<< best_idx_gain;
-//                server.booster.fbuilder->get_best_gain_in_a_level(gain, best_idx_gain, n_nodes_in_level, n_bins_new);
 
                 auto best_idx_data = best_idx_gain.host_data();
 
                 // parties who propose the best candidate update their trees accordingly
                 vector<vector<int>> party_node_map(parties.size());
-
+                bool split_further = false;
                 for (int node = 0; node < n_nodes_in_level; node++) {
                     // convert the global best index to party id & its local index
                     int best_idx = get < 0 > (best_idx_data[node]);
@@ -592,7 +580,7 @@ void FLtrainer::vertical_fl_trainer(vector<Party> &parties, Server &server, FLPa
                                                                                    parties_hist[party_id]);
                     // party update itself
                     parties[party_id].booster.fbuilder->update_tree_in_a_node(node);
-                    parties[party_id].booster.fbuilder->update_ins2node_id_in_a_node(node_shifted);
+                    split_further = split_further || parties[party_id].booster.fbuilder->update_ins2node_id_in_a_node(node_shifted);
                     // update local split_feature_id to global
                     auto party_global_hist_fid_data = parties_global_hist_fid[party_id].host_data();
                     int global_fid = party_global_hist_fid_data[local_idx];
@@ -600,10 +588,8 @@ void FLtrainer::vertical_fl_trainer(vector<Party> &parties, Server &server, FLPa
                     auto sp_data = parties[party_id].booster.fbuilder->sp.host_data();
                     // LOG(INFO)<<"local split fea id:"<<sp_data[node].split_fea_id;
                     sp_data[node].split_fea_id = global_fid;
-                    // LOG(INFO)<<"global split fea id:"<<sp_data[node].split_fea_id;
                     nodes_data[node_shifted].split_feature_id = global_fid;
                 }
-
                 // party broadcast new instance space to others
                 vector<int> updated_parties;
                 for (int sender_id = 0; sender_id < parties.size(); sender_id++) {
@@ -617,29 +603,26 @@ void FLtrainer::vertical_fl_trainer(vector<Party> &parties, Server &server, FLPa
 
                 if (params.privacy_tech == "he") {
                     auto node_data = server.booster.fbuilder->trees.nodes.host_data();
-#pragma omp parallel for
+                    #pragma omp parallel for
                     for (int nid = (1 << l) - 1; nid < (2 << (l + 1)) - 1; nid++) {
                         server.decrypt_gh(node_data[nid].sum_gh_pair);
                         node_data[nid].calc_weight(params.gbdt_param.lambda);
                     }
                 }
 
-#pragma omp parallel for
+                #pragma omp parallel for
                 for (int pid = 0; pid < parties.size(); pid++) {
                     for (int nid = (1 << l) - 1; nid < (1 << l) - 1 + n_nodes_in_level; nid++) {
                         server.send_node(nid, n_nodes_in_level, parties[pid]);
                     }
                 }
 
-//                LOG(INFO) << parties[0].booster.fbuilder->trees.nodes;
-
-                bool split_further = false;
-                for (int pid:updated_parties) {
-                    if (parties[pid].booster.fbuilder->has_split) {
-                        split_further = true;
-                        break;
-                    }
-                }
+//                for (int pid:updated_parties) {
+//                    if (parties[pid].booster.fbuilder->has_split) {
+//                        split_further = true;
+//                        break;
+//                    }
+//                }
                 if (!split_further) {
                     // add Laplace noise to leaf node values
                     if (params.privacy_tech == "dp") {

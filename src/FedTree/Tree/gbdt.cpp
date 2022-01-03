@@ -124,7 +124,7 @@ void GBDT::predict_raw(const GBDTParam &model_param, const DataSet &dataSet, Syn
     int num_node = trees[0][0].nodes.size();
 
     int total_num_node = num_iter * num_class * num_node;
-    //TODO: reduce the output size for binary classification
+    //TODO: reduce the output size for binary classificationuti
     y_predict.resize(n_instances * num_class);
 
     SyncArray<Tree::TreeNode> model(total_num_node);
@@ -321,7 +321,10 @@ void GBDT::predict_raw_vertical(const GBDTParam &model_param, const DataSet &dat
                     curNode = node_data[cur_nid];
                 }
                 sum += lr * node_data[cur_nid].base_weight;
+                if (model_param.bagging)
+                    sum /= num_iter;
             }
+            predict_data_class[iid] += sum;
         }//end all tree prediction
     }
 }

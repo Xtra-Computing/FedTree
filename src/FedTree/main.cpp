@@ -18,34 +18,6 @@ int main(int argc, char** argv){
     el::Loggers::addFlag(el::LoggingFlag::ColoredTerminalOutput);
     el::Loggers::addFlag(el::LoggingFlag::FixedTimeFormat);
 
-/*
-    //initialize parameters
-    FLParam fl_param;
-    Parser parser;
-    parser.parse_param(fl_param, argc, argv);
-
-    //load dataset from file/files
-    DataSet dataset;
-    dataset.load_from_file(fl_param.dataset_path);
-
-    //initialize parties and server *with the dataset*
-    vector<Party> parties;
-    for(i = 0; i < fl_param.n_parties; i++){
-        Party party;
-        parties.push_back(party);
-    }
-    Server server;
-
-    //train
-    FLtrainer trainer;
-    model = trainer.train(parties, server, fl_param);
-
-    //test
-    Dataset test_dataset;
-    test_dataset.load_from_file(fl_param.test_dataset_path);
-    acc = model.predict(test_dataset);
-*/
-
 //centralized training test
     FLParam fl_param;
     Parser parser;
@@ -99,14 +71,6 @@ int main(int argc, char** argv){
                 CHECK_EQ(fl_param.n_hori, 1);
             partition.horizontal_vertical_dir_partition(dataset, n_parties, fl_param.alpha, feature_map, subsets,
                                                         fl_param.n_hori, fl_param.n_verti);
-//            std::cout<<"subsets[0].n_instances:"<<subsets[0].n_instances()<<std::endl;
-//            std::cout<<"subsets[0].nnz:"<<subsets[0].csr_val.size()<<std::endl;
-//            std::cout<<"subsets[1].n_instances:"<<subsets[1].n_instances()<<std::endl;
-//            std::cout<<"subsets[1].nnz:"<<subsets[1].csr_val.size()<<std::endl;
-//            std::cout<<"subsets[2].n_instances:"<<subsets[2].n_instances()<<std::endl;
-//            std::cout<<"subsets[2].nnz:"<<subsets[2].csr_val.size()<<std::endl;
-//            std::cout<<"subsets[3].n_instances:"<<subsets[3].n_instances()<<std::endl;
-//            std::cout<<"subsets[3].nnz:"<<subsets[3].csr_val.size()<<std::endl;
         } else if (fl_param.partition_mode == "vertical") {
             CHECK_EQ(fl_param.mode, "vertical");
             dataset.csr_to_csc();
@@ -117,9 +81,9 @@ int main(int argc, char** argv){
                     partition.train_test_split(subsets[i], train_subsets[i], test_subsets[i]);
                 }
             }else{
-                    for (int i = 0; i < n_parties; i++) {
-                        train_subsets[i] = subsets[i];
-                    }
+                for (int i = 0; i < n_parties; i++) {
+                    train_subsets[i] = subsets[i];
+                }
             }
         }else if (fl_param.partition_mode=="horizontal") {
             dataset.csr_to_csc();

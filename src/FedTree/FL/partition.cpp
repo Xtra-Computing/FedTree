@@ -51,8 +51,9 @@ void Partition::homo_partition(const DataSet &dataset, const int n_parties, cons
         for (int i = stride * n_parties; i < n; i++) {
             batch_idxs[n_parties - 1].push_back(idxs[i]);
         }
+        thrust::sort(thrust::host, batch_idxs[n_parties - 1].begin(), batch_idxs[n_parties - 1].begin() + batch_idxs[n_parties - 1].size());
     }
-    thrust::sort(thrust::host, batch_idxs[n_parties - 1].begin(), batch_idxs[n_parties - 1].begin() + batch_idxs[n_parties - 1].size());
+
 //    for (int i = 0; i < n % n_parties; i++) {
 //        batch_idxs[i].push_back(idxs[n_parties * stride + i]);
 //    }
