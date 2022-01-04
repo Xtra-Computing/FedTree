@@ -122,13 +122,19 @@ public:
     grpc::Status SendHistogramBatchesEnc(grpc::ServerContext *context, grpc::ServerReader<fedtree::GHEncBatch> *reader,
                                 fedtree::PID *id) override;
     
+    grpc::Status StopServer(grpc::ServerContext *context, const fedtree::PID *request,
+                                fedtree::Score *ready) override;
+    
+    grpc::Status BeginBarrier(grpc::ServerContext *context, const fedtree::PID *request, 
+                                fedtree::Ready *ready) override;
+    
     void VerticalInitVectors(int n_parties);
 
     void HorizontalInitVectors(int n_parties);
 
     vector<int> n_bins_per_party;
     vector<int> n_columns_per_party;
-    void distributed_vertical_init(FLParam &param, int n_total_instances, vector<int> &n_instances_per_party, vector<float_type> y) {
+    void distributed_vertical_init(FLParam &param, int n_total_instances, vector<int> &n_instances_per_party, vector<float_type> y, vector<float_type> label) {
         this->local_trees.resize(param.n_parties);
         this->param = param;
         this->model_param = param.gbdt_param;
@@ -139,10 +145,17 @@ public:
         this->global_trees.trees.clear();
         dataset.y = y;
         dataset.n_features_ = 0;
+        dataset.label = label;
         booster.init(dataset, param.gbdt_param);
         booster.fbuilder->party_containers_init(param.n_parties);
     }
+    // for profiling
+    vector<double> party_wait_times;
+    
 private:
+    // for stop
+    vector<bool> stoppable;
+    // end
     vector<int> cont_votes;
     vector<BestInfo> best_infos;
     vector<int> hists_received;

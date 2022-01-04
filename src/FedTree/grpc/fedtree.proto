@@ -54,6 +54,8 @@ service FedTree {
 
   rpc SendHistogramBatchesEnc(stream GHEncBatch) returns(PID) {}
   
+  rpc StopServer(PID) returns(Score) {}
+  rpc BeginBarrier(PID) returns(Ready) {}
 }
 
 message FIDBatch {

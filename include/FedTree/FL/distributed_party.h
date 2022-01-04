@@ -86,6 +86,13 @@ public:
 
     void SendHistogramBatchesEnc(const SyncArray<GHPair> &hist, int type);
     
+    void StopServer();
+
+    void BeginBarrier();
+    double comm_time = 0;
+    
+    std::chrono::high_resolution_clock timer;
+
 private:
     std::unique_ptr<fedtree::FedTree::Stub> stub_;
 };

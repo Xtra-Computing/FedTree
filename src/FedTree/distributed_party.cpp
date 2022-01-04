@@ -37,19 +37,22 @@ void DistributedParty::GetGradients() {
     fedtree::PID id;
     fedtree::GHPair gh;
     grpc::ClientContext context;
+    auto t_start = timer.now();
     id.set_id(pid);
     LOG(DEBUG) << "Receiving gradients from the server.";
-
-    std::unique_ptr<grpc::ClientReader<fedtree::GHPair> > reader(stub_->GetGradients(&context, id));
-
     auto booster_gradients_data = booster.gradients.host_data();
     int i = 0;
+    std::unique_ptr<grpc::ClientReader<fedtree::GHPair> > reader(stub_->GetGradients(&context, id));
+
     while (reader->Read(&gh)) {
         booster_gradients_data[i] = {static_cast<float_type>(gh.g()), static_cast<float_type>(gh.h())};
         i++;
     }
-
     grpc::Status status = reader->Finish();
+    auto t_end = timer.now();
+    std::chrono::duration<float> used_time = t_end - t_start;
+    comm_time += used_time.count();
+
     if (status.ok()) {
         LOG(DEBUG) << "All gradients received.";
     } else {
@@ -60,11 +63,16 @@ void DistributedParty::GetGradients() {
 void DistributedParty::SendDatasetInfo(int n_bins, int n_columns) {
     fedtree::DatasetInfo datasetInfo;
     fedtree::PID id;
+    grpc::ClientContext context;
+    auto t_start = timer.now();
     datasetInfo.set_n_bins(n_bins);
     datasetInfo.set_n_columns(n_columns);
-    grpc::ClientContext context;
     context.AddMetadata("pid", std::to_string(pid));
+
     grpc::Status status = stub_->SendDatasetInfo(&context, datasetInfo, &id);
+    auto t_end = timer.now();
+    std::chrono::duration<float> used_time = t_end - t_start;
+    comm_time += used_time.count();
     if (status.ok()) {
         LOG(DEBUG) << "Dataset info sent.";
     } else {
@@ -75,9 +83,11 @@ void DistributedParty::SendDatasetInfo(int n_bins, int n_columns) {
 void DistributedParty::SendHistograms(const SyncArray<GHPair> &hist, int type) {
     fedtree::PID id;
     grpc::ClientContext context;
+    TIMED_SCOPE(timerObj, "SendHistogramsTime");
+    auto t_start = timer.now();
     context.AddMetadata("pid", std::to_string(pid));
     context.AddMetadata("type", std::to_string(type));
-    TIMED_SCOPE(timerObj, "SendHistogramsTime");
+
     std::unique_ptr<grpc::ClientWriter<fedtree::GHPair> > writer(
             stub_->SendHistograms(&context, &id));
 
@@ -91,8 +101,11 @@ void DistributedParty::SendHistograms(const SyncArray<GHPair> &hist, int type) {
         }
     }
     writer->WritesDone();
-    // LOG(INFO) << "before finish";
     grpc::Status status = writer->Finish();
+    auto t_end = timer.now();
+    std::chrono::duration<float> used_time = t_end - t_start;
+    comm_time += used_time.count();
+
     if (status.ok()) {
         LOG(DEBUG) << "All " << type << " sent.";
     } else {
@@ -103,8 +116,9 @@ void DistributedParty::SendHistograms(const SyncArray<GHPair> &hist, int type) {
 void DistributedParty::SendHistFid(const SyncArray<int> &hist_fid) {
     fedtree::PID id;
     grpc::ClientContext context;
-    context.AddMetadata("pid", std::to_string(pid));
     TIMED_SCOPE(timerObj, "SendHistFidTime");
+    auto t_start = timer.now();
+    context.AddMetadata("pid", std::to_string(pid));
     std::unique_ptr<grpc::ClientWriter<fedtree::FID> > writer(
             stub_->SendHistFid(&context, &id));
 
@@ -118,6 +132,10 @@ void DistributedParty::SendHistFid(const SyncArray<int> &hist_fid) {
     }
     writer->WritesDone();
     grpc::Status status = writer->Finish();
+    auto t_end = timer.now();
+    std::chrono::duration<float> used_time = t_end - t_start;
+    comm_time += used_time.count();
+
     if (status.ok()) {
         LOG(DEBUG) << "All hist_fid sent.";
     } else {
@@ -147,14 +165,17 @@ void DistributedParty::GetBestInfo(vector<BestInfo> &bests) {
     fedtree::PID id;
     fedtree::BestInfo best;
     grpc::ClientContext context;
+    auto t_start = timer.now();
     id.set_id(pid);
-    LOG(DEBUG) << "Receiving best info from the server.";
-
     std::unique_ptr<grpc::ClientReader<fedtree::BestInfo> > reader(stub_->GetBestInfo(&context, id));
     while (reader->Read(&best)) {
         bests.push_back({best.pid(), best.nid(), best.idx(), best.global_fid(), static_cast<float>(best.gain())});
     }
+
     grpc::Status status = reader->Finish();
+    auto t_end = timer.now();
+    std::chrono::duration<float> used_time = t_end - t_start;
+    comm_time += used_time.count();
     if (status.ok()) {
         LOG(DEBUG) << "All nodes updated using best info.";
     } else {
@@ -166,6 +187,7 @@ void DistributedParty::SendNode(Tree::TreeNode &node_data) {
     fedtree::Node node;
     fedtree::PID id;
     grpc::ClientContext context;
+    auto t_start = timer.now();
     context.AddMetadata("pid", std::to_string(pid));
     node.set_final_id(node_data.final_id);
     node.set_lch_index(node_data.lch_index);
@@ -185,6 +207,9 @@ void DistributedParty::SendNode(Tree::TreeNode &node_data) {
     node.set_sum_gh_pair_h(node_data.sum_gh_pair.h);
     node.set_n_instances(node_data.n_instances);
     grpc::Status status = stub_->SendNode(&context, node, &id);
+    auto t_end = timer.now();
+    std::chrono::duration<float> used_time = t_end - t_start;
+    comm_time += used_time.count();
     if (status.ok()) {
         LOG(DEBUG) << "Node sent.";
     } else {
@@ -195,6 +220,7 @@ void DistributedParty::SendNode(Tree::TreeNode &node_data) {
 void DistributedParty::SendIns2NodeID(SyncArray<int> &ins2node_id, int nid) {
     fedtree::PID id;
     grpc::ClientContext context;
+    auto t_start = timer.now();
     context.AddMetadata("pid", std::to_string(pid));
     std::unique_ptr<grpc::ClientWriter<fedtree::Ins2NodeID> > writer(
             stub_->SendIns2NodeID(&context, &id));
@@ -211,6 +237,9 @@ void DistributedParty::SendIns2NodeID(SyncArray<int> &ins2node_id, int nid) {
     }
     writer->WritesDone();
     grpc::Status status = writer->Finish();
+    auto t_end = timer.now();
+    std::chrono::duration<float> used_time = t_end - t_start;
+    comm_time += used_time.count();
     if (status.ok()) {
         LOG(DEBUG) << "ins2node_id of the current node sent.";
     } else {
@@ -222,10 +251,9 @@ void DistributedParty::GetNodes(int l) {
     fedtree::PID id;
     fedtree::Node node;
     grpc::ClientContext context;
+    auto t_start = timer.now();
     context.AddMetadata("l", std::to_string(l));
     id.set_id(pid);
-    LOG(DEBUG) << "Receiving nodes from the server.";
-
     std::unique_ptr<grpc::ClientReader<fedtree::Node> > reader(stub_->GetNodes(&context, id));
     int i = 0;
     while (reader->Read(&node)) {
@@ -251,6 +279,9 @@ void DistributedParty::GetNodes(int l) {
         nodes_data[nid].n_instances = node.n_instances();
     }
     grpc::Status status = reader->Finish();
+    auto t_end = timer.now();
+    std::chrono::duration<float> used_time = t_end - t_start;
+    comm_time += used_time.count();
     if (status.ok()) {
         LOG(DEBUG) << "All nodes received." << i;
     } else {
@@ -262,9 +293,9 @@ void DistributedParty::GetIns2NodeID() {
     fedtree::PID id;
     fedtree::Ins2NodeID i2n;
     grpc::ClientContext context;
+    auto t_start = timer.now();
     id.set_id(pid);
     LOG(DEBUG) << "Receiving ins2node_id from the server.";// << std::endl;
-
     auto ins2node_id_data = booster.fbuilder->ins2node_id.host_data();
     std::unique_ptr<grpc::ClientReader<fedtree::Ins2NodeID> > reader(stub_->GetIns2NodeID(&context, id));
     while (reader->Read(&i2n)) {
@@ -273,6 +304,10 @@ void DistributedParty::GetIns2NodeID() {
         ins2node_id_data[iid] = nid;
     }
     grpc::Status status = reader->Finish();
+    auto t_end = timer.now();
+    std::chrono::duration<float> used_time = t_end - t_start;
+    comm_time += used_time.count();
+
     if (status.ok()) {
         LOG(DEBUG) << "All ins2node_id received.";// << std::endl;
     } else {
@@ -284,9 +319,14 @@ bool DistributedParty::CheckIfContinue(bool cont) {
     fedtree::PID id;
     fedtree::Ready ready;
     grpc::ClientContext context;
+    auto t_start = timer.now();
     context.AddMetadata("cont", std::to_string(cont));
     id.set_id(pid);
     grpc::Status status = stub_->CheckIfContinue(&context, id, &ready);
+    auto t_end = timer.now();
+    std::chrono::duration<float> used_time = t_end - t_start;
+    comm_time += used_time.count();
+
     if (!status.ok()) {
         LOG(DEBUG) << "CheckIfContinue rpc failed.";
         return false;
@@ -314,6 +354,7 @@ void DistributedParty::TriggerPrune(int t) {
 void DistributedParty::SendRange(const vector<vector<float>>& ranges) {
     fedtree::PID id;
     grpc::ClientContext context;
+    auto t_start = timer.now();
     context.AddMetadata("pid", std::to_string(pid));
     std::unique_ptr<grpc::ClientWriter<fedtree::GHPair>> writer(stub_->SendRange(&context, &id));
     for (int i = 0; i < ranges.size(); i++) {
@@ -326,6 +367,9 @@ void DistributedParty::SendRange(const vector<vector<float>>& ranges) {
     }
     writer->WritesDone();
     grpc::Status status = writer->Finish();
+    auto t_end = timer.now();
+    std::chrono::duration<float> used_time = t_end - t_start;
+    comm_time += used_time.count();
     if (status.ok()) {
         LOG(DEBUG) << "All feature range sent.";
     }
@@ -350,6 +394,7 @@ void DistributedParty::TriggerCut(int n_bins) {
 void DistributedParty::GetRangeAndSet(int n_bins) {
     grpc::ClientContext context;
     fedtree::PID id;
+    auto t_start = timer.now();
     id.set_id(pid);
     std::unique_ptr<grpc::ClientReader<fedtree::GHPair>> reader(stub_->GetRange(&context, id));
     fedtree::GHPair range;
@@ -358,6 +403,10 @@ void DistributedParty::GetRangeAndSet(int n_bins) {
         feature_range.push_back({range.g(), range.h()});
     }
     grpc::Status status = reader->Finish();
+    auto t_end = timer.now();
+    std::chrono::duration<float> used_time = t_end - t_start;
+    comm_time += used_time.count();
+
     if (status.ok()) {
         LOG(DEBUG) << "All range received.";
     } else {
@@ -372,10 +421,14 @@ void DistributedParty::SendGH(GHPair party_gh) {
     fedtree::GHPair pair;
     fedtree::PID id;
     grpc::ClientContext context;
+    auto t_start = timer.now();
     context.AddMetadata("pid", std::to_string(pid));
     pair.set_g(party_gh.g);
     pair.set_h(party_gh.h);
     grpc::Status status = stub_->SendGH(&context, pair, &id);
+    auto t_end = timer.now();
+    std::chrono::duration<float> used_time = t_end - t_start;
+    comm_time += used_time.count();
     if (status.ok()) {
         LOG(DEBUG) << "party_gh sent.";
     }
@@ -417,7 +470,12 @@ void DistributedParty::GetRootNode() {
     grpc::ClientContext context;
     fedtree::PID id;
     fedtree::Node node;
+    auto t_start = timer.now();
     grpc::Status status = stub_->GetRootNode(&context, id, &node);
+    auto t_end = timer.now();
+    std::chrono::duration<float> used_time = t_end - t_start;
+    comm_time += used_time.count();
+
     auto & root = booster.fbuilder->trees.nodes.host_data()[0];
     root.final_id = node.final_id();
     root.lch_index = node.lch_index();
@@ -446,6 +504,7 @@ void DistributedParty::GetRootNode() {
 void DistributedParty::GetSplitPoints() {
     grpc::ClientContext context;
     fedtree::PID id;
+    auto t_start = timer.now();
     id.set_id(pid);
     std::unique_ptr<grpc::ClientReader<fedtree::SplitPoint>> reader(stub_->GetSplitPoints(&context, id));
     // TODO
@@ -468,6 +527,10 @@ void DistributedParty::GetSplitPoints() {
     }
 
     grpc::Status status = reader->Finish();
+    auto t_end = timer.now();
+    std::chrono::duration<float> used_time = t_end - t_start;
+    comm_time += used_time.count();
+
     if (status.ok()) {
         LOG(DEBUG) << "SplitPoints received.";
     } else {
@@ -486,8 +549,12 @@ bool DistributedParty::HCheckIfContinue() {
     fedtree::PID id;
     fedtree::Ready ready;
     grpc::ClientContext context;
+    auto t_start = timer.now();
     context.AddMetadata("cont", std::to_string(booster.fbuilder->has_split));
     grpc::Status status = stub_->HCheckIfContinue(&context, id, &ready);
+    auto t_end = timer.now();
+    std::chrono::duration<float> used_time = t_end - t_start;
+    comm_time += used_time.count();
     if (!status.ok()) {
         LOG(DEBUG) << "HCheckIfContinue rpc failed.";
         return false;
@@ -501,11 +568,15 @@ bool DistributedParty::HCheckIfContinue() {
 
 float DistributedParty::GetAvgScore(float score) {
     grpc::ClientContext context;
-    context.AddMetadata("pid", std::to_string(pid));
     fedtree::Score s;
-    s.set_content(score);
     fedtree::Score avg;
+    auto t_start = timer.now();
+    context.AddMetadata("pid", std::to_string(pid));
+    s.set_content(score);
     grpc::Status status = stub_->ScoreReduce(&context, s, &avg);
+    auto t_end = timer.now();
+    std::chrono::duration<float> used_time = t_end - t_start;
+    comm_time += used_time.count();
     if (status.ok()) {
         LOG(DEBUG) << "Average score received";
     }
@@ -532,13 +603,16 @@ void DistributedParty::GetPaillier() {
     grpc::ClientContext context;
     fedtree::PID id;
     fedtree::Paillier pubkey;
+    auto t_start = timer.now();
+    id.set_id(pid);
     grpc::Status status = stub_->GetPaillier(&context, id, &pubkey);
+    auto t_end = timer.now();
+    std::chrono::duration<float> used_time = t_end - t_start;
+    comm_time += used_time.count();
     if (status.ok()) {
         paillier.modulus = NTL::to_ZZ(pubkey.modulus().c_str());
         paillier.generator = NTL::to_ZZ(pubkey.generator().c_str());
         LOG(INFO) << "Get public key from server";
-        LOG(INFO) << paillier.modulus;
-        LOG(INFO) << paillier.generator;
     }
     else {
         LOG(ERROR) << "GetPaillier rpc failed";
@@ -548,6 +622,7 @@ void DistributedParty::GetPaillier() {
 void DistributedParty::SendHistogramsEnc(const SyncArray<GHPair> &hist, int type) {
     fedtree::PID id;
     grpc::ClientContext context;
+    auto t_start = timer.now();
     context.AddMetadata("pid", std::to_string(pid));
     context.AddMetadata("type", std::to_string(type));
     
@@ -574,6 +649,10 @@ void DistributedParty::SendHistogramsEnc(const SyncArray<GHPair> &hist, int type
     writer->WritesDone();
     
     grpc::Status status = writer->Finish();
+    auto t_end = timer.now();
+    std::chrono::duration<float> used_time = t_end - t_start;
+    comm_time += used_time.count();
+
     if (status.ok()) {
         LOG(DEBUG) << "All Encrypted" << type << " sent.";
     } else {
@@ -585,6 +664,7 @@ void DistributedParty::SendHistogramsEnc(const SyncArray<GHPair> &hist, int type
 void DistributedParty::SendHistogramBatches(const SyncArray<GHPair> &hist, int type) {
     fedtree::PID id;
     grpc::ClientContext context;
+    auto t_start = timer.now();
     context.AddMetadata("pid", std::to_string(pid));
     context.AddMetadata("type", std::to_string(type));
     TIMED_SCOPE(timerObj, "SendHistogramBatchesTime");
@@ -610,8 +690,11 @@ void DistributedParty::SendHistogramBatches(const SyncArray<GHPair> &hist, int t
     }
     
     writer->WritesDone();
-    // LOG(INFO) << "before finish";
     grpc::Status status = writer->Finish();
+    auto t_end = timer.now();
+    std::chrono::duration<float> used_time = t_end - t_start;
+    comm_time += used_time.count();
+
     if (status.ok()) {
         LOG(DEBUG) << "All " << type << " sent.";
     } else {
@@ -622,6 +705,7 @@ void DistributedParty::SendHistogramBatches(const SyncArray<GHPair> &hist, int t
 void DistributedParty::SendHistFidBatches(const SyncArray<int> &hist) {
     fedtree::PID id;
     grpc::ClientContext context;
+    auto t_start = timer.now();
     context.AddMetadata("pid", std::to_string(pid));
     TIMED_SCOPE(timerObj, "SendHistFidBatchesTime");
     std::unique_ptr<grpc::ClientWriter<fedtree::FIDBatch> > writer(
@@ -645,8 +729,10 @@ void DistributedParty::SendHistFidBatches(const SyncArray<int> &hist) {
     }
     
     writer->WritesDone();
-    // LOG(INFO) << "before finish";
     grpc::Status status = writer->Finish();
+    auto t_end = timer.now();
+    std::chrono::duration<float> used_time = t_end - t_start;
+    comm_time += used_time.count();
     if (status.ok()) {
         LOG(DEBUG) << "All HistFid Batches sent";
     } else {
@@ -657,6 +743,7 @@ void DistributedParty::GetIns2NodeIDBatches() {
     fedtree::PID id;
     fedtree::Ins2NodeIDBatch i2n;
     grpc::ClientContext context;
+    auto t_start = timer.now();
     id.set_id(pid);
     LOG(DEBUG) << "Receiving ins2node_id from the server.";// << std::endl;
 
@@ -672,6 +759,10 @@ void DistributedParty::GetIns2NodeIDBatches() {
 
     }
     grpc::Status status = reader->Finish();
+    auto t_end = timer.now();
+    std::chrono::duration<float> used_time = t_end - t_start;
+    comm_time += used_time.count();
+
     if (status.ok()) {
         LOG(DEBUG) << "All ins2node_id received.";// << std::endl;
     } else {
@@ -681,6 +772,7 @@ void DistributedParty::GetIns2NodeIDBatches() {
 void DistributedParty::SendIns2NodeIDBatches(SyncArray<int> &ins2node_id, int nid) {
     fedtree::PID id;
     grpc::ClientContext context;
+    auto t_start = timer.now();
     context.AddMetadata("pid", std::to_string(pid));
     std::unique_ptr<grpc::ClientWriter<fedtree::Ins2NodeIDBatch> > writer(
             stub_->SendIns2NodeIDBatches(&context, &id));
@@ -708,6 +800,10 @@ void DistributedParty::SendIns2NodeIDBatches(SyncArray<int> &ins2node_id, int ni
 
     writer->WritesDone();
     grpc::Status status = writer->Finish();
+    auto t_end = timer.now();
+    std::chrono::duration<float> used_time = t_end - t_start;
+    comm_time += used_time.count();
+
     if (status.ok()) {
         LOG(DEBUG) << "ins2node_id of the current node sent.";
     } else {
@@ -720,6 +816,7 @@ void DistributedParty::GetGradientBatches() {
     fedtree::GHBatch gh;
     fedtree::GHBatch tot;
     grpc::ClientContext context;
+    auto t_start = timer.now();
     id.set_id(pid);
     LOG(DEBUG) << "Receiving gradients from the server.";
 
@@ -731,7 +828,12 @@ void DistributedParty::GetGradientBatches() {
         tot.MergeFrom(gh);
     }
     grpc::Status status = reader->Finish();
-    for (int i = 0; i < booster.gradients.size(); i++) {
+    auto t_end = timer.now();
+    std::chrono::duration<float> used_time = t_end - t_start;
+    comm_time += used_time.count();
+    int len = booster.gradients.size();
+    #pragma omp parallel for
+    for (int i = 0; i < len; i++) {
         booster_gradients_data[i] = {static_cast<float_type>(tot.g(i)), static_cast<float_type>(tot.h(i))};
     }
     if (status.ok()) {
@@ -744,8 +846,6 @@ void DistributedParty::GetGradientBatches() {
 void DistributedParty::SendHistogramBatchesEnc(const SyncArray<GHPair> &hist, int type) {
     fedtree::PID id;
     grpc::ClientContext context;
-    context.AddMetadata("pid", std::to_string(pid));
-    context.AddMetadata("type", std::to_string(type));
     auto hist_data = hist.host_data();
     vector<fedtree::GHEncBatch> tmp;
     {
@@ -771,6 +871,9 @@ void DistributedParty::SendHistogramBatchesEnc(const SyncArray<GHPair> &hist, in
         }
     }
     }
+    auto t_start = timer.now();
+    context.AddMetadata("pid", std::to_string(pid));
+    context.AddMetadata("type", std::to_string(type));
     std::unique_ptr<grpc::ClientWriter<fedtree::GHEncBatch> > writer(
             stub_->SendHistogramBatchesEnc(&context, &id));
     TIMED_SCOPE(timerObj, "SendHistogramBatchesEnc");
@@ -782,12 +885,45 @@ void DistributedParty::SendHistogramBatchesEnc(const SyncArray<GHPair> &hist, in
     writer->WritesDone();
     
     grpc::Status status = writer->Finish();
+    auto t_end = timer.now();
+    std::chrono::duration<float> used_time = t_end - t_start;
+    comm_time += used_time.count();
     if (status.ok()) {
         LOG(DEBUG) << "All " << type << " sent.";
     } else {
         LOG(ERROR) << "SendHistogramBatchesEnc rpc failed.";
     }
 }
+
+void DistributedParty::StopServer() {
+    fedtree::PID id;
+    grpc::ClientContext context;
+    fedtree::Score resp;
+    id.set_id(pid);
+    grpc::Status status = stub_->StopServer(&context, id, &resp);
+    LOG(INFO) << "communication time: " << comm_time << "s";
+    LOG(INFO) << "wait time: " << resp.content() << "s";
+    LOG(INFO) << "real communication: " << comm_time - resp.content() << "s";
+    if (status.ok()) {
+        LOG(DEBUG) << "StopServer rpc success.";
+    } else {
+        LOG(ERROR) << "StopServer rpc failed.";
+    }
+}
+
+void DistributedParty::BeginBarrier() {
+    fedtree::PID id;
+    grpc::ClientContext context;
+    fedtree::Ready resp;
+    id.set_id(pid);
+    grpc::Status status = stub_->BeginBarrier(&context, id, &resp);
+    if (status.ok()) {
+        LOG(INFO) << "BeginBarrier rpc success.";
+    } else {
+        LOG(ERROR) << "BeginBarrier rpc failed.";
+    }
+} 
+
 void distributed_vertical_train(DistributedParty& party, FLParam &fl_param) {
     GBDTParam &param = fl_param.gbdt_param;
     party.SendDatasetInfo(party.booster.fbuilder->cut.cut_points_val.size(), party.dataset.n_features());
@@ -1021,7 +1157,7 @@ int main(int argc, char **argv) {
     el::Loggers::addFlag(el::LoggingFlag::FixedTimeFormat);
     el::Loggers::reconfigureAllLoggers(el::Level::Trace, el::ConfigurationType::Enabled, "false");
     el::Loggers::reconfigureAllLoggers(el::Level::Debug, el::ConfigurationType::Enabled, "false");
-    // el::Loggers::reconfigureAllLoggers(el::ConfigurationType::PerformanceTracking, "false");
+    el::Loggers::reconfigureAllLoggers(el::ConfigurationType::PerformanceTracking, "false");
     
     int pid;
     FLParam fl_param;
@@ -1065,7 +1201,12 @@ int main(int argc, char **argv) {
         partition.homo_partition(dataset, fl_param.n_parties, false, subsets, batch_idxs);
         
         party.vertical_init(pid, subsets[pid], fl_param);
+        party.BeginBarrier();
+        auto t_start = party.timer.now();
         distributed_vertical_train(party, fl_param);
+        auto t_end = party.timer.now();
+        std::chrono::duration<float> used_time = t_end - t_start;
+        LOG(INFO) << "train time: " << used_time.count()<<"s";
         party.gbdt.predict_score_vertical(fl_param.gbdt_param, test_dataset, batch_idxs);
     }
     else if (fl_param.mode == "horizontal") {
@@ -1075,11 +1216,16 @@ int main(int argc, char **argv) {
         SyncArray<bool> dummy_map;
         // horizontal does not need feature_map parameter
         party.init(pid, subsets[pid], fl_param, dummy_map);
+        party.BeginBarrier();
+        auto t_start = party.timer.now();
         distributed_horizontal_train(party, fl_param);
+        auto t_end = party.timer.now();
+        std::chrono::duration<float> used_time = t_end - t_start;
+        LOG(INFO) << "train time: " << used_time.count()<<"s";
         party.gbdt.predict_score(fl_param.gbdt_param, test_dataset);
     }
     
-   
     
+    party.StopServer();
     return 0;
 }

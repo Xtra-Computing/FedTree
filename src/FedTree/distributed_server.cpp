@@ -30,13 +30,17 @@ grpc::Status DistributedServer::GetGradients(grpc::ServerContext *context, const
     unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
     std::default_random_engine generator(seed);
     std::uniform_int_distribution<int> delay_distribution(5, 10);
-
+    int pid = id->id();  // useless in vertical training
+    std::chrono::high_resolution_clock timer;
+    auto t_start = timer.now();
     while (!update_gradients_success) {
         std::this_thread::sleep_for(
                 std::chrono::milliseconds(delay_distribution(generator)));
     }
+    auto t_end = timer.now();
+    std::chrono::duration<float> used_time = t_end - t_start;
+    party_wait_times[pid] += used_time.count();
 
-    int pid = id->id();  // useless in vertical training
     auto gh_data = booster.gradients.host_data();
     for (int i = 0; i < booster.gradients.size(); i++) {
         fedtree::GHPair gh;
@@ -217,11 +221,16 @@ grpc::Status DistributedServer::GetBestInfo(grpc::ServerContext *context, const 
     unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
     std::default_random_engine generator(seed);
     std::uniform_int_distribution<int> delay_distribution(5, 10);
+    int pid = id->id();
+    std::chrono::high_resolution_clock timer;
+    auto t_start = timer.now();
     while (!aggregate_success) {
         std::this_thread::sleep_for(
                 std::chrono::milliseconds(delay_distribution(generator)));
     }
-    int pid = id->id();
+    auto t_end = timer.now();
+    std::chrono::duration<float> used_time = t_end - t_start;
+    party_wait_times[pid] += used_time.count();
     for (const BestInfo &best_info : best_infos) {
         fedtree::BestInfo best;
         best.set_nid(best_info.nid);
@@ -294,11 +303,16 @@ grpc::Status DistributedServer::GetNodes(grpc::ServerContext *context, const fed
     unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
     std::default_random_engine generator(seed);
     std::uniform_int_distribution<int> delay_distribution(5, 10);
+    std::chrono::high_resolution_clock timer;
+    auto t_start = timer.now();
 
     while (n_nodes_received < n_nodes_in_level) {
         std::this_thread::sleep_for(
                 std::chrono::milliseconds(delay_distribution(generator)));
     }
+    auto t_end = timer.now();
+    std::chrono::duration<float> used_time = t_end - t_start;
+    party_wait_times[id->id()] += used_time.count();
 
     auto nodes_data = booster.fbuilder->trees.nodes.host_data();
     for (int i = (1 << l) - 1; i < (4 << l) - 1; i++) {
@@ -389,6 +403,8 @@ void DistributedServer::VerticalInitVectors(int n_parties) {
     hists_received.resize(n_parties, 0);
     missing_gh_received.resize(n_parties, 0);
     hist_fid_received.resize(n_parties, 0);
+    party_wait_times.resize(n_parties, 0);
+    stoppable.resize(n_parties, true);
 }
 
 void DistributedServer::HorizontalInitVectors(int n_parties) {
@@ -405,6 +421,9 @@ void DistributedServer::HorizontalInitVectors(int n_parties) {
     
     score_received.resize(n_parties, 0);
     party_scores.resize(n_parties, 0);
+
+    party_wait_times.resize(n_parties, 0);
+    stoppable.resize(n_parties, true);
 }
 
 void RunServer(DistributedServer &service) {
@@ -482,10 +501,16 @@ grpc::Status DistributedServer::GetRange(grpc::ServerContext* context, const fed
     unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
     std::default_random_engine generator(seed);
     std::uniform_int_distribution<int> delay_distribution(5, 10);
+    std::chrono::high_resolution_clock timer;
+    auto t_start = timer.now();
+
     while (!range_success) {
         std::this_thread::sleep_for(
                 std::chrono::milliseconds(delay_distribution(generator)));
     }
+    auto t_end = timer.now();
+    std::chrono::duration<float> used_time = t_end - t_start;
+    party_wait_times[request->id()] += used_time.count();
     for(auto e: party_feature_range[0]) {
         fedtree::GHPair frange;
         frange.set_g(e.g);
@@ -506,6 +531,9 @@ grpc::Status DistributedServer::SendGH(grpc::ServerContext* context, const fedtr
     party_ghs[pid] = {request->g(), request->h()};
     LOG(DEBUG) << "Receive gh from " << pid;
 
+    std::chrono::high_resolution_clock timer;
+    auto t_start = timer.now();
+
     unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
     std::default_random_engine generator(seed);
     std::uniform_int_distribution<int> delay_distribution(5, 10);
@@ -522,6 +550,9 @@ grpc::Status DistributedServer::SendGH(grpc::ServerContext* context, const fedtr
         std::this_thread::sleep_for(
                 std::chrono::milliseconds(delay_distribution(generator)));
     }
+    auto t_end = timer.now();
+    std::chrono::duration<float> used_time = t_end - t_start;
+    party_wait_times[pid] += used_time.count();
     if (gh_cnt == 0) {
         score_rounds += 1;
     }
@@ -628,6 +659,9 @@ grpc::Status DistributedServer::GetRootNode(grpc::ServerContext* context, const 
 
 grpc::Status DistributedServer::GetSplitPoints(grpc::ServerContext* context, const fedtree::PID* request,
                                 grpc::ServerWriter<fedtree::SplitPoint>* writer) {
+    std::chrono::high_resolution_clock timer;
+    auto t_start = timer.now();
+
     unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
     std::default_random_engine generator(seed);
     std::uniform_int_distribution<int> delay_distribution(5, 10);
@@ -635,6 +669,9 @@ grpc::Status DistributedServer::GetSplitPoints(grpc::ServerContext* context, con
         std::this_thread::sleep_for(
                 std::chrono::milliseconds(delay_distribution(generator)));
     }
+    auto t_end = timer.now();
+    std::chrono::duration<float> used_time = t_end - t_start;
+    party_wait_times[request->id()] += used_time.count();
     if (sp_cnt == 0) {
         cont_votes.clear();
     }
@@ -701,6 +738,9 @@ grpc::Status DistributedServer::ScoreReduce(grpc::ServerContext* context, const 
     int pid = std::stoi(pid_itr->second.data());
     party_scores[pid] = request->content();
     score_received[pid] += 1;
+    std::chrono::high_resolution_clock timer;
+    auto t_start = timer.now();
+
     unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
     std::default_random_engine generator(seed);
     std::uniform_int_distribution<int> delay_distribution(5, 10);
@@ -717,6 +757,9 @@ grpc::Status DistributedServer::ScoreReduce(grpc::ServerContext* context, const 
         std::this_thread::sleep_for(
                 std::chrono::milliseconds(delay_distribution(generator)));
     }
+    auto t_end = timer.now();
+    std::chrono::duration<float> used_time = t_end - t_start;
+    party_wait_times[pid] += used_time.count();
     if (cnt == 0) {
         gh_rounds += 1;
     }
@@ -740,6 +783,8 @@ grpc::Status DistributedServer::TriggerHomoInit(grpc::ServerContext *context, co
 
 grpc::Status DistributedServer::GetPaillier(grpc::ServerContext *context, const fedtree::PID *request,
                                 fedtree::Paillier * response) {
+    std::chrono::high_resolution_clock timer;
+    auto t_start = timer.now();
     unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
     std::default_random_engine generator(seed);
     std::uniform_int_distribution<int> delay_distribution(5, 10);
@@ -748,7 +793,10 @@ grpc::Status DistributedServer::GetPaillier(grpc::ServerContext *context, const 
         std::this_thread::sleep_for(
                 std::chrono::milliseconds(delay_distribution(generator)));
     }
-
+    auto t_end = timer.now();
+    std::chrono::duration<float> used_time = t_end - t_start;
+    party_wait_times[request->id()] += used_time.count();
+    
     stringstream stream;
     stream << paillier.modulus;
     response->set_modulus(stream.str());
@@ -900,6 +948,8 @@ grpc::Status DistributedServer::SendIns2NodeIDBatches(grpc::ServerContext *conte
 }
 grpc::Status DistributedServer::GetGradientBatches(grpc::ServerContext *context, const fedtree::PID *id,
                               grpc::ServerWriter<fedtree::GHBatch> *writer){
+    std::chrono::high_resolution_clock timer;
+    auto t_start = timer.now();
     unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
     std::default_random_engine generator(seed);
     std::uniform_int_distribution<int> delay_distribution(5, 10);
@@ -908,8 +958,11 @@ grpc::Status DistributedServer::GetGradientBatches(grpc::ServerContext *context,
         std::this_thread::sleep_for(
                 std::chrono::milliseconds(delay_distribution(generator)));
     }
-    
+    auto t_end = timer.now();
+    std::chrono::duration<float> used_time = t_end - t_start;
     int pid = id->id();  // useless in vertical training
+    party_wait_times[pid] += used_time.count();
+    
     auto gh_data = booster.gradients.host_data();
     int len = booster.gradients.size();
     const int BATCH_SIZE = 200000;
@@ -967,6 +1020,54 @@ grpc::Status DistributedServer::SendHistogramBatchesEnc(grpc::ServerContext *con
     return grpc::Status::OK;
 }
 
+grpc::Status DistributedServer::StopServer(grpc::ServerContext *context, const fedtree::PID *request,
+                                fedtree::Score *ready) {
+    stoppable[request->id()] = true;
+    unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+    std::default_random_engine generator(seed);
+    std::uniform_int_distribution<int> delay_distribution(5, 10);
+    while (true) {
+        bool cont = true;
+        for (int i = 0; i < param.n_parties; i++) {
+            if (!stoppable[i]) {
+                cont = false;
+            }
+        }
+        if (cont) {
+            break;
+        }
+        std::this_thread::sleep_for(
+                std::chrono::milliseconds(delay_distribution(generator)));
+    }
+    ready->set_content(party_wait_times[request->id()]);
+    
+    if (request->id() == 0) {
+        LOG(INFO) << party_wait_times;
+    }
+    return grpc::Status::OK;
+}
+
+grpc::Status DistributedServer::BeginBarrier(grpc::ServerContext *context, const fedtree::PID *request, 
+                                fedtree::Ready *ready) {
+    stoppable[request->id()] = false;
+    unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+    std::default_random_engine generator(seed);
+    std::uniform_int_distribution<int> delay_distribution(5, 10);
+    while (true) {
+        bool cont = true;
+        for (int i = 0; i < param.n_parties; i++) {
+            if (stoppable[i]) {
+                cont = false;
+            }
+        }
+        if (cont) {
+            break;
+        }
+        std::this_thread::sleep_for(
+                std::chrono::milliseconds(delay_distribution(generator)));
+    }
+    return grpc::Status::OK;
+}
 #ifdef _WIN32
 INITIALIZE_EASYLOGGINGPP
 #endif

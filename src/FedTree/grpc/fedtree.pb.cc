@@ -521,7 +521,7 @@ const char descriptor_table_protodef_fedtree_2eproto[] PROTOBUF_SECTION_VARIABLE
   "\017 \001(\002\022\025\n\rsum_gh_pair_h\030\020 \001(\002\022\023\n\013n_instan"
   "ces\030\021 \001(\005\"&\n\nIns2NodeID\022\013\n\003iid\030\001 \001(\005\022\013\n\003"
   "nid\030\002 \001(\005\"3\n\017Ins2NodeIDBatch\022\017\n\003iid\030\001 \003("
-  "\005B\002\020\001\022\017\n\003nid\030\002 \003(\005B\002\020\0012\236\016\n\007FedTree\0228\n\026Tr"
+  "\005B\002\020\001\022\017\n\003nid\030\002 \003(\005B\002\020\0012\374\016\n\007FedTree\0228\n\026Tr"
   "iggerUpdateGradients\022\014.fedtree.PID\032\016.fed"
   "tree.Ready\"\000\0222\n\020TriggerBuildInit\022\014.fedtr"
   "ee.PID\032\016.fedtree.Ready\"\000\0221\n\014GetGradients"
@@ -567,7 +567,9 @@ const char descriptor_table_protodef_fedtree_2eproto[] PROTOBUF_SECTION_VARIABLE
   "\000(\001\0228\n\022GetGradientBatches\022\014.fedtree.PID\032"
   "\020.fedtree.GHBatch\"\0000\001\022@\n\027SendHistogramBa"
   "tchesEnc\022\023.fedtree.GHEncBatch\032\014.fedtree."
-  "PID\"\000(\001b\006proto3"
+  "PID\"\000(\001\022,\n\nStopServer\022\014.fedtree.PID\032\016.fe"
+  "dtree.Score\"\000\022.\n\014BeginBarrier\022\014.fedtree."
+  "PID\032\016.fedtree.Ready\"\000b\006proto3"
   ;
 static const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable*const descriptor_table_fedtree_2eproto_deps[1] = {
 };
@@ -592,7 +594,7 @@ static ::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase*const descriptor_table_fed
 };
 static ::PROTOBUF_NAMESPACE_ID::internal::once_flag descriptor_table_fedtree_2eproto_once;
 const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable descriptor_table_fedtree_2eproto = {
-  false, false, descriptor_table_protodef_fedtree_2eproto, "fedtree.proto", 3015,
+  false, false, descriptor_table_protodef_fedtree_2eproto, "fedtree.proto", 3109,
   &descriptor_table_fedtree_2eproto_once, descriptor_table_fedtree_2eproto_sccs, descriptor_table_fedtree_2eproto_deps, 17, 0,
   schemas, file_default_instances, TableStruct_fedtree_2eproto::offsets,
   file_level_metadata_fedtree_2eproto, 17, file_level_enum_descriptors_fedtree_2eproto, file_level_service_descriptors_fedtree_2eproto,
