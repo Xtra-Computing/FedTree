@@ -1170,7 +1170,7 @@ int main(int argc, char **argv) {
         exit(0);
     }
 
-    DistributedParty party(grpc::CreateChannel("192.168.141.1:50051",
+    DistributedParty party(grpc::CreateChannel(fl_param.ip_address + ":50051",
                                                grpc::InsecureChannelCredentials()));
 
     GBDTParam &param = fl_param.gbdt_param;
