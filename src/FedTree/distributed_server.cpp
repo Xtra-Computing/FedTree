@@ -142,11 +142,9 @@ grpc::Status DistributedServer::TriggerAggregate(grpc::ServerContext *context, c
                 std::chrono::milliseconds(delay_distribution(generator)));
     }
 
-//    cont_votes.clear();
 //    best_infos.clear();
     cur_round += 1;
     update_gradients_success = false;
-    cont_votes.clear();
 //    n_nodes_received = 0;
 
     std::multimap<grpc::string_ref, grpc::string_ref> metadata = context->client_metadata();
@@ -359,7 +357,9 @@ grpc::Status DistributedServer::CheckIfContinue(grpc::ServerContext *context, co
     std::multimap<grpc::string_ref, grpc::string_ref> metadata = context->client_metadata();
     auto itr = metadata.find("cont");
     int cont = std::stoi(itr->second.data());
+    mutex.lock();
     cont_votes.push_back(cont);
+    mutex.unlock();
 
     unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
     std::default_random_engine generator(seed);
@@ -385,7 +385,12 @@ grpc::Status DistributedServer::CheckIfContinue(grpc::ServerContext *context, co
             break;
         }
     }
-
+    mutex.lock();
+    vote_cnt = (vote_cnt + 1) % param.n_parties;
+    if (vote_cnt == 0) {
+        cont_votes.clear();
+    }
+    mutex.unlock();
     return grpc::Status::OK;
 }
 
@@ -553,10 +558,12 @@ grpc::Status DistributedServer::SendGH(grpc::ServerContext* context, const fedtr
     auto t_end = timer.now();
     std::chrono::duration<float> used_time = t_end - t_start;
     party_wait_times[pid] += used_time.count();
-    if (gh_cnt == 0) {
-        score_rounds += 1;
-    }
+    mutex.lock();
     gh_cnt = (gh_cnt + 1) % param.n_parties;
+    if (gh_cnt == 0) {
+        gh_rounds += 1;
+    }
+    mutex.unlock();
     return grpc::Status::OK;
 }
 
@@ -672,13 +679,13 @@ grpc::Status DistributedServer::GetSplitPoints(grpc::ServerContext* context, con
     auto t_end = timer.now();
     std::chrono::duration<float> used_time = t_end - t_start;
     party_wait_times[request->id()] += used_time.count();
-    if (sp_cnt == 0) {
-        cont_votes.clear();
-    }
+    mutex.lock();
+
     sp_cnt = (sp_cnt + 1) % param.n_parties;
     if (sp_cnt == 0) {
         calc_success = false;
     }
+    mutex.unlock();
     // SP
     auto &sp = booster.fbuilder->sp;
     auto sp_data = sp.host_data();
@@ -707,7 +714,9 @@ grpc::Status DistributedServer::HCheckIfContinue(grpc::ServerContext *context, c
     std::multimap<grpc::string_ref, grpc::string_ref> metadata = context->client_metadata();
     auto itr = metadata.find("cont");
     int cont = std::stoi(itr->second.data());
+    mutex.lock();
     cont_votes.push_back(cont);
+    mutex.unlock();
     unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
     std::default_random_engine generator(seed);
     std::uniform_int_distribution<int> delay_distribution(5, 10);
@@ -716,7 +725,6 @@ grpc::Status DistributedServer::HCheckIfContinue(grpc::ServerContext *context, c
         std::this_thread::sleep_for(
                 std::chrono::milliseconds(delay_distribution(generator)));
     }
-    hvote_cnt = (hvote_cnt + 1) % param.n_parties;
     ready->set_ready(true);
     for (auto vote: cont_votes) {
         if (vote == 0) {
@@ -724,9 +732,12 @@ grpc::Status DistributedServer::HCheckIfContinue(grpc::ServerContext *context, c
             break;
         }
     }
-    if (hvote_cnt == 0) {
+    mutex.lock();
+    vote_cnt = (vote_cnt + 1) % param.n_parties;
+    if (vote_cnt == 0) {
         cont_votes.clear();
     }
+    mutex.unlock();
     return grpc::Status::OK;
 }
 
@@ -760,10 +771,12 @@ grpc::Status DistributedServer::ScoreReduce(grpc::ServerContext* context, const 
     auto t_end = timer.now();
     std::chrono::duration<float> used_time = t_end - t_start;
     party_wait_times[pid] += used_time.count();
-    if (cnt == 0) {
-        gh_rounds += 1;
-    }
+    mutex.lock();
     cnt = (cnt + 1) % param.n_parties;
+    if (cnt == 0) {
+        score_rounds += 1;
+    }
+    mutex.unlock();
     float sum_score = 0;
     for (auto e: party_scores) {
         sum_score += e;

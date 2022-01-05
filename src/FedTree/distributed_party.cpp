@@ -16,7 +16,7 @@ void DistributedParty::TriggerUpdateGradients() {
     if (status.ok()) {
         LOG(DEBUG) << "Triggered the server to update gradients.";
     } else {
-        LOG(DEBUG) << "TriggerUpdateGradients rpc failed.";
+        LOG(ERROR) << "TriggerUpdateGradients rpc failed.";
     }
 }
 
@@ -29,7 +29,7 @@ void DistributedParty::TriggerBuildInit(int t) {
     if (status.ok()) {
         LOG(DEBUG) << "Triggered the server to build init.";
     } else {
-        LOG(DEBUG) << "TriggerBuildInit rpc failed.";
+        LOG(ERROR) << "TriggerBuildInit rpc failed.";
     }
 }
 
@@ -56,7 +56,7 @@ void DistributedParty::GetGradients() {
     if (status.ok()) {
         LOG(DEBUG) << "All gradients received.";
     } else {
-        LOG(DEBUG) << "GetGradients rpc failed.";
+        LOG(ERROR) << "GetGradients rpc failed.";
     }
 }
 
@@ -76,7 +76,7 @@ void DistributedParty::SendDatasetInfo(int n_bins, int n_columns) {
     if (status.ok()) {
         LOG(DEBUG) << "Dataset info sent.";
     } else {
-        LOG(DEBUG) << "SendDatasetInfo rpc failed.";
+        LOG(ERROR) << "SendDatasetInfo rpc failed.";
     }
 }
 
@@ -139,7 +139,7 @@ void DistributedParty::SendHistFid(const SyncArray<int> &hist_fid) {
     if (status.ok()) {
         LOG(DEBUG) << "All hist_fid sent.";
     } else {
-        LOG(DEBUG) << "SendHistograms rpc failed.";
+        LOG(ERROR) << "SendHistograms rpc failed.";
     }
 }
 
@@ -151,10 +151,10 @@ bool DistributedParty::TriggerAggregate(int n_nodes_in_level) {
     context.AddMetadata("n_nodes_in_level", std::to_string(n_nodes_in_level));
     grpc::Status status = stub_->TriggerAggregate(&context, id, &ready);
     if (!status.ok()) {
-        LOG(DEBUG) << "TriggerAggregate rpc failed.";
+        LOG(ERROR) << "TriggerAggregate rpc failed.";
         return false;
     } else if (!ready.ready()) {
-        LOG(DEBUG) << "Server has not received all histograms.";
+        LOG(ERROR) << "Server has not received all histograms.";
         return false;
     } else {
         return true;
@@ -179,7 +179,7 @@ void DistributedParty::GetBestInfo(vector<BestInfo> &bests) {
     if (status.ok()) {
         LOG(DEBUG) << "All nodes updated using best info.";
     } else {
-        std::cout << "GetBestInfo rpc failed." << std::endl;
+        LOG(ERROR) << "GetBestInfo rpc failed.";
     }
 }
 
@@ -213,7 +213,7 @@ void DistributedParty::SendNode(Tree::TreeNode &node_data) {
     if (status.ok()) {
         LOG(DEBUG) << "Node sent.";
     } else {
-        std::cout << "SendNodes rpc failed." << std::endl;
+        LOG(ERROR) << "SendNodes rpc failed.";
     }
 }
 
@@ -243,7 +243,7 @@ void DistributedParty::SendIns2NodeID(SyncArray<int> &ins2node_id, int nid) {
     if (status.ok()) {
         LOG(DEBUG) << "ins2node_id of the current node sent.";
     } else {
-        LOG(DEBUG) << "SendIns2NodeID rpc failed.";
+        LOG(ERROR) << "SendIns2NodeID rpc failed.";
     }
 }
 
@@ -285,7 +285,7 @@ void DistributedParty::GetNodes(int l) {
     if (status.ok()) {
         LOG(DEBUG) << "All nodes received." << i;
     } else {
-        std::cout << "GetNodes rpc failed." << std::endl;
+        LOG(ERROR) << "GetNodes rpc failed.";
     }
 }
 
@@ -309,9 +309,9 @@ void DistributedParty::GetIns2NodeID() {
     comm_time += used_time.count();
 
     if (status.ok()) {
-        LOG(DEBUG) << "All ins2node_id received.";// << std::endl;
+        LOG(DEBUG) << "All ins2node_id received.";
     } else {
-        std::cout << "GetIns2NodeID rpc failed." << std::endl;
+        LOG(ERROR) << "GetIns2NodeID rpc failed.";
     }
 }
 
@@ -328,7 +328,7 @@ bool DistributedParty::CheckIfContinue(bool cont) {
     comm_time += used_time.count();
 
     if (!status.ok()) {
-        LOG(DEBUG) << "CheckIfContinue rpc failed.";
+        LOG(ERROR) << "CheckIfContinue rpc failed.";
         return false;
     } else if (!ready.ready()) {
         LOG(DEBUG) << "No further splits, stop.";
@@ -347,7 +347,7 @@ void DistributedParty::TriggerPrune(int t) {
     if (status.ok()) {
         LOG(DEBUG) << "Triggered the server to prune.";
     } else {
-        LOG(DEBUG) << "TriggerPrune rpc failed.";
+        LOG(ERROR) << "TriggerPrune rpc failed.";
     }
 }
 
@@ -374,7 +374,7 @@ void DistributedParty::SendRange(const vector<vector<float>>& ranges) {
         LOG(DEBUG) << "All feature range sent.";
     }
     else {
-        LOG(DEBUG) << "SendRange rpc failed.";
+        LOG(ERROR) << "SendRange rpc failed.";
     }
 }
 
@@ -387,7 +387,7 @@ void DistributedParty::TriggerCut(int n_bins) {
     if (status.ok()) {
         LOG(DEBUG) << "Triggered the server to cut.";
     } else {
-        LOG(DEBUG) << "TriggerCut rpc failed.";
+        LOG(ERROR) << "TriggerCut rpc failed.";
     }
 }
 
@@ -410,7 +410,7 @@ void DistributedParty::GetRangeAndSet(int n_bins) {
     if (status.ok()) {
         LOG(DEBUG) << "All range received.";
     } else {
-        LOG(DEBUG) << "GetRange rpc failed.";
+        LOG(ERROR) << "GetRange rpc failed.";
     }
     booster.fbuilder->cut.get_cut_points_by_feature_range(feature_range, n_bins);
     booster.fbuilder->get_bin_ids();
@@ -448,7 +448,7 @@ void DistributedParty::TriggerBuildUsingGH(int k) {
 
     }
     else {
-        LOG(DEBUG) << "TriggerBuildUsingGH failed";
+        LOG(ERROR) << "TriggerBuildUsingGH failed";
     }
 }
 
@@ -462,7 +462,7 @@ void DistributedParty::TriggerCalcTree(int l) {
         LOG(DEBUG) << "Triggerd the server to calc tree.";
     }
     else {
-        LOG(DEBUG) << "TriggerCalcTree failed.";
+        LOG(ERROR) << "TriggerCalcTree failed.";
     }
 }
 
@@ -556,7 +556,7 @@ bool DistributedParty::HCheckIfContinue() {
     std::chrono::duration<float> used_time = t_end - t_start;
     comm_time += used_time.count();
     if (!status.ok()) {
-        LOG(DEBUG) << "HCheckIfContinue rpc failed.";
+        LOG(ERROR) << "HCheckIfContinue rpc failed.";
         return false;
     } else if (!ready.ready()) {
         LOG(DEBUG) << "No further splits, stop.";
@@ -581,7 +581,7 @@ float DistributedParty::GetAvgScore(float score) {
         LOG(DEBUG) << "Average score received";
     }
     else {
-        LOG(DEBUG) << "ScoreReduce rpc failed";
+        LOG(ERROR) << "ScoreReduce rpc failed";
     }
     return avg.content();
 }
@@ -764,9 +764,9 @@ void DistributedParty::GetIns2NodeIDBatches() {
     comm_time += used_time.count();
 
     if (status.ok()) {
-        LOG(DEBUG) << "All ins2node_id received.";// << std::endl;
+        LOG(DEBUG) << "All ins2node_id received.";
     } else {
-        std::cout << "GetIns2NodeIDBatches rpc failed." << std::endl;
+        LOG(ERROR) << "GetIns2NodeIDBatches rpc failed.";
     }
 }
 void DistributedParty::SendIns2NodeIDBatches(SyncArray<int> &ins2node_id, int nid) {
@@ -807,7 +807,7 @@ void DistributedParty::SendIns2NodeIDBatches(SyncArray<int> &ins2node_id, int ni
     if (status.ok()) {
         LOG(DEBUG) << "ins2node_id of the current node sent.";
     } else {
-        LOG(DEBUG) << "SendIns2NodeID rpc failed.";
+        LOG(ERROR) << "SendIns2NodeIDBatches rpc failed.";
     }
 }
 
@@ -839,7 +839,7 @@ void DistributedParty::GetGradientBatches() {
     if (status.ok()) {
         LOG(DEBUG) << "All gradients received.";
     } else {
-        LOG(DEBUG) << "GetGradients rpc failed.";
+        LOG(ERROR) << "GetGradients rpc failed.";
     }
 }
 
