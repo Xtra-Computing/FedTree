@@ -153,6 +153,8 @@ public:
     vector<double> party_wait_times;
     
 private:
+    // mutex
+    std::mutex mutex;
     // for stop
     vector<bool> stoppable;
     // end
@@ -181,14 +183,14 @@ private:
     vector<int> score_received;
     vector<float> party_scores;
     bool score_success = false;
-    int score_rounds = 0;
+    int score_rounds = 1;
 
     bool homo_init_success = false;
 
     int cnt = 0;
     int gh_cnt = 0;
     int sp_cnt = 0;
-    int hvote_cnt = 0;
+    int vote_cnt = 0;
 
 
 };
