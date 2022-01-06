@@ -24,6 +24,8 @@ void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FL
     int n_parties = parties.size();
     aggregator.booster.fbuilder->parties_hist_init(n_parties);
 
+    float encryption_time = 0.0f;
+    float decryption_time = 0.0f;
     if (params.privacy_tech == "he") {
         LOG(INFO) << "Start HE Init";
         // server generate public key and private key
@@ -254,10 +256,13 @@ void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FL
                     used_time = t_end - t_start;
                     LOG(DEBUG) << "Computing histogram using time: " << used_time.count() << " s";
                     t_start = t_end;
-                    //todo: encrypt the histogram
+                    // encrypt the histogram
                     if (params.privacy_tech == "he") {
+                        auto t1 = timer.now();
                         parties[j].encrypt_histogram(hist);
                         parties[j].encrypt_histogram(missing_gh);
+                        auto t2 = timer.now();
+                        encryption_time += t2 - t1;
                     }
 
                     aggregator.booster.fbuilder->append_hist(hist, missing_gh, n_partition, n_splits, j);
@@ -298,8 +303,11 @@ void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FL
 
                 // if privacy tech == 'he', decrypt histogram
                 if (params.privacy_tech == "he") {
+                    auto t1 = timer.now();
                     server.decrypt_gh_pairs(hist);
                     server.decrypt_gh_pairs(missing_gh);
+                    auto t2 = timer.now();
+                    decryption_time += t2 - t1;
                 }
                 // if server propose cut, hist_fid for each party should be the same
                 auto hist_fid_data = parties_hist_fid[0].host_data();
@@ -382,6 +390,10 @@ void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FL
     auto t_stop = timer.now();
     std::chrono::duration<float> training_time = t_stop - start;
     LOG(INFO) << "training time = " << training_time.count() << "s";
+    if (param.privacy_tech == "he"){
+        LOG(INFO) << "HE time (encryption and decryption)" << encryption_time + decryption_time << "("
+            << encryption_time << "/" << decryption_time << ")";
+    }
 
     LOG(INFO) << "end of training";
 }
@@ -389,6 +401,8 @@ void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FL
 void FLtrainer::vertical_fl_trainer(vector<Party> &parties, Server &server, FLParam &params) {
     std::chrono::high_resolution_clock timer;
     auto start = timer.now();
+    float encryption_time = 0.0f;
+    float decryption_time = 0.0f;
     // load dataset
     GBDTParam &model_param = params.gbdt_param;
     Comm comm_helper;
@@ -422,13 +436,16 @@ void FLtrainer::vertical_fl_trainer(vector<Party> &parties, Server &server, FLPa
 //                LOG(INFO) << "after" << gradient_data[i].g;
             }
         }
-
+        // temp_gradients store the raw gradients
         SyncArray<GHPair> temp_gradients;
         if (params.privacy_tech == "he") {
+            auto t1 = timer.now();
             temp_gradients.resize(server.booster.gradients.size());
             temp_gradients.copy_from(server.booster.gradients);
             server.homo_init();
             server.encrypt_gh_pairs(server.booster.gradients);
+            auto t2 = timer.now();
+            encryption_time += t2 - t1;
         }
 
         #pragma omp parallel for
@@ -520,8 +537,11 @@ void FLtrainer::vertical_fl_trainer(vector<Party> &parties, Server &server, FLPa
                 // server compute gain
                 SyncArray<float_type> gain(n_max_splits_new);
                 if (params.privacy_tech == "he") {
+                    auto t1 = timer.now();
                     server.decrypt_gh_pairs(hist);
                     server.decrypt_gh_pairs(missing_gh);
+                    auto t2 = timer.now();
+                    decryption_time += t2 - t1;
                 }
 
                 server.booster.fbuilder->compute_gain_in_a_level(gain, n_nodes_in_level, n_bins_new,
@@ -602,12 +622,15 @@ void FLtrainer::vertical_fl_trainer(vector<Party> &parties, Server &server, FLPa
                 }
 
                 if (params.privacy_tech == "he") {
+                    auto t1 = timer.now();
                     auto node_data = server.booster.fbuilder->trees.nodes.host_data();
                     #pragma omp parallel for
                     for (int nid = (1 << l) - 1; nid < (2 << (l + 1)) - 1; nid++) {
                         server.decrypt_gh(node_data[nid].sum_gh_pair);
                         node_data[nid].calc_weight(params.gbdt_param.lambda);
                     }
+                    auto t2 = timer.now();
+                    decryption_time += t2 - t1;
                 }
 
                 #pragma omp parallel for
@@ -663,6 +686,10 @@ void FLtrainer::vertical_fl_trainer(vector<Party> &parties, Server &server, FLPa
     auto stop = timer.now();
     std::chrono::duration<float> training_time = stop - start;
     LOG(INFO) << "training time = " << training_time.count() << "s";
+    if (param.privacy_tech == "he"){
+        LOG(INFO) << "HE time (encryption and decryption)" << encryption_time + decryption_time << "("
+                  << encryption_time << "/" << decryption_time << ")";
+    }
 
     LOG(INFO) << "end of training";
 }
