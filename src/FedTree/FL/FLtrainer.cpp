@@ -262,7 +262,7 @@ void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FL
                         parties[j].encrypt_histogram(hist);
                         parties[j].encrypt_histogram(missing_gh);
                         auto t2 = timer.now();
-                        encryption_time += t2 - t1;
+                        encryption_time += (t2 - t1).count();
                     }
 
                     aggregator.booster.fbuilder->append_hist(hist, missing_gh, n_partition, n_splits, j);
@@ -307,7 +307,7 @@ void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FL
                     server.decrypt_gh_pairs(hist);
                     server.decrypt_gh_pairs(missing_gh);
                     auto t2 = timer.now();
-                    decryption_time += t2 - t1;
+                    decryption_time += (t2 - t1).count();
                 }
                 // if server propose cut, hist_fid for each party should be the same
                 auto hist_fid_data = parties_hist_fid[0].host_data();
@@ -390,7 +390,7 @@ void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FL
     auto t_stop = timer.now();
     std::chrono::duration<float> training_time = t_stop - start;
     LOG(INFO) << "training time = " << training_time.count() << "s";
-    if (param.privacy_tech == "he"){
+    if (params.privacy_tech == "he"){
         LOG(INFO) << "HE time (encryption and decryption)" << encryption_time + decryption_time << "("
             << encryption_time << "/" << decryption_time << ")";
     }
@@ -445,7 +445,7 @@ void FLtrainer::vertical_fl_trainer(vector<Party> &parties, Server &server, FLPa
             server.homo_init();
             server.encrypt_gh_pairs(server.booster.gradients);
             auto t2 = timer.now();
-            encryption_time += t2 - t1;
+            encryption_time += (t2 - t1).count();
         }
 
         #pragma omp parallel for
@@ -541,7 +541,7 @@ void FLtrainer::vertical_fl_trainer(vector<Party> &parties, Server &server, FLPa
                     server.decrypt_gh_pairs(hist);
                     server.decrypt_gh_pairs(missing_gh);
                     auto t2 = timer.now();
-                    decryption_time += t2 - t1;
+                    decryption_time += (t2 - t1).count();
                 }
 
                 server.booster.fbuilder->compute_gain_in_a_level(gain, n_nodes_in_level, n_bins_new,
@@ -630,7 +630,7 @@ void FLtrainer::vertical_fl_trainer(vector<Party> &parties, Server &server, FLPa
                         node_data[nid].calc_weight(params.gbdt_param.lambda);
                     }
                     auto t2 = timer.now();
-                    decryption_time += t2 - t1;
+                    decryption_time += (t2 - t1).count();
                 }
 
                 #pragma omp parallel for
@@ -686,7 +686,7 @@ void FLtrainer::vertical_fl_trainer(vector<Party> &parties, Server &server, FLPa
     auto stop = timer.now();
     std::chrono::duration<float> training_time = stop - start;
     LOG(INFO) << "training time = " << training_time.count() << "s";
-    if (param.privacy_tech == "he"){
+    if (params.privacy_tech == "he"){
         LOG(INFO) << "HE time (encryption and decryption)" << encryption_time + decryption_time << "("
                   << encryption_time << "/" << decryption_time << ")";
     }
