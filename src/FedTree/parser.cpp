@@ -29,6 +29,7 @@ void Parser::parse_param(FLParam &fl_param, int argc, char **argv) {
     fl_param.variance = 200;
     fl_param.ip_address = "localhost";
 
+    fl_param.seed = 42;
 
     GBDTParam *gbdt_param = &fl_param.gbdt_param;
 
@@ -87,6 +88,8 @@ void Parser::parse_param(FLParam &fl_param, int argc, char **argv) {
                 fl_param.privacy_budget = atof(val);
             else if (str_name.compare("ip_address") == 0)
                 fl_param.ip_address = val;
+            else if (str_name.compare("seed") == 0)
+                fl_param.ip_address = atoi(val);
             else if (str_name.compare("merge_histogram") == 0)
                 fl_param.merge_histogram = val;
             else if (str_name.compare("propose_split") == 0)

@@ -14,7 +14,7 @@ public:
                         std::map<int, vector<int>> &batch_idxs, int seed = 42);
 
     void hetero_partition(const DataSet &dataset, const int n_parties, const bool is_horizontal, vector<DataSet> &subsets,
-                     const vector<float> alpha = {});
+                     const vector<float> alpha = {}, int seed = 42);
 
     void hybrid_partition(const DataSet &dataset, const int n_parties, vector<float> &alpha,
                           vector<SyncArray<bool>> &feature_map, vector<DataSet> &subsets,

@@ -24,6 +24,7 @@ public:
     float variance; // variance of dp noise if privacy_tech=="dp"
     float privacy_budget;       // privacy budget for differential privacy
     string ip_address; // IP address of the server
+    int seed; // random seed for partitioning
     GBDTParam gbdt_param; // parameters for the gbdt training
 };
 

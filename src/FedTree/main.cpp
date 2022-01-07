@@ -74,7 +74,7 @@ int main(int argc, char** argv){
         } else if (fl_param.partition_mode == "vertical") {
             CHECK_EQ(fl_param.mode, "vertical");
             dataset.csr_to_csc();
-            partition.homo_partition(dataset, n_parties, false, subsets, batch_idxs);
+            partition.homo_partition(dataset, n_parties, false, subsets, batch_idxs, fl_param.seed);
             if (!use_global_test_set) {
                 LOG(INFO) << "train test split";
                 for (int i = 0; i < n_parties; i++) {
@@ -87,7 +87,7 @@ int main(int argc, char** argv){
             }
         }else if (fl_param.partition_mode=="horizontal") {
             dataset.csr_to_csc();
-            partition.homo_partition(dataset, n_parties, true, subsets, batch_idxs);
+            partition.homo_partition(dataset, n_parties, true, subsets, batch_idxs, fl_param.seed);
             if (!use_global_test_set) {
                 LOG(INFO) << "train test split";
                 for (int i = 0; i < n_parties; i++) {
