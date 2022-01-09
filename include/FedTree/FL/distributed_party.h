@@ -86,7 +86,7 @@ public:
 
     void SendHistogramBatchesEnc(const SyncArray<GHPair> &hist, int type);
     
-    void StopServer();
+    void StopServer(float tot_time);
 
     void BeginBarrier();
     double comm_time = 0;

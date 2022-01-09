@@ -895,11 +895,13 @@ void DistributedParty::SendHistogramBatchesEnc(const SyncArray<GHPair> &hist, in
     }
 }
 
-void DistributedParty::StopServer() {
+void DistributedParty::StopServer(float tot_time) {
     fedtree::PID id;
     grpc::ClientContext context;
     fedtree::Score resp;
     id.set_id(pid);
+    context.AddMetadata("tot", std::to_string(tot_time));
+    context.AddMetadata("comm", std::to_string(comm_time));
     grpc::Status status = stub_->StopServer(&context, id, &resp);
     LOG(INFO) << "communication time: " << comm_time << "s";
     LOG(INFO) << "wait time: " << resp.content() << "s";
@@ -1195,6 +1197,7 @@ int main(int argc, char **argv) {
         param.num_class = 1;
     }
 
+    float train_time = 0;
     if (fl_param.mode == "vertical") {
         LOG(INFO) << "vertical dir";
         dataset.csr_to_csc();
@@ -1206,7 +1209,8 @@ int main(int argc, char **argv) {
         distributed_vertical_train(party, fl_param);
         auto t_end = party.timer.now();
         std::chrono::duration<float> used_time = t_end - t_start;
-        LOG(INFO) << "train time: " << used_time.count()<<"s";
+        train_time = used_time.count();
+        LOG(INFO) << "train time: " << train_time<<"s";
         party.gbdt.predict_score_vertical(fl_param.gbdt_param, test_dataset, batch_idxs);
     }
     else if (fl_param.mode == "horizontal") {
@@ -1221,11 +1225,12 @@ int main(int argc, char **argv) {
         distributed_horizontal_train(party, fl_param);
         auto t_end = party.timer.now();
         std::chrono::duration<float> used_time = t_end - t_start;
-        LOG(INFO) << "train time: " << used_time.count()<<"s";
+        train_time = used_time.count();
+        LOG(INFO) << "train time: " << train_time<<"s";
         party.gbdt.predict_score(fl_param.gbdt_param, test_dataset);
     }
     
     
-    party.StopServer();
+    party.StopServer(train_time);
     return 0;
 }

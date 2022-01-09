@@ -157,6 +157,8 @@ private:
     std::mutex mutex;
     // for stop
     vector<bool> stoppable;
+    vector<float> party_tot_times;
+    vector<float> party_comm_times;
     // end
     vector<int> cont_votes;
     vector<BestInfo> best_infos;

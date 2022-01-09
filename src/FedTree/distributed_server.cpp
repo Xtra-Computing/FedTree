@@ -410,6 +410,8 @@ void DistributedServer::VerticalInitVectors(int n_parties) {
     hist_fid_received.resize(n_parties, 0);
     party_wait_times.resize(n_parties, 0);
     stoppable.resize(n_parties, true);
+    party_tot_times.resize(n_parties, 0);
+    party_comm_times.resize(n_parties, 0);
 }
 
 void DistributedServer::HorizontalInitVectors(int n_parties) {
@@ -429,6 +431,8 @@ void DistributedServer::HorizontalInitVectors(int n_parties) {
 
     party_wait_times.resize(n_parties, 0);
     stoppable.resize(n_parties, true);
+    party_tot_times.resize(n_parties, 0);
+    party_comm_times.resize(n_parties, 0);
 }
 
 void RunServer(DistributedServer &service) {
@@ -1036,6 +1040,11 @@ grpc::Status DistributedServer::SendHistogramBatchesEnc(grpc::ServerContext *con
 grpc::Status DistributedServer::StopServer(grpc::ServerContext *context, const fedtree::PID *request,
                                 fedtree::Score *ready) {
     stoppable[request->id()] = true;
+    std::multimap<grpc::string_ref, grpc::string_ref> metadata = context->client_metadata();
+    auto tot_itr = metadata.find("tot");
+    auto comm_itr = metadata.find("comm");
+    party_tot_times[request->id()] = std::stof(tot_itr->second.data());
+    party_comm_times[request->id()] = std::stof(comm_itr->second.data());
     unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
     std::default_random_engine generator(seed);
     std::uniform_int_distribution<int> delay_distribution(5, 10);
@@ -1056,7 +1065,17 @@ grpc::Status DistributedServer::StopServer(grpc::ServerContext *context, const f
     
     if (request->id() == 0) {
         LOG(INFO) << party_wait_times;
+        float sum1 = 0, sum2 = 0;
+        for (auto e: party_tot_times)
+            sum1 += e;
+        for (auto e: party_comm_times)
+            sum2 += e;
+        for (auto e: party_wait_times)
+            sum2 -= e;
+        LOG(INFO) << "avg train time: " << sum1/param.n_parties << "s";
+        LOG(INFO) << "avg real comm time: " << sum2/param.n_parties << "s";
     }
+    
     return grpc::Status::OK;
 }
 
@@ -1140,7 +1159,7 @@ int main(int argc, char **argv) {
     else if(param.objective.find("reg:") != std::string::npos){
         param.num_class = 1;
     }
-    
+    LOG(INFO) << "server init completed.";
     RunServer(server);
     return 0;
 }
