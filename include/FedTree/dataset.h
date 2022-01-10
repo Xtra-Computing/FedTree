@@ -36,6 +36,7 @@ class DataSet{
     size_t n_features_;
     vector<int> group;
     vector<float_type> label;
+    std::map<float_type, int> label_map;
 
 
     // csc variables
