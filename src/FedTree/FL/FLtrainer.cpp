@@ -110,7 +110,6 @@ void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FL
             auto cut_fid_data = cut_fid.host_data();
 
             int index = 0;
-
             for (int fid = 0; fid < n_features; fid++) {
                 vector<float> sample;
                 cut_col_ptr_data[fid] = index;
@@ -121,7 +120,6 @@ void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FL
                     sample.push_back(max_element);
                 } else continue;
 
-
                 // Randomly sample number of cut point according to max num bins
                 unsigned seed = chrono::steady_clock::now().time_since_epoch().count();
                 std::shuffle(ranges[fid].begin(), ranges[fid].end(), std::default_random_engine(seed));
@@ -130,18 +128,14 @@ void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FL
                 {
                     int key;
                     compare(int const &i): key(i) {}
-
                     bool operator()(int const &i) {
                         return (i == key);
                     }
                 };
 
-
                 for (int i = 0; i < ranges[fid].size(); i++) {
-
                     if (sample.size() == max_num_bins)
                         break;
-
                     auto element = ranges[fid][i];
                     // Check if element already in cut points val data
                     if (not (std::find(sample.begin(), sample.end(), element) != sample.end()))
@@ -749,9 +743,9 @@ void FLtrainer::ensemble_trainer(vector<Party> &parties, Server &server, FLParam
 
 void FLtrainer::solo_trainer(vector<Party> &parties, FLParam &params) {
     int n_party = parties.size();
-//    #pragma omp parallel for
+    #pragma omp parallel for
     for (int i = 0; i < n_party; i++) {
-//        parties[i].gbdt.train(params.gbdt_param, parties[i].dataset);
+        LOG(INFO)<<"In Party "<<i;
         for (int j = 0; j < params.gbdt_param.n_trees; j++)
             parties[i].booster.boost(parties[i].gbdt.trees);
     }

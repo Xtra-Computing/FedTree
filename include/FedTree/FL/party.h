@@ -21,7 +21,7 @@ public:
         this->pid = pid;
         this->dataset = dataset;
         this->param = param;
-        if (param.mode != "vertical" and param.mode != "horizontal") {
+        if (param.partition_mode == "hybrid") {
             this->feature_map.resize(feature_map.size());
             this->feature_map.copy_from(feature_map.host_data(), feature_map.size());
         }

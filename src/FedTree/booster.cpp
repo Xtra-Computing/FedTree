@@ -17,13 +17,7 @@
 //}
 
 void Booster::init(DataSet &dataSet, const GBDTParam &param, bool get_cut_points) {
-//    int n_available_device;
-//    cudaGetDeviceCount(&n_available_device);
-//    CHECK_GE(n_available_device, param.n_device) << "only " << n_available_device
-//                                                 << " GPUs available; please set correct number of GPUs to use";
     this->param = param;
-
-//    fbuilder.reset(FunctionBuilder::create(param.tree_method));
     fbuilder.reset(new HistTreeBuilder);
     if(get_cut_points)
         fbuilder->init(dataSet, param);
@@ -38,7 +32,6 @@ void Booster::init(DataSet &dataSet, const GBDTParam &param, bool get_cut_points
         metric.reset(Metric::create(param.metric));
     }
     metric->configure(param, dataSet);
-
     n_devices = param.n_device;
     int n_outputs = param.num_class * dataSet.n_instances();
     gradients.resize(n_outputs);

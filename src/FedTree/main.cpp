@@ -105,6 +105,7 @@ int main(int argc, char** argv){
     if (use_global_test_set) {
         test_dataset.label_map = dataset.label_map;
         test_dataset.load_from_file(model_param.test_path, fl_param);
+        test_dataset.label = dataset.label;
     }
 
 //    if (ObjectiveFunction::need_group_label(param.gbdt_param.objective)) {
@@ -210,6 +211,11 @@ int main(int argc, char** argv){
                 score = parties[i].gbdt.predict_score(fl_param.gbdt_param, test_subsets[i]);
             scores.push_back(score);
         }
+        float sum = std::accumulate(scores.begin(), scores.end(), 0.0);
+        float sq_sum = std::inner_product(scores.begin(), scores.end(), scores.begin(), 0.0);
+        float mean = sum / scores.size();
+        float std = std::sqrt(sq_sum / scores.size() - mean * mean);
+        LOG(INFO)<<"score mean (std):"<< mean << "(" << std << ")";
     }
     else if(fl_param.mode == "centralized"){
         GBDT gbdt;
