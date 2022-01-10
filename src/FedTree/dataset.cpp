@@ -66,7 +66,6 @@ void DataSet::load_group_file(string file_name) {
 }
 
 void DataSet::group_label() {
-    std::map<float_type, int> label_map;
     label.clear();
     for (int i = 0; i < y.size(); ++i) {
         if(label_map.find(y[i]) == label_map.end()) {
@@ -321,7 +320,7 @@ void DataSet::load_from_file(string file_name, FLParam &param) {
         }
         for (int i = 0; i < nthread; i++) {
             this->y.insert(y.end(), y_[i].begin(), y_[i].end());
-//            this->label.insert(label.end(), y_[i].begin(), y_[i].end());
+            this->label.insert(label.end(), y_[i].begin(), y_[i].end());
         }
     } // end while
 

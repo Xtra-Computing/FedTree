@@ -103,8 +103,8 @@ int main(int argc, char** argv){
 
     DataSet test_dataset;
     if (use_global_test_set) {
+        test_dataset.label_map = dataset.label_map;
         test_dataset.load_from_file(model_param.test_path, fl_param);
-        test_dataset.label = dataset.label;
     }
 
 //    if (ObjectiveFunction::need_group_label(param.gbdt_param.objective)) {
