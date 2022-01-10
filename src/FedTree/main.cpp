@@ -72,7 +72,6 @@ int main(int argc, char** argv){
             partition.horizontal_vertical_dir_partition(dataset, n_parties, fl_param.alpha, feature_map, subsets,
                                                         fl_param.n_hori, fl_param.n_verti);
         } else if (fl_param.partition_mode == "vertical") {
-            CHECK_EQ(fl_param.mode, "vertical");
             dataset.csr_to_csc();
             partition.homo_partition(dataset, n_parties, false, subsets, batch_idxs, fl_param.seed);
             if (!use_global_test_set) {
