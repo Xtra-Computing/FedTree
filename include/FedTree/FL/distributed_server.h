@@ -189,6 +189,7 @@ private:
 
     bool homo_init_success = false;
 
+    int info_cnt = 0;
     int cnt = 0;
     int gh_cnt = 0;
     int sp_cnt = 0;

@@ -7,6 +7,8 @@
 #include "FedTree/parser.h"
 #include "FedTree/DP/differential_privacy.h"
 #include <sstream>
+#include <cmath>
+
 grpc::Status DistributedServer::TriggerUpdateGradients(::grpc::ServerContext *context, const ::fedtree::PID *request,
                                                        ::fedtree::Ready *response) {
     booster.update_gradients();
@@ -145,7 +147,7 @@ grpc::Status DistributedServer::TriggerAggregate(grpc::ServerContext *context, c
 //    best_infos.clear();
     cur_round += 1;
     update_gradients_success = false;
-//    n_nodes_received = 0;
+    n_nodes_received = 0;
 
     std::multimap<grpc::string_ref, grpc::string_ref> metadata = context->client_metadata();
     auto itr = metadata.find("n_nodes_in_level");
@@ -238,6 +240,13 @@ grpc::Status DistributedServer::GetBestInfo(grpc::ServerContext *context, const 
         best.set_gain(best_info.gain);
         writer->Write(best);
     }
+    mutex.lock();
+    info_cnt = (info_cnt + 1) % param.n_parties;
+    if (info_cnt == 0) {
+        aggregate_success = false;
+        best_infos.clear();
+    }
+    mutex.unlock(); 
     LOG(DEBUG) << "Send best info to " << pid;
     return grpc::Status::OK;
 }
@@ -287,7 +296,9 @@ grpc::Status DistributedServer::SendIns2NodeID(grpc::ServerContext *context,
     }
 
     LOG(DEBUG) << "Receive ins2node_id from " << pid;
+    mutex.lock();
     n_nodes_received += 1;
+    mutex.unlock();
     return grpc::Status::OK;
 }
 
@@ -370,9 +381,8 @@ grpc::Status DistributedServer::CheckIfContinue(grpc::ServerContext *context, co
                 std::chrono::milliseconds(delay_distribution(generator)));
     }
 
-    aggregate_success = false;
-    best_infos.clear();
-    n_nodes_received = 0;
+    // aggregate_success = false;
+    // best_infos.clear();
 
     ready->set_ready(false);
 
@@ -960,7 +970,9 @@ grpc::Status DistributedServer::SendIns2NodeIDBatches(grpc::ServerContext *conte
     }
 
     LOG(DEBUG) << "Receive ins2node_id batches from " << pid;
+    mutex.lock();
     n_nodes_received += 1;
+    mutex.unlock();
     return grpc::Status::OK;
 }
 grpc::Status DistributedServer::GetGradientBatches(grpc::ServerContext *context, const fedtree::PID *id,
@@ -1064,7 +1076,7 @@ grpc::Status DistributedServer::StopServer(grpc::ServerContext *context, const f
     ready->set_content(party_wait_times[request->id()]);
     
     if (request->id() == 0) {
-        LOG(INFO) << party_wait_times;
+        LOG(INFO) << "wait times: " << party_wait_times;
         float sum1 = 0, sum2 = 0;
         for (auto e: party_tot_times)
             sum1 += e;
@@ -1072,8 +1084,28 @@ grpc::Status DistributedServer::StopServer(grpc::ServerContext *context, const f
             sum2 += e;
         for (auto e: party_wait_times)
             sum2 -= e;
+        vector<float> real_comm_times = party_comm_times;
+        for (int i = 0; i < party_wait_times.size(); i++) {
+            real_comm_times[i] -= party_wait_times[i];
+        }
+        LOG(INFO) << "train times: " << party_tot_times;
+        LOG(INFO) << "real comm times: " << real_comm_times;
+
+        float sum3 = 0;
+        for (int i = 0; i < party_tot_times.size(); i++) {
+            float tmp = party_tot_times[i] - sum1/param.n_parties;
+            sum3 += tmp*tmp;
+        }
+        float sum4 = 0;
+        for (int i = 0; i < real_comm_times.size(); i++) {
+            float tmp = real_comm_times[i] - sum2/param.n_parties;
+            sum4 += tmp*tmp;
+        }
+
         LOG(INFO) << "avg train time: " << sum1/param.n_parties << "s";
+        LOG(INFO) << "train time stddev: " << sqrt(sum3/param.n_parties) << "s";
         LOG(INFO) << "avg real comm time: " << sum2/param.n_parties << "s";
+        LOG(INFO) << "real comm time stddev: " << sqrt(sum4/param.n_parties) << "s";
     }
     
     return grpc::Status::OK;
