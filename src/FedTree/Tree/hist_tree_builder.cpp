@@ -433,10 +433,10 @@ void HistTreeBuilder::find_split_by_predefined_features(int level) {
                 GHPair father_gh = nodes_data[nid].sum_gh_pair;
                 GHPair p_missing_gh = missing_gh_data[pid];
                 GHPair rch_gh = gh_prefix_sum_data[i];
-                float_type default_to_left_gain = std::max(0.f,
+                float_type default_to_left_gain = std::max((float_type)0,
                                                            compute_gain(father_gh, father_gh - rch_gh, rch_gh, mcw, l));
                 rch_gh = rch_gh + p_missing_gh;
-                float_type default_to_right_gain = std::max(0.f,
+                float_type default_to_right_gain = std::max((float_type)0,
                                                             compute_gain(father_gh, father_gh - rch_gh, rch_gh, mcw,
                                                                          l));
                 if (default_to_left_gain > default_to_right_gain)
@@ -763,12 +763,12 @@ HistTreeBuilder::compute_gain_in_a_level(SyncArray<float_type> &gain, int n_node
             GHPair father_gh = nodes_data[nid].sum_gh_pair;
             GHPair p_missing_gh = missing_gh_data[pid];
             GHPair rch_gh = gh_prefix_sum_data[i];
-            float_type default_to_left_gain = std::max(0.f,
+            float_type default_to_left_gain = std::max((float_type)0,
                                                        compute_gain(father_gh, father_gh - rch_gh, rch_gh, mcw, l));
 //            rch_gh = rch_gh + p_missing_gh;
             rch_gh.g += p_missing_gh.g;
             rch_gh.h += p_missing_gh.h;
-            float_type default_to_right_gain = std::max(0.f,
+            float_type default_to_right_gain = std::max((float_type)0,
                                                         compute_gain(father_gh, father_gh - rch_gh, rch_gh, mcw, l));
             if (default_to_left_gain > default_to_right_gain)
                 gain_data[i] = default_to_left_gain;
@@ -1408,7 +1408,7 @@ SyncArray<float_type> HistTreeBuilder::gain(Tree &tree, SyncArray<GHPair> &hist,
             GHPair father_gh = nodes_data[nid].sum_gh_pair;
 //            GHPair p_missing_gh = missing_gh_data[pid];
             GHPair rch_gh = gh_prefix_sum_data[i];
-            float_type left_gain = std::max(0.f, compute_gain(father_gh, father_gh - rch_gh, rch_gh, mcw, l));
+            float_type left_gain = std::max((float_type)0, compute_gain(father_gh, father_gh - rch_gh, rch_gh, mcw, l));
             gain_data[i] = left_gain;
 //          rch_gh = rch_gh + p_missing_gh;
 //          float_type default_to_right_gain = std::max(0.f,

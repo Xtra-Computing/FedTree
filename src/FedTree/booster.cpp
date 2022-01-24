@@ -66,8 +66,8 @@ void Booster::set_gradients(SyncArray<GHPair> &gh) {
 void Booster::add_noise_to_gradients(float variance) {
     auto gradients_data = gradients.host_data();
     for (int i = 0; i < gradients.size(); i++) {
-        DPnoises<float>::add_gaussian_noise(gradients_data[i].g, variance);
-        DPnoises<float>::add_gaussian_noise(gradients_data[i].h, variance);
+        DPnoises<float_type>::add_gaussian_noise(gradients_data[i].g, variance);
+        DPnoises<float_type>::add_gaussian_noise(gradients_data[i].h, variance);
     }
 }
 
