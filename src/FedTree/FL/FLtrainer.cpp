@@ -59,7 +59,7 @@ void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FL
             }
             feature_range[n] = min_max;
         }
-//        // once we have feature_range, we can generate cut points
+        // once we have feature_range, we can generate cut points
         server.booster.fbuilder->cut.get_cut_points_by_feature_range(feature_range, n_bins);
 
         for (int p = 0; p < n_parties; p++) {
@@ -468,6 +468,7 @@ void FLtrainer::vertical_fl_trainer(vector<Party> &parties, Server &server, FLPa
             for (int l = 0; l < params.gbdt_param.depth; l++) {
 
                 // initialize level parameters
+                bool split_further=false;
                 int n_nodes_in_level = 1 << l;
                 int n_max_nodes = 2 << model_param.depth;
                 vector<int> parties_n_bins(parties.size());
@@ -532,6 +533,7 @@ void FLtrainer::vertical_fl_trainer(vector<Party> &parties, Server &server, FLPa
                 missing_gh.copy_from(
                         comm_helper.concat_msyncarray(parties_missing_gh, parties_n_columns, n_nodes_in_level));
                 hist.copy_from(comm_helper.concat_msyncarray(parties_hist, parties_n_bins, n_nodes_in_level));
+
                 // server compute gain
                 SyncArray<float_type> gain(n_max_splits_new);
                 if (params.privacy_tech == "he") {
@@ -577,9 +579,9 @@ void FLtrainer::vertical_fl_trainer(vector<Party> &parties, Server &server, FLPa
 
                 for (int node = 0; node < n_nodes_in_level; node++) {
                     // convert the global best index to party id & its local index
-                    int best_idx = get < 0 > (best_idx_data[node]);
+                    int best_idx = get<0>(best_idx_data[node]);
                     best_idx -= node * n_bins_new;
-                    float best_gain = get < 1 > (best_idx_data[node]);
+                    float best_gain = get<1>(best_idx_data[node]);
                     int party_id = 0;
                     while (best_idx >= 0) {
                         best_idx -= parties_n_bins[party_id];
@@ -600,6 +602,11 @@ void FLtrainer::vertical_fl_trainer(vector<Party> &parties, Server &server, FLPa
                     // party update itself
                     parties[party_id].booster.fbuilder->update_tree_in_a_node(node);
                     parties[party_id].booster.fbuilder->update_ins2node_id_in_a_node(node_shifted);
+                    if (!split_further) {
+                        if (parties[party_id].booster.fbuilder->has_split) {
+                            split_further = true;
+                        }
+                    }
                     // update local split_feature_id to global
                     auto party_global_hist_fid_data = parties_global_hist_fid[party_id].host_data();
                     int global_fid = party_global_hist_fid_data[local_idx];
@@ -639,13 +646,7 @@ void FLtrainer::vertical_fl_trainer(vector<Party> &parties, Server &server, FLPa
                         server.send_node(nid, n_nodes_in_level, parties[pid]);
                     }
                 }
-                bool split_further = false;
-                for (int pid:updated_parties) {
-                    if (parties[pid].booster.fbuilder->has_split) {
-                        split_further = true;
-                        break;
-                    }
-                }
+
                 if (!split_further) {
                     // add Laplace noise to leaf node values
                     if (params.privacy_tech == "dp") {
@@ -667,7 +668,6 @@ void FLtrainer::vertical_fl_trainer(vector<Party> &parties, Server &server, FLPa
 
             for (int pid = 0; pid < parties.size(); pid++) {
                 parties[pid].booster.fbuilder->trees.prune_self(model_param.gamma);
-//                LOG(INFO)<<"trees:"<< parties[pid].booster.fbuilder->trees.nodes;
                 parties[pid].booster.fbuilder->predict_in_training(t);
             }
             server.booster.fbuilder->trees.prune_self(model_param.gamma);
