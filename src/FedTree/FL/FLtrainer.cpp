@@ -544,7 +544,7 @@ void FLtrainer::vertical_fl_trainer(vector<Party> &parties, Server &server, FLPa
                     std::chrono::duration<float> t3 = t2 - t1;
                     decryption_time += t3.count();
                 }
-
+                // LOG(INFO) << "hist:"<<"\n"<<hist;
                 server.booster.fbuilder->compute_gain_in_a_level(gain, n_nodes_in_level, n_bins_new,
                                                                  global_hist_fid.host_data(),
                                                                  missing_gh, hist, n_column_new);
@@ -571,13 +571,17 @@ void FLtrainer::vertical_fl_trainer(vector<Party> &parties, Server &server, FLPa
                     server.booster.fbuilder->get_best_gain_in_a_level(gain, best_idx_gain, n_nodes_in_level,
                                                                       n_bins_new);
                 }
-
+                // LOG(INFO) << "best_idx_gain:"<<"\n"<< best_idx_gain;
                 auto best_idx_data = best_idx_gain.host_data();
 
                 // parties who propose the best candidate update their trees accordingly
                 vector<vector<int>> party_node_map(parties.size());
 
                 for (int node = 0; node < n_nodes_in_level; node++) {
+                    auto server_nodes_data = server.booster.fbuilder->trees.nodes.host_data();
+                    if (!server_nodes_data[node + n_nodes_in_level - 1].is_valid) {
+                        break;
+                    }
                     // convert the global best index to party id & its local index
                     int best_idx = get<0>(best_idx_data[node]);
                     best_idx -= node * n_bins_new;
@@ -599,9 +603,14 @@ void FLtrainer::vertical_fl_trainer(vector<Party> &parties, Server &server, FLPa
                                                                                    parties_hist_fid[party_id].host_data(),
                                                                                    parties_missing_gh[party_id],
                                                                                    parties_hist[party_id]);
+
+                    // LOG(INFO) << "sp:"<<"\n"<<parties[party_id].booster.fbuilder->sp;
                     // party update itself
                     parties[party_id].booster.fbuilder->update_tree_in_a_node(node);
                     parties[party_id].booster.fbuilder->update_ins2node_id_in_a_node(node_shifted);
+
+                    // LOG(INFO)<<"level "<<l<<":tree nodes"<<"\n"<<parties[party_id].booster.fbuilder->trees.nodes;
+
                     if (!split_further) {
                         if (parties[party_id].booster.fbuilder->has_split) {
                             split_further = true;
@@ -668,6 +677,7 @@ void FLtrainer::vertical_fl_trainer(vector<Party> &parties, Server &server, FLPa
 
             for (int pid = 0; pid < parties.size(); pid++) {
                 parties[pid].booster.fbuilder->trees.prune_self(model_param.gamma);
+                // LOG(INFO)<<"tree nodes:"<<"\n"<<parties[pid].booster.fbuilder->trees.nodes;
                 parties[pid].booster.fbuilder->predict_in_training(t);
             }
             server.booster.fbuilder->trees.prune_self(model_param.gamma);

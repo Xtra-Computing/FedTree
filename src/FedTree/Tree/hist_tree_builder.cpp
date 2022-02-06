@@ -170,13 +170,13 @@ void HistTreeBuilder::find_split(int level) {
     SyncArray<GHPair> hist(n_max_splits);
     SyncArray<float_type> gain(n_max_splits);
     compute_histogram_in_a_level(level, n_max_splits, n_bins, n_nodes_in_level, hist_fid_data, missing_gh, hist);
-    //LOG(INFO) << hist;
+    // LOG(INFO) << "hist:"<<"\n"<<hist;
     compute_gain_in_a_level(gain, n_nodes_in_level, n_bins, hist_fid_data, missing_gh, hist);
     SyncArray<int_float> best_idx_gain(n_nodes_in_level);
     get_best_gain_in_a_level(gain, best_idx_gain, n_nodes_in_level, n_bins);
-    //LOG(INFO) << best_idx_gain;
+    // LOG(INFO) << "best_idx_gain:"<<"\n"<< best_idx_gain;
     get_split_points(best_idx_gain, n_nodes_in_level, hist_fid_data, missing_gh, hist);
-    //LOG(INFO) << this->sp;
+    // LOG(INFO) << "sp:"<<"\n"<<this->sp;
 }
 
 
@@ -866,7 +866,7 @@ void HistTreeBuilder::get_split_points_in_a_node(int node_id, int best_idx, floa
 
     auto cut_col_ptr_data = cut.cut_col_ptr.host_data();
 
-    if (!nodes_data[node_id].is_valid) {
+    if (!nodes_data[node_id + n_nodes_in_level - 1].is_valid) {
         sp_data[node_id].split_fea_id = -1;
         sp_data[node_id].nid = -1;
         return;

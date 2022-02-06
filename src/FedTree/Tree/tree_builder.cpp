@@ -131,14 +131,14 @@ vector<Tree> TreeBuilder::build_approximate(const SyncArray<GHPair> &gradients, 
             {
                 TIMED_SCOPE(timerObj, "apply sp");
                 update_tree();
-              //  LOG(INFO) << this->trees.nodes;
                 update_ins2node_id();
-//                LOG(INFO) << "ins2node_id: " << ins2node_id;
+                // LOG(INFO)<<"level "<<level<<":tree nodes"<<"\n"<<this->trees.nodes;
+                // LOG(INFO) << "ins2node_id: " << ins2node_id;
                 {
                     LOG(TRACE) << "gathering ins2node id";
                     //get final result of the reset instance id to node id
                     if (!has_split) {
-                        LOG(INFO) << "no splittable nodes, stop";
+                        // LOG(INFO) << "no splittable nodes, stop";
                         break;
                     }
                 }
@@ -147,6 +147,7 @@ vector<Tree> TreeBuilder::build_approximate(const SyncArray<GHPair> &gradients, 
         }
         //here
         this->trees.prune_self(param.gamma);
+        // LOG(INFO) << "tree nodes:"<<"\n"<<this->trees.nodes;
 //        LOG(INFO) << "y_predict: " << y_predict;
         if (update_y_predict)
             predict_in_training(k);
