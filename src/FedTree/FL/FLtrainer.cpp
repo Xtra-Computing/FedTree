@@ -580,7 +580,7 @@ void FLtrainer::vertical_fl_trainer(vector<Party> &parties, Server &server, FLPa
                 for (int node = 0; node < n_nodes_in_level; node++) {
                     auto server_nodes_data = server.booster.fbuilder->trees.nodes.host_data();
                     if (!server_nodes_data[node + n_nodes_in_level - 1].is_valid) {
-                        break;
+                        continue;
                     }
                     // convert the global best index to party id & its local index
                     int best_idx = get<0>(best_idx_data[node]);
