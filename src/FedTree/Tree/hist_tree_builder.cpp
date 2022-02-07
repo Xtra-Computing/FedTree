@@ -704,8 +704,20 @@ void HistTreeBuilder::compute_histogram_in_a_level(int level, int n_max_splits, 
     }
 
     this->build_n_hist++;
-    inclusive_scan_by_key(thrust::host, hist_fid, hist_fid + n_split,
-                          hist.host_data(), hist.host_data());
+    if (n_column > 1){
+        inclusive_scan_by_key(thrust::host, hist_fid, hist_fid + n_split,
+                              hist.host_data(), hist.host_data());
+    }
+    else{
+        SyncArray<int> hist_fid_temp(n_split);
+        auto hist_fid_temp_data = hist_fid_temp.host_data();
+        for(int i = 0; i < n_nodes_in_level; i++){
+            for(int j = 0; j < n_bins; j++)
+                hist_fid_temp_data[i*n_bins + j] = hist_fid[i*n_bins + j] + i;
+        }
+        inclusive_scan_by_key(thrust::host, hist_fid_temp_data, hist_fid_temp_data + n_split,
+                              hist.host_data(), hist.host_data());
+    }
     LOG(DEBUG) << hist;
 
     auto nodes_data = tree.nodes.host_data();
