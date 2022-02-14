@@ -48,9 +48,18 @@ public:
         auto y_data = y.host_data();
         auto y_p_data = y_p.host_data();
         auto gh_pair_data = gh_pair.host_data();
-        for (int i = 0; i < y.size(); i++){
-            gh_pair_data[i] = Loss<float_type>::gradient(y_data[i], y_p_data[i]);
+        if(this->constant_h != 0){
+            for (int i = 0; i < y.size(); i++){
+                gh_pair_data[i] = Loss<float_type>::gradient(y_data[i], y_p_data[i]);
+                gh_pair_data[i].h = this->constant_h;
+            }
         }
+        else{
+            for (int i = 0; i < y.size(); i++){
+                gh_pair_data[i] = Loss<float_type>::gradient(y_data[i], y_p_data[i]);
+            }
+        }
+
     }
     void predict_transform(SyncArray<float_type> &y) {
         //this method transform y(#class * #instances) into y(#instances)
@@ -71,6 +80,7 @@ public:
         return "error";
     }
     void configure(GBDTParam param, const DataSet &dataset) {
+        this->constant_h = param.constant_h;
         num_class = param.num_class;
         label.resize(num_class);
         CHECK_EQ(dataset.label.size(), num_class)<<dataset.label.size() << "!=" << num_class;

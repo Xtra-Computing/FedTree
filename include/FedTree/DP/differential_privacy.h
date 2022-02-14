@@ -16,6 +16,7 @@ class DifferentialPrivacy {
 public:
     float max_gradient = 1.0;
     float lambda;
+    float constant_h = 1.0;
     float delta_g;
     float delta_v;
     float privacy_budget;
