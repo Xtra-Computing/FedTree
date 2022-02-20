@@ -17,7 +17,7 @@ void DifferentialPrivacy::init(FLParam flparam) {
     this->delta_v = this->max_gradient / (this->constant_h + this->lambda);
 
     this->privacy_budget = flparam.privacy_budget;
-    this->privacy_budget_per_tree = this->privacy_budget / gbdt_param.n_trees;
+    this->privacy_budget_per_tree = this->privacy_budget / (gbdt_param.n_trees/int(1/flparam.ins_bagging_fraction));
     this->privacy_budget_leaf_nodes = this->privacy_budget_per_tree / 2.0;
     this->privacy_budget_internal_nodes = this->privacy_budget_per_tree / 2.0 / gbdt_param.depth;
 }

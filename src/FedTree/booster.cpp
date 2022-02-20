@@ -39,6 +39,14 @@ void Booster::init(DataSet &dataSet, const GBDTParam &param, bool get_cut_points
     y.copy_from(dataSet.y.data(), dataSet.n_instances());
 }
 
+void Booster::reinit(DataSet &dataSet, const GBDTParam &param){
+    fbuilder->init(dataSet, param);
+    int n_outputs = param.num_class * dataSet.n_instances();
+    gradients.resize(n_outputs);
+    y.resize(dataSet.n_instances());
+    y.copy_from(dataSet.y.data(), dataSet.n_instances());
+}
+
 SyncArray<GHPair> Booster::get_gradients() {
     SyncArray<GHPair> gh;
     gh.resize(gradients.size());

@@ -5,13 +5,52 @@
 
 #include "FedTree/FL/party.h"
 #include <thrust/reduce.h>
+#include <thrust/sequence.h>
 #include <thrust/execution_policy.h>
 
-//void Party::init(int pid, DataSet &dataset, FLParam &param){
-//    this->pid = pid;
-//    this->dataset = dataset;
-//    booster.init(dataset, param.gbdt_param);
-//}
+
+void Party::init(int pid, DataSet &dataset, FLParam &param, SyncArray<bool> &feature_map) {
+    this->pid = pid;
+    this->dataset = dataset;
+    this->param = param;
+    this->ins_bagging_fraction = param.ins_bagging_fraction;
+    if (param.partition_mode == "hybrid") {
+        this->feature_map.resize(feature_map.size());
+        this->feature_map.copy_from(feature_map.host_data(), feature_map.size());
+    }
+    booster.init(dataset, param.gbdt_param, param.mode != "horizontal");
+
+};
+
+void Party::bagging_init(int seed){
+    this->temp_dataset = dataset;
+    this->bagging_inner_round = 0;
+    this->shuffle_idx.resize(dataset.n_instances());
+    thrust::sequence(thrust::host, this->shuffle_idx.data(), this->shuffle_idx.data()+dataset.n_instances());
+    if(seed == -1)
+        std::random_shuffle(this->shuffle_idx.begin(), shuffle_idx.end());
+    else {
+        std::default_random_engine e(seed);
+        std::shuffle(this->shuffle_idx.begin(), shuffle_idx.end(), e);
+    }
+}
+
+void Party::sample_data(){
+    int stride = this->ins_bagging_fraction * this->temp_dataset.n_instances();
+    vector<int> batch_idx;
+    if(this->bagging_inner_round == int(1/this->ins_bagging_fraction)){
+        batch_idx = vector<int>(this->shuffle_idx.begin()+stride*this->bagging_inner_round, this->shuffle_idx.end());
+    }
+    else {
+        batch_idx = vector<int>(this->shuffle_idx.begin() + stride * this->bagging_inner_round,
+                      this->shuffle_idx.begin() + stride * (this->bagging_inner_round + 1));
+    }
+    temp_dataset.get_subset(batch_idx, this->dataset);
+    this->bagging_inner_round++;
+    if(this->bagging_inner_round > int(1/this->ins_bagging_fraction))
+        this->bagging_inner_round = 0;
+}
+
 
 
 void Party::correct_trees(){

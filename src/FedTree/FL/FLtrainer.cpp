@@ -39,8 +39,14 @@ void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FL
     if (params.privacy_tech == "dp"){
         LOG(INFO) << "Start DP init";
         dp_manager.init(params);
+        LOG(INFO) << "End of DP init";
     }
 
+    if(params.ins_bagging_fraction < 1.0){
+        for(int i = 0; i < n_parties; i++){
+            parties[i].bagging_init();
+        }
+    }
     // Generate HistCut by server or each party
     int n_bins = model_param.max_num_bin;
 
@@ -182,7 +188,20 @@ void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FL
         vector<Tree> trees_this_round;
         trees_this_round.resize(params.gbdt_param.tree_per_rounds);
 //        vector<Tree> trees(params.gbdt_param.tree_per_rounds);
-
+        // each party sample the data to train a tree in each round
+        if(params.ins_bagging_fraction < 1.0){
+            for(int pid = 0; pid<n_parties; pid++) {
+                parties[pid].sample_data();
+                parties[pid].booster.reinit(parties[pid].dataset, params.gbdt_param);
+                parties[pid].booster.fbuilder->set_cut(server.booster.fbuilder->cut);
+                parties[pid].booster.fbuilder->get_bin_ids();
+//                SyncArray<float_type> y_predict = parties[pid].booster.fbuilder->get_y_predict();
+                //reset y_predict
+                if(i!=0)
+                    parties[pid].gbdt.predict_raw(params.gbdt_param, parties[pid].dataset,
+                                                parties[pid].booster.fbuilder->get_y_predict());
+            }
+        }
         GHPair sum_gh;
         for (int pid = 0; pid < n_parties; pid++) {
             parties[pid].booster.update_gradients();
@@ -192,6 +211,7 @@ void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FL
                     dp_manager.clip_gradient_value(gradient_data[i].g);
                 }
             }
+
             GHPair party_gh = thrust::reduce(thrust::host, parties[pid].booster.gradients.host_data(), parties[pid].booster.gradients.host_end());
             sum_gh = sum_gh + party_gh;
         }
@@ -340,8 +360,22 @@ void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FL
                         break;
                     }
                 }
-                if (!split_further)
+                if (!split_further) {
+                    if (params.privacy_tech == "dp") {
+                        for (int party_id = 0; party_id < parties.size(); party_id++) {
+                            int tree_size = parties[party_id].booster.fbuilder->trees.nodes.size();
+                            auto nodes = parties[party_id].booster.fbuilder->trees.nodes.host_data();
+                            for (int node_id = 0; node_id < tree_size; node_id++) {
+                                Tree::TreeNode node = nodes[node_id];
+                                if (node.is_leaf) {
+                                    // add noises
+                                    dp_manager.laplace_add_noise(node);
+                                }
+                            }
+                        }
+                    }
                     break;
+                }
             }
 
             t_end = timer.now();
@@ -404,13 +438,18 @@ void FLtrainer::vertical_fl_trainer(vector<Party> &parties, Server &server, FLPa
     GBDTParam &model_param = params.gbdt_param;
     Comm comm_helper;
     DifferentialPrivacy dp_manager;
-
+    int n_parties = parties.size();
     // initializing differential privacy
     if (params.privacy_tech == "dp") {
         dp_manager = DifferentialPrivacy();
         dp_manager.init(params);
     }
-
+    if(params.ins_bagging_fraction < 1.0){
+        LOG(INFO)<<"start bagging init";
+        for(int i = 0; i < n_parties; i++){
+            parties[i].bagging_init();
+        }
+    }
     // start training
     // for each boosting round
 
@@ -418,6 +457,24 @@ void FLtrainer::vertical_fl_trainer(vector<Party> &parties, Server &server, FLPa
 
         vector<Tree> trees(params.gbdt_param.tree_per_rounds);
 
+        if(params.ins_bagging_fraction < 1.0){
+//            server.sample_data();
+//            if(round!=0)
+//                server.gbdt.predict_raw(params.gbdt_param, server.dataset,
+//                                              server.booster.fbuilder->get_y_predict());
+//            for(int pid = 0; pid<n_parties; pid++) {
+//                parties[pid].sample_data();
+//                std::cout<<"1"<<std::endl;
+//                parties[pid].booster.reinit(parties[pid].dataset, params.gbdt_param);
+////                std::cout<<"2"<<std::endl;
+////                parties[pid].booster.fbuilder->get_bin_ids();
+//                std::cout<<"4"<<std::endl;
+////                SyncArray<float_type> y_predict = parties[pid].booster.fbuilder->get_y_predict();
+//                //reset y_predict
+//
+//                std::cout<<"5"<<std::endl;
+//            }
+        }
         // Server update, encrypt and send gradients
         server.booster.update_gradients();
 

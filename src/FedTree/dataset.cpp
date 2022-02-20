@@ -741,3 +741,26 @@ void DataSet::load_from_files(vector<string> file_names, FLParam &param) {
         prev_csr_row_ptr += next.n_instances();
     }
 }
+
+void DataSet::get_subset(vector<int> &idx, DataSet& subset){
+    subset.csr_val.clear();
+    subset.csr_col_idx.clear();
+    subset.csr_row_ptr.clear();
+    subset.csr_row_ptr.push_back(0);
+    subset.n_features_ = n_features();
+    subset.y.clear();
+    for(int i = 0; i < idx.size(); i++){
+        int n_val = 0;
+        for(int j = csr_row_ptr[idx[i]]; j < csr_row_ptr[idx[i] + 1]; j++){
+            float_type val = csr_val[j];
+            int cid = csr_col_idx[j];
+            subset.csr_val.push_back(val);
+            subset.csr_col_idx.push_back(cid);
+            n_val++;
+        }
+        subset.csr_row_ptr.push_back(n_val + subset.csr_row_ptr.back());
+        subset.y.push_back(y[i]);
+    }
+    subset.has_csc = false;
+    std::cout<<"subset y size:"<<subset.y.size()<<std::endl;
+}

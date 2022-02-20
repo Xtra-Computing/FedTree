@@ -28,6 +28,7 @@ void Parser::parse_param(FLParam &fl_param, int argc, char **argv) {
     fl_param.privacy_budget = 10;
     fl_param.variance = 200;
     fl_param.ip_address = "localhost";
+    fl_param.ins_bagging_fraction = 1.0;
 
     fl_param.seed = 42;
 
@@ -89,6 +90,8 @@ void Parser::parse_param(FLParam &fl_param, int argc, char **argv) {
                 fl_param.privacy_budget = atof(val);
             else if (str_name.compare("ip_address") == 0)
                 fl_param.ip_address = val;
+            else if (str_name.compare("ins_bagging_fraction") == 0)
+                fl_param.ins_bagging_fraction = atof(val);
             else if (str_name.compare("seed") == 0)
                 fl_param.ip_address = atoi(val);
             else if (str_name.compare("merge_histogram") == 0)

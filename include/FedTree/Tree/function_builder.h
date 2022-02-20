@@ -61,14 +61,16 @@ public:
         this->param = param;
     }
 
-    virtual const SyncArray<float_type> &get_y_predict() { return y_predict; };
+    virtual SyncArray<float_type> &get_y_predict() { return y_predict; };
 
     virtual ~FunctionBuilder() {};
 
     static FunctionBuilder *create(std::string name);
 
-protected:
     SyncArray<float_type> y_predict;
+
+protected:
+
     GBDTParam param;
 };
 
