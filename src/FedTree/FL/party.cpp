@@ -13,7 +13,10 @@ void Party::init(int pid, DataSet &dataset, FLParam &param, SyncArray<bool> &fea
     this->pid = pid;
     this->dataset = dataset;
     this->param = param;
-    this->ins_bagging_fraction = param.ins_bagging_fraction;
+    if (param.ins_bagging_fraction < 1.0){
+        this->temp_dataset = dataset;
+        this->ins_bagging_fraction = param.ins_bagging_fraction;
+    }
     if (param.partition_mode == "hybrid") {
         this->feature_map.resize(feature_map.size());
         this->feature_map.copy_from(feature_map.host_data(), feature_map.size());
@@ -23,7 +26,7 @@ void Party::init(int pid, DataSet &dataset, FLParam &param, SyncArray<bool> &fea
 };
 
 void Party::bagging_init(int seed){
-    this->temp_dataset = dataset;
+
     this->bagging_inner_round = 0;
     this->shuffle_idx.resize(dataset.n_instances());
     thrust::sequence(thrust::host, this->shuffle_idx.data(), this->shuffle_idx.data()+dataset.n_instances());

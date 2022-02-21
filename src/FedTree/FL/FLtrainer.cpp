@@ -41,12 +41,7 @@ void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FL
         dp_manager.init(params);
         LOG(INFO) << "End of DP init";
     }
-
-    if(params.ins_bagging_fraction < 1.0){
-        for(int i = 0; i < n_parties; i++){
-            parties[i].bagging_init();
-        }
-    }
+    
     // Generate HistCut by server or each party
     int n_bins = model_param.max_num_bin;
 
@@ -190,6 +185,11 @@ void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FL
 //        vector<Tree> trees(params.gbdt_param.tree_per_rounds);
         // each party sample the data to train a tree in each round
         if(params.ins_bagging_fraction < 1.0){
+            if(i % int(1/params.ins_bagging_fraction) == 0){
+                for(int i = 0; i < n_parties; i++){
+                    parties[i].bagging_init();
+                }
+            }
             for(int pid = 0; pid<n_parties; pid++) {
                 parties[pid].sample_data();
                 parties[pid].booster.reinit(parties[pid].dataset, params.gbdt_param);
