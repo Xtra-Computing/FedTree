@@ -23,6 +23,7 @@ class DataSet{
                                    int *group, int num_group, GBDTParam &param);
     void load_csc_from_file(string file_name, FLParam &param, int const nfeatures=500);
     void csr_to_csc();
+    void csc_to_csr();
     void get_subset(vector<int> &idx, DataSet &subset);
 
     size_t n_features() const;

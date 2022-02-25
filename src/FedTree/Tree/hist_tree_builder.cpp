@@ -91,7 +91,6 @@ void HistTreeBuilder::get_bin_ids() {
     SyncArray<unsigned char> bin_id;
     bin_id.resize(nnz);
     auto bin_id_data = bin_id.host_data();
-    int n_block = fminf((nnz / n_column - 1) / 256 + 1, 4 * 56);
     {
         auto lowerBound = [=]__host__(const float_type *search_begin, const float_type *search_end, float_type val) {
             const float_type *left = search_begin;
@@ -99,7 +98,7 @@ void HistTreeBuilder::get_bin_ids() {
 
             while (left != right) {
                 const float_type *mid = left + (right - left) / 2;
-                if (*mid <= val)
+                if ((*mid-1e-6) <= val)
                     right = mid;
                 else left = mid + 1;
             }
@@ -268,9 +267,6 @@ void HistTreeBuilder::find_split_by_predefined_features(int level) {
                 int fid = split_feature_id;
                 unsigned char bid = dense_bin_id_data[iid * n_column + fid];
                 // todo: check bid when n_bins = 0
-                if (n_split == 0) {
-                    std::cout << "bid:" << bid;
-                }
                 if (bid != max_num_bin) {
                     int feature_offset = 0;
                     const GHPair src = gh_data[iid];

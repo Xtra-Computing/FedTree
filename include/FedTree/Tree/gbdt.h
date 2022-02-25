@@ -5,7 +5,6 @@
 #ifndef FEDTREE_GBDT_H
 #define FEDTREE_GBDT_H
 
-//Todo: the GBDT model, train a tree, update gradients
 #include "tree.h"
 #include "FedTree/dataset.h"
 
@@ -26,6 +25,8 @@ public:
     void predict_raw(const GBDTParam &model_param, const DataSet &dataSet, SyncArray<float_type> &y_predict);
 
     void predict_raw_vertical(const GBDTParam &model_param, const DataSet &dataSet, SyncArray<float_type> &y_predict, std::map<int, vector<int>> &batch_idxs);
+
+
 
     float_type predict_score(const GBDTParam &model_param, const DataSet &dataSet);
 

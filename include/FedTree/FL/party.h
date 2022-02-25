@@ -25,6 +25,7 @@ public:
         this->pid = pid;
         this->dataset = dataset;
         this->param = param;
+        this->n_total_instances = dataset.n_instances();
         booster.init(dataset, param.gbdt_param);
     };
 

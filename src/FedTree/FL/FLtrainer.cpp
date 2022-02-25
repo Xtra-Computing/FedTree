@@ -447,8 +447,9 @@ void FLtrainer::vertical_fl_trainer(vector<Party> &parties, Server &server, FLPa
     if(params.ins_bagging_fraction < 1.0){
         LOG(INFO)<<"start bagging init";
         for(int i = 0; i < n_parties; i++){
-            parties[i].bagging_init();
+            parties[i].bagging_init(36);
         }
+        server.bagging_init(36);
     }
     // start training
     // for each boosting round
@@ -458,22 +459,16 @@ void FLtrainer::vertical_fl_trainer(vector<Party> &parties, Server &server, FLPa
         vector<Tree> trees(params.gbdt_param.tree_per_rounds);
 
         if(params.ins_bagging_fraction < 1.0){
-//            server.sample_data();
-//            if(round!=0)
-//                server.gbdt.predict_raw(params.gbdt_param, server.dataset,
-//                                              server.booster.fbuilder->get_y_predict());
-//            for(int pid = 0; pid<n_parties; pid++) {
-//                parties[pid].sample_data();
-//                std::cout<<"1"<<std::endl;
-//                parties[pid].booster.reinit(parties[pid].dataset, params.gbdt_param);
-////                std::cout<<"2"<<std::endl;
-////                parties[pid].booster.fbuilder->get_bin_ids();
-//                std::cout<<"4"<<std::endl;
-////                SyncArray<float_type> y_predict = parties[pid].booster.fbuilder->get_y_predict();
-//                //reset y_predict
-//
-//                std::cout<<"5"<<std::endl;
-//            }
+            server.sample_data();
+            server.booster.reinit(server.dataset, params.gbdt_param);
+            if(round!=0){
+                server.predict_raw_vertical_jointly_in_training(params.gbdt_param, parties,
+                                                                server.booster.fbuilder->get_y_predict());
+            }
+            for(int pid = 0; pid < n_parties; pid++) {
+                parties[pid].sample_data();
+                parties[pid].booster.reinit(parties[pid].dataset, params.gbdt_param);
+            }
         }
         // Server update, encrypt and send gradients
         server.booster.update_gradients();
@@ -485,9 +480,7 @@ void FLtrainer::vertical_fl_trainer(vector<Party> &parties, Server &server, FLPa
             // option 2: clip gradients to (-1, 1)
             auto gradient_data = server.booster.gradients.host_data();
             for (int i = 0; i < server.booster.gradients.size(); i++) {
-//                LOG(INFO) << "before" << gradient_data[i].g;
                 dp_manager.clip_gradient_value(gradient_data[i].g);
-//                LOG(INFO) << "after" << gradient_data[i].g;
             }
         }
         // temp_gradients store the raw gradients
@@ -614,11 +607,6 @@ void FLtrainer::vertical_fl_trainer(vector<Party> &parties, Server &server, FLPa
                             n_max_splits_new);    //the exponent of probability mass for each split point
                     dp_manager.compute_split_point_probability(gain, prob_exponent);
                     auto prob_exponent_data = prob_exponent.host_data();
-                    for (int index = 0; index < prob_exponent.size(); index++) {
-                        if (prob_exponent_data[index] != 0) {
-                            LOG(INFO) << "prob expo: " << prob_exponent_data[index];
-                        }
-                    }
                     dp_manager.exponential_select_split_point(prob_exponent, gain, best_idx_gain, n_nodes_in_level,
                                                               n_bins_new);
 
@@ -744,8 +732,13 @@ void FLtrainer::vertical_fl_trainer(vector<Party> &parties, Server &server, FLPa
 //            tree.nodes.copy_from(parties[0].booster.fbuilder->trees.nodes);
         }
 
-//        LOG(INFO) << "y_predict: " << parties[0].booster.fbuilder->get_y_predict();
-        parties[0].gbdt.trees.push_back(trees);
+//        parties[0].gbdt.trees.push_back(trees);
+        #pragma omp parallel for
+        for (int p = 0; p < n_parties; p++) {
+//            parties[p].gbdt.trees.push_back(parties_trees[p]);
+            parties[p].gbdt.trees.push_back(trees);
+        }
+        server.global_trees.trees.push_back(trees);
         LOG(INFO) << parties[0].booster.metric->get_name() << " = "
                   << parties[0].booster.metric->get_score(parties[0].booster.fbuilder->get_y_predict());
     }

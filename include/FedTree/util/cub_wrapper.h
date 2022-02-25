@@ -173,7 +173,7 @@ void seg_sort_by_key_cpu(SyncArray<T1> &keys, SyncArray<T2> &values, const SyncA
     auto values_data = values.device_data();
     auto offset_data = ptr.host_data();
     LOG(INFO) << ptr;
-    for(int i = 0; i < ptr.size() - 2; i++)
+    for(int i = 0; i < ptr.size() - 1; i++)
     {
         int seg_len = offset_data[i + 1] - offset_data[i];
         auto key_start = keys_data + offset_data[i];

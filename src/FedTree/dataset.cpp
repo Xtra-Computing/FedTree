@@ -670,7 +670,6 @@ void DataSet::load_csc_from_file(string file_name, FLParam &param, const int nfe
 //}
 
 void DataSet::csr_to_csc(){
-//    LOG(INFO) << "convert csr to csc using cpu...";
     //cpu transpose
     int n_column = this->n_features();
     int n_row = this->n_instances();
@@ -718,6 +717,55 @@ void DataSet::csr_to_csc(){
     has_csc = true;
 }
 
+
+void DataSet::csc_to_csr() {
+    //cpu transpose
+    int n_column = this->n_features();
+    int n_row = this->n_instances();
+    int nnz = this->csc_val.size();
+//    LOG(INFO) << n_column << "," << n_row << "," << nnz;
+
+
+    csr_val.resize(nnz);
+    csr_col_idx.resize(nnz);
+    csr_row_ptr.resize(n_row + 1);
+
+
+//    LOG(INFO) << string_format("#non-zeros = %ld, density = %.2f%%", nnz,
+//                               (float) nnz / n_column / n_row * 100);
+    for (int i = 0; i <= n_row; ++i) {
+        csr_row_ptr[i] = 0;
+    }
+
+#pragma omp parallel for // about 5s
+    for (int i = 0; i < nnz; ++i) {
+        int idx = csc_row_idx[i] + 1;
+#pragma omp atomic
+        csr_row_ptr[idx] += 1;
+    }
+
+    for (int i = 1; i < n_row + 1; ++i) {
+        csr_row_ptr[i] += csr_row_ptr[i - 1];
+    }
+    for (int col = 0; col < csc_col_ptr.size() - 1; col++) {
+        for (int j = csc_col_ptr[col]; j < csc_col_ptr[col + 1]; j++) {
+            int row = csc_row_idx[j];
+            int dest = csr_row_ptr[row];
+            csr_val[dest] = csc_val[j];
+            csr_col_idx[dest] = col;
+            csr_row_ptr[row] += 1;
+        }
+    }
+    for (int i = 0, last = 0; i < n_row; i++) {
+        int next_last = csr_row_ptr[i];
+        csr_row_ptr[i] = last;
+        last = next_last;
+    }
+
+//    has_csr = true;
+}
+
+
 size_t DataSet::n_features() const {
     return n_features_;
 }
@@ -743,24 +791,61 @@ void DataSet::load_from_files(vector<string> file_names, FLParam &param) {
 }
 
 void DataSet::get_subset(vector<int> &idx, DataSet& subset){
-    subset.csr_val.clear();
-    subset.csr_col_idx.clear();
-    subset.csr_row_ptr.clear();
-    subset.csr_row_ptr.push_back(0);
-    subset.n_features_ = n_features();
-    subset.y.clear();
-    for(int i = 0; i < idx.size(); i++){
-        int n_val = 0;
-        for(int j = csr_row_ptr[idx[i]]; j < csr_row_ptr[idx[i] + 1]; j++){
-            float_type val = csr_val[j];
-            int cid = csr_col_idx[j];
-            subset.csr_val.push_back(val);
-            subset.csr_col_idx.push_back(cid);
-            n_val++;
+    if(has_csc){
+        subset.csc_val.clear();
+        subset.csc_row_idx.clear();
+        subset.csc_col_ptr.clear();
+        subset.csc_col_ptr.push_back(0);
+        subset.n_features_ = n_features();
+        subset.y.clear();
+        std::sort(idx.begin(), idx.end());
+        for(int i = 0; i < idx.size(); i++){
+            subset.y.push_back(y[idx[i]]);
         }
-        subset.csr_row_ptr.push_back(n_val + subset.csr_row_ptr.back());
-        subset.y.push_back(y[i]);
+        for(int i = 0; i < csc_col_ptr.size() - 1; i++){
+            int n_val = 0;
+            for(int j = csc_col_ptr[i]; j < csc_col_ptr[i+1]; j++){
+                int rid = csc_row_idx[j];
+                int offset = std::find(idx.begin(), idx.end(), rid) - idx.begin();
+                if(offset != idx.size()){
+                    float_type val = csc_val[j];
+                    subset.csc_val.push_back(val);
+                    subset.csc_row_idx.push_back(offset);
+                    n_val++;
+                }
+            }
+            subset.csc_col_ptr.push_back(n_val + subset.csc_col_ptr.back());
+        }
+        subset.csc_to_csr();
     }
-    subset.has_csc = false;
-    std::cout<<"subset y size:"<<subset.y.size()<<std::endl;
+    else {
+        subset.csr_val.clear();
+        subset.csr_col_idx.clear();
+        subset.csr_row_ptr.clear();
+        subset.csr_row_ptr.push_back(0);
+        subset.n_features_ = n_features();
+        subset.y.clear();
+//        std::cout << "1.1" << std::endl;
+//        std::cout << "csr_row_ptr.size:" << csr_row_ptr.size() << std::endl;
+        for (int i = 0; i < idx.size(); i++) {
+            int n_val = 0;
+            if (n_features_ != 0) {
+//                std::cout << "1.2" << std::endl;
+                for (int j = csr_row_ptr[idx[i]]; j < csr_row_ptr[idx[i] + 1]; j++) {
+                    float_type val = csr_val[j];
+                    int cid = csr_col_idx[j];
+                    subset.csr_val.push_back(val);
+                    subset.csr_col_idx.push_back(cid);
+                    n_val++;
+                }
+                subset.csr_row_ptr.push_back(n_val + subset.csr_row_ptr.back());
+            }
+//            std::cout << "1.3" << std::endl;
+            if(y.size())
+                subset.y.push_back(y[i]);
+//            std::cout << "1.4" << std::endl;
+        }
+        subset.has_csc = false;
+//        std::cout << "subset y size:" << subset.y.size() << std::endl;
+    }
 }

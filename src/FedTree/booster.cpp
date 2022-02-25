@@ -40,6 +40,7 @@ void Booster::init(DataSet &dataSet, const GBDTParam &param, bool get_cut_points
 }
 
 void Booster::reinit(DataSet &dataSet, const GBDTParam &param){
+    //todo: horizontal does not need get_cut_points
     fbuilder->init(dataSet, param);
     int n_outputs = param.num_class * dataSet.n_instances();
     gradients.resize(n_outputs);

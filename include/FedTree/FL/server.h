@@ -30,10 +30,12 @@ public:
     void sum_histograms();
     void hybrid_merge_trees();
     void ensemble_merge_trees();
+
+    void predict_raw_vertical_jointly_in_training(const GBDTParam &model_param, vector<Party> &parties,
+                                                  SyncArray<float_type> &y_predict);
     GBDT global_trees;
     vector<GBDT> local_trees;
     GBDTParam model_param;
-    int n_total_instances;
     vector<int> n_instances_per_party;
     
 
