@@ -192,7 +192,7 @@ void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FL
             }
             for(int pid = 0; pid<n_parties; pid++) {
                 parties[pid].sample_data();
-                parties[pid].booster.reinit(parties[pid].dataset, params.gbdt_param);
+                parties[pid].booster.init(parties[pid].dataset, params.gbdt_param);
                 parties[pid].booster.fbuilder->set_cut(server.booster.fbuilder->cut);
                 parties[pid].booster.fbuilder->get_bin_ids();
 //                SyncArray<float_type> y_predict = parties[pid].booster.fbuilder->get_y_predict();
@@ -460,14 +460,14 @@ void FLtrainer::vertical_fl_trainer(vector<Party> &parties, Server &server, FLPa
 
         if(params.ins_bagging_fraction < 1.0){
             server.sample_data();
-            server.booster.reinit(server.dataset, params.gbdt_param);
+            server.booster.init(server.dataset, params.gbdt_param);
             if(round!=0){
                 server.predict_raw_vertical_jointly_in_training(params.gbdt_param, parties,
                                                                 server.booster.fbuilder->get_y_predict());
             }
             for(int pid = 0; pid < n_parties; pid++) {
                 parties[pid].sample_data();
-                parties[pid].booster.reinit(parties[pid].dataset, params.gbdt_param);
+                parties[pid].booster.init(parties[pid].dataset, params.gbdt_param);
             }
         }
         // Server update, encrypt and send gradients
