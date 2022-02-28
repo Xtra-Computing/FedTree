@@ -42,7 +42,7 @@ void Party::bagging_init(int seed){
 void Party::sample_data(){
     int stride = this->ins_bagging_fraction * this->n_total_instances;
     vector<int> batch_idx;
-    if(this->bagging_inner_round == int(1/this->ins_bagging_fraction)){
+    if(this->bagging_inner_round == (int(1/this->ins_bagging_fraction) - 1)){
         batch_idx = vector<int>(this->shuffle_idx.begin()+stride*this->bagging_inner_round, this->shuffle_idx.end());
     }
     else {
@@ -51,7 +51,7 @@ void Party::sample_data(){
     }
     temp_dataset.get_subset(batch_idx, this->dataset);
     this->bagging_inner_round++;
-    if(this->bagging_inner_round > int(1/this->ins_bagging_fraction))
+    if(this->bagging_inner_round == int(1/this->ins_bagging_fraction))
         this->bagging_inner_round = 0;
 }
 
