@@ -51,8 +51,6 @@ void Party::sample_data(){
     }
     temp_dataset.get_subset(batch_idx, this->dataset);
     this->bagging_inner_round++;
-    if(this->bagging_inner_round == int(1/this->ins_bagging_fraction))
-        this->bagging_inner_round = 0;
 }
 
 

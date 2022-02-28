@@ -444,13 +444,13 @@ void FLtrainer::vertical_fl_trainer(vector<Party> &parties, Server &server, FLPa
         dp_manager = DifferentialPrivacy();
         dp_manager.init(params);
     }
-    if(params.ins_bagging_fraction < 1.0){
-        LOG(INFO)<<"start bagging init";
-        for(int i = 0; i < n_parties; i++){
-            parties[i].bagging_init(36);
-        }
-        server.bagging_init(36);
-    }
+//    if(params.ins_bagging_fraction < 1.0){
+//        LOG(INFO)<<"start bagging init";
+//        for(int i = 0; i < n_parties; i++){
+//            parties[i].bagging_init(36);
+//        }
+//        server.bagging_init(36);
+//    }
     // start training
     // for each boosting round
 
@@ -459,6 +459,12 @@ void FLtrainer::vertical_fl_trainer(vector<Party> &parties, Server &server, FLPa
         vector<Tree> trees(params.gbdt_param.tree_per_rounds);
 
         if(params.ins_bagging_fraction < 1.0){
+            if(round % (int(1/params.ins_bagging_fraction)) == 0) {
+                for(int i = 0; i < n_parties; i++){
+                    parties[i].bagging_init(36);
+                }
+                server.bagging_init(36);
+            }
             server.sample_data();
             server.booster.init(server.dataset, params.gbdt_param);
             if(round!=0){
