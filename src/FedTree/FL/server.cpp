@@ -49,6 +49,24 @@ void Server::vertical_init(FLParam &param, int n_total_instances, vector<int> &n
     booster.init(dataset, param.gbdt_param);
 }
 
+void Server::sample_data(){
+    int stride = this->ins_bagging_fraction * this->n_total_instances;
+    vector<int> batch_idx;
+    if(this->bagging_inner_round == (int(1/this->ins_bagging_fraction) - 1)){
+        batch_idx = vector<int>(this->shuffle_idx.begin()+stride*this->bagging_inner_round, this->shuffle_idx.end());
+    }
+    else {
+        batch_idx = vector<int>(this->shuffle_idx.begin() + stride * this->bagging_inner_round,
+                                this->shuffle_idx.begin() + stride * (this->bagging_inner_round + 1));
+    }
+    std::sort(batch_idx.begin(), batch_idx.end());
+    this->dataset.y.clear();
+    this->dataset.y.resize(batch_idx.size());
+    for(int i = 0; i < batch_idx.size(); i++)
+        this->dataset.y[i] = this->temp_dataset.y[batch_idx[i]];
+    this->bagging_inner_round++;
+}
+
 void Server::hybrid_merge_trees(){
 //    LOG(INFO)<<"tree 0 nodes"<<local_trees[0].trees[0][0].nodes;
 //    LOG(INFO)<<"tree 1 nodes"<<local_trees[1].trees[0][0].nodes;
@@ -225,8 +243,9 @@ void Server::predict_raw_vertical_jointly_in_training(const GBDTParam &model_par
 //    int NUM_BLOCK = (n_instances - 1) / BLOCK_SIZE + 1;
 
     vector<int> parties_n_columns(parties.size());
-    for (int pid = 0; pid < parties.size(); pid++)
+    for (int pid = 0; pid < parties.size(); pid++) {
         parties_n_columns[pid] = parties[pid].dataset.n_features();
+    }
     //use sparse format and binary search
 #pragma omp parallel for
     for (int iid = 0; iid < n_instances; iid++) {

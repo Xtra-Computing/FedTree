@@ -331,9 +331,11 @@ void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FL
                 // server find the best gain and its index
                 SyncArray <int_float> best_idx_gain(n_nodes_in_level);
                 if(params.privacy_tech == "dp"){
-                    SyncArray<float_type> prob_exponent(n_max_splits);    //the exponent of probability mass for each split point
-                    dp_manager.compute_split_point_probability(gain, prob_exponent);
-                    dp_manager.exponential_select_split_point(prob_exponent, gain, best_idx_gain, n_nodes_in_level, n_bins);
+//                    SyncArray<float_type> prob_exponent(n_max_splits);    //the exponent of probability mass for each split point
+//                    dp_manager.compute_split_point_probability(gain, prob_exponent);
+//                    dp_manager.exponential_select_split_point(prob_exponent, gain, best_idx_gain, n_nodes_in_level, n_bins);
+
+                    server.booster.fbuilder->get_best_gain_in_a_level(gain, best_idx_gain, n_nodes_in_level, n_bins);
                 }
                 else
                     server.booster.fbuilder->get_best_gain_in_a_level(gain, best_idx_gain, n_nodes_in_level, n_bins);
@@ -361,19 +363,19 @@ void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FL
                     }
                 }
                 if (!split_further) {
-                    if (params.privacy_tech == "dp") {
-                        for (int party_id = 0; party_id < parties.size(); party_id++) {
-                            int tree_size = parties[party_id].booster.fbuilder->trees.nodes.size();
-                            auto nodes = parties[party_id].booster.fbuilder->trees.nodes.host_data();
-                            for (int node_id = 0; node_id < tree_size; node_id++) {
-                                Tree::TreeNode node = nodes[node_id];
-                                if (node.is_leaf) {
-                                    // add noises
-                                    dp_manager.laplace_add_noise(node);
-                                }
-                            }
-                        }
-                    }
+//                    if (params.privacy_tech == "dp") {
+//                        for (int party_id = 0; party_id < parties.size(); party_id++) {
+//                            int tree_size = parties[party_id].booster.fbuilder->trees.nodes.size();
+//                            auto nodes = parties[party_id].booster.fbuilder->trees.nodes.host_data();
+//                            for (int node_id = 0; node_id < tree_size; node_id++) {
+//                                Tree::TreeNode node = nodes[node_id];
+//                                if (node.is_leaf) {
+//                                    // add noises
+//                                    dp_manager.laplace_add_noise(node);
+//                                }
+//                            }
+//                        }
+//                    }
                     break;
                 }
             }
@@ -615,7 +617,6 @@ void FLtrainer::vertical_fl_trainer(vector<Party> &parties, Server &server, FLPa
                     auto prob_exponent_data = prob_exponent.host_data();
                     dp_manager.exponential_select_split_point(prob_exponent, gain, best_idx_gain, n_nodes_in_level,
                                                               n_bins_new);
-
                 }
                     // without Exponential Mechanism: select the split with max gain
                 else {

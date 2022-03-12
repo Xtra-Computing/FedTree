@@ -31,6 +31,7 @@ public:
     void hybrid_merge_trees();
     void ensemble_merge_trees();
 
+    void sample_data();
     void predict_raw_vertical_jointly_in_training(const GBDTParam &model_param, vector<Party> &parties,
                                                   SyncArray<float_type> &y_predict);
     GBDT global_trees;
