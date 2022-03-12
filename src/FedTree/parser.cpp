@@ -113,8 +113,13 @@ void Parser::parse_param(FLParam &fl_param, int argc, char **argv) {
                 gbdt_param->path = val;
             else if (str_name.compare("test_data") == 0)
                 gbdt_param->test_path = val;
-            else if ((str_name.compare("max_bin") == 0) || (str_name.compare("max_num_bin") == 0))
+            else if ((str_name.compare("max_bin") == 0) || (str_name.compare("max_num_bin") == 0)) {
                 gbdt_param->max_num_bin = atoi(val);
+                if(gbdt_param->max_num_bin > 255){
+                    LOG(INFO)<<"max_num_bin should not be larger than 255";
+                    exit(1);
+                }
+            }
             else if ((str_name.compare("colsample") == 0) || (str_name.compare("column_sampling_rate") == 0))
                 gbdt_param->column_sampling_rate = atof(val);
             else if (str_name.compare("bagging") == 0)
