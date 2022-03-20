@@ -42,6 +42,7 @@ typedef float float_type;
 //CUDA macro
 #ifdef USE_CUDA
 
+
 #include "cuda_runtime_api.h"
 #define CUB_IGNORE_DEPRECATED_CPP_DIALECT
 #define CUDA_CHECK(condition) \
@@ -51,6 +52,28 @@ typedef float float_type;
     CHECK_EQ(error, cudaSuccess) << " " << cudaGetErrorString(error); \
   } while (false)
 
+
+#include "gmp.h"
+typedef cgbn_context_t<32> context_t;
+typedef cgbn_env_t<context_t, 512> env_t;
+
+void to_mpz(mpz_t r, uint32_t *x, uint32_t count) {
+  mpz_import(r, count, -1, sizeof(uint32_t), 0, 0, x);
+}
+
+void from_mpz(mpz_t s, uint32_t *x, uint32_t count) {
+  size_t words;
+
+  if(mpz_sizeinbase(s, 2)>count*32) {
+    fprintf(stderr, "from_mpz failed -- result does not fit\n");
+    exit(1);
+  }
+
+  mpz_export(x, &words, -1, sizeof(uint32_t), 0, 0, s);
+  while(words<count)
+    x[words++]=0;
+}
+
 #endif
 
 #define HOST_DEVICE __host__ __device__
@@ -58,8 +81,13 @@ typedef float float_type;
 struct GHPair {
     float_type g;
     float_type h;
+#ifdef USE_CUDA
+    mpz_t g_enc;
+    mpz_t h_enc;
+#else
     NTL::ZZ g_enc;
     NTL::ZZ h_enc;
+#endif
     Paillier paillier;
     bool encrypted = false;
 
