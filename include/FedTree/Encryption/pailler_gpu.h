@@ -1,4 +1,5 @@
-#include
+#include "cgbn/cgbn.h"
+#include <gmp.h>
 
 template<uint32_t BITS>
 class Paillier {
@@ -11,13 +12,13 @@ public:
 
     void decrypt(SyncArray<GHPair> &ciphertext) const;
 
-    NTL::ZZ add(SyncArray<GHPair> &x, SyncArray<GHPair> &y) const;
+    cgbn_mem_t<BITS> add(SyncArray<GHPair> &x, SyncArray<GHPair> &y) const;
 
-    NTL::ZZ mul(SyncArray<GHPair> &x, SyncArray<GHPair> &y) const;
+    cgbn_mem_t<BITS> mul(SyncArray<GHPair> &x, SyncArray<GHPair> &y) const;
 
 
     cgbn_mem_t<BITS> modulus;
-    mpz_t modulus;
+    mpz_t modulus_cpu;
     cgbn_mem_t<BITS> generator;
     long keyLength;
 

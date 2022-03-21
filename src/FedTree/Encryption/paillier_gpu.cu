@@ -1,7 +1,9 @@
 #include "FedTree/Encryption/paillier_gpu.h"
-#include "cgbn/cgbn.h"
-#include "gmp.h"
 
+
+cgbn_mem_t<BITS> add(SyncArray<GHPair> &x, SyncArray<GHPair> &y){
+
+}
 
 void encrypt(SyncArray<GHPair> &message){
     auto raw_data = message.device_data();
@@ -12,7 +14,7 @@ void encrypt(SyncArray<GHPair> &message){
     gmp_randseed_ui(state, 1000U);
     mpz_t r;
     mpz_urandomm(r, state, keylength);
-    mpz_mod(r, r, modulus);
+    mpz_mod(r, r, modulus_cpu);
 
     cgbn_mem_t<keylength> random;
     from_mpz(r, random._limbs, keylength/32);
