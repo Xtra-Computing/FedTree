@@ -7,6 +7,11 @@ class Paillier {
 public:
     Paillier();
 
+    Paillier& operator=(Paillier source) {
+        this->modulus = source.modulus;
+        this->generator = source.generator;
+        this->keyLength = source.keyLength;
+    }
     explicit Paillier(long keyLength);
 
     NTL::ZZ encrypt(const NTL::ZZ &message) const;
