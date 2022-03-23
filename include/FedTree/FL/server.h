@@ -49,19 +49,26 @@ public:
     }
 
     void homo_init() {
+#ifdef USE_CUDA
+        pailler = Pailler();
+        pailler.keygen();
+#else
         paillier = Paillier(512);
+#endif
     }
 
     void decrypt_gh(GHPair &gh) {
+#ifdef USE_CUDA
+        pailler.decrypt(gh);
+#else
         gh.homo_decrypt(paillier);
+#endif
     }
 
     void decrypt_gh_pairs(SyncArray<GHPair> &encrypted) {
 
 #ifdef USE_CUDA
-        device_loop(encrypted.size(), [=] __device__(int idx){
-
-        });
+        pailler.decrypt(encrypted);
 #else
         auto encrypted_data = encrypted.host_data();
         #pragma omp parallel for
@@ -73,15 +80,7 @@ public:
 
     void encrypt_gh_pairs(SyncArray<GHPair> &raw) {
 #ifdef USE_CUDA
-        pl_gpu.encrypt(raw);
-        auto raw_data = raw.device_data();
-        cgbn_error_report_t *report;
-        CUDA_CHECK(cgbn_error_report_alloc(&report));
-        device_loop(raw.size(), [=] __device__(int idx){
-            context_t bn_context(cgbn_report_monitor, report, idx);
-            env_t bn_env(bn_context.env<env_t>());
-            env_t::cgbn_t
-        })
+        pailler.encrypt(raw);
 #else
         auto raw_data = raw.host_data();
         #pragma omp parallel for

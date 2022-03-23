@@ -87,8 +87,8 @@ struct GHPair {
 #else
     NTL::ZZ g_enc;
     NTL::ZZ h_enc;
-#endif
     Paillier paillier;
+#endif
     bool encrypted = false;
 
     HOST_DEVICE void homo_encrypt(const Paillier &pl) {

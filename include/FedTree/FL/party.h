@@ -15,6 +15,7 @@
 #include <algorithm>
 
 
+
 class Party {
 public:
     void init(int pid, DataSet &dataset, FLParam &param, SyncArray<bool> &feature_map);
@@ -114,11 +115,15 @@ public:
     }
 
     void encrypt_histogram(SyncArray<GHPair> &hist) {
+#ifdef USE_CUDA
+        paillier.encrypt(hist);
+#else
         auto hist_data = hist.host_data();
         #pragma omp parallel for
             for (int i = 0; i < hist.size(); i++) {
                 hist_data[i].homo_encrypt(paillier);
             }
+#endif
     }
 
     void encrypt_gradient(GHPair &ghpair) {
@@ -136,8 +141,11 @@ public:
 
     int pid;
 //    AdditivelyHE::PaillierPublicKey serverKey;
+#ifdef USE_CUDA
+    Paillier_GPU<512> paillier;
+#else
     Paillier paillier;
-
+#endif
     Booster booster;
     GBDT gbdt;
     DataSet dataset;
