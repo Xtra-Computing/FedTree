@@ -29,6 +29,7 @@ if (USE_CUDA)
     message("Compile with CUDA")
     find_package(CUDA REQUIRED QUIET)
     set(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} -std=c++11 -lineinfo --expt-extended-lambda --default-stream per-thread")
+    include_directories(${PROJECT_SOURCE_DIR}/CGBN/include)
 else ()
     message("Complie without CUDA")
     #set(Thrust_DIR "${PROJECT_SOURCE_DIR}/thrust/cmake/")
@@ -71,6 +72,13 @@ add_definitions("-DELPP_NO_LOG_TO_FILE")
 
 # includes
 set(COMMON_INCLUDES ${PROJECT_SOURCE_DIR}/include ${CMAKE_CURRENT_BINARY_DIR})
+if(USE_CUDA)
+    list(REMOVE_ITEM COMMON_INCLUDES "${PROJECT_SOURCE_DIR}/include/Encryption/paillier.h")
+else()
+    list(REMOVE_ITEM COMMON_INCLUDES "${PROJECT_SOURCE_DIR}/include/Encryption/paillier_gpu.h")
+endif()
+
+
 set(DATASET_DIR ${PROJECT_SOURCE_DIR}/dataset/)
 configure_file(include/FedTree/config.h.in config.h)
 

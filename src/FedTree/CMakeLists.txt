@@ -3,8 +3,13 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
 file(GLOB SRC util/*.c* DP/*.c* FL/*.c* Tree/*.c* Encryption/*.c* objective/*.c* metric/*.c* *.c*)
-list(REMOVE_ITEM SRC "${CMAKE_CURRENT_LIST_DIR}/main.cpp" "${CMAKE_CURRENT_LIST_DIR}/distributed_party.cpp" "${CMAKE_CURRENT_LIST_DIR}/distributed_server.cpp")
+if(USE_CUDA)
+    list(REMOVE_ITEM SRC "${CMAKE_CURRENT_LIST_DIR}/Encryption/paillier.cpp")
+else()
+    list(REMOVE_ITEM SRC "${CMAKE_CURRENT_LIST_DIR}/Encryption/paillier_gpu.cu")
+endif()
 
+list(REMOVE_ITEM SRC "${CMAKE_CURRENT_LIST_DIR}/main.cpp" "${CMAKE_CURRENT_LIST_DIR}/distributed_party.cpp" "${CMAKE_CURRENT_LIST_DIR}/distributed_server.cpp")
 
 find_library(NTL_LIB ntl /usr/local/lib)
 if(NOT NTL_LIB)
