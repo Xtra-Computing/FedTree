@@ -1,4 +1,4 @@
-#include "FedTree/Encryption/paillier_gpu.h"
+#include "FedTree/Encryption/paillier_gpu.cuh"
 
 
 void Paillier_GPU::add(mpz_t &result, mpz_t &x, mpz_t &y){

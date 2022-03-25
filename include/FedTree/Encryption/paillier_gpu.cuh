@@ -1,5 +1,7 @@
-#include "cgbn/cgbn.h"
+#include <cuda.h>
 #include <gmp.h>
+#include "cgbn/cgbn.h"
+
 
 
 template<uint32_t BITS>
@@ -12,7 +14,7 @@ public:
 template<uint32_t BITS>
 class Paillier_GPU {
 public:
-    Paillier_GPU() key_length(BITS) {mpz_init(n); mpz_init(n_square); mpz_init(generator); mpz_init(lambda);
+    Paillier_GPU(): key_length(BITS) {mpz_init(n); mpz_init(n_square); mpz_init(generator); mpz_init(lambda);
         mpz_init(p); mpz_init(q); mpz_init(mu);};
 
 
