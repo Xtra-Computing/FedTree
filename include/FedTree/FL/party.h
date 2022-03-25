@@ -142,7 +142,7 @@ public:
     int pid;
 //    AdditivelyHE::PaillierPublicKey serverKey;
 #ifdef USE_CUDA
-    Paillier_GPU<512> paillier;
+    Paillier_GPU<1024> paillier;
 #else
     Paillier paillier;
 #endif

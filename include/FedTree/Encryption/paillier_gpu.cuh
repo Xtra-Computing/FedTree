@@ -1,7 +1,12 @@
+#ifndef FEDTREE_PAILLIER_GPU_CUH
+#define FEDTREE_PAILLIER_GPU_CUH
+
+
 #include <cuda.h>
 #include <gmp.h>
 #include "cgbn/cgbn.h"
-
+#include "FedTree/syncarray.h"
+#include "FedTree/common.h"
 
 
 template<uint32_t BITS>
@@ -30,6 +35,8 @@ public:
 
     void encrypt(SyncArray<GHPair> &message) const;
 
+    void encrypt(GHPair &message);
+
     void decrypt(SyncArray<GHPair> &ciphertext) const;
 
     void decrypt(GHPair &message);
@@ -47,7 +54,7 @@ public:
     mpz_t n;
     mpz_t n_square;
     mpz_t generator;
-    unit32_t key_length;
+    uint32_t key_length;
 
     cgbn_mem_t<BITS> *n_gpu;
     cgbn_mem_t<BITS> *n_square_gpu;
@@ -86,3 +93,4 @@ public:
 
 
 
+#endif //FEDTREE_PAILLIER_GPU_CUH

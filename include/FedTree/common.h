@@ -15,7 +15,7 @@
 #include "config.h"
 #include "thrust/tuple.h"
 //#include "FedTree/Encryption/HE.h"
-#include "FedTree/Encryption/paillier.h"
+
 
 using std::vector;
 using std::string;
@@ -41,39 +41,39 @@ typedef float float_type;
 
 //CUDA macro
 #ifdef USE_CUDA
+    #include "cuda_runtime_api.h"
+    #define CUB_IGNORE_DEPRECATED_CPP_DIALECT
+    #define CUDA_CHECK(condition) \
+      /* Code block avoids redefinition of cudaError_t error */ \
+      do { \
+        cudaError_t error = condition; \
+        CHECK_EQ(error, cudaSuccess) << " " << cudaGetErrorString(error); \
+      } while (false)
 
 
-#include "cuda_runtime_api.h"
-#define CUB_IGNORE_DEPRECATED_CPP_DIALECT
-#define CUDA_CHECK(condition) \
-  /* Code block avoids redefinition of cudaError_t error */ \
-  do { \
-    cudaError_t error = condition; \
-    CHECK_EQ(error, cudaSuccess) << " " << cudaGetErrorString(error); \
-  } while (false)
+    #include "gmp.h"
+    #include "FedTree/Encryption/paillier_gpu.cuh"
+    typedef cgbn_context_t<32> context_t;
+    typedef cgbn_env_t<context_t, 512> env_t;
 
+    void to_mpz(mpz_t r, uint32_t *x, uint32_t count) {
+      mpz_import(r, count, -1, sizeof(uint32_t), 0, 0, x);
+    }
 
-#include "gmp.h"
-typedef cgbn_context_t<32> context_t;
-typedef cgbn_env_t<context_t, 512> env_t;
+    void from_mpz(mpz_t s, uint32_t *x, uint32_t count) {
+      size_t words;
 
-void to_mpz(mpz_t r, uint32_t *x, uint32_t count) {
-  mpz_import(r, count, -1, sizeof(uint32_t), 0, 0, x);
-}
+      if(mpz_sizeinbase(s, 2)>count*32) {
+        fprintf(stderr, "from_mpz failed -- result does not fit\n");
+        exit(1);
+      }
 
-void from_mpz(mpz_t s, uint32_t *x, uint32_t count) {
-  size_t words;
-
-  if(mpz_sizeinbase(s, 2)>count*32) {
-    fprintf(stderr, "from_mpz failed -- result does not fit\n");
-    exit(1);
-  }
-
-  mpz_export(x, &words, -1, sizeof(uint32_t), 0, 0, s);
-  while(words<count)
-    x[words++]=0;
-}
-
+      mpz_export(x, &words, -1, sizeof(uint32_t), 0, 0, s);
+      while(words<count)
+        x[words++]=0;
+    }
+#else
+#include "FedTree/Encryption/paillier.h"
 #endif
 
 #define HOST_DEVICE __host__ __device__
@@ -81,15 +81,34 @@ void from_mpz(mpz_t s, uint32_t *x, uint32_t count) {
 struct GHPair {
     float_type g;
     float_type h;
+    bool encrypted = false;
 #ifdef USE_CUDA
     mpz_t g_enc;
     mpz_t h_enc;
+    Paillier_GPU<1024> paillier;
+
+    HOST_DEVICE void homo_encrypt(const Paillier &pl) {
+        if (!encrypted) {
+            pl.encrypt(this);
+            this->paillier = pl;
+            g = 0;
+            h = 0;
+            encrypted = true;
+        }
+    }
+
+    HOST_DEVICE void homo_decrypt(const Paillier &pl) {
+        if (encrypted) {
+            pl.decrypt(this);
+            encrypted = false;
+        }
+    }
 #else
     NTL::ZZ g_enc;
     NTL::ZZ h_enc;
     Paillier paillier;
-#endif
-    bool encrypted = false;
+
+
 
     HOST_DEVICE void homo_encrypt(const Paillier &pl) {
         if (!encrypted) {
@@ -111,6 +130,7 @@ struct GHPair {
             encrypted = false;
         }
     }
+#endif
 
     HOST_DEVICE GHPair operator+(const GHPair &rhs) const {
         GHPair res;

@@ -188,6 +188,108 @@ void Paillier_GPU::encrypt(SyncArray<GHPair> &message){
     free(gh_results);
 }
 
+void Paillier_GPU::encrypt(GHPair &message){
+//    auto message_device_data = message.device_data();
+
+    cgbn_error_report_t *report;
+    CUDA_CHECK(cgbn_error_report_alloc(&report));
+
+    cgbn_gh_results<key_length>* gh_cpu = (cgbn_gh_results<key_length>*)malloc(sizeof(cgbn_gh_results<key_length>));
+    from_mpz(message.g, gh_cpu.g._impl, key_length / 32);
+    from_mpz(message.h, gh_cpu.h._impl, key_length / 32);
+
+    //    cgbn_pailler_encryption_parameters<key_length> *gpu_parameters;
+//    cgbn_pailler_encryption_parameters<key_length> *parameters = (cgbn_pailler_encryption_parameters<key_length> *)
+//            malloc(sizeof(cgbn_pailler_encryption_parameters<key_length>));
+//    CUDA_CHECK(cudaMalloc((void **)&gpu_parameters, sizeof(cgbn_pailler_encryption_parameters<key_length>)));
+//    //todo: n is an array? check whether it is correct
+//    cgbn_mem_t<key_length> n_cgbn, n_square_cgbn, g_cgbn;
+//    from_mpz(n, parameters->n_cgbn._limbs, key_length/32);
+//    from_mpz(n_square, parameters->n_square_cgbn._limbs, key_length/32);
+//    from_mpz(generator, parameters->g_cgbn._limbs, key_length/32);
+
+//    gmp_randstate_t state = new gmp_randstate_t();
+//    gmp_randinit_mt(state);
+//    gmp_randseed_ui(state, 1000U);
+//    mpz_t r;
+//    mpz_init(r);
+//    mpz_urandomm(r, state, key_length);
+//    mpz_mod(r, r, modulus_cpu);
+//    from_mpz(r, gpu_parameters->random, key_length/32);
+
+//
+//    CUDA_CHECK(cudaMemcpy(gpu_parameters, parameters, sizeof(cgbn_pailler_encryption_parameters<key_length>), cudaMemcpyHostToDevice));
+//    free(parameters);
+
+
+    gmp_randstate_t state = new gmp_randstate_t();
+    gmp_randinit_mt(state);
+    gmp_randseed_ui(state, 1000U);
+    mpz_t r;
+    mpz_init(r);
+    mpz_urandomm(r, state, key_length);
+    mpz_mod(r, r, modulus_cpu);
+
+    cgbn_mem_t<key_length> *random_cpu = (cgbn_mem_t<key_length> *)malloc(sizeof(cgbn_mem_t<key_length>));
+
+    from_mpz(r, random_cpu, key_length/32);
+    cgbn_mem_t<key_length> *random_gpu;
+    CUDA_CHECK(cudaMalloc((void**)&random_gpu, sizeof(cgbn_mem_t<key_length>)));
+    CUDA_CHECK(cudaMemcpy(random_gpu, random_cpu, sizeof(cgbn_mem_t<key_length>), cudaMemcpyHostToDevice));
+
+
+    int n_instances = 1;
+    cgbn_gh_results<key_length>* gh_results_gpu;
+    CUDA_CHECK(cudaMalloc((void **)&gh_results_gpu, sizeof(cgbn_gh_results<key_length>) * n_instances));
+
+//    cudaMemcpy(&(gpuInstances->n), &n,, sizeof(n), cudaMemcpyHostToDevice);
+
+    // todo: move values to gpu first
+    device_loop(1, [=] __device__(int idx){
+        context_t bn_context(cgbn_report_monitor, report, idx);
+        env_t bn_env(bn_context.env<env_t>());
+        env_t::cgbn_t g, m, r, n, n_square, re1, re2, result;
+        env_t::cgbn_wide_t w;
+        //todo: check whether g is in gpu or not. compare with another way: convert g to cgbn_mem_t before kernel
+        cgbn_set_ui32(bn_env, m, (uint32_t) (gh_cpu.g * 1e6));
+
+        cgbn_load(bn_env, g, generator_gpu);
+        cgbn_load(bn_env, r, random_gpu);
+        cgbn_load(bn_env, n, n_gpu);
+        cgbn_load(bn_env, n_square, n_square_gpu);
+
+        // compute g_enc
+        cgbn_modular_power(bn_env, re1, g, m, n_square);
+        cgbn_modular_power(bn_env, re2, r, n, n_square);
+        cgbn_mul_wide(bn_env, w, re1, re2);
+        cgbn_rem_wide(bn_env, result, w, n_square);
+        cgbn_store(bn_env, &(gh_results_gpu[idx].g), result);
+
+        // compute h_enc
+        cgbn_set_ui32(bn_env, m, (uint32_t) (gh_cpu.h * 1e6));
+        cgbn_modular_power(bn_env, re1, g, m, n_square);
+        cgbn_mul_wide(bn_env, w, re1, re2);
+        cgbn_rem_wide(bn_env, result, w, n_square);
+        cgbn_store(bn_env, &(gh_results_gpu[idx].h), result);
+    });
+
+    CGBN_CHECK(report);
+
+//    CUDA_CHECK(cudaFree(gpu_parameters));
+    cgbn_gh_results<key_length>* gh_results = (cgbn_gh_results<key_length>*)malloc(sizeof(cgbn_gh_results<key_length>)*n_instances);
+    CUDA_CHECK(cudaMemcpy(gh_results, gh_results_gpu, sizeof(cgbn_gh_results<key_length>)*n_instances, cudaMemcpyDeviceToHost));
+    CUDA_CHECK(cudaFree(gh_results_gpu));
+
+    for(int i = 0; i < n_instances; i++){
+        mpz_init(message.g_enc);
+        mpz_init(message.h_enc);
+        // todo: another way: directly copy in GPU.
+        to_mpz(message.g_enc, gh_results.g._impl, key_length / 32);
+        to_mpz(message.h_enc, gh_results.h._impl, key_length / 32);
+    }
+    free(gh_results);
+}
+
 void decrypt(SyncArray<GHPair> &message){
 //    auto message_device_data = message.device_data();
     auto message_host_data = message.host_data();
