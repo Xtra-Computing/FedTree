@@ -28,8 +28,9 @@ struct GBDTParam {
     int num_class;
     int tree_per_rounds; // #tree of each round, depends on #class
 
-    //for histogram
-    int max_num_bin;
+    int max_num_bin; // for histogram
+
+    float constant_h; // fix h to a constant for DP
 
     int n_device;
 

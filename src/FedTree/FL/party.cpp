@@ -5,42 +5,83 @@
 
 #include "FedTree/FL/party.h"
 #include <thrust/reduce.h>
+#include <thrust/sequence.h>
 #include <thrust/execution_policy.h>
 
-//void Party::init(int pid, DataSet &dataset, FLParam &param){
-//    this->pid = pid;
-//    this->dataset = dataset;
-//    booster.init(dataset, param.gbdt_param);
-//}
+
+void Party::init(int pid, DataSet &dataset, FLParam &param, SyncArray<bool> &feature_map) {
+    this->pid = pid;
+    this->dataset = dataset;
+    this->param = param;
+    this->n_total_instances = dataset.n_instances();
+    if (param.ins_bagging_fraction < 1.0){
+        this->temp_dataset = dataset;
+        this->ins_bagging_fraction = param.ins_bagging_fraction;
+    }
+    if (param.partition_mode == "hybrid") {
+        this->feature_map.resize(feature_map.size());
+        this->feature_map.copy_from(feature_map.host_data(), feature_map.size());
+    }
+    booster.init(dataset, param.gbdt_param, param.mode != "horizontal");
+
+};
+
+void Party::bagging_init(int seed){
+
+    this->bagging_inner_round = 0;
+    this->shuffle_idx.resize(this->n_total_instances);
+    thrust::sequence(thrust::host, this->shuffle_idx.data(), this->shuffle_idx.data() + this->n_total_instances);
+    if(seed == -1)
+        std::random_shuffle(this->shuffle_idx.begin(), shuffle_idx.end());
+    else {
+        std::default_random_engine e(seed);
+        std::shuffle(this->shuffle_idx.begin(), shuffle_idx.end(), e);
+    }
+}
+
+void Party::sample_data(){
+    int stride = this->ins_bagging_fraction * this->n_total_instances;
+    vector<int> batch_idx;
+    if(this->bagging_inner_round == (int(1/this->ins_bagging_fraction) - 1)){
+        batch_idx = vector<int>(this->shuffle_idx.begin()+stride*this->bagging_inner_round, this->shuffle_idx.end());
+    }
+    else {
+        batch_idx = vector<int>(this->shuffle_idx.begin() + stride * this->bagging_inner_round,
+                      this->shuffle_idx.begin() + stride * (this->bagging_inner_round + 1));
+    }
+    temp_dataset.get_subset(batch_idx, this->dataset);
+    this->bagging_inner_round++;
+}
+
 
 
 void Party::correct_trees(){
-    vector<Tree> &last_trees = gbdt.trees.back();
-//    auto unique_feature_end = thrust::unique_copy(thrust::host, dataset.csr_col_idx.data(),
-//                        dataset.csr_col_idx.data() + dataset.csr_col_idx.size(), unique_feature_ids.host_data());
-//    int unique_len = unique_feature_end - unique_feature_ids.host_data();
-    auto feature_map_data = feature_map.host_data();
-    for(int i = 0; i < last_trees.size(); i++){
-        Tree &tree = last_trees[i];
-        auto tree_nodes = tree.nodes.host_data();
-        for(int nid = 0; nid < tree.nodes.size(); nid++){
-            //if the node is internal node and the party has the corresponding feature id
-            if(!tree_nodes[nid].is_leaf){
-                if(feature_map_data[tree_nodes[nid].split_feature_id]) {
-                    // calculate gain for each possible split point
-                    HistCut &cut = booster.fbuilder->cut;
-                }
-                else{
-                    //go to next level
-                }
-
-            }
-            else{
-
-            }
-        }
-    }
-    //send gains to the server.
+//    vector<Tree> &last_trees = gbdt.trees.back();
+////    auto unique_feature_end = thrust::unique_copy(thrust::host, dataset.csr_col_idx.data(),
+////                        dataset.csr_col_idx.data() + dataset.csr_col_idx.size(), unique_feature_ids.host_data());
+////    int unique_len = unique_feature_end - unique_feature_ids.host_data();
+//    auto feature_map_data = feature_map.host_data();
+//    for(int i = 0; i < last_trees.size(); i++){
+//        Tree &tree = last_trees[i];
+//        auto tree_nodes = tree.nodes.host_data();
+//        for(int nid = 0; nid < tree.nodes.size(); nid++){
+//            //if the node is internal node and the party has the corresponding feature id
+//            if(!tree_nodes[nid].is_leaf){
+//                if(feature_map_data[tree_nodes[nid].split_feature_id]) {
+//                    // calculate gain for each possible split point
+//                    HistCut &cut = booster.fbuilder->cut;
+//                }
+//                else{
+//                    //go to next level
+//                }
+//
+//            }
+//            else{
+//
+//            }
+//        }
+//    }
+//    //send gains to the server.
 }
 
 void Party::update_tree_info(){

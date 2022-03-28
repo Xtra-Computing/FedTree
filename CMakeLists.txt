@@ -10,6 +10,8 @@ endif()
 
 option(BUILD_SHARED_LIBS "Build as a shared library" ON)
 option(USE_CUDA "Compile with CUDA" OFF)
+option(DISTRIBUTED "Build for distributed computing" ON)
+option(USE_DOUBLE "Use double as gradient_type" OFF)
 set(BUILD_TESTS OFF CACHE BOOL "Build Tests")
 
 #find_package(Threads)
@@ -37,14 +39,16 @@ endif ()
 
 # add_subdirectory(${PROJECT_SOURCE_DIR}/pybind11)
 
-include(FetchContent)
-FetchContent_Declare(
-        gRPC
-        GIT_REPOSITORY https://github.com/grpc/grpc
-        GIT_TAG        v1.35.0  # e.g v1.28.0
-)
-set(FETCHCONTENT_QUIET OFF)
-FetchContent_MakeAvailable(gRPC)
+if (DISTRIBUTED)
+    include(FetchContent)
+    FetchContent_Declare(
+            gRPC
+            GIT_REPOSITORY https://github.com/grpc/grpc
+            GIT_TAG        v1.35.0  # e.g v1.28.0
+    )
+    set(FETCHCONTENT_QUIET OFF)
+    FetchContent_MakeAvailable(gRPC)
+endif ()
 
 if (CMAKE_VERSION VERSION_LESS "3.1")
     add_compile_options("-std=c++11")

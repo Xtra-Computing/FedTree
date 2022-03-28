@@ -6,6 +6,7 @@
 #include "FedTree/objective/multiclass_obj.h"
 
 void Softmax::configure(GBDTParam param, const DataSet &dataset) {
+    constant_h = param.constant_h;
     num_class = param.num_class;
     label.resize(num_class);
     CHECK_EQ(dataset.label.size(), num_class)<<dataset.label.size() << "!=" << num_class;
@@ -37,7 +38,7 @@ void Softmax::get_gradient(const SyncArray<float_type> &y, const SyncArray<float
             //approximate hessian = 2 * p_i * (1 - p_i)
             //https://github.com/dmlc/xgboost/issues/2485
             float_type g = k == y_data[i] ? (p - 1) : (p - 0);
-            float_type h = fmaxf(2 * p * (1 - p), 1e-16f);
+            float_type h = constant_h == 0 ? fmaxf(2 * p * (1 - p), 1e-16f) : constant_h;
             gh_data[k * n_instances + i] = GHPair(g, h);
         }
     }

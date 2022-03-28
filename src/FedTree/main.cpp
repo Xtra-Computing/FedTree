@@ -72,9 +72,8 @@ int main(int argc, char** argv){
             partition.horizontal_vertical_dir_partition(dataset, n_parties, fl_param.alpha, feature_map, subsets,
                                                         fl_param.n_hori, fl_param.n_verti);
         } else if (fl_param.partition_mode == "vertical") {
-            CHECK_EQ(fl_param.mode, "vertical");
             dataset.csr_to_csc();
-            partition.homo_partition(dataset, n_parties, false, subsets, batch_idxs);
+            partition.homo_partition(dataset, n_parties, false, subsets, batch_idxs, fl_param.seed);
             if (!use_global_test_set) {
                 LOG(INFO) << "train test split";
                 for (int i = 0; i < n_parties; i++) {
@@ -87,7 +86,7 @@ int main(int argc, char** argv){
             }
         }else if (fl_param.partition_mode=="horizontal") {
             dataset.csr_to_csc();
-            partition.homo_partition(dataset, n_parties, true, subsets, batch_idxs);
+            partition.homo_partition(dataset, n_parties, true, subsets, batch_idxs, fl_param.seed);
             if (!use_global_test_set) {
                 LOG(INFO) << "train test split";
                 for (int i = 0; i < n_parties; i++) {
@@ -102,8 +101,11 @@ int main(int argc, char** argv){
     }
 
     DataSet test_dataset;
-    if (use_global_test_set)
+    if (use_global_test_set) {
+        test_dataset.label_map = dataset.label_map;
         test_dataset.load_from_file(model_param.test_path, fl_param);
+        test_dataset.label = dataset.label;
+    }
 
 //    if (ObjectiveFunction::need_group_label(param.gbdt_param.objective)) {
 //        group_label();
@@ -112,22 +114,23 @@ int main(int argc, char** argv){
 
     GBDTParam &param = fl_param.gbdt_param;
 
-//    if (param.objective.find("multi:") != std::string::npos || param.objective.find("binary:") != std::string::npos || param.metric == "error") {
+    //correct the number of classes
+    if (param.objective.find("multi:") != std::string::npos || param.objective.find("binary:") != std::string::npos || param.metric == "error") {
 //        for (int i = 0; i < n_parties; i++) {
 //            train_subsets[i].group_label();
 //            test_subsets[i].group_label();
 //        }
-//        int num_class = dataset.label.size();
-//        if (param.num_class != num_class) {
-//            LOG(INFO) << "updating number of classes from " << param.num_class << " to " << num_class;
-//            param.num_class = num_class;
-//        }
-//        if(param.num_class > 2)
-//            param.tree_per_rounds = param.num_class;
-//    }
-//    else if(param.objective.find("reg:") != std::string::npos){
-//        param.num_class = 1;
-//    }
+        int num_class = dataset.label.size();
+        if (param.num_class != num_class) {
+            LOG(INFO) << "updating number of classes from " << param.num_class << " to " << num_class;
+            param.num_class = num_class;
+        }
+        if(param.num_class > 2)
+            param.tree_per_rounds = param.num_class;
+    }
+    else if(param.objective.find("reg:") != std::string::npos){
+        param.num_class = 1;
+    }
 
     vector<Party> parties(n_parties);
     vector<int> n_instances_per_party(n_parties);
@@ -150,18 +153,18 @@ int main(int argc, char** argv){
 
 
     //correct the number of classes
-    if(param.objective.find("multi:") != std::string::npos || param.objective.find("binary:") != std::string::npos) {
-        int num_class = dataset.label.size();
-        if (param.num_class != num_class) {
-            LOG(INFO) << "updating number of classes from " << param.num_class << " to " << num_class;
-            param.num_class = num_class;
-        }
-        if(param.num_class > 2)
-            param.tree_per_rounds = param.num_class;
-    }
-    else if(param.objective.find("reg:") != std::string::npos){
-        param.num_class = 1;
-    }
+//    if(param.objective.find("multi:") != std::string::npos || param.objective.find("binary:") != std::string::npos) {
+//        int num_class = dataset.label.size();
+//        if (param.num_class != num_class) {
+//            LOG(INFO) << "updating number of classes from " << param.num_class << " to " << num_class;
+//            param.num_class = num_class;
+//        }
+//        if(param.num_class > 2)
+//            param.tree_per_rounds = param.num_class;
+//    }
+//    else if(param.objective.find("reg:") != std::string::npos){
+//        param.num_class = 1;
+//    }
 
     LOG(INFO) << "start training";
     FLtrainer trainer;
@@ -207,6 +210,11 @@ int main(int argc, char** argv){
                 score = parties[i].gbdt.predict_score(fl_param.gbdt_param, test_subsets[i]);
             scores.push_back(score);
         }
+        float sum = std::accumulate(scores.begin(), scores.end(), 0.0);
+        float sq_sum = std::inner_product(scores.begin(), scores.end(), scores.begin(), 0.0);
+        float mean = sum / scores.size();
+        float std = std::sqrt(sq_sum / scores.size() - mean * mean);
+        LOG(INFO)<<"score mean (std):"<< mean << "(" << std << ")";
     }
     else if(fl_param.mode == "centralized"){
         GBDT gbdt;

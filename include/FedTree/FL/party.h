@@ -17,22 +17,15 @@
 
 class Party {
 public:
-    void init(int pid, DataSet &dataset, FLParam &param, SyncArray<bool> &feature_map) {
-        this->pid = pid;
-        this->dataset = dataset;
-        this->param = param;
-        if (param.mode != "vertical" and param.mode != "horizontal") {
-            this->feature_map.resize(feature_map.size());
-            this->feature_map.copy_from(feature_map.host_data(), feature_map.size());
-        }
-        booster.init(dataset, param.gbdt_param, param.mode != "horizontal");
+    void init(int pid, DataSet &dataset, FLParam &param, SyncArray<bool> &feature_map);
 
-    };
+    void bagging_init(int seed = -1);
 
     void vertical_init(int pid, DataSet &dataset, FLParam &param) {
         this->pid = pid;
         this->dataset = dataset;
         this->param = param;
+        this->n_total_instances = dataset.n_instances();
         booster.init(dataset, param.gbdt_param);
     };
 
@@ -132,6 +125,8 @@ public:
         ghpair.homo_encrypt(paillier);
     }
 
+    void sample_data();
+
     //for hybrid fl, the parties correct the merged trees.
     void correct_trees();
 
@@ -146,6 +141,10 @@ public:
     Booster booster;
     GBDT gbdt;
     DataSet dataset;
+    float ins_bagging_fraction; //store the bagging fraction
+    vector<int> shuffle_idx; // store the shuffled instance IDs for bagging
+    DataSet temp_dataset; //store the original dataset when do bagging
+    int bagging_inner_round; //store the round number inside a bagging loop
     DPnoises<double> DP;
     FLParam param;
     int n_total_instances;

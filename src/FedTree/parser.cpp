@@ -14,7 +14,7 @@ using namespace std;
 //TODO: code clean on compare() and atoi()
 void Parser::parse_param(FLParam &fl_param, int argc, char **argv) {
     // setup default value
-    fl_param.n_parties = 2; // TODO: validate the default fl values
+    fl_param.n_parties = 2;
     fl_param.mode = "horizontal";
     fl_param.partition_mode = fl_param.mode;
     fl_param.privacy_tech = "he";
@@ -28,7 +28,9 @@ void Parser::parse_param(FLParam &fl_param, int argc, char **argv) {
     fl_param.privacy_budget = 10;
     fl_param.variance = 200;
     fl_param.ip_address = "localhost";
+    fl_param.ins_bagging_fraction = 1.0;
 
+    fl_param.seed = 42;
 
     GBDTParam *gbdt_param = &fl_param.gbdt_param;
 
@@ -52,6 +54,7 @@ void Parser::parse_param(FLParam &fl_param, int argc, char **argv) {
     gbdt_param->tree_method = "hist";
     gbdt_param->tree_per_rounds = 1; // # tree of each round, depends on # class
     gbdt_param->metric = "default";
+    gbdt_param->constant_h = 0.0;
 
     if (argc < 2) {
         printf("Usage: <config>\n");
@@ -87,6 +90,10 @@ void Parser::parse_param(FLParam &fl_param, int argc, char **argv) {
                 fl_param.privacy_budget = atof(val);
             else if (str_name.compare("ip_address") == 0)
                 fl_param.ip_address = val;
+            else if (str_name.compare("ins_bagging_fraction") == 0)
+                fl_param.ins_bagging_fraction = atof(val);
+            else if (str_name.compare("seed") == 0)
+                fl_param.ip_address = atoi(val);
             else if (str_name.compare("merge_histogram") == 0)
                 fl_param.merge_histogram = val;
             else if (str_name.compare("propose_split") == 0)
@@ -106,8 +113,13 @@ void Parser::parse_param(FLParam &fl_param, int argc, char **argv) {
                 gbdt_param->path = val;
             else if (str_name.compare("test_data") == 0)
                 gbdt_param->test_path = val;
-            else if ((str_name.compare("max_bin") == 0) || (str_name.compare("max_num_bin") == 0))
+            else if ((str_name.compare("max_bin") == 0) || (str_name.compare("max_num_bin") == 0)) {
                 gbdt_param->max_num_bin = atoi(val);
+                if(gbdt_param->max_num_bin > 255){
+                    LOG(INFO)<<"max_num_bin should not be larger than 255";
+                    exit(1);
+                }
+            }
             else if ((str_name.compare("colsample") == 0) || (str_name.compare("column_sampling_rate") == 0))
                 gbdt_param->column_sampling_rate = atof(val);
             else if (str_name.compare("bagging") == 0)
@@ -131,6 +143,8 @@ void Parser::parse_param(FLParam &fl_param, int argc, char **argv) {
                 gbdt_param->tree_method = val;
             else if (str_name.compare("metric") == 0)
                 gbdt_param->metric = val;
+            else if (str_name.compare("constant_h") == 0)
+                gbdt_param->constant_h = atof(val);
             else
                 LOG(INFO) << "\"" << name << "\" is unknown option!";
         } else {
@@ -151,6 +165,9 @@ void Parser::parse_param(FLParam &fl_param, int argc, char **argv) {
         //LOG(INFO) << line;
         parse_value(line.c_str());
     }
+
+    if (fl_param.privacy_tech == "dp" && gbdt_param->constant_h == 0)
+        gbdt_param->constant_h = 1.0;
 
 //    TODO: confirm handling spaces around "="
 //    for (int i = 0; i < argc; ++i) {

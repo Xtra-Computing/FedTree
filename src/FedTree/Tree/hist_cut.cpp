@@ -96,19 +96,20 @@ void syncarray_resize_cpu(SyncArray<T> &buf_array, int new_size) {
 }
 
 //remove unique values by each flag
-void unique_by_flag(SyncArray<float> &target_arr, SyncArray<int> &flags, int n_columns) {
+void unique_by_flag(SyncArray<float_type> &target_arr, SyncArray<int> &flags, int n_columns) {
     using namespace thrust::placeholders;
 
 //    float max_elem = max_elements(target_arr);
     float max_elem = *thrust::max_element(thrust::host, target_arr.host_data(), target_arr.host_end());
-    CHECK_LT(max_elem + n_columns * (max_elem + 1), INT_MAX) << "Max_values is too large to be transformed";
+    float min_elem = *thrust::min_element(thrust::host, target_arr.host_data(), target_arr.host_end());
+    CHECK_LT(max_elem + n_columns * (max_elem - min_elem + 1), INT_MAX) << "Max_values is too large to be transformed";
     // 1. transform data into unique ranges
     thrust::transform(thrust::host,
                       target_arr.host_data(),
                       target_arr.host_end(),
                       flags.host_data(),
                       target_arr.host_data(),
-                      (_1 + _2 * (max_elem + 1)));
+                      (_1 + _2 * (max_elem - min_elem + 1)));
     // 2. sort the transformed data
     thrust::sort(thrust::host, target_arr.host_data(), target_arr.host_end(), thrust::greater<float>());
     thrust::reverse(thrust::host, flags.host_data(), flags.host_end());
@@ -123,7 +124,7 @@ void unique_by_flag(SyncArray<float> &target_arr, SyncArray<int> &flags, int n_c
                       target_arr.host_end(),
                       flags.host_data(),
                       target_arr.host_data(),
-                      (_1 - _2 * (max_elem + 1)));
+                      (_1 - _2 * (max_elem - min_elem + 1)));
     thrust::sort_by_key(thrust::host, flags.host_data(), flags.host_end(), target_arr.host_data());
 }
 
@@ -137,6 +138,7 @@ void HistCut::get_cut_points_fast(DataSet &dataset, int max_num_bins, int n_inst
     cut_points_val.resize(dataset.csc_val.size());
     cut_col_ptr.resize(dataset.csc_col_ptr.size());
     cut_fid.resize(dataset.csc_val.size());
+
     cut_points_val.copy_from(&dataset.csc_val[0], dataset.csc_val.size());
     auto csc_ptr = &dataset.csc_col_ptr[0];
 

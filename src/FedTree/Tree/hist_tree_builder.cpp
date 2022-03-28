@@ -91,7 +91,6 @@ void HistTreeBuilder::get_bin_ids() {
     SyncArray<unsigned char> bin_id;
     bin_id.resize(nnz);
     auto bin_id_data = bin_id.host_data();
-    int n_block = fminf((nnz / n_column - 1) / 256 + 1, 4 * 56);
     {
         auto lowerBound = [=]__host__(const float_type *search_begin, const float_type *search_end, float_type val) {
             const float_type *left = search_begin;
@@ -99,7 +98,7 @@ void HistTreeBuilder::get_bin_ids() {
 
             while (left != right) {
                 const float_type *mid = left + (right - left) / 2;
-                if (*mid <= val)
+                if ((*mid-1e-6) <= val)
                     right = mid;
                 else left = mid + 1;
             }
@@ -170,13 +169,13 @@ void HistTreeBuilder::find_split(int level) {
     SyncArray<GHPair> hist(n_max_splits);
     SyncArray<float_type> gain(n_max_splits);
     compute_histogram_in_a_level(level, n_max_splits, n_bins, n_nodes_in_level, hist_fid_data, missing_gh, hist);
-    //LOG(INFO) << hist;
+    // LOG(INFO) << "hist:"<<"\n"<<hist;
     compute_gain_in_a_level(gain, n_nodes_in_level, n_bins, hist_fid_data, missing_gh, hist);
     SyncArray<int_float> best_idx_gain(n_nodes_in_level);
     get_best_gain_in_a_level(gain, best_idx_gain, n_nodes_in_level, n_bins);
-    //LOG(INFO) << best_idx_gain;
+    // LOG(INFO) << "best_idx_gain:"<<"\n"<< best_idx_gain;
     get_split_points(best_idx_gain, n_nodes_in_level, hist_fid_data, missing_gh, hist);
-    //LOG(INFO) << this->sp;
+    // LOG(INFO) << "sp:"<<"\n"<<this->sp;
 }
 
 
@@ -268,9 +267,6 @@ void HistTreeBuilder::find_split_by_predefined_features(int level) {
                 int fid = split_feature_id;
                 unsigned char bid = dense_bin_id_data[iid * n_column + fid];
                 // todo: check bid when n_bins = 0
-                if (n_split == 0) {
-                    std::cout << "bid:" << bid;
-                }
                 if (bid != max_num_bin) {
                     int feature_offset = 0;
                     const GHPair src = gh_data[iid];
@@ -433,10 +429,10 @@ void HistTreeBuilder::find_split_by_predefined_features(int level) {
                 GHPair father_gh = nodes_data[nid].sum_gh_pair;
                 GHPair p_missing_gh = missing_gh_data[pid];
                 GHPair rch_gh = gh_prefix_sum_data[i];
-                float_type default_to_left_gain = std::max(0.f,
+                float_type default_to_left_gain = std::max((float_type)0,
                                                            compute_gain(father_gh, father_gh - rch_gh, rch_gh, mcw, l));
                 rch_gh = rch_gh + p_missing_gh;
-                float_type default_to_right_gain = std::max(0.f,
+                float_type default_to_right_gain = std::max((float_type)0,
                                                             compute_gain(father_gh, father_gh - rch_gh, rch_gh, mcw,
                                                                          l));
                 if (default_to_left_gain > default_to_right_gain)
@@ -704,8 +700,20 @@ void HistTreeBuilder::compute_histogram_in_a_level(int level, int n_max_splits, 
     }
 
     this->build_n_hist++;
-    inclusive_scan_by_key(thrust::host, hist_fid, hist_fid + n_split,
-                          hist.host_data(), hist.host_data());
+    if (n_column > 1){
+        inclusive_scan_by_key(thrust::host, hist_fid, hist_fid + n_split,
+                              hist.host_data(), hist.host_data());
+    }
+    else{
+        SyncArray<int> hist_fid_temp(n_split);
+        auto hist_fid_temp_data = hist_fid_temp.host_data();
+        for(int i = 0; i < n_nodes_in_level; i++){
+            for(int j = 0; j < n_bins; j++)
+                hist_fid_temp_data[i*n_bins + j] = hist_fid[i*n_bins + j] + i;
+        }
+        inclusive_scan_by_key(thrust::host, hist_fid_temp_data, hist_fid_temp_data + n_split,
+                              hist.host_data(), hist.host_data());
+    }
     LOG(DEBUG) << hist;
 
     auto nodes_data = tree.nodes.host_data();
@@ -763,12 +771,12 @@ HistTreeBuilder::compute_gain_in_a_level(SyncArray<float_type> &gain, int n_node
             GHPair father_gh = nodes_data[nid].sum_gh_pair;
             GHPair p_missing_gh = missing_gh_data[pid];
             GHPair rch_gh = gh_prefix_sum_data[i];
-            float_type default_to_left_gain = std::max(0.f,
+            float_type default_to_left_gain = std::max((float_type)0,
                                                        compute_gain(father_gh, father_gh - rch_gh, rch_gh, mcw, l));
 //            rch_gh = rch_gh + p_missing_gh;
             rch_gh.g += p_missing_gh.g;
             rch_gh.h += p_missing_gh.h;
-            float_type default_to_right_gain = std::max(0.f,
+            float_type default_to_right_gain = std::max((float_type)0,
                                                         compute_gain(father_gh, father_gh - rch_gh, rch_gh, mcw, l));
             if (default_to_left_gain > default_to_right_gain)
                 gain_data[i] = default_to_left_gain;
@@ -866,7 +874,7 @@ void HistTreeBuilder::get_split_points_in_a_node(int node_id, int best_idx, floa
 
     auto cut_col_ptr_data = cut.cut_col_ptr.host_data();
 
-    if (!nodes_data[node_id].is_valid) {
+    if (!nodes_data[node_id + n_nodes_in_level - 1].is_valid) {
         sp_data[node_id].split_fea_id = -1;
         sp_data[node_id].nid = -1;
         return;
@@ -1408,7 +1416,7 @@ SyncArray<float_type> HistTreeBuilder::gain(Tree &tree, SyncArray<GHPair> &hist,
             GHPair father_gh = nodes_data[nid].sum_gh_pair;
 //            GHPair p_missing_gh = missing_gh_data[pid];
             GHPair rch_gh = gh_prefix_sum_data[i];
-            float_type left_gain = std::max(0.f, compute_gain(father_gh, father_gh - rch_gh, rch_gh, mcw, l));
+            float_type left_gain = std::max((float_type)0, compute_gain(father_gh, father_gh - rch_gh, rch_gh, mcw, l));
             gain_data[i] = left_gain;
 //          rch_gh = rch_gh + p_missing_gh;
 //          float_type default_to_right_gain = std::max(0.f,

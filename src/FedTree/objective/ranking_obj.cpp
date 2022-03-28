@@ -10,6 +10,7 @@
 #include <random>
 
 void LambdaRank::configure(GBDTParam param, const DataSet &dataset) {
+    constant_h = param.constant_h;
     sigma = 1;
 
     //init gptr
@@ -80,7 +81,7 @@ LambdaRank::get_gradient(const SyncArray<float_type> &y, const SyncArray<float_t
                     float_type abs_delta_z = fabsf(get_delta_z(high_label, low_label, high, low, k));
                     float_type rhoIJ = 1 / (1 + expf((score[high_idx] - score[low_idx])));
                     float_type lambda = -abs_delta_z * rhoIJ;
-                    float_type hessian = 2 * fmaxf(abs_delta_z * rhoIJ * (1 - rhoIJ), 1e-16f);
+                    float_type hessian = constant_h == 0 ? 2 * fmaxf(abs_delta_z * rhoIJ * (1 - rhoIJ), 1e-16f) : constant_h;
                     gh_data[high_idx] = gh_data[high_idx] + GHPair(lambda, hessian);
                     gh_data[low_idx] = gh_data[low_idx] + GHPair(-lambda, hessian);
                 }
@@ -94,6 +95,7 @@ LambdaRank::get_gradient(const SyncArray<float_type> &y, const SyncArray<float_t
 string LambdaRank::default_metric_name() { return "map"; }
 
 void LambdaRankNDCG::configure(GBDTParam param, const DataSet &dataset) {
+    constant_h = param.constant_h;
     LambdaRank::configure(param, dataset);
     NDCG::get_IDCG(gptr, dataset.y, idcg);
 }
