@@ -11,6 +11,10 @@ tgbm.model
 /ntl-11.4.4/
 
 
+logs/*
+fedtree-datasets/*
+dataset/*
+
 dataset/breast-cancer_scale
 
 dataset/diabetes_scale
