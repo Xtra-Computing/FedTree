@@ -295,7 +295,14 @@ void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FL
                 n_bins = aggregator.booster.fbuilder->cut.cut_points_val.size();
                 int n_max_splits = n_max_nodes * n_bins;
                 if (params.propose_split == "server" || params.propose_split == "client_pre") {
-                    aggregator.booster.fbuilder->merge_histograms_server_propose(hist, missing_gh);
+                    if (params.privacy_tech == "he") {
+                        hist.resize(aggregator.booster.fbuilder->parties_hist[0].size());
+                        missing_gh.resize(aggregator.booster.fbuilder->parties_missing_gh[0].size());
+                        aggregator->encrypt_histogram(hist);
+                        aggregator->encrypt_histogram(missing_gh);
+
+                    }
+                    aggregator.booster.fbuilder->merge_histograms_server_propose(hist, missing_gh, params.privacy_tech == "he");
 //                    server.booster.fbuilder->set_last_missing_gh(missing_gh);
 //                    LOG(INFO) << hist;
                 }else if (params.propose_split == "client_post") {
@@ -307,7 +314,13 @@ void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FL
                             feature_range_for_client[n][p] = temp;
                         }
                     }
-                    aggregator.booster.fbuilder->merge_histograms_client_propose(hist, missing_gh, feature_range_for_client, n_max_splits);
+                    if(params.privacy_tech == "he"){
+                        hist.resize(n_max_splits);
+                        missing_gh.resize(aggregator.booster.fbuilder->parties_missing_gh[0].size());
+                        aggregator->encrypt_histogram(hist);
+                        aggregator->encrypt_histogram(missing_gh);
+                    }
+                    aggregator.booster.fbuilder->merge_histograms_client_propose(hist, missing_gh, feature_range_for_client, n_max_splits, params.privacy_tech == "he");
                 }
                 n_bins = aggregator.booster.fbuilder->cut.cut_points_val.size();
 

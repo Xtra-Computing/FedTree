@@ -117,12 +117,17 @@ public:
     void encrypt_histogram(SyncArray<GHPair> &hist) {
 #ifdef USE_CUDA
         paillier.encrypt(hist);
+        auto hist_data = hist.host_data();
+        #pragma omp parallel for
+        for(int i = 0; i < hist.size(); i++){
+            hist_data[i].paillier = paillier.paillier_cpu;
+        }
 #else
         auto hist_data = hist.host_data();
         #pragma omp parallel for
-            for (int i = 0; i < hist.size(); i++) {
-                hist_data[i].homo_encrypt(paillier);
-            }
+        for (int i = 0; i < hist.size(); i++) {
+            hist_data[i].homo_encrypt(paillier);
+        }
 #endif
     }
 

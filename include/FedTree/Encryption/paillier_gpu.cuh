@@ -7,6 +7,7 @@
 #include "cgbn/cgbn.h"
 #include "FedTree/syncarray.h"
 #include "FedTree/common.h"
+#include "FedTree/Encryption/paillier_gmp.h"
 
 
 template<uint32_t BITS>
@@ -51,9 +52,10 @@ public:
 
 //    cgbn_mem_t<BITS> modulus;
 //    cgbn_mem_t<BITS> generator;
-    mpz_t n;
-    mpz_t n_square;
-    mpz_t generator;
+
+//    mpz_t n;
+//    mpz_t n_square;
+//    mpz_t generator;
     uint32_t key_length;
 
     cgbn_mem_t<BITS> *n_gpu;
@@ -62,11 +64,13 @@ public:
 
 //    cgbn_gh_results<BITS>* gh_results_gpu;
 
-private:
-    mpz_t p, q;
-    mpz_t lambda;
+    Paillier_GMP paillier_cpu;
 
-    mpz_t mu;
+private:
+//    mpz_t p, q;
+//    mpz_t lambda;
+
+//    mpz_t mu;
 
     cgbn_mem_t<BITS> *lambda_gpu;
     cgbn_mem_t<BITS> *mu_gpu;

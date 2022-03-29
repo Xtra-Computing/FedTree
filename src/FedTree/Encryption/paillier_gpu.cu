@@ -18,42 +18,44 @@ void Paillier_GPU::L_function(mpz_t result, mpz_t input, mpz_t N){
 }
 
 void Paillier_GPU::keygen(){
-    gmp_randstate_t state = new gmp_randstate_t();
-    gmp_randinit_mt(state);
-//    gmp_randseed_ui(state, 1000U);
-    mpz tmp1, tmp2, tmp3, tmp4;
-    mpz_init(tmp1);
-    mpz_init(tmp2);
-    mpz_init(tmp3);
-    mpz_init(tmp4);
-    while (true){
-        mpz_urandomb(p, gpc_randstate, key_length/4);
-        mpz_urandomb(q, gpc_randstate, key_length/4);
-        mpz_nextprime(p, p);
-        mpz_nextprime(q, q);
-        mpz_sub_ui(tmp1, p, 1);
-        mpz_sub_ui(tmp2, q, 1);
-        mpz_mul(tmp3, tmp1, tmp2); // tmp3 = (p-1)(q-1)
-        mpz_mul(tmp4, p, q); // tmp4 = p*q
-        mpz_gcd(tmp3, tmp3, tmp4); // tmp = gcd(pq, (p-1)(q-1))
-        if(mpz_cmp_ui(tmp3, 1) == 0) // gcd(pq, (p-1)(q-1)) == 1
-            break;
-    }
+    pailler_cpu.keygen(this->key_length);
 
-    n = tmp4;                                                        // n = p * q
-    mpz_add_ui(generator, n, 1);  // generator = modulus + 1
-    mpz_lcm(lambda, tmp1, tmp2);   // lamda = lcm(p-1, q-1)
-    mpz_mul(n_square, n, n);
-    mpz_t lambda_power;
-    mpz_init(lambda_power);
-    mpz_powm(lambda_power, generator, lambda, n_square);
-    L_function(mu, lambda_power, n);
-    mpz_invert(mu, mu, N); // u = L((generator^lambda) mod n ^ 2) ) ^ -1 mod modulus
-    mpz_clear(tmp1);
-    mpz_clear(tmp2);
-    mpz_clear(tmp3);
-    mpz_clear(tmp4);
-    mpz_clear(lambda_power);
+//    gmp_randstate_t state = new gmp_randstate_t();
+//    gmp_randinit_mt(state);
+////    gmp_randseed_ui(state, 1000U);
+//    mpz tmp1, tmp2, tmp3, tmp4;
+//    mpz_init(tmp1);
+//    mpz_init(tmp2);
+//    mpz_init(tmp3);
+//    mpz_init(tmp4);
+//    while (true){
+//        mpz_urandomb(p, gpc_randstate, key_length/4);
+//        mpz_urandomb(q, gpc_randstate, key_length/4);
+//        mpz_nextprime(p, p);
+//        mpz_nextprime(q, q);
+//        mpz_sub_ui(tmp1, p, 1);
+//        mpz_sub_ui(tmp2, q, 1);
+//        mpz_mul(tmp3, tmp1, tmp2); // tmp3 = (p-1)(q-1)
+//        mpz_mul(tmp4, p, q); // tmp4 = p*q
+//        mpz_gcd(tmp3, tmp3, tmp4); // tmp = gcd(pq, (p-1)(q-1))
+//        if(mpz_cmp_ui(tmp3, 1) == 0) // gcd(pq, (p-1)(q-1)) == 1
+//            break;
+//    }
+//
+//    n = tmp4;                                                        // n = p * q
+//    mpz_add_ui(generator, n, 1);  // generator = modulus + 1
+//    mpz_lcm(lambda, tmp1, tmp2);   // lamda = lcm(p-1, q-1)
+//    mpz_mul(n_square, n, n);
+//    mpz_t lambda_power;
+//    mpz_init(lambda_power);
+//    mpz_powm(lambda_power, generator, lambda, n_square);
+//    L_function(mu, lambda_power, n);
+//    mpz_invert(mu, mu, N); // u = L((generator^lambda) mod n ^ 2) ) ^ -1 mod modulus
+//    mpz_clear(tmp1);
+//    mpz_clear(tmp2);
+//    mpz_clear(tmp3);
+//    mpz_clear(tmp4);
+//    mpz_clear(lambda_power);
 
 
     cgbn_mem_t<key_length> *n_cpu = (cgbn_mem_t<key_length> *)malloc(sizeof(cgbn_mem_t<key_length>));
@@ -61,11 +63,11 @@ void Paillier_GPU::keygen(){
     cgbn_mem_t<key_length> *generator_cpu = (cgbn_mem_t<key_length> *)malloc(sizeof(cgbn_mem_t<key_length>));
     cgbn_mem_t<key_length> *lambda_cpu = (cgbn_mem_t<key_length> *)malloc(sizeof(cgbn_mem_t<key_length>));
     cgbn_mem_t<key_length> *mu_cpu = (cgbn_mem_t<key_length> *)malloc(sizeof(cgbn_mem_t<key_length>));
-    from_mpz(n, n_cpu._limbs, key_length/32);
-    from_mpz(n_square, n_square_cpu._limbs, key_length/32);
-    from_mpz(generator, generator_cpu._limbs, key_length/32);
-    from_mpz(lambda, lambda_cpu._limbs, key_length/32);
-    from_mpz(mu, mu_cpu._limbs, key_length/32);
+    from_mpz(paillier_cpu.n, n_cpu._limbs, key_length/32);
+    from_mpz(paillier_cpu.n_square, n_square_cpu._limbs, key_length/32);
+    from_mpz(paillier_cpu.generator, generator_cpu._limbs, key_length/32);
+    from_mpz(paillier_cpu.lambda, lambda_cpu._limbs, key_length/32);
+    from_mpz(paillier_cpu.mu, mu_cpu._limbs, key_length/32);
 
     cgbn_mem_t<key_length> *n_gpu;
     CUDA_CHECK(cudaMalloc((void**)&n_gpu, sizeof(cgbn_mem_t<key_length>)));

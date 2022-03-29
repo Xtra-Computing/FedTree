@@ -1023,8 +1023,8 @@ void HistTreeBuilder::merge_histograms_server_propose(SyncArray<GHPair> &merged_
     int n_bins = parties_hist[0].size();
     CHECK_EQ(parties_hist[0].size(), parties_hist[1].size());
     int n_size = parties_missing_gh[0].size();
-    merged_hist.resize(n_bins);
-    merged_missing_gh.resize(n_size);
+//    merged_hist.resize(n_bins);
+//    merged_missing_gh.resize(n_size);
 //    SyncArray<GHPair> merged_hist(n_bins);
 //    SyncArray<GHPair> merged_missing_gh(n_size);
     auto merged_hist_data = merged_hist.host_data();
@@ -1145,8 +1145,8 @@ void HistTreeBuilder::merge_histograms_client_propose(SyncArray<GHPair> &hist, S
     }
     cut_col_ptr_data[n_features] = index;
 
-    SyncArray<GHPair> merged_hist(n_max_splits);
-    auto merged_hist_data = merged_hist.host_data();
+//    hist.resize(n_max_splits);
+    auto merged_hist_data = hist.host_data();
     int n_max_nodes = n_max_splits / (n_columns * max_num_bins);
 
 
@@ -1247,8 +1247,8 @@ void HistTreeBuilder::merge_histograms_client_propose(SyncArray<GHPair> &hist, S
 
     // Merge missing gh by summing
     int n_size = parties_missing_gh[0].size();
-    SyncArray<GHPair> merged_missing_gh(n_size);
-    auto merged_missing_gh_data = merged_missing_gh.host_data();
+//    missing_gh.resize(n_size);
+    auto merged_missing_gh_data = missing_gh.host_data();
 
 #pragma omp parallel for
     for (int i = 0; i < parties_missing_gh.size(); i++) {
@@ -1260,10 +1260,10 @@ void HistTreeBuilder::merge_histograms_client_propose(SyncArray<GHPair> &hist, S
             missing_gh_dest = missing_gh_dest + missing_gh;
         }
     }
-    hist.resize(merged_hist.size());
-    hist.copy_from(merged_hist);
-    missing_gh.resize(n_size);
-    missing_gh.copy_from(merged_missing_gh);
+//    hist.resize(merged_hist.size());
+//    hist.copy_from(merged_hist);
+//    missing_gh.resize(n_size);
+//    missing_gh.copy_from(merged_missing_gh);
 }
 
 //assumption 1: bin sizes for the split of a feature are the same

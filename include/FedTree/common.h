@@ -52,7 +52,7 @@ typedef float float_type;
 
 
     #include "gmp.h"
-    #include "FedTree/Encryption/paillier_gpu.cuh"
+    #include "FedTree/Encryption/paillier_gmp.h"
     typedef cgbn_context_t<32> context_t;
     typedef cgbn_env_t<context_t, 512> env_t;
 
@@ -85,32 +85,51 @@ struct GHPair {
 #ifdef USE_CUDA
     mpz_t g_enc;
     mpz_t h_enc;
-    Paillier_GPU<1024> paillier;
+    Paillier_GMP paillier;
 
-    HOST_DEVICE void homo_encrypt(const Paillier &pl) {
+
+    HOST_DEVICE void homo_encrypt(const Paillier_GMP &pl) {
         if (!encrypted) {
-            pl.encrypt(this);
+            mpz_t g_mpz, h_mpz;
+            mpz_init(g_mpz);
+            mpz_init(h_mpz);
+            unsigned long g_ul = (unsigned long) (g * 1e6);
+            unsigned long h_ul = (unsigned long) (h * 1e6);
+            mpz_import(g_mpz, 1, -1, sizeof(g_ul), 0, 0, &g_ul);
+            mpz_import(h_mpz, 1, -1, sizeof(h_ul), 0, 0, &h_ul);
+            pl.encrypt(g_enc, g_mpz);
+            pl.encrypt(h_enc, h_mpz);
             this->paillier = pl;
             g = 0;
             h = 0;
             encrypted = true;
+            mpz_clear(g_mpz);
+            mpz_clear(h_mpz);
         }
     }
 
-    HOST_DEVICE void homo_decrypt(const Paillier &pl) {
+    HOST_DEVICE void homo_decrypt(const Paillier_GMP &pl) {
         if (encrypted) {
-            pl.decrypt(this);
+            mpz_t g_dec, h_dec;
+            mpz_init(g_dec);
+            mpz_init(h_dec);
+            pl.decrypt(g_dec, g_enc);
+            pl.decrypt(h_dec, h_enc);
+            unsigned long g_ul, h_ul;
+            mpz_export(&g_ul, 0, -1, sizeof(g_ul), 0, 0, g_dec);
+            mpz_export(&h_ul, 0, -1, sizeof(h_ul), 0, 0, h_dec);
+            g = (float_type) g_ul / 1e6;
+            h = (float_type) h_ul / 1e6;
             encrypted = false;
         }
     }
+
 #else
     NTL::ZZ g_enc;
     NTL::ZZ h_enc;
     Paillier paillier;
 
-
-
-    HOST_DEVICE void homo_encrypt(const Paillier &pl) {
+    HOST_DEVICE void w(const Paillier &pl) {
         if (!encrypted) {
             g_enc = pl.encrypt(NTL::to_ZZ((unsigned long) (g * 1e6)));
             h_enc = pl.encrypt(NTL::to_ZZ((unsigned long) (h * 1e6)));
@@ -130,6 +149,7 @@ struct GHPair {
             encrypted = false;
         }
     }
+
 #endif
 
     HOST_DEVICE GHPair operator+(const GHPair &rhs) const {
