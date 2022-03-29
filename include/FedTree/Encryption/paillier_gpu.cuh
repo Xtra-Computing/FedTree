@@ -24,21 +24,22 @@ public:
         mpz_init(p); mpz_init(q); mpz_init(mu);};
 
 
-    Paillier_GPU& operator=(Paillier_GPU source) {
-        this->n = source.n;
-        this->generator = source.generator;
-        this->keyLength = source.keyLength;
-    }
+//    Paillier_GPU& operator=(Paillier_GPU source) {
+//        this->paillier_cpu = source.paillier_cpu;
+//        this->generator = source.generator;
+//        this->keyLength = source.keyLength;
+//        return *this;
+//    }
 
     void keygen();
 //    explicit Paillier_GPU(unit32_t key_length);
     void L_function(mpz_t result, mpz_t input, mpz_t N);
 
-    void encrypt(SyncArray<GHPair> &message) const;
+    void encrypt(SyncArray<GHPair> &message);
 
     void encrypt(GHPair &message);
 
-    void decrypt(SyncArray<GHPair> &ciphertext) const;
+    void decrypt(SyncArray<GHPair> &ciphertext);
 
     void decrypt(GHPair &message);
 

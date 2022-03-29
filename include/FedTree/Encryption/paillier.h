@@ -11,6 +11,7 @@ public:
         this->modulus = source.modulus;
         this->generator = source.generator;
         this->keyLength = source.keyLength;
+        return *this;
     }
     explicit Paillier(long keyLength);
 

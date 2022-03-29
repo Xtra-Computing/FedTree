@@ -8,9 +8,10 @@ public:
     Paillier_GMP();
 
     Paillier_GMP& operator=(Paillier_GMP source) {
-        this->modulus = source.modulus;
-        this->generator = source.generator;
-        this->keyLength = source.keyLength;
+        mpz_set(this->n,source.n);
+        mpz_set(this->generator, source.generator);
+        this->key_length = source.key_length;
+        return *this;
     }
     void keyGen(long keyLength);
 
