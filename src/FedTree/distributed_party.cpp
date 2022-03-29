@@ -1201,9 +1201,25 @@ int main(int argc, char **argv) {
     if (fl_param.mode == "vertical") {
         LOG(INFO) << "vertical dir";
         dataset.csr_to_csc();
-        partition.homo_partition(dataset, fl_param.n_parties, false, subsets, batch_idxs);
-        
-        party.vertical_init(pid, subsets[pid], fl_param);
+        if (fl_param.partition) {
+            partition.homo_partition(dataset, fl_param.n_parties, false, subsets, batch_idxs);
+            party.vertical_init(pid, subsets[pid], fl_param);
+        }
+        else {
+            // calculate batch idxs
+            int stride = test_dataset.n_features()/fl_param.n_parties;
+            for (int p = 0; p < fl_param.n_parties-1; p++) {
+                batch_idxs[p] = vector<int>();
+                for (int id = 0; id < stride; id++) {
+                    batch_idxs[p].push_back(id+p*stride);
+                }
+            }
+            batch_idxs[fl_param.n_parties-1] = vector<int>();
+            for (int id = 0; id < test_dataset.n_features()-(fl_param.n_parties-1)*stride; id++) {
+                batch_idxs[fl_param.n_parties-1].push_back((fl_param.n_parties-1)*stride+id);
+            }
+            party.vertical_init(pid, dataset, fl_param);
+        }
         party.BeginBarrier();
         auto t_start = party.timer.now();
         distributed_vertical_train(party, fl_param);
@@ -1216,10 +1232,16 @@ int main(int argc, char **argv) {
     else if (fl_param.mode == "horizontal") {
         // draft
         LOG(INFO) << "horizontal dir, developing";
-        partition.homo_partition(dataset, fl_param.n_parties, true, subsets, batch_idxs);
         SyncArray<bool> dummy_map;
         // horizontal does not need feature_map parameter
-        party.init(pid, subsets[pid], fl_param, dummy_map);
+        if (fl_param.partition) {
+            partition.homo_partition(dataset, fl_param.n_parties, true, subsets, batch_idxs);
+            party.init(pid, subsets[pid], fl_param, dummy_map);
+        }
+        else {
+            party.init(pid, dataset, fl_param, dummy_map);
+        }
+
         party.BeginBarrier();
         auto t_start = party.timer.now();
         distributed_horizontal_train(party, fl_param);
