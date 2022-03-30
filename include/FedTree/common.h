@@ -53,8 +53,7 @@ typedef float float_type;
 
     #include "gmp.h"
     #include "FedTree/Encryption/paillier_gmp.h"
-    typedef cgbn_context_t<32> context_t;
-    typedef cgbn_env_t<context_t, 512> env_t;
+
 
     void to_mpz(mpz_t r, uint32_t *x, uint32_t count) {
       mpz_import(r, count, -1, sizeof(uint32_t), 0, 0, x);

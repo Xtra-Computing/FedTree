@@ -4,7 +4,7 @@
 #include "FedTree/Tree/hist_tree_builder.h"
 
 #include "FedTree/util/cub_wrapper.h"
-#include "FedTree/util/device_lambda.h"
+//#include "FedTree/util/device_lambda.h"
 #include "thrust/iterator/counting_iterator.h"
 
 #include "thrust/iterator/discard_iterator.h"

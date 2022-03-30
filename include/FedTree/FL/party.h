@@ -13,6 +13,7 @@
 #include "FedTree/booster.h"
 #include "FedTree/Tree/gbdt.h"
 #include <algorithm>
+#include "FedTree/Encryption/paillier_gpu.cuh"
 
 
 

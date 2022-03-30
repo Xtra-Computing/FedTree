@@ -6,7 +6,7 @@
 #define FEDTREE_REGRESSION_OBJ_H
 
 #include "objective_function.h"
-#include "FedTree/util/device_lambda.h"
+//#include "FedTree/util/device_lambda.h"
 #include "math.h"
 
 template<template<typename> class Loss>

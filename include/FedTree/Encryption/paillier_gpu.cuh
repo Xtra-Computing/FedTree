@@ -9,9 +9,13 @@
 #include "FedTree/common.h"
 #include "FedTree/Encryption/paillier_gmp.h"
 
+#define TPI 32
+#define ENV_BITS 1024
+typedef cgbn_context_t<TPI> context_t;
+typedef cgbn_env_t<context_t, ENV_BITS> env_t;
 
 template<uint32_t BITS>
-class cgbn_gh_results{
+class cgbn_gh{
 public:
     cgbn_mem_t<BITS> g;
     cgbn_mem_t<BITS> h;
@@ -20,8 +24,7 @@ public:
 template<uint32_t BITS>
 class Paillier_GPU {
 public:
-    Paillier_GPU(): key_length(BITS) {mpz_init(n); mpz_init(n_square); mpz_init(generator); mpz_init(lambda);
-        mpz_init(p); mpz_init(q); mpz_init(mu);};
+    Paillier_GPU(): key_length(BITS) {};
 
 
 //    Paillier_GPU& operator=(Paillier_GPU source) {

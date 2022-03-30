@@ -2,6 +2,7 @@
 #define FEDTREE_PAILLIER_GMP_H
 
 #include <gmp.h>
+#include <cstdint>
 
 class Paillier_GMP {
 public:
@@ -13,7 +14,7 @@ public:
         this->key_length = source.key_length;
         return *this;
     }
-    void keyGen(long keyLength);
+    void keyGen(uint32_t keyLength);
 
     void keygen();
 
@@ -36,7 +37,7 @@ public:
     mpz_t lambda;
     mpz_t mu;
 
-    void L_function(mpz_t &r, mpz_t &input, const mpz_t &n);
+    void L_function(mpz_t &r, mpz_t &input, const mpz_t &n) const;
 };
 
 

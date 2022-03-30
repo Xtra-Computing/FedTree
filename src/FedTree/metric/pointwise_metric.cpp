@@ -6,7 +6,7 @@
 
 #include "thrust/reduce.h"
 #include "thrust/execution_policy.h"
-#include "FedTree/util/device_lambda.h"
+//#include "FedTree/util/device_lambda.h"
 #include "FedTree/metric/pointwise_metric.h"
 
 float_type RMSE::get_score(const SyncArray<float_type> &y_p) const {
