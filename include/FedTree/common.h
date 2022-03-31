@@ -128,7 +128,7 @@ struct GHPair {
     NTL::ZZ h_enc;
     Paillier paillier;
 
-    HOST_DEVICE void w(const Paillier &pl) {
+    HOST_DEVICE void homo_encrypt(const Paillier &pl) {
         if (!encrypted) {
             g_enc = pl.encrypt(NTL::to_ZZ((unsigned long) (g * 1e6)));
             h_enc = pl.encrypt(NTL::to_ZZ((unsigned long) (h * 1e6)));
@@ -283,13 +283,15 @@ struct GHPair {
     GHPair(const GHPair& other) {
         g = other.g;
         h = other.h;
-        #ifdef USE_CUDA
-        mpz_set(g_enc, other.g_enc);
-        mpz_set(h_enc, other.h_enc);
-        #else
-        g_enc = other.g_enc;
-        h_enc= other.h_enc;
-        #endif
+        if(other.encrypted) {
+            #ifdef USE_CUDA
+            mpz_set(g_enc, other.g_enc);
+            mpz_set(h_enc, other.h_enc);
+            #else
+            g_enc = other.g_enc;
+            h_enc = other.h_enc;
+            #endif
+        }
         paillier = other.paillier;
         encrypted = other.encrypted;
     }
