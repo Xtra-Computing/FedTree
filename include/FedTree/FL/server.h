@@ -44,7 +44,7 @@ public:
 //    vector<AdditivelyHE::PaillierPublicKey> pk_vector;
 
 #ifdef USE_CUDA
-    Paillier_GPU<1024> paillier;
+    Paillier_GPU paillier;
 #else
     Paillier paillier;
 #endif
@@ -55,7 +55,7 @@ public:
 
     void homo_init() {
 #ifdef USE_CUDA
-        paillier = Paillier_GPU(1024);
+        paillier.keygen();
 //        pailler_gmp = Pailler(1024);
 //        paillier = Paillier(paillier_gmp);
 //        paillier.keygen();
@@ -66,7 +66,7 @@ public:
 
     void decrypt_gh(GHPair &gh) {
 #ifdef USE_CUDA
-        pailler.decrypt(gh);
+        paillier.decrypt(gh);
 #else
         gh.homo_decrypt(paillier);
 #endif
@@ -91,7 +91,7 @@ public:
         auto raw_data = raw.host_data();
         #pragma omp parallel for
         for (int i = 0; i < raw.size(); i++) {
-            raw_data[i].pailler = paillier.paillier_cpu;
+            raw_data[i].paillier = paillier.paillier_cpu;
         }
 #else
         auto raw_data = raw.host_data();

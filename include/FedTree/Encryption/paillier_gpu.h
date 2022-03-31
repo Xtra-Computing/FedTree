@@ -1,3 +1,4 @@
+#pragma once
 #ifndef FEDTREE_PAILLIER_GPU_CUH
 #define FEDTREE_PAILLIER_GPU_CUH
 
@@ -9,19 +10,21 @@
 #include "FedTree/common.h"
 #include "FedTree/Encryption/paillier_gmp.h"
 
-#define TPI 32
-#define ENV_BITS 1024
-typedef cgbn_context_t<TPI> context_t;
-typedef cgbn_env_t<context_t, ENV_BITS> env_t;
+#define BITS 1024
 
-template<uint32_t BITS>
+void to_mpz(mpz_t r, uint32_t *x, uint32_t count);
+
+void from_mpz(mpz_t s, uint32_t *x, uint32_t count);
+
+
+template<uint32_t CBITS>
 class cgbn_gh{
 public:
-    cgbn_mem_t<BITS> g;
-    cgbn_mem_t<BITS> h;
+    cgbn_mem_t<CBITS> g;
+    cgbn_mem_t<CBITS> h;
 };
 
-template<uint32_t BITS>
+//template<uint32_t BITS>
 class Paillier_GPU {
 public:
     Paillier_GPU(): key_length(BITS) {};
@@ -33,6 +36,8 @@ public:
 //        this->keyLength = source.keyLength;
 //        return *this;
 //    }
+
+//    void keygen();
 
     void keygen();
 //    explicit Paillier_GPU(unit32_t key_length);
@@ -81,22 +86,22 @@ private:
 
 };
 
-template<uint32_t BITS>
+template<uint32_t CBITS>
 class cgbn_pailler_encryption_parameters{
 public:
-    cgbn_mem_t<BITS> n;
-    cgbn_mem_t<BITS> n_square;
-    cgbn_mem_t<BITS> generator;
-    cgbn_mem_t<BITS> random;
+    cgbn_mem_t<CBITS> n;
+    cgbn_mem_t<CBITS> n_square;
+    cgbn_mem_t<CBITS> generator;
+    cgbn_mem_t<CBITS> random;
 };
 
-template<uint32_t BITS>
+template<uint32_t CBITS>
 class cgbn_pailler_decryption_parameters{
 public:
-    cgbn_mem_t<BITS> n;
-    cgbn_mem_t<BITS> n_square;
-    cgbn_mem_t<BITS> lambda;
-    cgbn_mem_t<BITS> mu;
+    cgbn_mem_t<CBITS> n;
+    cgbn_mem_t<CBITS> n_square;
+    cgbn_mem_t<CBITS> lambda;
+    cgbn_mem_t<CBITS> mu;
 };
 
 

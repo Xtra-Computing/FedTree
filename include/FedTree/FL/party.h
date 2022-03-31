@@ -13,7 +13,7 @@
 #include "FedTree/booster.h"
 #include "FedTree/Tree/gbdt.h"
 #include <algorithm>
-#include "FedTree/Encryption/paillier_gpu.cuh"
+#include "FedTree/Encryption/paillier_gpu.h"
 
 
 
@@ -133,7 +133,7 @@ public:
     }
 
     void encrypt_gradient(GHPair &ghpair) {
-        ghpair.homo_encrypt(paillier);
+        ghpair.homo_encrypt(paillier.paillier_cpu);
     }
 
     void sample_data();
@@ -148,7 +148,7 @@ public:
     int pid;
 //    AdditivelyHE::PaillierPublicKey serverKey;
 #ifdef USE_CUDA
-    Paillier_GPU<1024> paillier;
+    Paillier_GPU paillier;
 #else
     Paillier paillier;
 #endif

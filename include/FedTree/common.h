@@ -55,22 +55,22 @@ typedef float float_type;
     #include "FedTree/Encryption/paillier_gmp.h"
 
 
-    void to_mpz(mpz_t r, uint32_t *x, uint32_t count) {
-      mpz_import(r, count, -1, sizeof(uint32_t), 0, 0, x);
-    }
-
-    void from_mpz(mpz_t s, uint32_t *x, uint32_t count) {
-      size_t words;
-
-      if(mpz_sizeinbase(s, 2)>count*32) {
-        fprintf(stderr, "from_mpz failed -- result does not fit\n");
-        exit(1);
-      }
-
-      mpz_export(x, &words, -1, sizeof(uint32_t), 0, 0, s);
-      while(words<count)
-        x[words++]=0;
-    }
+//    void to_mpz(mpz_t r, uint32_t *x, uint32_t count) {
+//      mpz_import(r, count, -1, sizeof(uint32_t), 0, 0, x);
+//    }
+//
+//    void from_mpz(mpz_t s, uint32_t *x, uint32_t count) {
+//      size_t words;
+//
+//      if(mpz_sizeinbase(s, 2)>count*32) {
+//        fprintf(stderr, "from_mpz failed -- result does not fit\n");
+//        exit(1);
+//      }
+//
+//      mpz_export(x, &words, -1, sizeof(uint32_t), 0, 0, s);
+//      while(words<count)
+//        x[words++]=0;
+//    }
 #else
 #include "FedTree/Encryption/paillier.h"
 #endif
