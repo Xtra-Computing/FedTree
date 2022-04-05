@@ -3,6 +3,7 @@
 
 #include <gmp.h>
 #include <cstdint>
+#include "FedTree/Encryption/paillier.h"
 
 class Paillier_GMP {
 public:
@@ -30,7 +31,7 @@ public:
 
     void mul(mpz_t &r, const mpz_t &x, const mpz_t &y) const;
 
-
+    Paillier paillier_ntl;
     mpz_t n;
     mpz_t n_square;
     mpz_t generator;

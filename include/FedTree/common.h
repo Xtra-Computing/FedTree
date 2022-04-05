@@ -168,6 +168,9 @@ struct GHPair {
                 #ifdef USE_CUDA
                 rhs.paillier.add(res.g_enc, tmp_lhs.g_enc, rhs.g_enc);
                 rhs.paillier.add(res.h_enc, tmp_lhs.h_enc, rhs.h_enc);
+                //first transform g_enc to ntl::zz, use nlt::zz operations, then transform back to mpz_t
+//                rhs.paillier.paillier_ntl.add(res.g_enc, tmp_lhs.g_enc, rhs.g_enc);
+//                rhs.paillier.add(res.h_enc, tmp_lhs.h_enc, rhs.h_enc);
                 #else
                 res.g_enc = rhs.paillier.add(tmp_lhs.g_enc, rhs.g_enc);
                 res.h_enc = rhs.paillier.add(tmp_lhs.h_enc, rhs.h_enc);
@@ -199,6 +202,20 @@ struct GHPair {
         return res;
     }
 
+
+//#ifdef USE_CUDA
+//    GHPair operator-(const GHPair &rhs) const {
+//        //rewrite the function by transforming mpz_t->str->ntl::zz, and then operations, and then ntl::zz->str->mpz_t.
+//        //    NTL::ZZ minus_one = NTL::to_ZZ((unsigned long) -1);
+////    std::string ss;
+////    ss = mpz_get_str(NULL, 10, tmp_lsh)
+//    }
+//#else
+//
+//
+//#endif
+
+
     GHPair operator-(const GHPair &rhs) const {
 //        std::cout<<"in operator -"<<std::endl;
         GHPair res;
@@ -213,19 +230,25 @@ struct GHPair {
             mpz_t minus_one;
             mpz_init(minus_one);
 
-            unsigned long ul = (unsigned long) (-1);
-            mpz_import(minus_one, 1, -1, sizeof(ul), 0, 0, &ul);
+//            long ul = (long) (-1);
+//            mpz_import(minus_one, 1, -1, sizeof(ul), 0, 0, &ul);
 
-//            mpz_set_si(minus_one, -1);
+            mpz_set_ui(minus_one, -1);
             if(!encrypted){
                 tmp_lhs.homo_encrypt(rhs.paillier);
-                mpz_t minus_g_enc, minus_h_enc;
-                rhs.paillier.mul(minus_g_enc, tmp_rhs.g_enc, minus_one);
-                rhs.paillier.mul(minus_h_enc, tmp_rhs.h_enc, minus_one);
-                rhs.paillier.add(res.g_enc, tmp_lhs.g_enc, minus_g_enc);
-                rhs.paillier.add(res.h_enc, tmp_lhs.h_enc, minus_h_enc);
-                mpz_clear(minus_g_enc);
-                mpz_clear(minus_h_enc);
+//                mpz_t minus_g_enc, minus_h_enc;
+//                rhs.paillier.mul(minus_g_enc, tmp_rhs.g_enc, minus_one);
+//                rhs.paillier.mul(minus_h_enc, tmp_rhs.h_enc, minus_one);
+//                rhs.paillier.add(res.g_enc, tmp_lhs.g_enc, minus_g_enc);
+//                rhs.paillier.add(res.h_enc, tmp_lhs.h_enc, minus_h_enc);
+//                mpz_clear(minus_g_enc);
+//                mpz_clear(minus_h_enc);
+
+                mpz_invert(tmp_rhs.g_enc, tmp_rhs.g_enc, rhs.paillier.n_square);
+                mpz_invert(tmp_rhs.h_enc, tmp_rhs.h_enc, rhs.paillier.n_square);
+                rhs.paillier.add(res.g_enc, tmp_lhs.g_enc, tmp_rhs.g_enc);
+                rhs.paillier.add(res.h_enc, tmp_lhs.h_enc, tmp_rhs.h_enc);
+
                 res.paillier = rhs.paillier;
             } else if (!rhs.encrypted) {
                 tmp_rhs.g *= -1;
@@ -235,13 +258,18 @@ struct GHPair {
                 paillier.add(res.h_enc, h_enc, tmp_rhs.h_enc);
                 res.paillier = paillier;
             } else{
-                mpz_t minus_g_enc, minus_h_enc;
-                mpz_init(minus_g_enc);
-                mpz_init(minus_h_enc);
-                paillier.mul(minus_g_enc, tmp_rhs.g_enc, minus_one);
-                paillier.mul(minus_h_enc, tmp_rhs.h_enc, minus_one);
-                paillier.add(res.g_enc, g_enc, minus_g_enc);
-                paillier.add(res.h_enc, h_enc, minus_h_enc);
+//                mpz_t minus_g_enc, minus_h_enc;
+//                mpz_init(minus_g_enc);
+//                mpz_init(minus_h_enc);
+//                paillier.mul(minus_g_enc, tmp_rhs.g_enc, minus_one);
+//                paillier.mul(minus_h_enc, tmp_rhs.h_enc, minus_one);
+//                paillier.add(res.g_enc, g_enc, minus_g_enc);
+//                paillier.add(res.h_enc, h_enc, minus_h_enc);
+
+                mpz_invert(tmp_rhs.g_enc, tmp_rhs.g_enc, paillier.n_square);
+                mpz_invert(tmp_rhs.h_enc, tmp_rhs.h_enc, paillier.n_square);
+                rhs.paillier.add(res.g_enc, g_enc, tmp_rhs.g_enc);
+                rhs.paillier.add(res.h_enc, h_enc, tmp_rhs.h_enc);
                 res.paillier = paillier;
             }
 

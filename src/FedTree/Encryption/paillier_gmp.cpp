@@ -1,5 +1,7 @@
 #include "FedTree/Encryption/paillier_gmp.h"
 #include <iostream>
+#include <sstream>
+
 Paillier_GMP::Paillier_GMP(){
     mpz_init(n);
     mpz_init(n_square);
@@ -17,6 +19,7 @@ void Paillier_GMP::add(mpz_t &result, const mpz_t &x, const mpz_t &y) const{
     mpz_mod(result, result, n_square);
     return;
 }
+
 
 void Paillier_GMP::mul(mpz_t &result, const mpz_t &x, const mpz_t &y) const{
     mpz_init(result);
@@ -102,6 +105,25 @@ void Paillier_GMP::decrypt(mpz_t &result, const mpz_t &message) const{
 void Paillier_GMP::keyGen(uint32_t keyLength) {
     this->key_length = keyLength;
 
+    paillier_ntl.keygen(512);
+    std::stringstream ss;
+    ss<<paillier_ntl.modulus;
+    mpz_set_str(n, ss.str().c_str(), 10);
+    ss.str("");
+    mpz_mul(n_square, n, n);
+    ss<<paillier_ntl.generator;
+    mpz_set_str(generator, ss.str().c_str(), 10);
+    ss.str("");
+    ss<<paillier_ntl.lambda;
+    mpz_set_str(lambda, ss.str().c_str(), 10);
+    ss.str("");
+    ss<<paillier_ntl.u;
+    mpz_set_str(mu, ss.str().c_str(), 10);
+    ss.str("");
+
+/*
+
+    this->key_length = keyLength;
     gmp_randstate_t state;
     gmp_randinit_mt(state);
 //    gmp_randseed_ui(state, 1000U);
@@ -127,7 +149,7 @@ void Paillier_GMP::keyGen(uint32_t keyLength) {
 //            mpz_urandomb(q, state, key_length / 4);
 //        while( !mpz_probab_prime_p(q, 10) );
 //
-//        /* compute the public modulus n = p q */
+//
 //
 //        mpz_mul(n, p, q);
 //    } while( !mpz_tstbit(n, key_length - 1) );
@@ -180,7 +202,10 @@ void Paillier_GMP::keyGen(uint32_t keyLength) {
     mpz_init(lambda_power);
     mpz_powm(lambda_power, generator, lambda, n_square);
     L_function(mu, lambda_power, n);
-    mpz_invert(mu, mu, n); // u = L((generator^lambda) mod n ^ 2) ) ^ -1 mod modulus
+    if(mpz_invert(mu, mu, n) == 0) {
+        std::cout<<"wrong mu"<<std::endl;
+        exit(1);
+    } // u = L((generator^lambda) mod n ^ 2) ) ^ -1 mod modulus
 
 //    mpz_clear(tmp1);
 //    mpz_clear(tmp2);
@@ -189,8 +214,11 @@ void Paillier_GMP::keyGen(uint32_t keyLength) {
     mpz_clear(lambda_power);
 
 
-//    gmp_randstate_t state;
-//    gmp_randinit_mt(state);
+    */
+
+
+    gmp_randstate_t state;
+    gmp_randinit_mt(state);
 
 //    gmp_randseed_ui(state, 1000U);
 //    mpz_t r;

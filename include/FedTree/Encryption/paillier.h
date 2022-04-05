@@ -13,7 +13,7 @@ public:
         this->keyLength = source.keyLength;
         return *this;
     }
-    explicit Paillier(long keyLength);
+    void keygen(long keyLength);
 
     NTL::ZZ encrypt(const NTL::ZZ &message) const;
 
@@ -27,7 +27,7 @@ public:
     NTL::ZZ generator;
     long keyLength;
 
-private:
+//private:
     NTL::ZZ p, q;
     NTL::ZZ lambda;
     NTL::ZZ lambda_power;

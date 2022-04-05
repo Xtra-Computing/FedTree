@@ -63,7 +63,7 @@ void GenPrimePair(NTL::ZZ &p, NTL::ZZ &q, long keyLength) {
 
 Paillier::Paillier() = default;
 
-Paillier::Paillier(long keyLength) {
+void Paillier::keygen(long keyLength) {
     /* Paillier parameters generation function. Generates paillier parameters from scrach.
      *
      * Parameters

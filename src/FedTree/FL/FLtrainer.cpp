@@ -277,6 +277,10 @@ void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FL
                         std::cout<<"hist 0 g:"<<hist.host_data()[0].g<<std::endl;
                         std::cout<<"hist 0 g_enc:"<<hist.host_data()[0].g_enc<<std::endl;
                         std::cout<<"hist 1 g_enc:"<<hist.host_data()[1].g_enc<<std::endl;
+                        std::cout<<"missing gh 0 g_enc:"<<missing_gh.host_data()[0].g_enc<<std::endl;
+                        std::cout<<"missing gh 1 g_enc:"<<missing_gh.host_data()[1].g_enc<<std::endl;
+
+//                        for(int i = 0; i < )
                         auto t2 = timer.now();
                         std::chrono::duration<float> t3 = t2 - t1;
                         encryption_time[j] += t3.count();
@@ -337,9 +341,15 @@ void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FL
                     std::cout<<"before decrypt hist 1 g_enc:"<<hist.host_data()[1].g_enc<<std::endl;
                     server.decrypt_gh_pairs(hist);
                     server.decrypt_gh_pairs(missing_gh);
-                    std::cout<<"after decrypt hist 0 g:"<<hist.host_data()[0].g<<std::endl;
-                    std::cout<<"after decrypt hist 0 h:"<<hist.host_data()[0].h<<std::endl;
-                    std::cout<<"after decrypt hist 1 g:"<<hist.host_data()[1].g<<std::endl;
+                    auto hist_data = hist.host_data();
+                    std::cout<<"hist:";
+                    for(int i = 0; i < hist.size(); i++){
+                        std::cout<<hist_data[i].g<<"/"<<hist_data[i].h<<",";
+                    }
+                    std::cout<<std::endl;
+//                    std::cout<<"after decrypt hist 0 g:"<<hist.host_data()[0].g<<std::endl;
+//                    std::cout<<"after decrypt hist 0 h:"<<hist.host_data()[0].h<<std::endl;
+//                    std::cout<<"after decrypt hist 1 g:"<<hist.host_data()[1].g<<std::endl;
                     auto t2 = timer.now();
                     std::chrono::duration<float> t3 = t2 - t1;
                     decryption_time += t3.count();

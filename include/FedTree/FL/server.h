@@ -60,7 +60,7 @@ public:
 //        paillier = Paillier(paillier_gmp);
 //        paillier.keygen();
 #else
-        paillier = Paillier(512);
+        paillier.keygen(512);
 #endif
     }
 
@@ -92,18 +92,18 @@ public:
     void decrypt_gh_pairs(SyncArray<GHPair> &encrypted) {
 
 #ifdef USE_CUDA
-        paillier.decrypt(encrypted);
-        auto encrypted_data = encrypted.host_data();
-        for(int i = 0; i < encrypted.size(); i++){
-            encrypted_data[i].encrypted=false;
-        }
-
-
+//        paillier.decrypt(encrypted);
 //        auto encrypted_data = encrypted.host_data();
-//        #pragma omp parallel for
-//        for (int i = 0; i < encrypted.size(); i++) {
-//            encrypted_data[i].homo_decrypt(paillier.paillier_cpu);
+//        for(int i = 0; i < encrypted.size(); i++){
+//            encrypted_data[i].encrypted=false;
 //        }
+
+
+        auto encrypted_data = encrypted.host_data();
+        #pragma omp parallel for
+        for (int i = 0; i < encrypted.size(); i++) {
+            encrypted_data[i].homo_decrypt(paillier.paillier_cpu);
+        }
 #else
         auto encrypted_data = encrypted.host_data();
         #pragma omp parallel for
@@ -115,19 +115,19 @@ public:
 
     void encrypt_gh_pairs(SyncArray<GHPair> &raw) {
 #ifdef USE_CUDA
-        paillier.encrypt(raw);
-        auto raw_data = raw.host_data();
-        #pragma omp parallel for
-        for (int i = 0; i < raw.size(); i++) {
-            raw_data[i].paillier = paillier.paillier_cpu;
-            raw_data[i].encrypted = true;
-        }
-
+//        paillier.encrypt(raw);
 //        auto raw_data = raw.host_data();
 //        #pragma omp parallel for
 //        for (int i = 0; i < raw.size(); i++) {
-//            raw_data[i].homo_encrypt(paillier.paillier_cpu);
+//            raw_data[i].paillier = paillier.paillier_cpu;
+//            raw_data[i].encrypted = true;
 //        }
+
+        auto raw_data = raw.host_data();
+        #pragma omp parallel for
+        for (int i = 0; i < raw.size(); i++) {
+            raw_data[i].homo_encrypt(paillier.paillier_cpu);
+        }
 #else
         auto raw_data = raw.host_data();
         #pragma omp parallel for
