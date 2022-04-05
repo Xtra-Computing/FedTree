@@ -1,5 +1,5 @@
 #include "FedTree/Encryption/paillier_gmp.h"
-
+#include <iostream>
 Paillier_GMP::Paillier_GMP(){
     mpz_init(n);
     mpz_init(n_square);
@@ -8,43 +8,69 @@ Paillier_GMP::Paillier_GMP(){
     mpz_init(q);
     mpz_init(lambda);
     mpz_init(mu);
+
+    mpz_init(r);
 }
 void Paillier_GMP::add(mpz_t &result, const mpz_t &x, const mpz_t &y) const{
+    mpz_init(result);
     mpz_mul(result, x, y);
     mpz_mod(result, result, n_square);
     return;
 }
 
 void Paillier_GMP::mul(mpz_t &result, const mpz_t &x, const mpz_t &y) const{
+    mpz_init(result);
     mpz_powm(result, x, y, n_square);
     return ;
 }
 
 void Paillier_GMP::L_function(mpz_t &result, mpz_t &input, const mpz_t &N) const{
+//    mpz_init(result);
     mpz_sub_ui(result, input, 1);
+//    std::cout<<"result 1:"<<std::endl;
     mpz_tdiv_q(result, result, N);
+//    std::cout<<"result 2:"<<std::endl;
     return;
 }
 
 void Paillier_GMP::encrypt(mpz_t &result, const mpz_t &message) const{
-    gmp_randstate_t state;
-    gmp_randinit_mt(state);
-    gmp_randseed_ui(state, 1000U);
-    mpz_t r;
-    mpz_init(r);
-    mpz_urandomb(r, state, key_length);
-    mpz_mod(r, r, n);
+
+//    gmp_randstate_t state;
+//    gmp_randinit_mt(state);
+////    gmp_randseed_ui(state, 1000U);
+//    mpz_t r;
+//    mpz_init(r);
+////    mpz_urandomb(r, state, key_length/2);
+////    mpz_add_ui(r, r, 1);
+////    mpz_mod(r, r, n);
+//    while(true) {
+//        mpz_urandomm(r, state, n);
+//        if(mpz_cmp_ui(r, 0))
+//            break;
+//    }
+    mpz_t tmp;
+    mpz_init(tmp);
+    mpz_init(result);
     mpz_powm(result, r, n, n_square);
-    //since g=1+n, g^m=(1+n)^m=1+nm % n^2
-    mpz_mul(r, message, n);
-    mpz_add_ui(r, r, 1);
-    mpz_mul(result, result, r);
+    mpz_powm(tmp, generator, message, n_square);
+    mpz_mul(result, result, tmp);
     mpz_mod(result, result, n_square);
-    mpz_clear(r);
+    //    mpz_clear(r);
+
+
+    //since g=1+n, g^m=(1+n)^m=1+nm % n^2
+//    mpz_mul(r, message, n);
+//    mpz_add_ui(r, r, 1);
+//    mpz_mul(result, result, r);
+//    mpz_mod(result, result, n_square);
+
     return;
 }
 
 void Paillier_GMP::decrypt(mpz_t &result, const mpz_t &message) const{
+    mpz_init(result);
+//    mpz_t tmp;
+//    mpz_init(tmp);
     mpz_powm(result, message, lambda, n_square);
     L_function(result, result, n);
     mpz_mul(result, result, mu);
@@ -52,43 +78,130 @@ void Paillier_GMP::decrypt(mpz_t &result, const mpz_t &message) const{
     return;
 }
 
+//int gen_prime(mpz_t prime, mp_bitcnt_t len) {
+//    mpz_t rnd;
+//
+//    mpz_init(rnd);
+//
+//    gen_random(rnd, len);
+//
+//    //set most significant bit to 1
+//    mpz_setbit(rnd, len-1);
+//    //look for next prime
+//    mpz_nextprime(prime, rnd);
+//
+//    mpz_clear(rnd);
+//    return 0;
+//}
+
+//int getMu(mpz_t mu, const mpz_t lambda, const mpz_t g, const mpz_t N,
+//          const mpz_t N2) {
+//    // µ = ( L(g^λ mod N^2) )^-1 mod N
+//}
+
 void Paillier_GMP::keyGen(uint32_t keyLength) {
     this->key_length = keyLength;
 
     gmp_randstate_t state;
     gmp_randinit_mt(state);
 //    gmp_randseed_ui(state, 1000U);
+
+
+//    while(true){
+//        mpz_urandomb(p, state, key_length / 4);
+//        mpz_urandomb(q, state, key_length / 4);
+//        mpz_nextprime(p, p);
+//        mpz_nextprime(q, q);
+//        if (mpz_sizeinbase(p, 2) == mpz_sizeinbase(q, 2))
+//            // Same bit-length
+//            break;
+//    }
+//    mpz_mul(n,p,q);
+
+//    do{
+//        do
+//            mpz_urandomb(p, state, key_length / 4);
+//        while( !mpz_probab_prime_p(p, 10) );
+//
+//        do
+//            mpz_urandomb(q, state, key_length / 4);
+//        while( !mpz_probab_prime_p(q, 10) );
+//
+//        /* compute the public modulus n = p q */
+//
+//        mpz_mul(n, p, q);
+//    } while( !mpz_tstbit(n, key_length - 1) );
+
+
     mpz_t tmp1, tmp2, tmp3, tmp4;
     mpz_init(tmp1);
     mpz_init(tmp2);
     mpz_init(tmp3);
     mpz_init(tmp4);
+
     while (true){
         mpz_urandomb(p, state, key_length/4);
         mpz_urandomb(q, state, key_length/4);
         mpz_nextprime(p, p);
         mpz_nextprime(q, q);
-        mpz_sub_ui(tmp1, p, 1);
-        mpz_sub_ui(tmp2, q, 1);
-        mpz_mul(tmp3, tmp1, tmp2); // tmp3 = (p-1)(q-1)
-        mpz_mul(tmp4, p, q); // tmp4 = p*q
-        mpz_gcd(tmp3, tmp3, tmp4); // tmp = gcd(pq, (p-1)(q-1))
-        if(mpz_cmp_ui(tmp3, 1) == 0) // gcd(pq, (p-1)(q-1)) == 1
-            break;
+        if (mpz_sizeinbase(p, 2) == mpz_sizeinbase(q, 2)) {
+            mpz_sub_ui(tmp1, p, 1);
+            mpz_sub_ui(tmp2, q, 1);
+            mpz_mul(tmp3, tmp1, tmp2); // tmp3 = (p-1)(q-1)
+            mpz_mul(tmp4, p, q); // tmp4 = p*q
+            mpz_gcd(tmp3, tmp3, tmp4); // tmp = gcd(pq, (p-1)(q-1))
+            if (mpz_cmp_ui(tmp3, 1) == 0) // gcd(pq, (p-1)(q-1)) == 1
+                break;
+            else
+                std::cout<<"p q equal but not satisfy requirments"<<std::endl;
+        }
     }
+    std::cout<<"p:"<<p<<std::endl;
+    std::cout<<"q:"<<q<<std::endl;
+    mpz_set(n, tmp4);      // n = p * q
 
-    mpz_set(n, tmp4);                                                        // n = p * q
     mpz_add_ui(generator, n, 1);  // g = n + 1
-    mpz_lcm(lambda, tmp1, tmp2);   // lamda = lcm(p-1, q-1)
+    mpz_sub_ui(p, p, 1);
+    mpz_sub_ui(q, q, 1);
+    mpz_lcm(lambda, p, q);   // lamda = lcm(p-1, q-1)
+
     mpz_mul(n_square, n, n);
+
+//    while(true){
+//        std::cout<<"1"<<std::endl;
+//        mpz_urandomb(p, state, key_length);
+//
+//        mpz_powm(mu, generator, lambda, n_square);
+//        L_function(mu, mu, n);
+//        if(mpz_invert(mu, mu, n))
+//            break;
+//    }
     mpz_t lambda_power;
     mpz_init(lambda_power);
     mpz_powm(lambda_power, generator, lambda, n_square);
     L_function(mu, lambda_power, n);
     mpz_invert(mu, mu, n); // u = L((generator^lambda) mod n ^ 2) ) ^ -1 mod modulus
-    mpz_clear(tmp1);
-    mpz_clear(tmp2);
-    mpz_clear(tmp3);
-    mpz_clear(tmp4);
+
+//    mpz_clear(tmp1);
+//    mpz_clear(tmp2);
+//    mpz_clear(tmp3);
+//    mpz_clear(tmp4);
     mpz_clear(lambda_power);
+
+
+//    gmp_randstate_t state;
+//    gmp_randinit_mt(state);
+
+//    gmp_randseed_ui(state, 1000U);
+//    mpz_t r;
+    mpz_init(r);
+//    mpz_urandomb(r, state, key_length/2);
+//    mpz_add_ui(r, r, 1);
+//    mpz_mod(r, r, n);
+    while(true) {
+        mpz_urandomm(r, state, n);
+        if(mpz_cmp_ui(r, 0))
+            break;
+    }
+    std::cout<<"random:"<<r<<std::endl;
 }

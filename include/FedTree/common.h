@@ -92,10 +92,14 @@ struct GHPair {
             mpz_t g_mpz, h_mpz;
             mpz_init(g_mpz);
             mpz_init(h_mpz);
+//            if(g != 0){
             unsigned long g_ul = (unsigned long) (g * 1e6);
-            unsigned long h_ul = (unsigned long) (h * 1e6);
             mpz_import(g_mpz, 1, -1, sizeof(g_ul), 0, 0, &g_ul);
+//            }
+//            if(h != 0){
+            unsigned long h_ul = (unsigned long) (h * 1e6);
             mpz_import(h_mpz, 1, -1, sizeof(h_ul), 0, 0, &h_ul);
+//            }
             pl.encrypt(g_enc, g_mpz);
             pl.encrypt(h_enc, h_mpz);
             this->paillier = pl;
@@ -110,16 +114,16 @@ struct GHPair {
     void homo_decrypt(const Paillier_GMP &pl) {
         if (encrypted) {
             mpz_t g_dec, h_dec;
-            mpz_init(g_dec);
-            mpz_init(h_dec);
             pl.decrypt(g_dec, g_enc);
             pl.decrypt(h_dec, h_enc);
-            unsigned long g_ul, h_ul;
-            mpz_export(&g_ul, 0, -1, sizeof(g_ul), 0, 0, g_dec);
-            mpz_export(&h_ul, 0, -1, sizeof(h_ul), 0, 0, h_dec);
-            g = (float_type) g_ul / 1e6;
-            h = (float_type) h_ul / 1e6;
+            long g_l, h_l;
+            mpz_export(&g_l, 0, -1, sizeof(g_l), 0, 0, g_dec);
+            mpz_export(&h_l, 0, -1, sizeof(h_l), 0, 0, h_dec);
+            g = (float_type) g_l / 1e6;
+            h = (float_type) h_l / 1e6;
             encrypted = false;
+            mpz_clear(g_dec);
+            mpz_clear(h_dec);
         }
     }
 
@@ -196,6 +200,7 @@ struct GHPair {
     }
 
     GHPair operator-(const GHPair &rhs) const {
+//        std::cout<<"in operator -"<<std::endl;
         GHPair res;
         if (!encrypted && !rhs.encrypted) {
             res.g = this->g - rhs.g;
@@ -207,12 +212,14 @@ struct GHPair {
 #ifdef USE_CUDA
             mpz_t minus_one;
             mpz_init(minus_one);
-            mpz_set_si(minus_one, -1);
+
+            unsigned long ul = (unsigned long) (-1);
+            mpz_import(minus_one, 1, -1, sizeof(ul), 0, 0, &ul);
+
+//            mpz_set_si(minus_one, -1);
             if(!encrypted){
                 tmp_lhs.homo_encrypt(rhs.paillier);
                 mpz_t minus_g_enc, minus_h_enc;
-                mpz_init(minus_g_enc);
-                mpz_init(minus_h_enc);
                 rhs.paillier.mul(minus_g_enc, tmp_rhs.g_enc, minus_one);
                 rhs.paillier.mul(minus_h_enc, tmp_rhs.h_enc, minus_one);
                 rhs.paillier.add(res.g_enc, tmp_lhs.g_enc, minus_g_enc);
@@ -237,6 +244,8 @@ struct GHPair {
                 paillier.add(res.h_enc, h_enc, minus_h_enc);
                 res.paillier = paillier;
             }
+
+            mpz_clear(minus_one);
 #else
             NTL::ZZ minus_one = NTL::to_ZZ((unsigned long) -1);
             if (!encrypted) {
@@ -285,6 +294,8 @@ struct GHPair {
         h = other.h;
         if(other.encrypted) {
             #ifdef USE_CUDA
+            mpz_init(g_enc);
+            mpz_init(h_enc);
             mpz_set(g_enc, other.g_enc);
             mpz_set(h_enc, other.h_enc);
             #else

@@ -9,9 +9,13 @@ public:
     Paillier_GMP();
 
     Paillier_GMP& operator=(Paillier_GMP source) {
+        //only copy the public key
         mpz_set(this->n,source.n);
+        mpz_set(this->n_square, source.n_square);
         mpz_set(this->generator, source.generator);
         this->key_length = source.key_length;
+
+        mpz_set(this->r, source.r);
         return *this;
     }
     void keyGen(uint32_t keyLength);
@@ -36,6 +40,8 @@ public:
     mpz_t p, q;
     mpz_t lambda;
     mpz_t mu;
+
+    mpz_t r;
 
     void L_function(mpz_t &r, mpz_t &input, const mpz_t &n) const;
 };

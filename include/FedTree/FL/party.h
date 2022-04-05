@@ -13,7 +13,9 @@
 #include "FedTree/booster.h"
 #include "FedTree/Tree/gbdt.h"
 #include <algorithm>
+#ifdef USE_CUDA
 #include "FedTree/Encryption/paillier_gpu.h"
+#endif
 
 
 
@@ -122,7 +124,16 @@ public:
         #pragma omp parallel for
         for(int i = 0; i < hist.size(); i++){
             hist_data[i].paillier = paillier.paillier_cpu;
+            hist_data[i].g = 0;
+            hist_data[i].h = 0;
+            hist_data[i].encrypted=true;
         }
+
+//        auto hist_data = hist.host_data();
+//        #pragma omp parallel for
+//        for (int i = 0; i < hist.size(); i++) {
+//            hist_data[i].homo_encrypt(paillier.paillier_cpu);
+//        }
 #else
         auto hist_data = hist.host_data();
         #pragma omp parallel for
@@ -132,9 +143,9 @@ public:
 #endif
     }
 
-    void encrypt_gradient(GHPair &ghpair) {
-        ghpair.homo_encrypt(paillier.paillier_cpu);
-    }
+//    void encrypt_gradient(GHPair &ghpair) {
+//        ghpair.homo_encrypt(paillier.paillier_cpu);
+//    }
 
     void sample_data();
 

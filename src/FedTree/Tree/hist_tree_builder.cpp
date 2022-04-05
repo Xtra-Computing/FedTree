@@ -209,8 +209,6 @@ void HistTreeBuilder::find_split_by_predefined_features(int level) {
             sp_data[i].rch_sum_gh = 0;
         }
         return;
-//        std::cout<<"0 n_split"<<std::endl;
-//        exit(0);
     }
     //todo: n_split=0
 //    int n_max_splits = n_max_nodes * n_bins;
@@ -1023,8 +1021,8 @@ void HistTreeBuilder::merge_histograms_server_propose(SyncArray<GHPair> &merged_
     int n_bins = parties_hist[0].size();
     CHECK_EQ(parties_hist[0].size(), parties_hist[1].size());
     int n_size = parties_missing_gh[0].size();
-//    merged_hist.resize(n_bins);
-//    merged_missing_gh.resize(n_size);
+    merged_hist.resize(n_bins);
+    merged_missing_gh.resize(n_size);
 //    SyncArray<GHPair> merged_hist(n_bins);
 //    SyncArray<GHPair> merged_missing_gh(n_size);
     auto merged_hist_data = merged_hist.host_data();
@@ -1145,7 +1143,7 @@ void HistTreeBuilder::merge_histograms_client_propose(SyncArray<GHPair> &hist, S
     }
     cut_col_ptr_data[n_features] = index;
 
-//    hist.resize(n_max_splits);
+    hist.resize(n_max_splits);
     auto merged_hist_data = hist.host_data();
     int n_max_nodes = n_max_splits / (n_columns * max_num_bins);
 
@@ -1247,7 +1245,7 @@ void HistTreeBuilder::merge_histograms_client_propose(SyncArray<GHPair> &hist, S
 
     // Merge missing gh by summing
     int n_size = parties_missing_gh[0].size();
-//    missing_gh.resize(n_size);
+    missing_gh.resize(n_size);
     auto merged_missing_gh_data = missing_gh.host_data();
 
 #pragma omp parallel for

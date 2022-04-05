@@ -66,7 +66,24 @@ public:
 
     void decrypt_gh(GHPair &gh) {
 #ifdef USE_CUDA
-        paillier.decrypt(gh);
+//        paillier.decrypt(gh);
+
+//        mpz_t g_dec, h_dec;
+//        mpz_init(g_dec);
+//        mpz_init(h_dec);
+//        paillier.paillier_cpu..decrypt(g_dec, g_enc);
+//        paillier.paillier_cpu..decrypt(h_dec, h_enc);
+//        unsigned long g_ul, h_ul;
+//        mpz_export(&g_ul, 0, -1, sizeof(g_ul), 0, 0, g_dec);
+//        mpz_export(&h_ul, 0, -1, sizeof(h_ul), 0, 0, h_dec);
+//        g = (float_type) g_ul / 1e6;
+//        h = (float_type) h_ul / 1e6;
+//        encrypted = false;
+
+//        paillier.paillier_cpu.decrypt(gh.g, gh.g_enc);
+//        paillier.paillier_cpu.decrypt(gh.h, gh.h_enc);
+
+        gh.homo_decrypt(paillier.paillier_cpu);
 #else
         gh.homo_decrypt(paillier);
 #endif
@@ -76,6 +93,17 @@ public:
 
 #ifdef USE_CUDA
         paillier.decrypt(encrypted);
+        auto encrypted_data = encrypted.host_data();
+        for(int i = 0; i < encrypted.size(); i++){
+            encrypted_data[i].encrypted=false;
+        }
+
+
+//        auto encrypted_data = encrypted.host_data();
+//        #pragma omp parallel for
+//        for (int i = 0; i < encrypted.size(); i++) {
+//            encrypted_data[i].homo_decrypt(paillier.paillier_cpu);
+//        }
 #else
         auto encrypted_data = encrypted.host_data();
         #pragma omp parallel for
@@ -92,7 +120,14 @@ public:
         #pragma omp parallel for
         for (int i = 0; i < raw.size(); i++) {
             raw_data[i].paillier = paillier.paillier_cpu;
+            raw_data[i].encrypted = true;
         }
+
+//        auto raw_data = raw.host_data();
+//        #pragma omp parallel for
+//        for (int i = 0; i < raw.size(); i++) {
+//            raw_data[i].homo_encrypt(paillier.paillier_cpu);
+//        }
 #else
         auto raw_data = raw.host_data();
         #pragma omp parallel for

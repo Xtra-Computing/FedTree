@@ -29,6 +29,12 @@ class Paillier_GPU {
 public:
     Paillier_GPU(): key_length(BITS) {};
 
+    Paillier_GPU& operator=(Paillier_GPU source) {
+        this->paillier_cpu = source.paillier_cpu;
+        this->key_length = source.key_length;
+        this->parameters_cpu_to_gpu();
+        return *this;
+    }
 
 //    Paillier_GPU& operator=(Paillier_GPU source) {
 //        this->paillier_cpu = source.paillier_cpu;
@@ -38,18 +44,18 @@ public:
 //    }
 
 //    void keygen();
-
+    void parameters_cpu_to_gpu();
     void keygen();
 //    explicit Paillier_GPU(unit32_t key_length);
     void L_function(mpz_t result, mpz_t input, mpz_t N);
 
     void encrypt(SyncArray<GHPair> &message);
 
-    void encrypt(GHPair &message);
+//    void encrypt(GHPair &message);
 
     void decrypt(SyncArray<GHPair> &ciphertext);
 
-    void decrypt(GHPair &message);
+//    void decrypt(GHPair &message);
 
     void add(mpz_t &result, mpz_t &x, mpz_t &y);
     void mul(mpz_t result, mpz_t &x, mpz_t &y);
@@ -71,6 +77,11 @@ public:
     cgbn_mem_t<BITS> *n_square_gpu;
     cgbn_mem_t<BITS> *generator_gpu;
 
+    cgbn_mem_t<BITS> *lambda_gpu;
+    cgbn_mem_t<BITS> *mu_gpu;
+
+    cgbn_mem_t<BITS> *r_gpu;
+
 //    cgbn_gh_results<BITS>* gh_results_gpu;
 
     Paillier_GMP paillier_cpu;
@@ -80,29 +91,25 @@ private:
 //    mpz_t lambda;
 
 //    mpz_t mu;
-
-    cgbn_mem_t<BITS> *lambda_gpu;
-    cgbn_mem_t<BITS> *mu_gpu;
-
 };
 
-template<uint32_t CBITS>
-class cgbn_pailler_encryption_parameters{
-public:
-    cgbn_mem_t<CBITS> n;
-    cgbn_mem_t<CBITS> n_square;
-    cgbn_mem_t<CBITS> generator;
-    cgbn_mem_t<CBITS> random;
-};
-
-template<uint32_t CBITS>
-class cgbn_pailler_decryption_parameters{
-public:
-    cgbn_mem_t<CBITS> n;
-    cgbn_mem_t<CBITS> n_square;
-    cgbn_mem_t<CBITS> lambda;
-    cgbn_mem_t<CBITS> mu;
-};
+//template<uint32_t CBITS>
+//class cgbn_pailler_encryption_parameters{
+//public:
+//    cgbn_mem_t<CBITS> n;
+//    cgbn_mem_t<CBITS> n_square;
+//    cgbn_mem_t<CBITS> generator;
+//    cgbn_mem_t<CBITS> random;
+//};
+//
+//template<uint32_t CBITS>
+//class cgbn_pailler_decryption_parameters{
+//public:
+//    cgbn_mem_t<CBITS> n;
+//    cgbn_mem_t<CBITS> n_square;
+//    cgbn_mem_t<CBITS> lambda;
+//    cgbn_mem_t<CBITS> mu;
+//};
 
 
 

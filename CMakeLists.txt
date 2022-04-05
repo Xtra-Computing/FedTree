@@ -17,6 +17,7 @@ set(BUILD_TESTS OFF CACHE BOOL "Build Tests")
 
 #find_package(Threads)
 find_package(OpenMP REQUIRED)
+#find_package(GMP REQUIRED)
 #find_package(Python COMPONENTS Interpreter Development REQUIRED)
 #find_package(pybind11 CONFIG REQUIRED)
 if (NOT CMAKE_BUILD_TYPE)
@@ -101,7 +102,7 @@ set(DATASET_DIR ${PROJECT_SOURCE_DIR}/dataset/)
 configure_file(include/FedTree/config.h.in config.h)
 
 include_directories(${COMMON_INCLUDES})
-include_directories(/usr/local/include)
+include_directories(/home/qinbin/ntl/include)
 
 if (USE_CUDA)
     include_directories(${PROJECT_SOURCE_DIR}/cub)
