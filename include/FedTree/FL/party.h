@@ -124,8 +124,8 @@ public:
 //        #pragma omp parallel for
 //        for(int i = 0; i < hist.size(); i++){
 //            hist_data[i].paillier = paillier.paillier_cpu;
-//            hist_data[i].g = 0;
-//            hist_data[i].h = 0;
+////            hist_data[i].g = 0;
+////            hist_data[i].h = 0;
 //            hist_data[i].encrypted=true;
 //        }
 

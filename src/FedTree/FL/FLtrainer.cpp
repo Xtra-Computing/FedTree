@@ -337,19 +337,8 @@ void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FL
                 // if privacy tech == 'he', decrypt histogram
                 if (params.privacy_tech == "he") {
                     auto t1 = timer.now();
-                    std::cout<<"before decrypt hist 0 g_enc:"<<hist.host_data()[0].g_enc<<std::endl;
-                    std::cout<<"before decrypt hist 1 g_enc:"<<hist.host_data()[1].g_enc<<std::endl;
                     server.decrypt_gh_pairs(hist);
                     server.decrypt_gh_pairs(missing_gh);
-                    auto hist_data = hist.host_data();
-                    std::cout<<"hist:";
-                    for(int i = 0; i < hist.size(); i++){
-                        std::cout<<hist_data[i].g<<"/"<<hist_data[i].h<<",";
-                    }
-                    std::cout<<std::endl;
-//                    std::cout<<"after decrypt hist 0 g:"<<hist.host_data()[0].g<<std::endl;
-//                    std::cout<<"after decrypt hist 0 h:"<<hist.host_data()[0].h<<std::endl;
-//                    std::cout<<"after decrypt hist 1 g:"<<hist.host_data()[1].g<<std::endl;
                     auto t2 = timer.now();
                     std::chrono::duration<float> t3 = t2 - t1;
                     decryption_time += t3.count();
@@ -526,10 +515,13 @@ void FLtrainer::vertical_fl_trainer(vector<Party> &parties, Server &server, FLPa
         SyncArray<GHPair> temp_gradients;
         if (params.privacy_tech == "he") {
             auto t1 = timer.now();
+            std::cout<<"before encrypt gh pairs"<<std::endl;
             temp_gradients.resize(server.booster.gradients.size());
             temp_gradients.copy_from(server.booster.gradients);
             server.homo_init();
+            std::cout<<"gradient size:"<<server.booster.gradients.size()<<std::endl;
             server.encrypt_gh_pairs(server.booster.gradients);
+            std::cout<<"after encrypt gh pairs"<<std::endl;
             auto t2 = timer.now();
             std::chrono::duration<float> t3 = t2 - t1;
             encryption_time += t3.count();
@@ -539,10 +531,11 @@ void FLtrainer::vertical_fl_trainer(vector<Party> &parties, Server &server, FLPa
         for (int j = 0; j < parties.size(); j++) {
             server.send_booster_gradients(parties[j]);
         }
+        std::cout<<"1"<<std::endl;
         if (params.privacy_tech == "he") {
             server.booster.gradients.copy_from(temp_gradients);
         }
-
+        std::cout<<"2"<<std::endl;
         // for each tree in a round
         for (int t = 0; t < params.gbdt_param.tree_per_rounds; t++) {
             Tree &tree = trees[t];
@@ -622,7 +615,7 @@ void FLtrainer::vertical_fl_trainer(vector<Party> &parties, Server &server, FLPa
                 missing_gh.copy_from(
                         comm_helper.concat_msyncarray(parties_missing_gh, parties_n_columns, n_nodes_in_level));
                 hist.copy_from(comm_helper.concat_msyncarray(parties_hist, parties_n_bins, n_nodes_in_level));
-
+                std::cout<<"3"<<std::endl;
                 // server compute gain
                 SyncArray<float_type> gain(n_max_splits_new);
                 if (params.privacy_tech == "he") {
@@ -633,6 +626,7 @@ void FLtrainer::vertical_fl_trainer(vector<Party> &parties, Server &server, FLPa
                     std::chrono::duration<float> t3 = t2 - t1;
                     decryption_time += t3.count();
                 }
+                std::cout<<"4"<<std::endl;
                 // LOG(INFO) << "hist:"<<"\n"<<hist;
                 server.booster.fbuilder->compute_gain_in_a_level(gain, n_nodes_in_level, n_bins_new,
                                                                  global_hist_fid.host_data(),
@@ -718,19 +712,22 @@ void FLtrainer::vertical_fl_trainer(vector<Party> &parties, Server &server, FLPa
                         }
                     }
                 }
-
+                std::cout<<"5"<<std::endl;
                 if (params.privacy_tech == "he") {
                     auto t1 = timer.now();
                     auto node_data = server.booster.fbuilder->trees.nodes.host_data();
+
                     #pragma omp parallel for
                     for (int nid = (1 << l) - 1; nid < (2 << (l + 1)) - 1; nid++) {
                         server.decrypt_gh(node_data[nid].sum_gh_pair);
                         node_data[nid].calc_weight(params.gbdt_param.lambda);
                     }
                     auto t2 = timer.now();
+                    std::cout<<"5.2"<<std::endl;
                     std::chrono::duration<float> t3 = t2 - t1;
                     decryption_time += t3.count();
                 }
+                std::cout<<"6"<<std::endl;
 
                 #pragma omp parallel for
                 for (int pid = 0; pid < parties.size(); pid++) {

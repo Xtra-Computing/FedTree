@@ -3,7 +3,6 @@
 
 #include <gmp.h>
 #include <cstdint>
-#include "FedTree/Encryption/paillier.h"
 
 class Paillier_GMP {
 public:
@@ -16,7 +15,7 @@ public:
         mpz_set(this->generator, source.generator);
         this->key_length = source.key_length;
 
-        mpz_set(this->r, source.r);
+//        mpz_set(this->r, source.r);
         return *this;
     }
     void keyGen(uint32_t keyLength);
@@ -31,7 +30,6 @@ public:
 
     void mul(mpz_t &r, const mpz_t &x, const mpz_t &y) const;
 
-    Paillier paillier_ntl;
     mpz_t n;
     mpz_t n_square;
     mpz_t generator;
@@ -42,7 +40,7 @@ public:
     mpz_t lambda;
     mpz_t mu;
 
-    mpz_t r;
+//    mpz_t r;
 
     void L_function(mpz_t &r, mpz_t &input, const mpz_t &n) const;
 };

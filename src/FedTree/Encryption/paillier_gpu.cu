@@ -109,11 +109,11 @@ void Paillier_GPU::parameters_cpu_to_gpu(){
     free(mu_cpu);
 
 
-    cgbn_mem_t<BITS> *r_cpu = (cgbn_mem_t<BITS> *)malloc(sizeof(cgbn_mem_t<BITS>));
-    from_mpz(paillier_cpu.r, r_cpu->_limbs, BITS/32);
-    CUDA_CHECK(cudaMalloc((void**)&r_gpu, sizeof(cgbn_mem_t<BITS>)));
-    CUDA_CHECK(cudaMemcpy(r_gpu, r_cpu, sizeof(cgbn_mem_t<BITS>), cudaMemcpyHostToDevice));
-    free(r_cpu);
+//    cgbn_mem_t<BITS> *r_cpu = (cgbn_mem_t<BITS> *)malloc(sizeof(cgbn_mem_t<BITS>));
+//    from_mpz(paillier_cpu.r, r_cpu->_limbs, BITS/32);
+//    CUDA_CHECK(cudaMalloc((void**)&r_gpu, sizeof(cgbn_mem_t<BITS>)));
+//    CUDA_CHECK(cudaMemcpy(r_gpu, r_cpu, sizeof(cgbn_mem_t<BITS>), cudaMemcpyHostToDevice));
+//    free(r_cpu);
 }
 //template<uint32_t BITS>
 void Paillier_GPU::keygen(){
@@ -238,16 +238,16 @@ void Paillier_GPU::encrypt(SyncArray<GHPair> &message){
 
 
     for(int i = 0; i < n_instances; i++){
-        unsigned long g_ul = (unsigned long) (message_host_data[i].g * 1e6);
+        long g_ul = (long) (message_host_data[i].g * 1e6);
 //        if(i == 0)
 //            std::cout<<"g_ul:"<<g_ul<<std::endl;
-        unsigned long h_ul = (unsigned long) (message_host_data[i].h * 1e6);
+        long h_ul = (long) (message_host_data[i].h * 1e6);
         mpz_import(g_mpz, 1, -1, sizeof(g_ul), 0, 0, &g_ul);
 //        if(i == 0)
 //            std::cout<<"g_mpz:"<<g_mpz<<std::endl;
         mpz_import(h_mpz, 1, -1, sizeof(h_ul), 0, 0, &h_ul);
-        from_mpz(g_mpz, gh_cpu[i].g._limbs, BITS/32);
-        from_mpz(h_mpz, gh_cpu[i].h._limbs, BITS/32);
+        from_mpz(g_mpz, gh_cpu[i].g._limbs, BITS / 32);
+        from_mpz(h_mpz, gh_cpu[i].h._limbs, BITS / 32);
     }
     mpz_clear(g_mpz);
     mpz_clear(h_mpz);
@@ -258,25 +258,29 @@ void Paillier_GPU::encrypt(SyncArray<GHPair> &message){
     free(gh_cpu);
 
 
-//    gmp_randstate_t state;
-//    gmp_randinit_mt(state);
-////    gmp_randseed_ui(state, 1000U);
-//    mpz_t r;
-//    mpz_init(r);
-//
-//    mpz_urandomm(r, state, paillier_cpu.n);
-////    mpz_urandomb(r, state, BITS);
-////    mpz_add_ui(r, r, 1); //ensure r > 0
-////    mpz_mod(r, r, paillier_cpu.n);
-//
-//    cgbn_mem_t<BITS> *random_cpu = (cgbn_mem_t<BITS> *)malloc(sizeof(cgbn_mem_t<BITS>));
-//
-//    from_mpz(r, random_cpu->_limbs, BITS/32);
-//    cgbn_mem_t<BITS> *random_gpu;
-//    CUDA_CHECK(cudaMalloc((void**)&random_gpu, sizeof(cgbn_mem_t<BITS>)));
-//    CUDA_CHECK(cudaMemcpy(random_gpu, random_cpu, sizeof(cgbn_mem_t<BITS>), cudaMemcpyHostToDevice));
-//    free(random_cpu);
-//    mpz_clear(r);
+    gmp_randstate_t state;
+    gmp_randinit_mt(state);
+//    gmp_randseed_ui(state, 1000U);
+    mpz_t r;
+    mpz_init(r);
+
+    while(true) {
+        mpz_urandomm(r, state, paillier_cpu.n);
+        if(mpz_cmp_ui(r, 0))
+            break;
+    }
+//    mpz_urandomb(r, state, BITS);
+//    mpz_add_ui(r, r, 1); //ensure r > 0
+//    mpz_mod(r, r, paillier_cpu.n);
+
+    cgbn_mem_t<BITS> *random_cpu = (cgbn_mem_t<BITS> *)malloc(sizeof(cgbn_mem_t<BITS>));
+
+    from_mpz(r, random_cpu->_limbs, BITS/32);
+    cgbn_mem_t<BITS> *random_gpu;
+    CUDA_CHECK(cudaMalloc((void**)&random_gpu, sizeof(cgbn_mem_t<BITS>)));
+    CUDA_CHECK(cudaMemcpy(random_gpu, random_cpu, sizeof(cgbn_mem_t<BITS>), cudaMemcpyHostToDevice));
+    free(random_cpu);
+    mpz_clear(r);
 
 
     cgbn_gh<BITS>* gh_results_gpu;
@@ -284,7 +288,7 @@ void Paillier_GPU::encrypt(SyncArray<GHPair> &message){
 
 
 //    cudaMemcpy(&(gpuInstances->n), &n,, sizeof(n), cudaMemcpyHostToDevice);
-    kernel_encrypt<<<(n_instances+3)/4, 128>>>(gh_gpu, gh_results_gpu, generator_gpu, r_gpu, n_gpu, n_square_gpu, n_instances);
+    kernel_encrypt<<<(n_instances+3)/4, 128>>>(gh_gpu, gh_results_gpu, generator_gpu, random_gpu, n_gpu, n_square_gpu, n_instances);
 
     CUDA_CHECK(cudaDeviceSynchronize());
 //    CGBN_CHECK(report);
@@ -469,8 +473,8 @@ void Paillier_GPU::decrypt(SyncArray<GHPair> &message){
     mpz_t g_result, h_result;
     mpz_init(g_result);
     mpz_init(h_result);
-    long g_ul, h_ul;
     for(int i = 0; i < n_instances; i++){
+        long g_ul = 0, h_ul = 0;
         to_mpz(g_result, gh_results[i].g._limbs, BITS/32);
         to_mpz(h_result, gh_results[i].h._limbs, BITS/32);
         mpz_export(&g_ul, 0, -1, sizeof(g_ul), 0, 0, g_result);

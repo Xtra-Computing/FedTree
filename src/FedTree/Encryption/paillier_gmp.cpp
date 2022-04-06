@@ -11,7 +11,7 @@ Paillier_GMP::Paillier_GMP(){
     mpz_init(lambda);
     mpz_init(mu);
 
-    mpz_init(r);
+//    mpz_init(r);
 }
 void Paillier_GMP::add(mpz_t &result, const mpz_t &x, const mpz_t &y) const{
     mpz_init(result);
@@ -38,19 +38,20 @@ void Paillier_GMP::L_function(mpz_t &result, mpz_t &input, const mpz_t &N) const
 
 void Paillier_GMP::encrypt(mpz_t &result, const mpz_t &message) const{
 
-//    gmp_randstate_t state;
-//    gmp_randinit_mt(state);
-////    gmp_randseed_ui(state, 1000U);
-//    mpz_t r;
-//    mpz_init(r);
-////    mpz_urandomb(r, state, key_length/2);
-////    mpz_add_ui(r, r, 1);
-////    mpz_mod(r, r, n);
-//    while(true) {
-//        mpz_urandomm(r, state, n);
-//        if(mpz_cmp_ui(r, 0))
-//            break;
-//    }
+    gmp_randstate_t state;
+    gmp_randinit_mt(state);
+//    gmp_randseed_ui(state, 1000U);
+    mpz_t r;
+    mpz_init(r);
+//    mpz_urandomb(r, state, key_length/2);
+//    mpz_add_ui(r, r, 1);
+//    mpz_mod(r, r, n);
+    while(true) {
+        mpz_urandomm(r, state, n);
+        if(mpz_cmp_ui(r, 0))
+            break;
+    }
+
     mpz_t tmp;
     mpz_init(tmp);
     mpz_init(result);
@@ -58,6 +59,7 @@ void Paillier_GMP::encrypt(mpz_t &result, const mpz_t &message) const{
     mpz_powm(tmp, generator, message, n_square);
     mpz_mul(result, result, tmp);
     mpz_mod(result, result, n_square);
+    mpz_clear(tmp);
     //    mpz_clear(r);
 
 
@@ -103,25 +105,25 @@ void Paillier_GMP::decrypt(mpz_t &result, const mpz_t &message) const{
 //}
 
 void Paillier_GMP::keyGen(uint32_t keyLength) {
-    this->key_length = keyLength;
+//    this->key_length = keyLength;
+//
+//    paillier_ntl.keygen(512);
+//    std::stringstream ss;
+//    ss<<paillier_ntl.modulus;
+//    mpz_set_str(n, ss.str().c_str(), 10);
+//    ss.str("");
+//    mpz_mul(n_square, n, n);
+//    ss<<paillier_ntl.generator;
+//    mpz_set_str(generator, ss.str().c_str(), 10);
+//    ss.str("");
+//    ss<<paillier_ntl.lambda;
+//    mpz_set_str(lambda, ss.str().c_str(), 10);
+//    ss.str("");
+//    ss<<paillier_ntl.u;
+//    mpz_set_str(mu, ss.str().c_str(), 10);
+//    ss.str("");
 
-    paillier_ntl.keygen(512);
-    std::stringstream ss;
-    ss<<paillier_ntl.modulus;
-    mpz_set_str(n, ss.str().c_str(), 10);
-    ss.str("");
-    mpz_mul(n_square, n, n);
-    ss<<paillier_ntl.generator;
-    mpz_set_str(generator, ss.str().c_str(), 10);
-    ss.str("");
-    ss<<paillier_ntl.lambda;
-    mpz_set_str(lambda, ss.str().c_str(), 10);
-    ss.str("");
-    ss<<paillier_ntl.u;
-    mpz_set_str(mu, ss.str().c_str(), 10);
-    ss.str("");
 
-/*
 
     this->key_length = keyLength;
     gmp_randstate_t state;
@@ -214,9 +216,10 @@ void Paillier_GMP::keyGen(uint32_t keyLength) {
     mpz_clear(lambda_power);
 
 
-    */
 
 
+
+    /*
     gmp_randstate_t state;
     gmp_randinit_mt(state);
 
@@ -232,4 +235,5 @@ void Paillier_GMP::keyGen(uint32_t keyLength) {
             break;
     }
     std::cout<<"random:"<<r<<std::endl;
+     */
 }

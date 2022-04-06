@@ -55,22 +55,6 @@ typedef float float_type;
     #include "FedTree/Encryption/paillier_gmp.h"
 
 
-//    void to_mpz(mpz_t r, uint32_t *x, uint32_t count) {
-//      mpz_import(r, count, -1, sizeof(uint32_t), 0, 0, x);
-//    }
-//
-//    void from_mpz(mpz_t s, uint32_t *x, uint32_t count) {
-//      size_t words;
-//
-//      if(mpz_sizeinbase(s, 2)>count*32) {
-//        fprintf(stderr, "from_mpz failed -- result does not fit\n");
-//        exit(1);
-//      }
-//
-//      mpz_export(x, &words, -1, sizeof(uint32_t), 0, 0, s);
-//      while(words<count)
-//        x[words++]=0;
-//    }
 #else
 #include "FedTree/Encryption/paillier.h"
 #endif
@@ -93,11 +77,11 @@ struct GHPair {
             mpz_init(g_mpz);
             mpz_init(h_mpz);
 //            if(g != 0){
-            unsigned long g_ul = (unsigned long) (g * 1e6);
+            long g_ul = (long) (g * 1e6);
             mpz_import(g_mpz, 1, -1, sizeof(g_ul), 0, 0, &g_ul);
 //            }
 //            if(h != 0){
-            unsigned long h_ul = (unsigned long) (h * 1e6);
+            long h_ul = (long) (h * 1e6);
             mpz_import(h_mpz, 1, -1, sizeof(h_ul), 0, 0, &h_ul);
 //            }
             pl.encrypt(g_enc, g_mpz);
@@ -114,16 +98,32 @@ struct GHPair {
     void homo_decrypt(const Paillier_GMP &pl) {
         if (encrypted) {
             mpz_t g_dec, h_dec;
+//            mpz_init(g_dec);
+//            mpz_init(h_dec);
+            std::cout<<"d1"<<std::endl;
+            std::cout<<"g_enc:"<<g_enc<<std::endl;
             pl.decrypt(g_dec, g_enc);
+            std::cout<<"g_dec:"<<g_dec<<std::endl;
+            std::cout<<"d2"<<std::endl;
+            std::cout<<"h_enc:"<<h_enc<<std::endl;
+            std::cout<<"h_dec:"<<h_dec<<std::endl;
             pl.decrypt(h_dec, h_enc);
-            long g_l, h_l;
+            std::cout<<"h_dec:"<<h_dec<<std::endl;
+            long g_l = 0, h_l = 0;
+            std::cout<<"d3"<<std::endl;
             mpz_export(&g_l, 0, -1, sizeof(g_l), 0, 0, g_dec);
+            std::cout<<"g_l"<<std::endl;
+            std::cout<<"d4"<<std::endl;
+            std::cout<<"g_dec"<<g_dec<<std::endl;
+            std::cout<<"h_dec:"<<h_dec<<std::endl;
             mpz_export(&h_l, 0, -1, sizeof(h_l), 0, 0, h_dec);
+            std::cout<<"d5"<<std::endl;
             g = (float_type) g_l / 1e6;
             h = (float_type) h_l / 1e6;
             encrypted = false;
             mpz_clear(g_dec);
             mpz_clear(h_dec);
+            std::cout<<"d6"<<std::endl;
         }
     }
 
@@ -227,13 +227,7 @@ struct GHPair {
             GHPair tmp_lhs = *this;
             GHPair tmp_rhs = rhs;
 #ifdef USE_CUDA
-            mpz_t minus_one;
-            mpz_init(minus_one);
 
-//            long ul = (long) (-1);
-//            mpz_import(minus_one, 1, -1, sizeof(ul), 0, 0, &ul);
-
-            mpz_set_ui(minus_one, -1);
             if(!encrypted){
                 tmp_lhs.homo_encrypt(rhs.paillier);
 //                mpz_t minus_g_enc, minus_h_enc;
@@ -272,8 +266,6 @@ struct GHPair {
                 rhs.paillier.add(res.h_enc, h_enc, tmp_rhs.h_enc);
                 res.paillier = paillier;
             }
-
-            mpz_clear(minus_one);
 #else
             NTL::ZZ minus_one = NTL::to_ZZ((unsigned long) -1);
             if (!encrypted) {
