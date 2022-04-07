@@ -55,7 +55,7 @@ else ()
     add_subdirectory(${PROJECT_SOURCE_DIR}/thrust/)
     find_package(Thrust REQUIRED)
     thrust_create_target(ThrustOMP HOST CPP DEVICE OMP)
-    include_directories(/use/local/include)
+    include_directories(/home/qinbin/ntl/include)
 endif ()
 
 # add_subdirectory(${PROJECT_SOURCE_DIR}/pybind11)

@@ -60,7 +60,7 @@ void Paillier_GMP::encrypt(mpz_t &result, const mpz_t &message) const{
     mpz_mul(result, result, tmp);
     mpz_mod(result, result, n_square);
     mpz_clear(tmp);
-    //    mpz_clear(r);
+    mpz_clear(r);
 
 
     //since g=1+n, g^m=(1+n)^m=1+nm % n^2
@@ -209,10 +209,10 @@ void Paillier_GMP::keyGen(uint32_t keyLength) {
         exit(1);
     } // u = L((generator^lambda) mod n ^ 2) ) ^ -1 mod modulus
 
-//    mpz_clear(tmp1);
-//    mpz_clear(tmp2);
-//    mpz_clear(tmp3);
-//    mpz_clear(tmp4);
+    mpz_clear(tmp1);
+    mpz_clear(tmp2);
+    mpz_clear(tmp3);
+    mpz_clear(tmp4);
     mpz_clear(lambda_power);
 
 

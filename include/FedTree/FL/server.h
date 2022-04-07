@@ -102,6 +102,7 @@ public:
         auto encrypted_data = encrypted.host_data();
         #pragma omp parallel for
         for (int i = 0; i < encrypted.size(); i++) {
+            std::cout<<"i:"<<i<<std::endl;
             encrypted_data[i].homo_decrypt(paillier.paillier_cpu);
         }
 #else

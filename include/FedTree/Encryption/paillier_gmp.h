@@ -20,7 +20,7 @@ public:
     }
     void keyGen(uint32_t keyLength);
 
-    void keygen();
+//    void keygen();
 
     void encrypt(mpz_t &r, const mpz_t &message) const;
 

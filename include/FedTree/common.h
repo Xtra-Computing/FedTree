@@ -100,30 +100,30 @@ struct GHPair {
             mpz_t g_dec, h_dec;
 //            mpz_init(g_dec);
 //            mpz_init(h_dec);
-            std::cout<<"d1"<<std::endl;
+//            std::cout<<"d1"<<std::endl;
             std::cout<<"g_enc:"<<g_enc<<std::endl;
             pl.decrypt(g_dec, g_enc);
             std::cout<<"g_dec:"<<g_dec<<std::endl;
-            std::cout<<"d2"<<std::endl;
+//            std::cout<<"d2"<<std::endl;
             std::cout<<"h_enc:"<<h_enc<<std::endl;
-            std::cout<<"h_dec:"<<h_dec<<std::endl;
+//            std::cout<<"h_dec:"<<h_dec<<std::endl;
             pl.decrypt(h_dec, h_enc);
             std::cout<<"h_dec:"<<h_dec<<std::endl;
             long g_l = 0, h_l = 0;
-            std::cout<<"d3"<<std::endl;
+//            std::cout<<"d3"<<std::endl;
             mpz_export(&g_l, 0, -1, sizeof(g_l), 0, 0, g_dec);
-            std::cout<<"g_l"<<std::endl;
-            std::cout<<"d4"<<std::endl;
-            std::cout<<"g_dec"<<g_dec<<std::endl;
-            std::cout<<"h_dec:"<<h_dec<<std::endl;
+//            std::cout<<"g_l"<<std::endl;
+//            std::cout<<"d4"<<std::endl;
+//            std::cout<<"g_dec"<<g_dec<<std::endl;
+//            std::cout<<"h_dec:"<<h_dec<<std::endl;
             mpz_export(&h_l, 0, -1, sizeof(h_l), 0, 0, h_dec);
-            std::cout<<"d5"<<std::endl;
+//            std::cout<<"d5"<<std::endl;
             g = (float_type) g_l / 1e6;
             h = (float_type) h_l / 1e6;
             encrypted = false;
             mpz_clear(g_dec);
             mpz_clear(h_dec);
-            std::cout<<"d6"<<std::endl;
+//            std::cout<<"d6"<<std::endl;
         }
     }
 
@@ -227,21 +227,24 @@ struct GHPair {
             GHPair tmp_lhs = *this;
             GHPair tmp_rhs = rhs;
 #ifdef USE_CUDA
-
+            mpz_t minus_one;
+            mpz_init(minus_one);
+            long mo = (long) -1;
+            mpz_import(minus_one, 1, -1, sizeof(mo), 0, 0, &mo);
             if(!encrypted){
                 tmp_lhs.homo_encrypt(rhs.paillier);
-//                mpz_t minus_g_enc, minus_h_enc;
-//                rhs.paillier.mul(minus_g_enc, tmp_rhs.g_enc, minus_one);
-//                rhs.paillier.mul(minus_h_enc, tmp_rhs.h_enc, minus_one);
-//                rhs.paillier.add(res.g_enc, tmp_lhs.g_enc, minus_g_enc);
-//                rhs.paillier.add(res.h_enc, tmp_lhs.h_enc, minus_h_enc);
-//                mpz_clear(minus_g_enc);
-//                mpz_clear(minus_h_enc);
+                mpz_t minus_g_enc, minus_h_enc;
+                rhs.paillier.mul(minus_g_enc, tmp_rhs.g_enc, minus_one);
+                rhs.paillier.mul(minus_h_enc, tmp_rhs.h_enc, minus_one);
+                rhs.paillier.add(res.g_enc, tmp_lhs.g_enc, minus_g_enc);
+                rhs.paillier.add(res.h_enc, tmp_lhs.h_enc, minus_h_enc);
+                mpz_clear(minus_g_enc);
+                mpz_clear(minus_h_enc);
 
-                mpz_invert(tmp_rhs.g_enc, tmp_rhs.g_enc, rhs.paillier.n_square);
-                mpz_invert(tmp_rhs.h_enc, tmp_rhs.h_enc, rhs.paillier.n_square);
-                rhs.paillier.add(res.g_enc, tmp_lhs.g_enc, tmp_rhs.g_enc);
-                rhs.paillier.add(res.h_enc, tmp_lhs.h_enc, tmp_rhs.h_enc);
+//                mpz_invert(tmp_rhs.g_enc, tmp_rhs.g_enc, rhs.paillier.n_square);
+//                mpz_invert(tmp_rhs.h_enc, tmp_rhs.h_enc, rhs.paillier.n_square);
+//                rhs.paillier.add(res.g_enc, tmp_lhs.g_enc, tmp_rhs.g_enc);
+//                rhs.paillier.add(res.h_enc, tmp_lhs.h_enc, tmp_rhs.h_enc);
 
                 res.paillier = rhs.paillier;
             } else if (!rhs.encrypted) {
@@ -252,20 +255,24 @@ struct GHPair {
                 paillier.add(res.h_enc, h_enc, tmp_rhs.h_enc);
                 res.paillier = paillier;
             } else{
-//                mpz_t minus_g_enc, minus_h_enc;
-//                mpz_init(minus_g_enc);
-//                mpz_init(minus_h_enc);
-//                paillier.mul(minus_g_enc, tmp_rhs.g_enc, minus_one);
-//                paillier.mul(minus_h_enc, tmp_rhs.h_enc, minus_one);
-//                paillier.add(res.g_enc, g_enc, minus_g_enc);
-//                paillier.add(res.h_enc, h_enc, minus_h_enc);
+                mpz_t minus_g_enc, minus_h_enc;
+                mpz_init(minus_g_enc);
+                mpz_init(minus_h_enc);
+                paillier.mul(minus_g_enc, tmp_rhs.g_enc, minus_one);
+                paillier.mul(minus_h_enc, tmp_rhs.h_enc, minus_one);
+                paillier.add(res.g_enc, g_enc, minus_g_enc);
+                paillier.add(res.h_enc, h_enc, minus_h_enc);
+                mpz_clear(minus_g_enc);
+                mpz_clear(minus_h_enc);
 
-                mpz_invert(tmp_rhs.g_enc, tmp_rhs.g_enc, paillier.n_square);
-                mpz_invert(tmp_rhs.h_enc, tmp_rhs.h_enc, paillier.n_square);
-                rhs.paillier.add(res.g_enc, g_enc, tmp_rhs.g_enc);
-                rhs.paillier.add(res.h_enc, h_enc, tmp_rhs.h_enc);
+//                mpz_invert(tmp_rhs.g_enc, tmp_rhs.g_enc, paillier.n_square);
+//                mpz_invert(tmp_rhs.h_enc, tmp_rhs.h_enc, paillier.n_square);
+//                rhs.paillier.add(res.g_enc, g_enc, tmp_rhs.g_enc);
+//                rhs.paillier.add(res.h_enc, h_enc, tmp_rhs.h_enc);
+//
                 res.paillier = paillier;
             }
+            mpz_clear(minus_one);
 #else
             NTL::ZZ minus_one = NTL::to_ZZ((unsigned long) -1);
             if (!encrypted) {
@@ -326,6 +333,25 @@ struct GHPair {
         paillier = other.paillier;
         encrypted = other.encrypted;
     }
+
+//    GHPair& operator=(GHPair& other) {
+//        g = other.g;
+//        h = other.h;
+//        if(other.encrypted) {
+//#ifdef USE_CUDA
+//            mpz_init(g_enc);
+//            mpz_init(h_enc);
+//            mpz_set(g_enc, other.g_enc);
+//            mpz_set(h_enc, other.h_enc);
+//#else
+//            g_enc = other.g_enc;
+//            h_enc = other.h_enc;
+//#endif
+//        }
+//        paillier = other.paillier;
+//        encrypted = other.encrypted;
+//        return *this;
+//    }
 
     friend std::ostream &operator<<(std::ostream &os,
                                     const GHPair &p) {

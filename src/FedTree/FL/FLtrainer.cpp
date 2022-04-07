@@ -477,6 +477,7 @@ void FLtrainer::vertical_fl_trainer(vector<Party> &parties, Server &server, FLPa
     // for each boosting round
 
     for (int round = 0; round < params.gbdt_param.n_trees; round++) {
+        std::cout<<"round "<<round<<std::endl;
 
         vector<Tree> trees(params.gbdt_param.tree_per_rounds);
 
@@ -516,12 +517,33 @@ void FLtrainer::vertical_fl_trainer(vector<Party> &parties, Server &server, FLPa
         if (params.privacy_tech == "he") {
             auto t1 = timer.now();
             std::cout<<"before encrypt gh pairs"<<std::endl;
+            std::cout<<"sizeof gh pairs before encrypt:"<<sizeof(GHPair)<<std::endl;
             temp_gradients.resize(server.booster.gradients.size());
-            temp_gradients.copy_from(server.booster.gradients);
+            auto temp_gradients_data = temp_gradients.host_data();
+            auto server_gradients_data = server.booster.gradients.host_data();
+            for(int i = 0; i < temp_gradients.size();i++){
+                temp_gradients_data[i] = server_gradients_data[i];
+            }
+//            temp_gradients.copy_from(server.booster.gradients);
             server.homo_init();
             std::cout<<"gradient size:"<<server.booster.gradients.size()<<std::endl;
             server.encrypt_gh_pairs(server.booster.gradients);
             std::cout<<"after encrypt gh pairs"<<std::endl;
+//            std::cout<<"gradients 0 g:"<<server.booster.gradients.host_data()[0].g<<std::endl;
+//            std::cout<<"gradients 0 h:"<<server.booster.gradients.host_data()[0].h<<std::endl;
+//            std::cout<<"gradients 0 g_enc:"<<server.booster.gradients.host_data()[0].g_enc<<std::endl;
+//            std::cout<<"gradients 0 h_enc:"<<server.booster.gradients.host_data()[0].h_enc<<std::endl;
+            GHPair test_gh=server.booster.gradients.host_data()[0];
+//            std::cout<<"copy gradients 0 g:"<<test_gh.g<<std::endl;
+//            std::cout<<"copy gradients 0 h:"<<test_gh.h<<std::endl;
+//            std::cout<<"copy gradients 0 g_enc:"<<test_gh.g_enc<<std::endl;
+//            std::cout<<"copy gradients 0 h_enc:"<<test_gh.h_enc<<std::endl;
+//            SyncArray<GHPair> test_gh_arr(server.booster.gradients.size());
+//            test_gh_arr.copy_from(server.booster.gradients);
+//            std::cout<<"test copy gradients 0 g:"<<test_gh_arr.host_data()[0].g<<std::endl;
+//            std::cout<<"test copy gradients 0 h:"<<test_gh_arr.host_data()[0].h<<std::endl;
+//            std::cout<<"test copy gradients 0 g_enc:"<<test_gh_arr.host_data()[0].g_enc<<std::endl;
+//            std::cout<<"test copy gradients 0 h_enc:"<<test_gh_arr.host_data()[0].h_enc<<std::endl;
             auto t2 = timer.now();
             std::chrono::duration<float> t3 = t2 - t1;
             encryption_time += t3.count();
@@ -612,21 +634,60 @@ void FLtrainer::vertical_fl_trainer(vector<Party> &parties, Server &server, FLPa
                 SyncArray<GHPair> hist(n_bins_new * n_nodes_in_level);
                 global_hist_fid.copy_from(
                         comm_helper.concat_msyncarray(parties_global_hist_fid, parties_n_bins, n_nodes_in_level));
+
+
+                auto mg_array_data = parties_missing_gh[0].host_data();
+                std::cout<<"missing_gh 0 g_enc:"<<mg_array_data[0].g_enc<<std::endl;
+                std::cout<<"missing_gh 0 h_enc:"<<mg_array_data[0].h_enc<<std::endl;
+                std::cout<<"missing_gh 1 g_enc:"<<mg_array_data[1].g_enc<<std::endl;
+                std::cout<<"missing_gh 1 h_enc:"<<mg_array_data[1].h_enc<<std::endl;
+
                 missing_gh.copy_from(
                         comm_helper.concat_msyncarray(parties_missing_gh, parties_n_columns, n_nodes_in_level));
+
+                auto mg_concat_arrays_data = missing_gh.host_data();
+                std::cout<<"concat missing_gh 0 g_enc:"<<mg_concat_arrays_data[0].g_enc<<std::endl;
+                std::cout<<"concat missing_gh 0 h_enc:"<<mg_concat_arrays_data[0].h_enc<<std::endl;
+                std::cout<<"concat missing_gh 1 g_enc:"<<mg_concat_arrays_data[1].g_enc<<std::endl;
+                std::cout<<"concat missing_gh 1 h_enc:"<<mg_concat_arrays_data[1].h_enc<<std::endl;
+                std::cout<<"missing_gh 0 g:"<<mg_concat_arrays_data[0].g<<std::endl;
+
+                auto array_data = parties_hist[0].host_data();
+                std::cout<<"arrays_0 g_enc:"<<array_data[0].g_enc<<std::endl;
+                std::cout<<"arrays_0 h_enc:"<<array_data[0].h_enc<<std::endl;
+                std::cout<<"arrays_1 g_enc:"<<array_data[1].g_enc<<std::endl;
+                std::cout<<"arrays_1 h_enc:"<<array_data[1].h_enc<<std::endl;
                 hist.copy_from(comm_helper.concat_msyncarray(parties_hist, parties_n_bins, n_nodes_in_level));
-                std::cout<<"3"<<std::endl;
+                auto concat_arrays_data = hist.host_data();
+                std::cout<<"concat_arrays_0 g_enc:"<<concat_arrays_data[0].g_enc<<std::endl;
+                std::cout<<"concat_arrays_0 h_enc:"<<concat_arrays_data[0].h_enc<<std::endl;
+                std::cout<<"concat_arrays_1 g_enc:"<<concat_arrays_data[1].g_enc<<std::endl;
+                std::cout<<"concat_arrays_1 h_enc:"<<concat_arrays_data[1].h_enc<<std::endl;
+//                std::cout<<"3"<<std::endl;
                 // server compute gain
                 SyncArray<float_type> gain(n_max_splits_new);
                 if (params.privacy_tech == "he") {
                     auto t1 = timer.now();
                     server.decrypt_gh_pairs(hist);
+                    std::cout<<"decrypted hist 0 g:"<<hist.host_data()[0].g<<std::endl;
+                    std::cout<<"decrypted hist 0 h:"<<hist.host_data()[0].h<<std::endl;
+                    std::cout<<"decrpt missing_gh"<<std::endl;
                     server.decrypt_gh_pairs(missing_gh);
+                    std::cout<<"decrypted missing_gh 0 g:"<<missing_gh.host_data()[0].g<<std::endl;
+                    std::cout<<"decrypted missing_gh 0 h:"<<missing_gh.host_data()[0].h<<std::endl;
+
                     auto t2 = timer.now();
                     std::chrono::duration<float> t3 = t2 - t1;
                     decryption_time += t3.count();
                 }
-                std::cout<<"4"<<std::endl;
+                std::cout<<"hist:"<<std::endl;
+                auto hist_data = hist.host_data();
+                for(int i = 0; i < hist.size(); i++){
+                    std::cout<<hist_data[i].g<<"/"<<hist_data[i].h<<",";
+                }
+                std::cout<<std::endl;
+//                LOG(INFO)<<"decrypted hist"<<hist;
+//                std::cout<<"4"<<std::endl;
                 // LOG(INFO) << "hist:"<<"\n"<<hist;
                 server.booster.fbuilder->compute_gain_in_a_level(gain, n_nodes_in_level, n_bins_new,
                                                                  global_hist_fid.host_data(),
@@ -648,7 +709,7 @@ void FLtrainer::vertical_fl_trainer(vector<Party> &parties, Server &server, FLPa
                     server.booster.fbuilder->get_best_gain_in_a_level(gain, best_idx_gain, n_nodes_in_level,
                                                                       n_bins_new);
                 }
-                // LOG(INFO) << "best_idx_gain:"<<"\n"<< best_idx_gain;
+                 LOG(INFO) << "best_idx_gain:" << best_idx_gain;
                 auto best_idx_data = best_idx_gain.host_data();
 
                 // parties who propose the best candidate update their trees accordingly
@@ -735,6 +796,7 @@ void FLtrainer::vertical_fl_trainer(vector<Party> &parties, Server &server, FLPa
                         server.send_node(nid, n_nodes_in_level, parties[pid]);
                     }
                 }
+                std::cout<<"7"<<std::endl;
 
                 if (!split_further) {
                     // add Laplace noise to leaf node values

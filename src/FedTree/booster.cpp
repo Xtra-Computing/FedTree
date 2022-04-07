@@ -57,7 +57,12 @@ SyncArray<GHPair> Booster::get_gradients() {
 
 void Booster::set_gradients(SyncArray<GHPair> &gh) {
     gradients.resize(gh.size());
-    gradients.copy_from(gh);
+
+    auto gradients_data = gradients.host_data();
+    auto gh_data = gh.host_data();
+    for(int i = 0; i < gh.size(); i++)
+        gradients_data[i] = gh_data[i];
+//    gradients.copy_from(gh);
 }
 
 //void Booster::encrypt_gradients(AdditivelyHE::PaillierPublicKey pk) {
