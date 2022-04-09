@@ -110,7 +110,6 @@ public:
 //        std::cout<<"encrypted missing_gh 0 g_enc:"<<encrypted_data[0].g_enc<<std::endl;
 //        #pragma omp parallel for
 //        for (int i = 0; i < encrypted.size(); i++) {
-////            std::cout<<"i:"<<i<<std::endl;
 //            encrypted_data[i].homo_decrypt(paillier.paillier_cpu);
 //        }
 //        std::cout<<"encrypted missing_gh 0 g_enc:"<<encrypted_data[0].g_enc<<std::endl;

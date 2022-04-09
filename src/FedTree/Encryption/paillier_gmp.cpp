@@ -180,12 +180,8 @@ void Paillier_GMP::keyGen(uint32_t keyLength) {
             mpz_gcd(tmp3, tmp3, tmp4); // tmp = gcd(pq, (p-1)(q-1))
             if (mpz_cmp_ui(tmp3, 1) == 0) // gcd(pq, (p-1)(q-1)) == 1
                 break;
-            else
-                std::cout<<"p q equal but not satisfy requirments"<<std::endl;
         }
     }
-    std::cout<<"p:"<<p<<std::endl;
-    std::cout<<"q:"<<q<<std::endl;
     mpz_set(n, tmp4);      // n = p * q
 
     mpz_add_ui(generator, n, 1);  // g = n + 1
