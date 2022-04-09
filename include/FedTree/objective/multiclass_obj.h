@@ -6,7 +6,7 @@
 #define FEDTREE_MULTICLASS_OBJ_H
 
 #include "objective_function.h"
-#include "FedTree/util/device_lambda.h"
+//#include "FedTree/util/device_lambda.h"
 
 class Softmax : public ObjectiveFunction {
 public:

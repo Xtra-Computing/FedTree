@@ -7,7 +7,15 @@ class Paillier {
 public:
     Paillier();
 
-    explicit Paillier(long keyLength);
+    Paillier& operator=(Paillier source) {
+        this->modulus = source.modulus;
+        this->generator = source.generator;
+        this->keyLength = source.keyLength;
+
+//        this->random = source.random;
+        return *this;
+    }
+    void keygen(long keyLength);
 
     NTL::ZZ encrypt(const NTL::ZZ &message) const;
 
@@ -21,11 +29,13 @@ public:
     NTL::ZZ generator;
     long keyLength;
 
-private:
+//private:
     NTL::ZZ p, q;
     NTL::ZZ lambda;
     NTL::ZZ lambda_power;
     NTL::ZZ u;
+
+//    NTL::ZZ random;
 
     NTL::ZZ L_function(const NTL::ZZ &n) const { return (n - 1) / modulus; }
 };

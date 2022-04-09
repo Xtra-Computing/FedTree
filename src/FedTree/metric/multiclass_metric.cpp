@@ -3,7 +3,7 @@
 //
 
 #include "FedTree/metric/multiclass_metric.h"
-#include "FedTree/util/device_lambda.h"
+//#include "FedTree/util/device_lambda.h"
 #include "thrust/reduce.h"
 #include "thrust/execution_policy.h"
 

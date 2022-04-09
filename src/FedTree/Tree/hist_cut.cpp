@@ -1,8 +1,8 @@
 // created by Tianyuan on 12/1/20
 
 #include "FedTree/Tree/hist_cut.h"
-#include "FedTree/util/device_lambda.h"
-#include "FedTree/util/cub_wrapper.h"
+//#include "FedTree/util/device_lambda.h"
+//#include "FedTree/util/cub_wrapper.h"
 #include <thrust/iterator/constant_iterator.h>
 #include <thrust/transform.h>
 #include "thrust/unique.h"

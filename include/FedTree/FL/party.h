@@ -13,6 +13,10 @@
 #include "FedTree/booster.h"
 #include "FedTree/Tree/gbdt.h"
 #include <algorithm>
+#ifdef USE_CUDA
+#include "FedTree/Encryption/paillier_gpu.h"
+#endif
+
 
 
 class Party {
@@ -114,16 +118,34 @@ public:
     }
 
     void encrypt_histogram(SyncArray<GHPair> &hist) {
+#ifdef USE_CUDA
+        paillier.encrypt(hist);
         auto hist_data = hist.host_data();
         #pragma omp parallel for
-            for (int i = 0; i < hist.size(); i++) {
-                hist_data[i].homo_encrypt(paillier);
-            }
+        for(int i = 0; i < hist.size(); i++){
+            hist_data[i].paillier = paillier.paillier_cpu;
+//            hist_data[i].g = 0;
+//            hist_data[i].h = 0;
+            hist_data[i].encrypted=true;
+        }
+
+//        auto hist_data = hist.host_data();
+//        #pragma omp parallel for
+//        for (int i = 0; i < hist.size(); i++) {
+//            hist_data[i].homo_encrypt(paillier.paillier_cpu);
+//        }
+#else
+        auto hist_data = hist.host_data();
+        #pragma omp parallel for
+        for (int i = 0; i < hist.size(); i++) {
+            hist_data[i].homo_encrypt(paillier);
+        }
+#endif
     }
 
-    void encrypt_gradient(GHPair &ghpair) {
-        ghpair.homo_encrypt(paillier);
-    }
+//    void encrypt_gradient(GHPair &ghpair) {
+//        ghpair.homo_encrypt(paillier.paillier_cpu);
+//    }
 
     void sample_data();
 
@@ -136,8 +158,11 @@ public:
 
     int pid;
 //    AdditivelyHE::PaillierPublicKey serverKey;
+#ifdef USE_CUDA
+    Paillier_GPU paillier;
+#else
     Paillier paillier;
-
+#endif
     Booster booster;
     GBDT gbdt;
     DataSet dataset;

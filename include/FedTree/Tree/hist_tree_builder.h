@@ -90,6 +90,7 @@ public:
     MSyncArray<GHPair> parties_hist;
     MSyncArray<GHPair> parties_missing_gh;
     MSyncArray<int> parties_hist_fid;
+
     void party_containers_init(int party_size) {
         parties_hist = MSyncArray<GHPair>(party_size, 1);
         parties_missing_gh = MSyncArray<GHPair>(party_size, 1);
