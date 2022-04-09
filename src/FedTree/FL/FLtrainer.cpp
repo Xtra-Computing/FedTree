@@ -519,21 +519,42 @@ void FLtrainer::vertical_fl_trainer(vector<Party> &parties, Server &server, FLPa
             std::cout<<"before encrypt gh pairs"<<std::endl;
             std::cout<<"sizeof gh pairs before encrypt:"<<sizeof(GHPair)<<std::endl;
             temp_gradients.resize(server.booster.gradients.size());
-            auto temp_gradients_data = temp_gradients.host_data();
-            auto server_gradients_data = server.booster.gradients.host_data();
-            for(int i = 0; i < temp_gradients.size();i++){
-                temp_gradients_data[i] = server_gradients_data[i];
-            }
-//            temp_gradients.copy_from(server.booster.gradients);
+
+//            auto temp_gradients_data = temp_gradients.host_data();
+//            auto server_gradients_data = server.booster.gradients.host_data();
+//            for(int i = 0; i < temp_gradients.size();i++){
+//                temp_gradients_data[i] = server_gradients_data[i];
+//            }
+            temp_gradients.copy_from(server.booster.gradients);
             server.homo_init();
+#ifdef USE_CUDA
+            std::cout<<"lambda:"<<server.paillier.paillier_cpu.lambda<<std::endl;
+            std::cout<<"n_square:"<<server.paillier.paillier_cpu.n_square<<std::endl;
+            std::cout<<"n:"<<server.paillier.paillier_cpu.n<<std::endl;
+            std::cout<<"mu:"<<server.paillier.paillier_cpu.mu<<std::endl;
+            std::cout<<"g:"<<server.paillier.paillier_cpu.generator<<std::endl;
+//            std::cout<<"r:"<<server.paillier.paillier_cpu.r<<std::endl;
+
+#else
+            std::cout<<"n:"<<server.paillier.modulus<<std::endl;
+            std::cout<<"g:"<<server.paillier.generator<<std::endl;
+            std::cout<<"r:"<<server.paillier.random<<std::endl;
+#endif
             std::cout<<"gradient size:"<<server.booster.gradients.size()<<std::endl;
             server.encrypt_gh_pairs(server.booster.gradients);
             std::cout<<"after encrypt gh pairs"<<std::endl;
+
+            auto gradients_data = server.booster.gradients.host_data();
+            std::cout<<"encrypted gh pair:";
+            for(int i = 0; i < 100; i++){
+                std::cout<<gradients_data[i].g_enc<<"/"<<gradients_data[i].h_enc<<",";
+            }
+            std::cout<<std::endl;
 //            std::cout<<"gradients 0 g:"<<server.booster.gradients.host_data()[0].g<<std::endl;
 //            std::cout<<"gradients 0 h:"<<server.booster.gradients.host_data()[0].h<<std::endl;
 //            std::cout<<"gradients 0 g_enc:"<<server.booster.gradients.host_data()[0].g_enc<<std::endl;
 //            std::cout<<"gradients 0 h_enc:"<<server.booster.gradients.host_data()[0].h_enc<<std::endl;
-            GHPair test_gh=server.booster.gradients.host_data()[0];
+//            GHPair test_gh=server.booster.gradients.host_data()[0];
 //            std::cout<<"copy gradients 0 g:"<<test_gh.g<<std::endl;
 //            std::cout<<"copy gradients 0 h:"<<test_gh.h<<std::endl;
 //            std::cout<<"copy gradients 0 g_enc:"<<test_gh.g_enc<<std::endl;
@@ -671,7 +692,8 @@ void FLtrainer::vertical_fl_trainer(vector<Party> &parties, Server &server, FLPa
                     server.decrypt_gh_pairs(hist);
                     std::cout<<"decrypted hist 0 g:"<<hist.host_data()[0].g<<std::endl;
                     std::cout<<"decrypted hist 0 h:"<<hist.host_data()[0].h<<std::endl;
-                    std::cout<<"decrpt missing_gh"<<std::endl;
+                    std::cout<<"encrypted missing_gh 0 g_enc:"<<missing_gh.host_data()[0].g_enc<<std::endl;
+                    std::cout<<"encrypted missing_gh 0 h_enc:"<<missing_gh.host_data()[0].h_enc<<std::endl;
                     server.decrypt_gh_pairs(missing_gh);
                     std::cout<<"decrypted missing_gh 0 g:"<<missing_gh.host_data()[0].g<<std::endl;
                     std::cout<<"decrypted missing_gh 0 h:"<<missing_gh.host_data()[0].h<<std::endl;

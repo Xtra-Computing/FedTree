@@ -3,6 +3,7 @@
 
 #include <gmp.h>
 #include <cstdint>
+//#include "FedTree/Encryption/paillier.h"
 
 class Paillier_GMP {
 public:
@@ -41,6 +42,8 @@ public:
     mpz_t mu;
 
 //    mpz_t r;
+
+//    Paillier paillier_ntl;
 
     void L_function(mpz_t &r, mpz_t &input, const mpz_t &n) const;
 };

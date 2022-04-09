@@ -80,7 +80,7 @@ public:
     cgbn_mem_t<BITS> *lambda_gpu;
     cgbn_mem_t<BITS> *mu_gpu;
 
-    cgbn_mem_t<BITS> *r_gpu;
+//    cgbn_mem_t<BITS> *random_gpu;
 
 //    cgbn_gh_results<BITS>* gh_results_gpu;
 

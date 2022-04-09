@@ -11,6 +11,8 @@ public:
         this->modulus = source.modulus;
         this->generator = source.generator;
         this->keyLength = source.keyLength;
+
+//        this->random = source.random;
         return *this;
     }
     void keygen(long keyLength);
@@ -32,6 +34,8 @@ public:
     NTL::ZZ lambda;
     NTL::ZZ lambda_power;
     NTL::ZZ u;
+
+//    NTL::ZZ random;
 
     NTL::ZZ L_function(const NTL::ZZ &n) const { return (n - 1) / modulus; }
 };

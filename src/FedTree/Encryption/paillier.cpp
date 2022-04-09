@@ -74,6 +74,9 @@ void Paillier::keygen(long keyLength) {
      * public key  = (modulus, generator)
      * private key = lambda
      */
+
+//    NTL::SetSeed(NTL::ZZ(0));
+
     this->keyLength = keyLength;
     GenPrimePair(p, q, keyLength);
     modulus = p * q;                                                        // modulus = p * q
@@ -82,6 +85,8 @@ void Paillier::keygen(long keyLength) {
     lambda_power = NTL::PowerMod(generator, lambda, modulus * modulus);
     u = NTL::InvMod(L_function(lambda_power),
                     modulus);                        // u = L((generator^lambda) mod n ^ 2) ) ^ -1 mod modulus
+
+//    random = Gen_Coprime(modulus);
 }
 
 NTL::ZZ Paillier::add(const NTL::ZZ &x, const NTL::ZZ &y) const {
@@ -125,9 +130,10 @@ NTL::ZZ Paillier::encrypt(const NTL::ZZ &message) const {
      * =======
      * NTL:ZZ ciphertext : The encyrpted message.
      */
-    NTL::ZZ random = Gen_Coprime(modulus);
+
+    NTL::ZZ c = Gen_Coprime(modulus);
     NTL::ZZ ciphertext =
-            NTL::PowerMod(generator, message, modulus * modulus) * NTL::PowerMod(random, modulus, modulus * modulus) %
+            NTL::PowerMod(generator, message, modulus * modulus) * NTL::PowerMod(c, modulus, modulus * modulus) %
             (modulus * modulus);
     return ciphertext;
 }
@@ -143,6 +149,7 @@ NTL::ZZ Paillier::decrypt(const NTL::ZZ &ciphertext) const {
      * =======
      * NTL::ZZ message : The original message.
      */
+
     NTL::ZZ deMasked = NTL::PowerMod(ciphertext, lambda, modulus * modulus);
     NTL::ZZ L_deMasked = L_function(deMasked);
     NTL::ZZ message = (L_deMasked * u) % modulus;

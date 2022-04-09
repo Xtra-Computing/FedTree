@@ -111,8 +111,8 @@ void Paillier_GPU::parameters_cpu_to_gpu(){
 
 //    cgbn_mem_t<BITS> *r_cpu = (cgbn_mem_t<BITS> *)malloc(sizeof(cgbn_mem_t<BITS>));
 //    from_mpz(paillier_cpu.r, r_cpu->_limbs, BITS/32);
-//    CUDA_CHECK(cudaMalloc((void**)&r_gpu, sizeof(cgbn_mem_t<BITS>)));
-//    CUDA_CHECK(cudaMemcpy(r_gpu, r_cpu, sizeof(cgbn_mem_t<BITS>), cudaMemcpyHostToDevice));
+//    CUDA_CHECK(cudaMalloc((void**)&random_gpu, sizeof(cgbn_mem_t<BITS>)));
+//    CUDA_CHECK(cudaMemcpy(random_gpu, r_cpu, sizeof(cgbn_mem_t<BITS>), cudaMemcpyHostToDevice));
 //    free(r_cpu);
 }
 //template<uint32_t BITS>
@@ -258,6 +258,7 @@ void Paillier_GPU::encrypt(SyncArray<GHPair> &message){
     free(gh_cpu);
 
 
+
     gmp_randstate_t state;
     gmp_randinit_mt(state);
 //    gmp_randseed_ui(state, 1000U);
@@ -281,6 +282,7 @@ void Paillier_GPU::encrypt(SyncArray<GHPair> &message){
     CUDA_CHECK(cudaMemcpy(random_gpu, random_cpu, sizeof(cgbn_mem_t<BITS>), cudaMemcpyHostToDevice));
     free(random_cpu);
     mpz_clear(r);
+
 
 
     cgbn_gh<BITS>* gh_results_gpu;

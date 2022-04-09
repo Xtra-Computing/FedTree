@@ -101,28 +101,34 @@ struct GHPair {
 //            mpz_init(g_dec);
 //            mpz_init(h_dec);
 //            std::cout<<"d1"<<std::endl;
-            std::cout<<"g_enc:"<<g_enc<<std::endl;
+//            std::cout<<"g_enc:"<<g_enc<<std::endl;
+            long g_l = 0, h_l = 0;
             pl.decrypt(g_dec, g_enc);
-            std::cout<<"g_dec:"<<g_dec<<std::endl;
+//            std::cout<<"g_dec:"<<g_dec<<std::endl;
 //            std::cout<<"d2"<<std::endl;
-            std::cout<<"h_enc:"<<h_enc<<std::endl;
+//            std::cout<<"h_enc:"<<h_enc<<std::endl;
 //            std::cout<<"h_dec:"<<h_dec<<std::endl;
             pl.decrypt(h_dec, h_enc);
-            std::cout<<"h_dec:"<<h_dec<<std::endl;
-            long g_l = 0, h_l = 0;
+//            std::cout<<"h_dec:"<<h_dec<<std::endl;
+
 //            std::cout<<"d3"<<std::endl;
             mpz_export(&g_l, 0, -1, sizeof(g_l), 0, 0, g_dec);
-//            std::cout<<"g_l"<<std::endl;
+//            std::cout<<"g_l:"<<g_l<<std::endl;
 //            std::cout<<"d4"<<std::endl;
 //            std::cout<<"g_dec"<<g_dec<<std::endl;
 //            std::cout<<"h_dec:"<<h_dec<<std::endl;
             mpz_export(&h_l, 0, -1, sizeof(h_l), 0, 0, h_dec);
+//            std::cout<<"h_l:"<<h_l<<std::endl;
 //            std::cout<<"d5"<<std::endl;
             g = (float_type) g_l / 1e6;
+//            std::cout<<"g:"<<g<<std::endl;
             h = (float_type) h_l / 1e6;
+//            std::cout<<"h:"<<h<<std::endl;
             encrypted = false;
-            mpz_clear(g_dec);
-            mpz_clear(h_dec);
+//            mpz_clear(g_dec);
+//            std::cout<<"d5.5"<<std::endl;
+//            mpz_clear(h_dec);
+
 //            std::cout<<"d6"<<std::endl;
         }
     }
@@ -145,8 +151,12 @@ struct GHPair {
 
     HOST_DEVICE void homo_decrypt(const Paillier &pl) {
         if (encrypted) {
+//            NTL::ZZ res = pl.decrypt(g_enc);
+//            std::cout<<"encrypted res:"<<res<<std::endl;
             long g_dec = NTL::to_long(pl.decrypt(g_enc));
             long h_dec = NTL::to_long(pl.decrypt(h_enc));
+            std::cout<<"long g_dec:"<<g_dec<<std::endl;
+            std::cout<<"long h_dec:"<<h_dec<<std::endl;
             g = (float_type) g_dec / 1e6;
             h = (float_type) h_dec / 1e6;
             encrypted = false;
