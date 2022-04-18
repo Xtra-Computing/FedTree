@@ -7,6 +7,3 @@
 [submodule "thrust"]
 	path = thrust
 	url = https://github.com/NVIDIA/thrust.git
-[submodule "CGBN"]
-	path = CGBN
-	url = https://github.com/NVlabs/CGBN.git
