@@ -93,7 +93,7 @@ add_definitions("-DELPP_NO_LOG_TO_FILE")
 # includes
 set(COMMON_INCLUDES ${PROJECT_SOURCE_DIR}/include ${CMAKE_CURRENT_BINARY_DIR})
 if(USE_CUDA)
-#    list(REMOVE_ITEM COMMON_INCLUDES "${PROJECT_SOURCE_DIR}/include/FedTree/Encryption/paillier.h")
+    list(REMOVE_ITEM COMMON_INCLUDES "${PROJECT_SOURCE_DIR}/include/FedTree/Encryption/paillier.h")
 else()
     list(REMOVE_ITEM COMMON_INCLUDES "${PROJECT_SOURCE_DIR}/include/FedTree/Encryption/paillier_gpu.h")
 endif()

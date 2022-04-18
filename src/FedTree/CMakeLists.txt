@@ -4,7 +4,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
 file(GLOB SRC util/*.c* DP/*.c* FL/*.c* Tree/*.c* Encryption/*.c* objective/*.c* metric/*.c* *.c*)
 if(USE_CUDA)
-#    list(REMOVE_ITEM SRC "${CMAKE_CURRENT_LIST_DIR}/Encryption/paillier.cpp")
+    list(REMOVE_ITEM SRC "${CMAKE_CURRENT_LIST_DIR}/Encryption/paillier.cpp")
 else()
     list(REMOVE_ITEM SRC "${CMAKE_CURRENT_LIST_DIR}/Encryption/paillier_gpu.cu")
 endif()
