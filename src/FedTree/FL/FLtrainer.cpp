@@ -332,7 +332,6 @@ void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FL
                     std::chrono::duration<float> t3 = t2 - t1;
                     decryption_time += t3.count();
                 }
-                LOG(INFO)<<"decrypted hist:"<<hist;
                 // if server propose cut, hist_fid for each party should be the same
                 auto hist_fid_data = parties_hist_fid[0].host_data();
                 server.booster.fbuilder->compute_gain_in_a_level(gain, n_nodes_in_level, n_bins, hist_fid_data,
@@ -349,10 +348,10 @@ void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FL
                 }
                 else
                     server.booster.fbuilder->get_best_gain_in_a_level(gain, best_idx_gain, n_nodes_in_level, n_bins);
-                LOG(INFO) << "BEST_IDX_GAIN:" << best_idx_gain;
+                LOG(DEBUG) << "BEST_IDX_GAIN:" << best_idx_gain;
 
                 server.booster.fbuilder->get_split_points(best_idx_gain, n_nodes_in_level, hist_fid_data, missing_gh, hist);
-                LOG(INFO) << "SP" << server.booster.fbuilder->sp;
+                LOG(DEBUG) << "SP" << server.booster.fbuilder->sp;
                 server.booster.fbuilder->update_tree();
 
                 trees_this_round[k] = server.booster.fbuilder->get_tree();
