@@ -7,3 +7,6 @@
 [submodule "thrust"]
 	path = thrust
 	url = https://github.com/NVIDIA/thrust.git
+[submodule "CGBN"]
+	path = CGBN
+	url = git@github.com:QinbinLi/CGBN.git
