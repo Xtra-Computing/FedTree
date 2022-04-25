@@ -11,7 +11,7 @@ endif()
 
 list(REMOVE_ITEM SRC "${CMAKE_CURRENT_LIST_DIR}/main.cpp" "${CMAKE_CURRENT_LIST_DIR}/distributed_party.cpp" "${CMAKE_CURRENT_LIST_DIR}/distributed_server.cpp")
 if(NOT USE_CUDA)
-    find_library(NTL_LIB ntl /usr/local/lib)
+    find_library(NTL_LIB ntl ${NTL_PATH}/lib)
     if(NOT NTL_LIB)
         message(FATAL_ERROR "ntl library not found.  Rerun cmake with -DCMAKE_PREFIX_PATH=\"<path to lib1>;<path to lib2>\"")
     endif ()
