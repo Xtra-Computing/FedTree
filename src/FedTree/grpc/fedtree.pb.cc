@@ -71,6 +71,10 @@ class BestInfoDefaultTypeInternal {
  public:
   ::PROTOBUF_NAMESPACE_ID::internal::ExplicitlyConstructed<BestInfo> _instance;
 } _BestInfo_default_instance_;
+class NodeEncDefaultTypeInternal {
+ public:
+  ::PROTOBUF_NAMESPACE_ID::internal::ExplicitlyConstructed<NodeEnc> _instance;
+} _NodeEnc_default_instance_;
 class NodeDefaultTypeInternal {
  public:
   ::PROTOBUF_NAMESPACE_ID::internal::ExplicitlyConstructed<Node> _instance;
@@ -240,6 +244,19 @@ static void InitDefaultsscc_info_Node_fedtree_2eproto() {
 ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_Node_fedtree_2eproto =
     {{ATOMIC_VAR_INIT(::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase::kUninitialized), 0, 0, InitDefaultsscc_info_Node_fedtree_2eproto}, {}};
 
+static void InitDefaultsscc_info_NodeEnc_fedtree_2eproto() {
+  GOOGLE_PROTOBUF_VERIFY_VERSION;
+
+  {
+    void* ptr = &::fedtree::_NodeEnc_default_instance_;
+    new (ptr) ::fedtree::NodeEnc();
+    ::PROTOBUF_NAMESPACE_ID::internal::OnShutdownDestroyMessage(ptr);
+  }
+}
+
+::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_NodeEnc_fedtree_2eproto =
+    {{ATOMIC_VAR_INIT(::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase::kUninitialized), 0, 0, InitDefaultsscc_info_NodeEnc_fedtree_2eproto}, {}};
+
 static void InitDefaultsscc_info_PID_fedtree_2eproto() {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
 
@@ -305,7 +322,7 @@ static void InitDefaultsscc_info_SplitPoint_fedtree_2eproto() {
 ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_SplitPoint_fedtree_2eproto =
     {{ATOMIC_VAR_INIT(::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase::kUninitialized), 0, 0, InitDefaultsscc_info_SplitPoint_fedtree_2eproto}, {}};
 
-static ::PROTOBUF_NAMESPACE_ID::Metadata file_level_metadata_fedtree_2eproto[17];
+static ::PROTOBUF_NAMESPACE_ID::Metadata file_level_metadata_fedtree_2eproto[18];
 static constexpr ::PROTOBUF_NAMESPACE_ID::EnumDescriptor const** file_level_enum_descriptors_fedtree_2eproto = nullptr;
 static constexpr ::PROTOBUF_NAMESPACE_ID::ServiceDescriptor const** file_level_service_descriptors_fedtree_2eproto = nullptr;
 
@@ -415,6 +432,28 @@ const ::PROTOBUF_NAMESPACE_ID::uint32 TableStruct_fedtree_2eproto::offsets[] PRO
   PROTOBUF_FIELD_OFFSET(::fedtree::BestInfo, global_fid_),
   PROTOBUF_FIELD_OFFSET(::fedtree::BestInfo, gain_),
   ~0u,  // no _has_bits_
+  PROTOBUF_FIELD_OFFSET(::fedtree::NodeEnc, _internal_metadata_),
+  ~0u,  // no _extensions_
+  ~0u,  // no _oneof_case_
+  ~0u,  // no _weak_field_map_
+  PROTOBUF_FIELD_OFFSET(::fedtree::NodeEnc, final_id_),
+  PROTOBUF_FIELD_OFFSET(::fedtree::NodeEnc, lch_index_),
+  PROTOBUF_FIELD_OFFSET(::fedtree::NodeEnc, rch_index_),
+  PROTOBUF_FIELD_OFFSET(::fedtree::NodeEnc, parent_index_),
+  PROTOBUF_FIELD_OFFSET(::fedtree::NodeEnc, gain_),
+  PROTOBUF_FIELD_OFFSET(::fedtree::NodeEnc, base_weight_),
+  PROTOBUF_FIELD_OFFSET(::fedtree::NodeEnc, split_feature_id_),
+  PROTOBUF_FIELD_OFFSET(::fedtree::NodeEnc, pid_),
+  PROTOBUF_FIELD_OFFSET(::fedtree::NodeEnc, split_value_),
+  PROTOBUF_FIELD_OFFSET(::fedtree::NodeEnc, split_bid_),
+  PROTOBUF_FIELD_OFFSET(::fedtree::NodeEnc, default_right_),
+  PROTOBUF_FIELD_OFFSET(::fedtree::NodeEnc, is_leaf_),
+  PROTOBUF_FIELD_OFFSET(::fedtree::NodeEnc, is_valid_),
+  PROTOBUF_FIELD_OFFSET(::fedtree::NodeEnc, is_pruned_),
+  PROTOBUF_FIELD_OFFSET(::fedtree::NodeEnc, sum_gh_pair_g_enc_),
+  PROTOBUF_FIELD_OFFSET(::fedtree::NodeEnc, sum_gh_pair_h_enc_),
+  PROTOBUF_FIELD_OFFSET(::fedtree::NodeEnc, n_instances_),
+  ~0u,  // no _has_bits_
   PROTOBUF_FIELD_OFFSET(::fedtree::Node, _internal_metadata_),
   ~0u,  // no _extensions_
   ~0u,  // no _oneof_case_
@@ -466,9 +505,10 @@ static const ::PROTOBUF_NAMESPACE_ID::internal::MigrationSchema schemas[] PROTOB
   { 81, -1, sizeof(::fedtree::DatasetInfo)},
   { 88, -1, sizeof(::fedtree::FID)},
   { 94, -1, sizeof(::fedtree::BestInfo)},
-  { 104, -1, sizeof(::fedtree::Node)},
-  { 126, -1, sizeof(::fedtree::Ins2NodeID)},
-  { 133, -1, sizeof(::fedtree::Ins2NodeIDBatch)},
+  { 104, -1, sizeof(::fedtree::NodeEnc)},
+  { 126, -1, sizeof(::fedtree::Node)},
+  { 148, -1, sizeof(::fedtree::Ins2NodeID)},
+  { 155, -1, sizeof(::fedtree::Ins2NodeIDBatch)},
 };
 
 static ::PROTOBUF_NAMESPACE_ID::Message const * const file_default_instances[] = {
@@ -486,6 +526,7 @@ static ::PROTOBUF_NAMESPACE_ID::Message const * const file_default_instances[] =
   reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::fedtree::_DatasetInfo_default_instance_),
   reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::fedtree::_FID_default_instance_),
   reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::fedtree::_BestInfo_default_instance_),
+  reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::fedtree::_NodeEnc_default_instance_),
   reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::fedtree::_Node_default_instance_),
   reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::fedtree::_Ins2NodeID_default_instance_),
   reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::fedtree::_Ins2NodeIDBatch_default_instance_),
@@ -510,68 +551,82 @@ const char descriptor_table_protodef_fedtree_2eproto[] PROTOBUF_SECTION_VARIABLE
   "tInfo\022\016\n\006n_bins\030\001 \001(\005\022\021\n\tn_columns\030\002 \001(\005"
   "\"\021\n\003FID\022\n\n\002id\030\001 \001(\005\"S\n\010BestInfo\022\013\n\003pid\030\001"
   " \001(\005\022\013\n\003nid\030\002 \001(\005\022\013\n\003idx\030\003 \001(\005\022\022\n\nglobal"
-  "_fid\030\004 \001(\005\022\014\n\004gain\030\005 \001(\001\"\326\002\n\004Node\022\020\n\010fin"
-  "al_id\030\001 \001(\005\022\021\n\tlch_index\030\002 \001(\005\022\021\n\trch_in"
-  "dex\030\003 \001(\005\022\024\n\014parent_index\030\004 \001(\005\022\014\n\004gain\030"
-  "\005 \001(\002\022\023\n\013base_weight\030\006 \001(\002\022\030\n\020split_feat"
-  "ure_id\030\007 \001(\005\022\013\n\003pid\030\010 \001(\005\022\023\n\013split_value"
-  "\030\t \001(\002\022\021\n\tsplit_bid\030\n \001(\005\022\025\n\rdefault_rig"
-  "ht\030\013 \001(\010\022\017\n\007is_leaf\030\014 \001(\010\022\020\n\010is_valid\030\r "
-  "\001(\010\022\021\n\tis_pruned\030\016 \001(\010\022\025\n\rsum_gh_pair_g\030"
-  "\017 \001(\002\022\025\n\rsum_gh_pair_h\030\020 \001(\002\022\023\n\013n_instan"
-  "ces\030\021 \001(\005\"&\n\nIns2NodeID\022\013\n\003iid\030\001 \001(\005\022\013\n\003"
-  "nid\030\002 \001(\005\"3\n\017Ins2NodeIDBatch\022\017\n\003iid\030\001 \003("
-  "\005B\002\020\001\022\017\n\003nid\030\002 \003(\005B\002\020\0012\236\016\n\007FedTree\0228\n\026Tr"
-  "iggerUpdateGradients\022\014.fedtree.PID\032\016.fed"
-  "tree.Ready\"\000\0222\n\020TriggerBuildInit\022\014.fedtr"
-  "ee.PID\032\016.fedtree.Ready\"\000\0221\n\014GetGradients"
-  "\022\014.fedtree.PID\032\017.fedtree.GHPair\"\0000\001\0227\n\017S"
-  "endDatasetInfo\022\024.fedtree.DatasetInfo\032\014.f"
-  "edtree.PID\"\000\0223\n\016SendHistograms\022\017.fedtree"
-  ".GHPair\032\014.fedtree.PID\"\000(\001\022-\n\013SendHistFid"
-  "\022\014.fedtree.FID\032\014.fedtree.PID\"\000(\001\0222\n\020Trig"
-  "gerAggregate\022\014.fedtree.PID\032\016.fedtree.Rea"
-  "dy\"\000\0222\n\013GetBestInfo\022\014.fedtree.PID\032\021.fedt"
-  "ree.BestInfo\"\0000\001\022)\n\010SendNode\022\r.fedtree.N"
-  "ode\032\014.fedtree.PID\"\000\0227\n\016SendIns2NodeID\022\023."
-  "fedtree.Ins2NodeID\032\014.fedtree.PID\"\000(\001\022+\n\010"
-  "GetNodes\022\014.fedtree.PID\032\r.fedtree.Node\"\0000"
-  "\001\0226\n\rGetIns2NodeID\022\014.fedtree.PID\032\023.fedtr"
-  "ee.Ins2NodeID\"\0000\001\0221\n\017CheckIfContinue\022\014.f"
-  "edtree.PID\032\016.fedtree.Ready\"\000\022.\n\014TriggerP"
-  "rune\022\014.fedtree.PID\032\016.fedtree.Ready\"\000\022.\n\t"
-  "SendRange\022\017.fedtree.GHPair\032\014.fedtree.PID"
-  "\"\000(\001\022,\n\nTriggerCut\022\014.fedtree.PID\032\016.fedtr"
-  "ee.Ready\"\000\022-\n\010GetRange\022\014.fedtree.PID\032\017.f"
-  "edtree.GHPair\"\0000\001\022)\n\006SendGH\022\017.fedtree.GH"
-  "Pair\032\014.fedtree.PID\"\000\0225\n\023TriggerBuildUsin"
-  "gGH\022\014.fedtree.PID\032\016.fedtree.Ready\"\000\0221\n\017T"
-  "riggerCalcTree\022\014.fedtree.PID\032\016.fedtree.R"
-  "eady\"\000\022*\n\013GetRootNode\022\014.fedtree.PID\032\r.fe"
-  "dtree.Node\0227\n\016GetSplitPoints\022\014.fedtree.P"
-  "ID\032\023.fedtree.SplitPoint\"\0000\001\0222\n\020HCheckIfC"
-  "ontinue\022\014.fedtree.PID\032\016.fedtree.Ready\"\000\022"
-  "/\n\013ScoreReduce\022\016.fedtree.Score\032\016.fedtree"
-  ".Score\"\000\0221\n\017TriggerHomoInit\022\014.fedtree.PI"
-  "D\032\016.fedtree.Ready\"\000\0220\n\013GetPaillier\022\014.fed"
-  "tree.PID\032\021.fedtree.Paillier\"\000\0229\n\021SendHis"
-  "togramsEnc\022\022.fedtree.GHPairEnc\032\014.fedtree"
-  ".PID\"\000(\001\0229\n\025SendBatchedHistograms\022\020.fedt"
-  "ree.GHArray\032\014.fedtree.PID\"\000\022:\n\024SendHisto"
-  "gramBatches\022\020.fedtree.GHBatch\032\014.fedtree."
-  "PID\"\000(\001\0229\n\022SendHistFidBatches\022\021.fedtree."
-  "FIDBatch\032\014.fedtree.PID\"\000(\001\022B\n\024GetIns2Nod"
-  "eIDBatches\022\014.fedtree.PID\032\030.fedtree.Ins2N"
-  "odeIDBatch\"\0000\001\022C\n\025SendIns2NodeIDBatches\022"
-  "\030.fedtree.Ins2NodeIDBatch\032\014.fedtree.PID\""
-  "\000(\001\0228\n\022GetGradientBatches\022\014.fedtree.PID\032"
-  "\020.fedtree.GHBatch\"\0000\001\022@\n\027SendHistogramBa"
-  "tchesEnc\022\023.fedtree.GHEncBatch\032\014.fedtree."
-  "PID\"\000(\001b\006proto3"
+  "_fid\030\004 \001(\005\022\014\n\004gain\030\005 \001(\001\"\341\002\n\007NodeEnc\022\020\n\010"
+  "final_id\030\001 \001(\005\022\021\n\tlch_index\030\002 \001(\005\022\021\n\trch"
+  "_index\030\003 \001(\005\022\024\n\014parent_index\030\004 \001(\005\022\014\n\004ga"
+  "in\030\005 \001(\002\022\023\n\013base_weight\030\006 \001(\002\022\030\n\020split_f"
+  "eature_id\030\007 \001(\005\022\013\n\003pid\030\010 \001(\005\022\023\n\013split_va"
+  "lue\030\t \001(\002\022\021\n\tsplit_bid\030\n \001(\005\022\025\n\rdefault_"
+  "right\030\013 \001(\010\022\017\n\007is_leaf\030\014 \001(\010\022\020\n\010is_valid"
+  "\030\r \001(\010\022\021\n\tis_pruned\030\016 \001(\010\022\031\n\021sum_gh_pair"
+  "_g_enc\030\017 \001(\t\022\031\n\021sum_gh_pair_h_enc\030\020 \001(\t\022"
+  "\023\n\013n_instances\030\021 \001(\005\"\326\002\n\004Node\022\020\n\010final_i"
+  "d\030\001 \001(\005\022\021\n\tlch_index\030\002 \001(\005\022\021\n\trch_index\030"
+  "\003 \001(\005\022\024\n\014parent_index\030\004 \001(\005\022\014\n\004gain\030\005 \001("
+  "\002\022\023\n\013base_weight\030\006 \001(\002\022\030\n\020split_feature_"
+  "id\030\007 \001(\005\022\013\n\003pid\030\010 \001(\005\022\023\n\013split_value\030\t \001"
+  "(\002\022\021\n\tsplit_bid\030\n \001(\005\022\025\n\rdefault_right\030\013"
+  " \001(\010\022\017\n\007is_leaf\030\014 \001(\010\022\020\n\010is_valid\030\r \001(\010\022"
+  "\021\n\tis_pruned\030\016 \001(\010\022\025\n\rsum_gh_pair_g\030\017 \001("
+  "\002\022\025\n\rsum_gh_pair_h\030\020 \001(\002\022\023\n\013n_instances\030"
+  "\021 \001(\005\"&\n\nIns2NodeID\022\013\n\003iid\030\001 \001(\005\022\013\n\003nid\030"
+  "\002 \001(\005\"3\n\017Ins2NodeIDBatch\022\017\n\003iid\030\001 \003(\005B\002\020"
+  "\001\022\017\n\003nid\030\002 \003(\005B\002\020\0012\355\017\n\007FedTree\0228\n\026Trigge"
+  "rUpdateGradients\022\014.fedtree.PID\032\016.fedtree"
+  ".Ready\"\000\0222\n\020TriggerBuildInit\022\014.fedtree.P"
+  "ID\032\016.fedtree.Ready\"\000\0221\n\014GetGradients\022\014.f"
+  "edtree.PID\032\017.fedtree.GHPair\"\0000\001\0227\n\017SendD"
+  "atasetInfo\022\024.fedtree.DatasetInfo\032\014.fedtr"
+  "ee.PID\"\000\0223\n\016SendHistograms\022\017.fedtree.GHP"
+  "air\032\014.fedtree.PID\"\000(\001\022-\n\013SendHistFid\022\014.f"
+  "edtree.FID\032\014.fedtree.PID\"\000(\001\0222\n\020TriggerA"
+  "ggregate\022\014.fedtree.PID\032\016.fedtree.Ready\"\000"
+  "\0222\n\013GetBestInfo\022\014.fedtree.PID\032\021.fedtree."
+  "BestInfo\"\0000\001\022)\n\010SendNode\022\r.fedtree.Node\032"
+  "\014.fedtree.PID\"\000\0227\n\016SendIns2NodeID\022\023.fedt"
+  "ree.Ins2NodeID\032\014.fedtree.PID\"\000(\001\022+\n\010GetN"
+  "odes\022\014.fedtree.PID\032\r.fedtree.Node\"\0000\001\0226\n"
+  "\rGetIns2NodeID\022\014.fedtree.PID\032\023.fedtree.I"
+  "ns2NodeID\"\0000\001\0221\n\017CheckIfContinue\022\014.fedtr"
+  "ee.PID\032\016.fedtree.Ready\"\000\022.\n\014TriggerPrune"
+  "\022\014.fedtree.PID\032\016.fedtree.Ready\"\000\022.\n\tSend"
+  "Range\022\017.fedtree.GHPair\032\014.fedtree.PID\"\000(\001"
+  "\022,\n\nTriggerCut\022\014.fedtree.PID\032\016.fedtree.R"
+  "eady\"\000\022-\n\010GetRange\022\014.fedtree.PID\032\017.fedtr"
+  "ee.GHPair\"\0000\001\022)\n\006SendGH\022\017.fedtree.GHPair"
+  "\032\014.fedtree.PID\"\000\0225\n\023TriggerBuildUsingGH\022"
+  "\014.fedtree.PID\032\016.fedtree.Ready\"\000\0221\n\017Trigg"
+  "erCalcTree\022\014.fedtree.PID\032\016.fedtree.Ready"
+  "\"\000\022*\n\013GetRootNode\022\014.fedtree.PID\032\r.fedtre"
+  "e.Node\0227\n\016GetSplitPoints\022\014.fedtree.PID\032\023"
+  ".fedtree.SplitPoint\"\0000\001\0222\n\020HCheckIfConti"
+  "nue\022\014.fedtree.PID\032\016.fedtree.Ready\"\000\022/\n\013S"
+  "coreReduce\022\016.fedtree.Score\032\016.fedtree.Sco"
+  "re\"\000\0221\n\017TriggerHomoInit\022\014.fedtree.PID\032\016."
+  "fedtree.Ready\"\000\0220\n\013GetPaillier\022\014.fedtree"
+  ".PID\032\021.fedtree.Paillier\"\000\0229\n\021SendHistogr"
+  "amsEnc\022\022.fedtree.GHPairEnc\032\014.fedtree.PID"
+  "\"\000(\001\0229\n\025SendBatchedHistograms\022\020.fedtree."
+  "GHArray\032\014.fedtree.PID\"\000\022:\n\024SendHistogram"
+  "Batches\022\020.fedtree.GHBatch\032\014.fedtree.PID\""
+  "\000(\001\0229\n\022SendHistFidBatches\022\021.fedtree.FIDB"
+  "atch\032\014.fedtree.PID\"\000(\001\022B\n\024GetIns2NodeIDB"
+  "atches\022\014.fedtree.PID\032\030.fedtree.Ins2NodeI"
+  "DBatch\"\0000\001\022C\n\025SendIns2NodeIDBatches\022\030.fe"
+  "dtree.Ins2NodeIDBatch\032\014.fedtree.PID\"\000(\001\022"
+  "8\n\022GetGradientBatches\022\014.fedtree.PID\032\020.fe"
+  "dtree.GHBatch\"\0000\001\022>\n\025GetGradientBatchesE"
+  "nc\022\014.fedtree.PID\032\023.fedtree.GHEncBatch\"\0000"
+  "\001\022/\n\013SendNodeEnc\022\020.fedtree.NodeEnc\032\014.fed"
+  "tree.PID\"\000\022@\n\027SendHistogramBatchesEnc\022\023."
+  "fedtree.GHEncBatch\032\014.fedtree.PID\"\000(\001\022,\n\n"
+  "StopServer\022\014.fedtree.PID\032\016.fedtree.Score"
+  "\"\000\022.\n\014BeginBarrier\022\014.fedtree.PID\032\016.fedtr"
+  "ee.Ready\"\000b\006proto3"
   ;
 static const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable*const descriptor_table_fedtree_2eproto_deps[1] = {
 };
-static ::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase*const descriptor_table_fedtree_2eproto_sccs[17] = {
+static ::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase*const descriptor_table_fedtree_2eproto_sccs[18] = {
   &scc_info_BestInfo_fedtree_2eproto.base,
   &scc_info_DatasetInfo_fedtree_2eproto.base,
   &scc_info_FID_fedtree_2eproto.base,
@@ -584,6 +639,7 @@ static ::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase*const descriptor_table_fed
   &scc_info_Ins2NodeID_fedtree_2eproto.base,
   &scc_info_Ins2NodeIDBatch_fedtree_2eproto.base,
   &scc_info_Node_fedtree_2eproto.base,
+  &scc_info_NodeEnc_fedtree_2eproto.base,
   &scc_info_PID_fedtree_2eproto.base,
   &scc_info_Paillier_fedtree_2eproto.base,
   &scc_info_Ready_fedtree_2eproto.base,
@@ -592,10 +648,10 @@ static ::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase*const descriptor_table_fed
 };
 static ::PROTOBUF_NAMESPACE_ID::internal::once_flag descriptor_table_fedtree_2eproto_once;
 const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable descriptor_table_fedtree_2eproto = {
-  false, false, descriptor_table_protodef_fedtree_2eproto, "fedtree.proto", 3015,
-  &descriptor_table_fedtree_2eproto_once, descriptor_table_fedtree_2eproto_sccs, descriptor_table_fedtree_2eproto_deps, 17, 0,
+  false, false, descriptor_table_protodef_fedtree_2eproto, "fedtree.proto", 3578,
+  &descriptor_table_fedtree_2eproto_once, descriptor_table_fedtree_2eproto_sccs, descriptor_table_fedtree_2eproto_deps, 18, 0,
   schemas, file_default_instances, TableStruct_fedtree_2eproto::offsets,
-  file_level_metadata_fedtree_2eproto, 17, file_level_enum_descriptors_fedtree_2eproto, file_level_service_descriptors_fedtree_2eproto,
+  file_level_metadata_fedtree_2eproto, 18, file_level_enum_descriptors_fedtree_2eproto, file_level_service_descriptors_fedtree_2eproto,
 };
 
 // Force running AddDescriptors() at dynamic initialization time.
@@ -3921,6 +3977,597 @@ void BestInfo::InternalSwap(BestInfo* other) {
 
 // ===================================================================
 
+class NodeEnc::_Internal {
+ public:
+};
+
+NodeEnc::NodeEnc(::PROTOBUF_NAMESPACE_ID::Arena* arena)
+  : ::PROTOBUF_NAMESPACE_ID::Message(arena) {
+  SharedCtor();
+  RegisterArenaDtor(arena);
+  // @@protoc_insertion_point(arena_constructor:fedtree.NodeEnc)
+}
+NodeEnc::NodeEnc(const NodeEnc& from)
+  : ::PROTOBUF_NAMESPACE_ID::Message() {
+  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
+  sum_gh_pair_g_enc_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+  if (!from._internal_sum_gh_pair_g_enc().empty()) {
+    sum_gh_pair_g_enc_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, from._internal_sum_gh_pair_g_enc(), 
+      GetArena());
+  }
+  sum_gh_pair_h_enc_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+  if (!from._internal_sum_gh_pair_h_enc().empty()) {
+    sum_gh_pair_h_enc_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, from._internal_sum_gh_pair_h_enc(), 
+      GetArena());
+  }
+  ::memcpy(&final_id_, &from.final_id_,
+    static_cast<size_t>(reinterpret_cast<char*>(&n_instances_) -
+    reinterpret_cast<char*>(&final_id_)) + sizeof(n_instances_));
+  // @@protoc_insertion_point(copy_constructor:fedtree.NodeEnc)
+}
+
+void NodeEnc::SharedCtor() {
+  ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&scc_info_NodeEnc_fedtree_2eproto.base);
+  sum_gh_pair_g_enc_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+  sum_gh_pair_h_enc_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+  ::memset(reinterpret_cast<char*>(this) + static_cast<size_t>(
+      reinterpret_cast<char*>(&final_id_) - reinterpret_cast<char*>(this)),
+      0, static_cast<size_t>(reinterpret_cast<char*>(&n_instances_) -
+      reinterpret_cast<char*>(&final_id_)) + sizeof(n_instances_));
+}
+
+NodeEnc::~NodeEnc() {
+  // @@protoc_insertion_point(destructor:fedtree.NodeEnc)
+  SharedDtor();
+  _internal_metadata_.Delete<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
+}
+
+void NodeEnc::SharedDtor() {
+  GOOGLE_DCHECK(GetArena() == nullptr);
+  sum_gh_pair_g_enc_.DestroyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+  sum_gh_pair_h_enc_.DestroyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+}
+
+void NodeEnc::ArenaDtor(void* object) {
+  NodeEnc* _this = reinterpret_cast< NodeEnc* >(object);
+  (void)_this;
+}
+void NodeEnc::RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena*) {
+}
+void NodeEnc::SetCachedSize(int size) const {
+  _cached_size_.Set(size);
+}
+const NodeEnc& NodeEnc::default_instance() {
+  ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&::scc_info_NodeEnc_fedtree_2eproto.base);
+  return *internal_default_instance();
+}
+
+
+void NodeEnc::Clear() {
+// @@protoc_insertion_point(message_clear_start:fedtree.NodeEnc)
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void) cached_has_bits;
+
+  sum_gh_pair_g_enc_.ClearToEmpty();
+  sum_gh_pair_h_enc_.ClearToEmpty();
+  ::memset(&final_id_, 0, static_cast<size_t>(
+      reinterpret_cast<char*>(&n_instances_) -
+      reinterpret_cast<char*>(&final_id_)) + sizeof(n_instances_));
+  _internal_metadata_.Clear<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
+}
+
+const char* NodeEnc::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) {
+#define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
+  while (!ctx->Done(&ptr)) {
+    ::PROTOBUF_NAMESPACE_ID::uint32 tag;
+    ptr = ::PROTOBUF_NAMESPACE_ID::internal::ReadTag(ptr, &tag);
+    CHK_(ptr);
+    switch (tag >> 3) {
+      // int32 final_id = 1;
+      case 1:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 8)) {
+          final_id_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
+      // int32 lch_index = 2;
+      case 2:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 16)) {
+          lch_index_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
+      // int32 rch_index = 3;
+      case 3:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 24)) {
+          rch_index_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
+      // int32 parent_index = 4;
+      case 4:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 32)) {
+          parent_index_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
+      // float gain = 5;
+      case 5:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 45)) {
+          gain_ = ::PROTOBUF_NAMESPACE_ID::internal::UnalignedLoad<float>(ptr);
+          ptr += sizeof(float);
+        } else goto handle_unusual;
+        continue;
+      // float base_weight = 6;
+      case 6:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 53)) {
+          base_weight_ = ::PROTOBUF_NAMESPACE_ID::internal::UnalignedLoad<float>(ptr);
+          ptr += sizeof(float);
+        } else goto handle_unusual;
+        continue;
+      // int32 split_feature_id = 7;
+      case 7:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 56)) {
+          split_feature_id_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
+      // int32 pid = 8;
+      case 8:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 64)) {
+          pid_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
+      // float split_value = 9;
+      case 9:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 77)) {
+          split_value_ = ::PROTOBUF_NAMESPACE_ID::internal::UnalignedLoad<float>(ptr);
+          ptr += sizeof(float);
+        } else goto handle_unusual;
+        continue;
+      // int32 split_bid = 10;
+      case 10:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 80)) {
+          split_bid_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
+      // bool default_right = 11;
+      case 11:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 88)) {
+          default_right_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
+      // bool is_leaf = 12;
+      case 12:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 96)) {
+          is_leaf_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
+      // bool is_valid = 13;
+      case 13:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 104)) {
+          is_valid_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
+      // bool is_pruned = 14;
+      case 14:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 112)) {
+          is_pruned_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
+      // string sum_gh_pair_g_enc = 15;
+      case 15:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 122)) {
+          auto str = _internal_mutable_sum_gh_pair_g_enc();
+          ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParser(str, ptr, ctx);
+          CHK_(::PROTOBUF_NAMESPACE_ID::internal::VerifyUTF8(str, "fedtree.NodeEnc.sum_gh_pair_g_enc"));
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
+      // string sum_gh_pair_h_enc = 16;
+      case 16:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 130)) {
+          auto str = _internal_mutable_sum_gh_pair_h_enc();
+          ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParser(str, ptr, ctx);
+          CHK_(::PROTOBUF_NAMESPACE_ID::internal::VerifyUTF8(str, "fedtree.NodeEnc.sum_gh_pair_h_enc"));
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
+      // int32 n_instances = 17;
+      case 17:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 136)) {
+          n_instances_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
+      default: {
+      handle_unusual:
+        if ((tag & 7) == 4 || tag == 0) {
+          ctx->SetLastTag(tag);
+          goto success;
+        }
+        ptr = UnknownFieldParse(tag,
+            _internal_metadata_.mutable_unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(),
+            ptr, ctx);
+        CHK_(ptr != nullptr);
+        continue;
+      }
+    }  // switch
+  }  // while
+success:
+  return ptr;
+failure:
+  ptr = nullptr;
+  goto success;
+#undef CHK_
+}
+
+::PROTOBUF_NAMESPACE_ID::uint8* NodeEnc::_InternalSerialize(
+    ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
+  // @@protoc_insertion_point(serialize_to_array_start:fedtree.NodeEnc)
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
+
+  // int32 final_id = 1;
+  if (this->final_id() != 0) {
+    target = stream->EnsureSpace(target);
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteInt32ToArray(1, this->_internal_final_id(), target);
+  }
+
+  // int32 lch_index = 2;
+  if (this->lch_index() != 0) {
+    target = stream->EnsureSpace(target);
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteInt32ToArray(2, this->_internal_lch_index(), target);
+  }
+
+  // int32 rch_index = 3;
+  if (this->rch_index() != 0) {
+    target = stream->EnsureSpace(target);
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteInt32ToArray(3, this->_internal_rch_index(), target);
+  }
+
+  // int32 parent_index = 4;
+  if (this->parent_index() != 0) {
+    target = stream->EnsureSpace(target);
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteInt32ToArray(4, this->_internal_parent_index(), target);
+  }
+
+  // float gain = 5;
+  if (!(this->gain() <= 0 && this->gain() >= 0)) {
+    target = stream->EnsureSpace(target);
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteFloatToArray(5, this->_internal_gain(), target);
+  }
+
+  // float base_weight = 6;
+  if (!(this->base_weight() <= 0 && this->base_weight() >= 0)) {
+    target = stream->EnsureSpace(target);
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteFloatToArray(6, this->_internal_base_weight(), target);
+  }
+
+  // int32 split_feature_id = 7;
+  if (this->split_feature_id() != 0) {
+    target = stream->EnsureSpace(target);
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteInt32ToArray(7, this->_internal_split_feature_id(), target);
+  }
+
+  // int32 pid = 8;
+  if (this->pid() != 0) {
+    target = stream->EnsureSpace(target);
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteInt32ToArray(8, this->_internal_pid(), target);
+  }
+
+  // float split_value = 9;
+  if (!(this->split_value() <= 0 && this->split_value() >= 0)) {
+    target = stream->EnsureSpace(target);
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteFloatToArray(9, this->_internal_split_value(), target);
+  }
+
+  // int32 split_bid = 10;
+  if (this->split_bid() != 0) {
+    target = stream->EnsureSpace(target);
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteInt32ToArray(10, this->_internal_split_bid(), target);
+  }
+
+  // bool default_right = 11;
+  if (this->default_right() != 0) {
+    target = stream->EnsureSpace(target);
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteBoolToArray(11, this->_internal_default_right(), target);
+  }
+
+  // bool is_leaf = 12;
+  if (this->is_leaf() != 0) {
+    target = stream->EnsureSpace(target);
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteBoolToArray(12, this->_internal_is_leaf(), target);
+  }
+
+  // bool is_valid = 13;
+  if (this->is_valid() != 0) {
+    target = stream->EnsureSpace(target);
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteBoolToArray(13, this->_internal_is_valid(), target);
+  }
+
+  // bool is_pruned = 14;
+  if (this->is_pruned() != 0) {
+    target = stream->EnsureSpace(target);
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteBoolToArray(14, this->_internal_is_pruned(), target);
+  }
+
+  // string sum_gh_pair_g_enc = 15;
+  if (this->sum_gh_pair_g_enc().size() > 0) {
+    ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::VerifyUtf8String(
+      this->_internal_sum_gh_pair_g_enc().data(), static_cast<int>(this->_internal_sum_gh_pair_g_enc().length()),
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::SERIALIZE,
+      "fedtree.NodeEnc.sum_gh_pair_g_enc");
+    target = stream->WriteStringMaybeAliased(
+        15, this->_internal_sum_gh_pair_g_enc(), target);
+  }
+
+  // string sum_gh_pair_h_enc = 16;
+  if (this->sum_gh_pair_h_enc().size() > 0) {
+    ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::VerifyUtf8String(
+      this->_internal_sum_gh_pair_h_enc().data(), static_cast<int>(this->_internal_sum_gh_pair_h_enc().length()),
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::SERIALIZE,
+      "fedtree.NodeEnc.sum_gh_pair_h_enc");
+    target = stream->WriteStringMaybeAliased(
+        16, this->_internal_sum_gh_pair_h_enc(), target);
+  }
+
+  // int32 n_instances = 17;
+  if (this->n_instances() != 0) {
+    target = stream->EnsureSpace(target);
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteInt32ToArray(17, this->_internal_n_instances(), target);
+  }
+
+  if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormat::InternalSerializeUnknownFieldsToArray(
+        _internal_metadata_.unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(::PROTOBUF_NAMESPACE_ID::UnknownFieldSet::default_instance), target, stream);
+  }
+  // @@protoc_insertion_point(serialize_to_array_end:fedtree.NodeEnc)
+  return target;
+}
+
+size_t NodeEnc::ByteSizeLong() const {
+// @@protoc_insertion_point(message_byte_size_start:fedtree.NodeEnc)
+  size_t total_size = 0;
+
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void) cached_has_bits;
+
+  // string sum_gh_pair_g_enc = 15;
+  if (this->sum_gh_pair_g_enc().size() > 0) {
+    total_size += 1 +
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::StringSize(
+        this->_internal_sum_gh_pair_g_enc());
+  }
+
+  // string sum_gh_pair_h_enc = 16;
+  if (this->sum_gh_pair_h_enc().size() > 0) {
+    total_size += 2 +
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::StringSize(
+        this->_internal_sum_gh_pair_h_enc());
+  }
+
+  // int32 final_id = 1;
+  if (this->final_id() != 0) {
+    total_size += 1 +
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::Int32Size(
+        this->_internal_final_id());
+  }
+
+  // int32 lch_index = 2;
+  if (this->lch_index() != 0) {
+    total_size += 1 +
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::Int32Size(
+        this->_internal_lch_index());
+  }
+
+  // int32 rch_index = 3;
+  if (this->rch_index() != 0) {
+    total_size += 1 +
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::Int32Size(
+        this->_internal_rch_index());
+  }
+
+  // int32 parent_index = 4;
+  if (this->parent_index() != 0) {
+    total_size += 1 +
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::Int32Size(
+        this->_internal_parent_index());
+  }
+
+  // float gain = 5;
+  if (!(this->gain() <= 0 && this->gain() >= 0)) {
+    total_size += 1 + 4;
+  }
+
+  // float base_weight = 6;
+  if (!(this->base_weight() <= 0 && this->base_weight() >= 0)) {
+    total_size += 1 + 4;
+  }
+
+  // int32 split_feature_id = 7;
+  if (this->split_feature_id() != 0) {
+    total_size += 1 +
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::Int32Size(
+        this->_internal_split_feature_id());
+  }
+
+  // int32 pid = 8;
+  if (this->pid() != 0) {
+    total_size += 1 +
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::Int32Size(
+        this->_internal_pid());
+  }
+
+  // float split_value = 9;
+  if (!(this->split_value() <= 0 && this->split_value() >= 0)) {
+    total_size += 1 + 4;
+  }
+
+  // int32 split_bid = 10;
+  if (this->split_bid() != 0) {
+    total_size += 1 +
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::Int32Size(
+        this->_internal_split_bid());
+  }
+
+  // bool default_right = 11;
+  if (this->default_right() != 0) {
+    total_size += 1 + 1;
+  }
+
+  // bool is_leaf = 12;
+  if (this->is_leaf() != 0) {
+    total_size += 1 + 1;
+  }
+
+  // bool is_valid = 13;
+  if (this->is_valid() != 0) {
+    total_size += 1 + 1;
+  }
+
+  // bool is_pruned = 14;
+  if (this->is_pruned() != 0) {
+    total_size += 1 + 1;
+  }
+
+  // int32 n_instances = 17;
+  if (this->n_instances() != 0) {
+    total_size += 2 +
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::Int32Size(
+        this->_internal_n_instances());
+  }
+
+  if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
+    return ::PROTOBUF_NAMESPACE_ID::internal::ComputeUnknownFieldsSize(
+        _internal_metadata_, total_size, &_cached_size_);
+  }
+  int cached_size = ::PROTOBUF_NAMESPACE_ID::internal::ToCachedSize(total_size);
+  SetCachedSize(cached_size);
+  return total_size;
+}
+
+void NodeEnc::MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
+// @@protoc_insertion_point(generalized_merge_from_start:fedtree.NodeEnc)
+  GOOGLE_DCHECK_NE(&from, this);
+  const NodeEnc* source =
+      ::PROTOBUF_NAMESPACE_ID::DynamicCastToGenerated<NodeEnc>(
+          &from);
+  if (source == nullptr) {
+  // @@protoc_insertion_point(generalized_merge_from_cast_fail:fedtree.NodeEnc)
+    ::PROTOBUF_NAMESPACE_ID::internal::ReflectionOps::Merge(from, this);
+  } else {
+  // @@protoc_insertion_point(generalized_merge_from_cast_success:fedtree.NodeEnc)
+    MergeFrom(*source);
+  }
+}
+
+void NodeEnc::MergeFrom(const NodeEnc& from) {
+// @@protoc_insertion_point(class_specific_merge_from_start:fedtree.NodeEnc)
+  GOOGLE_DCHECK_NE(&from, this);
+  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
+
+  if (from.sum_gh_pair_g_enc().size() > 0) {
+    _internal_set_sum_gh_pair_g_enc(from._internal_sum_gh_pair_g_enc());
+  }
+  if (from.sum_gh_pair_h_enc().size() > 0) {
+    _internal_set_sum_gh_pair_h_enc(from._internal_sum_gh_pair_h_enc());
+  }
+  if (from.final_id() != 0) {
+    _internal_set_final_id(from._internal_final_id());
+  }
+  if (from.lch_index() != 0) {
+    _internal_set_lch_index(from._internal_lch_index());
+  }
+  if (from.rch_index() != 0) {
+    _internal_set_rch_index(from._internal_rch_index());
+  }
+  if (from.parent_index() != 0) {
+    _internal_set_parent_index(from._internal_parent_index());
+  }
+  if (!(from.gain() <= 0 && from.gain() >= 0)) {
+    _internal_set_gain(from._internal_gain());
+  }
+  if (!(from.base_weight() <= 0 && from.base_weight() >= 0)) {
+    _internal_set_base_weight(from._internal_base_weight());
+  }
+  if (from.split_feature_id() != 0) {
+    _internal_set_split_feature_id(from._internal_split_feature_id());
+  }
+  if (from.pid() != 0) {
+    _internal_set_pid(from._internal_pid());
+  }
+  if (!(from.split_value() <= 0 && from.split_value() >= 0)) {
+    _internal_set_split_value(from._internal_split_value());
+  }
+  if (from.split_bid() != 0) {
+    _internal_set_split_bid(from._internal_split_bid());
+  }
+  if (from.default_right() != 0) {
+    _internal_set_default_right(from._internal_default_right());
+  }
+  if (from.is_leaf() != 0) {
+    _internal_set_is_leaf(from._internal_is_leaf());
+  }
+  if (from.is_valid() != 0) {
+    _internal_set_is_valid(from._internal_is_valid());
+  }
+  if (from.is_pruned() != 0) {
+    _internal_set_is_pruned(from._internal_is_pruned());
+  }
+  if (from.n_instances() != 0) {
+    _internal_set_n_instances(from._internal_n_instances());
+  }
+}
+
+void NodeEnc::CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
+// @@protoc_insertion_point(generalized_copy_from_start:fedtree.NodeEnc)
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+void NodeEnc::CopyFrom(const NodeEnc& from) {
+// @@protoc_insertion_point(class_specific_copy_from_start:fedtree.NodeEnc)
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+bool NodeEnc::IsInitialized() const {
+  return true;
+}
+
+void NodeEnc::InternalSwap(NodeEnc* other) {
+  using std::swap;
+  _internal_metadata_.Swap<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(&other->_internal_metadata_);
+  sum_gh_pair_g_enc_.Swap(&other->sum_gh_pair_g_enc_, &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+  sum_gh_pair_h_enc_.Swap(&other->sum_gh_pair_h_enc_, &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+  ::PROTOBUF_NAMESPACE_ID::internal::memswap<
+      PROTOBUF_FIELD_OFFSET(NodeEnc, n_instances_)
+      + sizeof(NodeEnc::n_instances_)
+      - PROTOBUF_FIELD_OFFSET(NodeEnc, final_id_)>(
+          reinterpret_cast<char*>(&final_id_),
+          reinterpret_cast<char*>(&other->final_id_));
+}
+
+::PROTOBUF_NAMESPACE_ID::Metadata NodeEnc::GetMetadata() const {
+  return GetMetadataStatic();
+}
+
+
+// ===================================================================
+
 class Node::_Internal {
  public:
 };
@@ -4993,6 +5640,9 @@ template<> PROTOBUF_NOINLINE ::fedtree::FID* Arena::CreateMaybeMessage< ::fedtre
 }
 template<> PROTOBUF_NOINLINE ::fedtree::BestInfo* Arena::CreateMaybeMessage< ::fedtree::BestInfo >(Arena* arena) {
   return Arena::CreateMessageInternal< ::fedtree::BestInfo >(arena);
+}
+template<> PROTOBUF_NOINLINE ::fedtree::NodeEnc* Arena::CreateMaybeMessage< ::fedtree::NodeEnc >(Arena* arena) {
+  return Arena::CreateMessageInternal< ::fedtree::NodeEnc >(arena);
 }
 template<> PROTOBUF_NOINLINE ::fedtree::Node* Arena::CreateMaybeMessage< ::fedtree::Node >(Arena* arena) {
   return Arena::CreateMessageInternal< ::fedtree::Node >(arena);
