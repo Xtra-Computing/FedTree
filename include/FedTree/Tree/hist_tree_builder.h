@@ -32,7 +32,7 @@ public:
     void compute_histogram_in_a_node(SyncArray<GHPair> &gradients, HistCut &cut, SyncArray<unsigned char> &dense_bin_id);
 
     void compute_gain_in_a_level(SyncArray<float_type> &gain, int n_nodes_in_level, int n_bins, int* hist_fid_data,
-                                 SyncArray<GHPair> &missing_gh, SyncArray<GHPair> &hist, int n_columns = 0) override;
+                                 SyncArray<GHPair> &missing_gh, SyncArray<GHPair> &hist) override;
 
     void get_best_gain_in_a_level(SyncArray<float_type> &gain, SyncArray<int_float> &best_idx_gain, int n_nodes_in_level, int n_bins) override;
 

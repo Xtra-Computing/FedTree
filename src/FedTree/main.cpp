@@ -145,9 +145,27 @@ int main(int argc, char** argv){
         if (fl_param.mode == "vertical") {
             server.vertical_init(fl_param, dataset.n_instances(), n_instances_per_party, dataset.y, dataset.label);
         } else if (fl_param.mode == "horizontal") {
-            server.horizontal_init(fl_param, dataset.n_instances(), n_instances_per_party, dataset);
-        } else {
-            server.init(fl_param, dataset.n_instances(), n_instances_per_party);
+//            DataSet server_fake_dataset;
+//            server_fake_dataset.y.resize(dataset.n_instances());
+//            server_fake_dataset.label = dataset.label;
+//            server_fake_dataset.is_classification = dataset.is_classification;
+//            server_fake_dataset.group = dataset.group;
+//            server_fake_dataset.label_map = dataset.label_map;
+
+//            server_fake_dataset.y = dataset.y;
+//            server_fake_dataset.use_cpu = dataset.use_cpu;
+//            server_fake_dataset.has_csc = dataset.has_csc;
+//            server_fake_dataset.n_features_ = dataset.n_features_;
+//            server_fake_dataset.csr_val = dataset.csr_val;
+//            server_fake_dataset.csr_row_ptr = dataset.csr_row_ptr;
+//            server_fake_dataset.csr_col_idx = dataset.csr_col_idx;
+
+//            server_fake_dataset.csc_val = dataset.csc_val;
+//            server_fake_dataset.csc_row_idx = dataset.csc_row_idx;
+//            server_fake_dataset.csc_col_ptr = dataset.csc_col_ptr;
+
+//            server_fake_dataset = dataset;
+            server.horizontal_init(fl_param);
         }
     }
 

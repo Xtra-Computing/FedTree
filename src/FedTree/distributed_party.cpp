@@ -1240,9 +1240,9 @@ void distributed_horizontal_train(DistributedParty& party, FLParam &fl_param) {
                 }
             }
             // server prune
-            if (party.pid == 0) {
-                party.TriggerPrune(k);
-            }
+//            if (party.pid == 0) {
+//                party.TriggerPrune(k);
+//            }
             Tree &tree = trees[k];
             tree = party.booster.fbuilder->get_tree();
             party.booster.fbuilder->trees.prune_self(fl_param.gbdt_param.gamma);

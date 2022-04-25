@@ -125,9 +125,7 @@ extern "C" {
         if (fl_param.mode == "vertical") {
             server.vertical_init(fl_param, training_set.n_instances(), n_instances_per_party, training_set.y, training_set.label);
         }else if (fl_param.mode == "horizontal") {
-            server.horizontal_init(fl_param, training_set.n_instances(), n_instances_per_party, training_set);
-        }else {
-            server.init(fl_param, training_set.n_instances(), n_instances_per_party);
+            server.horizontal_init(fl_param);
         }
 
         LOG(INFO) << "Run the trainer";

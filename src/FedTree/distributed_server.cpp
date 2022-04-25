@@ -233,7 +233,7 @@ grpc::Status DistributedServer::TriggerAggregate(grpc::ServerContext *context, c
         dec_time += t3.count();
     }
     booster.fbuilder->compute_gain_in_a_level(gain, n_nodes_in_level, n_bins_new, hist_fid.host_data(), missing_gh,
-                                              hist, n_column_new);
+                                              hist);
     LOG(DEBUG) << "gain: " << gain;
 
     SyncArray<int_float> best_idx_gain(n_nodes_in_level);
@@ -1298,16 +1298,15 @@ int main(int argc, char **argv) {
     }
     else if (fl_param.mode == "horizontal") {
         server.HorizontalInitVectors(n_parties);
-        // FIXME strong assumptions: n_instances are even
-        int stride = dataset.n_instances() / n_parties;
-        vector<int> n_instances_per_party(n_parties);
-        for (int i = 0; i < n_parties; i++) {
-            n_instances_per_party[i] = stride;
-        }
-        n_instances_per_party[n_parties-1] += dataset.n_instances() - stride * n_parties;
-        // FIXME server不应该知道全局dataset
+//        int stride = dataset.n_instances() / n_parties;
+//        vector<int> n_instances_per_party(n_parties);
+//        for (int i = 0; i < n_parties; i++) {
+//            n_instances_per_party[i] = stride;
+//        }
+//        n_instances_per_party[n_parties-1] += dataset.n_instances() - stride * n_parties;
         server.param = fl_param;
-        server.horizontal_init(fl_param, dataset.n_instances(), n_instances_per_party, dataset);
+//        server.horizontal_init(fl_param, dataset.n_instances(), n_instances_per_party, dataset);
+        server.horizontal_init(fl_param);
         server.booster.fbuilder->party_containers_init(fl_param.n_parties);
     }
 

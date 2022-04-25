@@ -18,18 +18,51 @@
 //}
 
 
-void Server::init(FLParam &param, int n_total_instances, vector<int> &n_instances_per_party){
+//void Server::init(FLParam &param, vector<int> &n_instances_per_party){
+//    this->local_trees.resize(param.n_parties);
+//    this->model_param = param.gbdt_param;
+//    this->n_instances_per_party = n_instances_per_party;
+//    this->global_trees.trees.clear();
+//}
+
+void Server::horizontal_init(FLParam &param) {
+    DataSet dataSet;
     this->local_trees.resize(param.n_parties);
     this->model_param = param.gbdt_param;
-    this->n_total_instances = n_total_instances;
-    this->n_instances_per_party = n_instances_per_party;
     this->global_trees.trees.clear();
+    booster.fbuilder.reset(new HistTreeBuilder);
+    booster.fbuilder->init_nocutpoints(dataSet, param.gbdt_param); //if remove this line, cannot successfully run
+    booster.param = param.gbdt_param;
 }
 
-void Server::horizontal_init (FLParam &param, int n_total_instances, vector<int> &n_instances_per_party, DataSet &dataset) {
-    init(param, n_total_instances, n_instances_per_party);
-    booster.init(dataset, param.gbdt_param);
-}
+
+//void Server::horizontal_init(FLParam &param, int n_total_instances, vector<int> &n_instances_per_party, DataSet& dataset) {
+////    DataSet dataSet;
+//    this->local_trees.resize(param.n_parties);
+//    this->model_param = param.gbdt_param;
+//    this->n_instances_per_party = n_instances_per_party;
+//    this->global_trees.trees.clear();
+//    this->n_total_instances = n_total_instances;
+////    init(param, n_total_instances, n_instances_per_party);
+////    booster.init(dataset, param.gbdt_param);
+//    booster.fbuilder.reset(new HistTreeBuilder);
+//    booster.fbuilder->init_nocutpoints(dataset, param.gbdt_param); //if remove this line, cannot successfully run
+//    booster.param = param.gbdt_param;
+//    booster.obj.reset(ObjectiveFunction::create(param.gbdt_param.objective));
+//    booster.obj->configure(param.gbdt_param, dataSet);
+//    if (param.gbdt_param.metric == "default") {
+//        booster.metric.reset(Metric::create(booster.obj->default_metric_name()));
+//    }else {
+//        booster.metric.reset(Metric::create(param.gbdt_param.metric));
+//    }
+//    booster.metric->configure(param.gbdt_param, dataSet);
+//    booster.n_devices = param.gbdt_param.n_device;
+//    int n_outputs = param.gbdt_param.num_class * dataSet.n_instances();
+//    booster.gradients.resize(n_outputs);
+//    booster.y = SyncArray<float_type>(dataSet.n_instances());
+//    booster.y.copy_from(dataSet.y.data(), dataSet.n_instances());
+//}
+
 
 void Server::vertical_init(FLParam &param, int n_total_instances, vector<int> &n_instances_per_party, vector<float_type> y,
                            vector<float_type> label){

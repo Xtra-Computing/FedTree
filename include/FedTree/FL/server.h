@@ -17,9 +17,9 @@
 
 class Server : public Party {
 public:
-    void init(FLParam &param, int n_total_instances, vector<int> &n_instances_per_party);
+//    void init(FLParam &param, int n_total_instances, vector<int> &n_instances_per_party);
 
-    void horizontal_init (FLParam &param, int n_total_instances, vector<int> &n_instances_per_party, DataSet &dataSet);
+    void horizontal_init (FLParam &param);
 
     void vertical_init(FLParam &param, int n_total_instances, vector<int> &n_instances_per_party, vector<float_type> y,
                        vector<float_type> label);

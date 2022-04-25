@@ -618,7 +618,7 @@ void FLtrainer::vertical_fl_trainer(vector<Party> &parties, Server &server, FLPa
                 // LOG(INFO) << "hist:"<<"\n"<<hist;
                 server.booster.fbuilder->compute_gain_in_a_level(gain, n_nodes_in_level, n_bins_new,
                                                                  global_hist_fid.host_data(),
-                                                                 missing_gh, hist, n_column_new);
+                                                                 missing_gh, hist);
                 // server find the best gain and its index
                 SyncArray<int_float> best_idx_gain(n_nodes_in_level);
 

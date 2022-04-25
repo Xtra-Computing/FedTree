@@ -13,6 +13,7 @@
 #include "FedTree/util/log.h"
 #include "cstdlib"
 #include "config.h"
+#include <math.h>
 #include "thrust/tuple.h"
 //#include "FedTree/Encryption/HE.h"
 
