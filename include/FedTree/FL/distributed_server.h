@@ -128,6 +128,12 @@ public:
     grpc::Status BeginBarrier(grpc::ServerContext *context, const fedtree::PID *request, 
                                 fedtree::Ready *ready) override;
     
+    grpc::Status GetGradientBatchesEnc(grpc::ServerContext *context, const fedtree::PID *request,
+                                grpc::ServerWriter<fedtree::GHEncBatch> *writer) override;
+    
+    grpc::Status SendNodeEnc(grpc::ServerContext *context, const fedtree::NodeEnc *node,
+                          fedtree::PID *id) override;
+    
     void VerticalInitVectors(int n_parties);
 
     void HorizontalInitVectors(int n_parties);
@@ -151,7 +157,7 @@ public:
     }
     // for profiling
     vector<double> party_wait_times;
-    
+
 private:
     // mutex
     std::mutex mutex;
@@ -159,6 +165,11 @@ private:
     vector<bool> stoppable;
     vector<float> party_tot_times;
     vector<float> party_comm_times;
+    vector<float> party_enc_times;
+    vector<fedtree::GHEncBatch> tmp_gradients;
+    
+    double dec_time = 0;
+    double enc_time = 0;
     // end
     vector<int> cont_votes;
     vector<BestInfo> best_infos;

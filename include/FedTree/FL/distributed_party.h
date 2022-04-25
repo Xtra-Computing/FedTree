@@ -37,7 +37,8 @@ public:
     void GetBestInfo(vector<BestInfo> &bests);
 
     void SendNode(Tree::TreeNode &node_data);
-
+    void SendNodeEnc(Tree::TreeNode &node_data);
+    
     void SendIns2NodeID(SyncArray<int> &ins2node_id, int nid);
 
     void GetNodes(int l);
@@ -84,13 +85,15 @@ public:
 
     void GetGradientBatches();
 
+    void GetGradientBatchesEnc();
+
     void SendHistogramBatchesEnc(const SyncArray<GHPair> &hist, int type);
     
     void StopServer(float tot_time);
 
     void BeginBarrier();
     double comm_time = 0;
-    
+    double enc_time = 0;
     std::chrono::high_resolution_clock timer;
 
 private:

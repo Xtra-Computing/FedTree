@@ -46,7 +46,7 @@ struct TableStruct_fedtree_2eproto {
     PROTOBUF_SECTION_VARIABLE(protodesc_cold);
   static const ::PROTOBUF_NAMESPACE_ID::internal::AuxiliaryParseTableField aux[]
     PROTOBUF_SECTION_VARIABLE(protodesc_cold);
-  static const ::PROTOBUF_NAMESPACE_ID::internal::ParseTable schema[17]
+  static const ::PROTOBUF_NAMESPACE_ID::internal::ParseTable schema[18]
     PROTOBUF_SECTION_VARIABLE(protodesc_cold);
   static const ::PROTOBUF_NAMESPACE_ID::internal::FieldMetadata field_metadata[];
   static const ::PROTOBUF_NAMESPACE_ID::internal::SerializationTable serialization_table[];
@@ -90,6 +90,9 @@ extern Ins2NodeIDBatchDefaultTypeInternal _Ins2NodeIDBatch_default_instance_;
 class Node;
 class NodeDefaultTypeInternal;
 extern NodeDefaultTypeInternal _Node_default_instance_;
+class NodeEnc;
+class NodeEncDefaultTypeInternal;
+extern NodeEncDefaultTypeInternal _NodeEnc_default_instance_;
 class PID;
 class PIDDefaultTypeInternal;
 extern PIDDefaultTypeInternal _PID_default_instance_;
@@ -119,6 +122,7 @@ template<> ::fedtree::GHPairEnc* Arena::CreateMaybeMessage<::fedtree::GHPairEnc>
 template<> ::fedtree::Ins2NodeID* Arena::CreateMaybeMessage<::fedtree::Ins2NodeID>(Arena*);
 template<> ::fedtree::Ins2NodeIDBatch* Arena::CreateMaybeMessage<::fedtree::Ins2NodeIDBatch>(Arena*);
 template<> ::fedtree::Node* Arena::CreateMaybeMessage<::fedtree::Node>(Arena*);
+template<> ::fedtree::NodeEnc* Arena::CreateMaybeMessage<::fedtree::NodeEnc>(Arena*);
 template<> ::fedtree::PID* Arena::CreateMaybeMessage<::fedtree::PID>(Arena*);
 template<> ::fedtree::Paillier* Arena::CreateMaybeMessage<::fedtree::Paillier>(Arena*);
 template<> ::fedtree::Ready* Arena::CreateMaybeMessage<::fedtree::Ready>(Arena*);
@@ -2367,6 +2371,332 @@ class BestInfo PROTOBUF_FINAL :
 };
 // -------------------------------------------------------------------
 
+class NodeEnc PROTOBUF_FINAL :
+    public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:fedtree.NodeEnc) */ {
+ public:
+  inline NodeEnc() : NodeEnc(nullptr) {}
+  virtual ~NodeEnc();
+
+  NodeEnc(const NodeEnc& from);
+  NodeEnc(NodeEnc&& from) noexcept
+    : NodeEnc() {
+    *this = ::std::move(from);
+  }
+
+  inline NodeEnc& operator=(const NodeEnc& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  inline NodeEnc& operator=(NodeEnc&& from) noexcept {
+    if (GetArena() == from.GetArena()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* descriptor() {
+    return GetDescriptor();
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* GetDescriptor() {
+    return GetMetadataStatic().descriptor;
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
+    return GetMetadataStatic().reflection;
+  }
+  static const NodeEnc& default_instance();
+
+  static inline const NodeEnc* internal_default_instance() {
+    return reinterpret_cast<const NodeEnc*>(
+               &_NodeEnc_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages =
+    14;
+
+  friend void swap(NodeEnc& a, NodeEnc& b) {
+    a.Swap(&b);
+  }
+  inline void Swap(NodeEnc* other) {
+    if (other == this) return;
+    if (GetArena() == other->GetArena()) {
+      InternalSwap(other);
+    } else {
+      ::PROTOBUF_NAMESPACE_ID::internal::GenericSwap(this, other);
+    }
+  }
+  void UnsafeArenaSwap(NodeEnc* other) {
+    if (other == this) return;
+    GOOGLE_DCHECK(GetArena() == other->GetArena());
+    InternalSwap(other);
+  }
+
+  // implements Message ----------------------------------------------
+
+  inline NodeEnc* New() const final {
+    return CreateMaybeMessage<NodeEnc>(nullptr);
+  }
+
+  NodeEnc* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+    return CreateMaybeMessage<NodeEnc>(arena);
+  }
+  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void CopyFrom(const NodeEnc& from);
+  void MergeFrom(const NodeEnc& from);
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
+  bool IsInitialized() const final;
+
+  size_t ByteSizeLong() const final;
+  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
+  ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
+      ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
+  int GetCachedSize() const final { return _cached_size_.Get(); }
+
+  private:
+  inline void SharedCtor();
+  inline void SharedDtor();
+  void SetCachedSize(int size) const final;
+  void InternalSwap(NodeEnc* other);
+  friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
+  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
+    return "fedtree.NodeEnc";
+  }
+  protected:
+  explicit NodeEnc(::PROTOBUF_NAMESPACE_ID::Arena* arena);
+  private:
+  static void ArenaDtor(void* object);
+  inline void RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
+  public:
+
+  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
+  private:
+  static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
+    ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_fedtree_2eproto);
+    return ::descriptor_table_fedtree_2eproto.file_level_metadata[kIndexInFileMessages];
+  }
+
+  public:
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  enum : int {
+    kSumGhPairGEncFieldNumber = 15,
+    kSumGhPairHEncFieldNumber = 16,
+    kFinalIdFieldNumber = 1,
+    kLchIndexFieldNumber = 2,
+    kRchIndexFieldNumber = 3,
+    kParentIndexFieldNumber = 4,
+    kGainFieldNumber = 5,
+    kBaseWeightFieldNumber = 6,
+    kSplitFeatureIdFieldNumber = 7,
+    kPidFieldNumber = 8,
+    kSplitValueFieldNumber = 9,
+    kSplitBidFieldNumber = 10,
+    kDefaultRightFieldNumber = 11,
+    kIsLeafFieldNumber = 12,
+    kIsValidFieldNumber = 13,
+    kIsPrunedFieldNumber = 14,
+    kNInstancesFieldNumber = 17,
+  };
+  // string sum_gh_pair_g_enc = 15;
+  void clear_sum_gh_pair_g_enc();
+  const std::string& sum_gh_pair_g_enc() const;
+  void set_sum_gh_pair_g_enc(const std::string& value);
+  void set_sum_gh_pair_g_enc(std::string&& value);
+  void set_sum_gh_pair_g_enc(const char* value);
+  void set_sum_gh_pair_g_enc(const char* value, size_t size);
+  std::string* mutable_sum_gh_pair_g_enc();
+  std::string* release_sum_gh_pair_g_enc();
+  void set_allocated_sum_gh_pair_g_enc(std::string* sum_gh_pair_g_enc);
+  private:
+  const std::string& _internal_sum_gh_pair_g_enc() const;
+  void _internal_set_sum_gh_pair_g_enc(const std::string& value);
+  std::string* _internal_mutable_sum_gh_pair_g_enc();
+  public:
+
+  // string sum_gh_pair_h_enc = 16;
+  void clear_sum_gh_pair_h_enc();
+  const std::string& sum_gh_pair_h_enc() const;
+  void set_sum_gh_pair_h_enc(const std::string& value);
+  void set_sum_gh_pair_h_enc(std::string&& value);
+  void set_sum_gh_pair_h_enc(const char* value);
+  void set_sum_gh_pair_h_enc(const char* value, size_t size);
+  std::string* mutable_sum_gh_pair_h_enc();
+  std::string* release_sum_gh_pair_h_enc();
+  void set_allocated_sum_gh_pair_h_enc(std::string* sum_gh_pair_h_enc);
+  private:
+  const std::string& _internal_sum_gh_pair_h_enc() const;
+  void _internal_set_sum_gh_pair_h_enc(const std::string& value);
+  std::string* _internal_mutable_sum_gh_pair_h_enc();
+  public:
+
+  // int32 final_id = 1;
+  void clear_final_id();
+  ::PROTOBUF_NAMESPACE_ID::int32 final_id() const;
+  void set_final_id(::PROTOBUF_NAMESPACE_ID::int32 value);
+  private:
+  ::PROTOBUF_NAMESPACE_ID::int32 _internal_final_id() const;
+  void _internal_set_final_id(::PROTOBUF_NAMESPACE_ID::int32 value);
+  public:
+
+  // int32 lch_index = 2;
+  void clear_lch_index();
+  ::PROTOBUF_NAMESPACE_ID::int32 lch_index() const;
+  void set_lch_index(::PROTOBUF_NAMESPACE_ID::int32 value);
+  private:
+  ::PROTOBUF_NAMESPACE_ID::int32 _internal_lch_index() const;
+  void _internal_set_lch_index(::PROTOBUF_NAMESPACE_ID::int32 value);
+  public:
+
+  // int32 rch_index = 3;
+  void clear_rch_index();
+  ::PROTOBUF_NAMESPACE_ID::int32 rch_index() const;
+  void set_rch_index(::PROTOBUF_NAMESPACE_ID::int32 value);
+  private:
+  ::PROTOBUF_NAMESPACE_ID::int32 _internal_rch_index() const;
+  void _internal_set_rch_index(::PROTOBUF_NAMESPACE_ID::int32 value);
+  public:
+
+  // int32 parent_index = 4;
+  void clear_parent_index();
+  ::PROTOBUF_NAMESPACE_ID::int32 parent_index() const;
+  void set_parent_index(::PROTOBUF_NAMESPACE_ID::int32 value);
+  private:
+  ::PROTOBUF_NAMESPACE_ID::int32 _internal_parent_index() const;
+  void _internal_set_parent_index(::PROTOBUF_NAMESPACE_ID::int32 value);
+  public:
+
+  // float gain = 5;
+  void clear_gain();
+  float gain() const;
+  void set_gain(float value);
+  private:
+  float _internal_gain() const;
+  void _internal_set_gain(float value);
+  public:
+
+  // float base_weight = 6;
+  void clear_base_weight();
+  float base_weight() const;
+  void set_base_weight(float value);
+  private:
+  float _internal_base_weight() const;
+  void _internal_set_base_weight(float value);
+  public:
+
+  // int32 split_feature_id = 7;
+  void clear_split_feature_id();
+  ::PROTOBUF_NAMESPACE_ID::int32 split_feature_id() const;
+  void set_split_feature_id(::PROTOBUF_NAMESPACE_ID::int32 value);
+  private:
+  ::PROTOBUF_NAMESPACE_ID::int32 _internal_split_feature_id() const;
+  void _internal_set_split_feature_id(::PROTOBUF_NAMESPACE_ID::int32 value);
+  public:
+
+  // int32 pid = 8;
+  void clear_pid();
+  ::PROTOBUF_NAMESPACE_ID::int32 pid() const;
+  void set_pid(::PROTOBUF_NAMESPACE_ID::int32 value);
+  private:
+  ::PROTOBUF_NAMESPACE_ID::int32 _internal_pid() const;
+  void _internal_set_pid(::PROTOBUF_NAMESPACE_ID::int32 value);
+  public:
+
+  // float split_value = 9;
+  void clear_split_value();
+  float split_value() const;
+  void set_split_value(float value);
+  private:
+  float _internal_split_value() const;
+  void _internal_set_split_value(float value);
+  public:
+
+  // int32 split_bid = 10;
+  void clear_split_bid();
+  ::PROTOBUF_NAMESPACE_ID::int32 split_bid() const;
+  void set_split_bid(::PROTOBUF_NAMESPACE_ID::int32 value);
+  private:
+  ::PROTOBUF_NAMESPACE_ID::int32 _internal_split_bid() const;
+  void _internal_set_split_bid(::PROTOBUF_NAMESPACE_ID::int32 value);
+  public:
+
+  // bool default_right = 11;
+  void clear_default_right();
+  bool default_right() const;
+  void set_default_right(bool value);
+  private:
+  bool _internal_default_right() const;
+  void _internal_set_default_right(bool value);
+  public:
+
+  // bool is_leaf = 12;
+  void clear_is_leaf();
+  bool is_leaf() const;
+  void set_is_leaf(bool value);
+  private:
+  bool _internal_is_leaf() const;
+  void _internal_set_is_leaf(bool value);
+  public:
+
+  // bool is_valid = 13;
+  void clear_is_valid();
+  bool is_valid() const;
+  void set_is_valid(bool value);
+  private:
+  bool _internal_is_valid() const;
+  void _internal_set_is_valid(bool value);
+  public:
+
+  // bool is_pruned = 14;
+  void clear_is_pruned();
+  bool is_pruned() const;
+  void set_is_pruned(bool value);
+  private:
+  bool _internal_is_pruned() const;
+  void _internal_set_is_pruned(bool value);
+  public:
+
+  // int32 n_instances = 17;
+  void clear_n_instances();
+  ::PROTOBUF_NAMESPACE_ID::int32 n_instances() const;
+  void set_n_instances(::PROTOBUF_NAMESPACE_ID::int32 value);
+  private:
+  ::PROTOBUF_NAMESPACE_ID::int32 _internal_n_instances() const;
+  void _internal_set_n_instances(::PROTOBUF_NAMESPACE_ID::int32 value);
+  public:
+
+  // @@protoc_insertion_point(class_scope:fedtree.NodeEnc)
+ private:
+  class _Internal;
+
+  template <typename T> friend class ::PROTOBUF_NAMESPACE_ID::Arena::InternalHelper;
+  typedef void InternalArenaConstructable_;
+  typedef void DestructorSkippable_;
+  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr sum_gh_pair_g_enc_;
+  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr sum_gh_pair_h_enc_;
+  ::PROTOBUF_NAMESPACE_ID::int32 final_id_;
+  ::PROTOBUF_NAMESPACE_ID::int32 lch_index_;
+  ::PROTOBUF_NAMESPACE_ID::int32 rch_index_;
+  ::PROTOBUF_NAMESPACE_ID::int32 parent_index_;
+  float gain_;
+  float base_weight_;
+  ::PROTOBUF_NAMESPACE_ID::int32 split_feature_id_;
+  ::PROTOBUF_NAMESPACE_ID::int32 pid_;
+  float split_value_;
+  ::PROTOBUF_NAMESPACE_ID::int32 split_bid_;
+  bool default_right_;
+  bool is_leaf_;
+  bool is_valid_;
+  bool is_pruned_;
+  ::PROTOBUF_NAMESPACE_ID::int32 n_instances_;
+  mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
+  friend struct ::TableStruct_fedtree_2eproto;
+};
+// -------------------------------------------------------------------
+
 class Node PROTOBUF_FINAL :
     public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:fedtree.Node) */ {
  public:
@@ -2408,7 +2738,7 @@ class Node PROTOBUF_FINAL :
                &_Node_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    14;
+    15;
 
   friend void swap(Node& a, Node& b) {
     a.Swap(&b);
@@ -2720,7 +3050,7 @@ class Ins2NodeID PROTOBUF_FINAL :
                &_Ins2NodeID_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    15;
+    16;
 
   friend void swap(Ins2NodeID& a, Ins2NodeID& b) {
     a.Swap(&b);
@@ -2867,7 +3197,7 @@ class Ins2NodeIDBatch PROTOBUF_FINAL :
                &_Ins2NodeIDBatch_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    16;
+    17;
 
   friend void swap(Ins2NodeIDBatch& a, Ins2NodeIDBatch& b) {
     a.Swap(&b);
@@ -4124,6 +4454,432 @@ inline void BestInfo::set_gain(double value) {
 
 // -------------------------------------------------------------------
 
+// NodeEnc
+
+// int32 final_id = 1;
+inline void NodeEnc::clear_final_id() {
+  final_id_ = 0;
+}
+inline ::PROTOBUF_NAMESPACE_ID::int32 NodeEnc::_internal_final_id() const {
+  return final_id_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::int32 NodeEnc::final_id() const {
+  // @@protoc_insertion_point(field_get:fedtree.NodeEnc.final_id)
+  return _internal_final_id();
+}
+inline void NodeEnc::_internal_set_final_id(::PROTOBUF_NAMESPACE_ID::int32 value) {
+  
+  final_id_ = value;
+}
+inline void NodeEnc::set_final_id(::PROTOBUF_NAMESPACE_ID::int32 value) {
+  _internal_set_final_id(value);
+  // @@protoc_insertion_point(field_set:fedtree.NodeEnc.final_id)
+}
+
+// int32 lch_index = 2;
+inline void NodeEnc::clear_lch_index() {
+  lch_index_ = 0;
+}
+inline ::PROTOBUF_NAMESPACE_ID::int32 NodeEnc::_internal_lch_index() const {
+  return lch_index_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::int32 NodeEnc::lch_index() const {
+  // @@protoc_insertion_point(field_get:fedtree.NodeEnc.lch_index)
+  return _internal_lch_index();
+}
+inline void NodeEnc::_internal_set_lch_index(::PROTOBUF_NAMESPACE_ID::int32 value) {
+  
+  lch_index_ = value;
+}
+inline void NodeEnc::set_lch_index(::PROTOBUF_NAMESPACE_ID::int32 value) {
+  _internal_set_lch_index(value);
+  // @@protoc_insertion_point(field_set:fedtree.NodeEnc.lch_index)
+}
+
+// int32 rch_index = 3;
+inline void NodeEnc::clear_rch_index() {
+  rch_index_ = 0;
+}
+inline ::PROTOBUF_NAMESPACE_ID::int32 NodeEnc::_internal_rch_index() const {
+  return rch_index_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::int32 NodeEnc::rch_index() const {
+  // @@protoc_insertion_point(field_get:fedtree.NodeEnc.rch_index)
+  return _internal_rch_index();
+}
+inline void NodeEnc::_internal_set_rch_index(::PROTOBUF_NAMESPACE_ID::int32 value) {
+  
+  rch_index_ = value;
+}
+inline void NodeEnc::set_rch_index(::PROTOBUF_NAMESPACE_ID::int32 value) {
+  _internal_set_rch_index(value);
+  // @@protoc_insertion_point(field_set:fedtree.NodeEnc.rch_index)
+}
+
+// int32 parent_index = 4;
+inline void NodeEnc::clear_parent_index() {
+  parent_index_ = 0;
+}
+inline ::PROTOBUF_NAMESPACE_ID::int32 NodeEnc::_internal_parent_index() const {
+  return parent_index_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::int32 NodeEnc::parent_index() const {
+  // @@protoc_insertion_point(field_get:fedtree.NodeEnc.parent_index)
+  return _internal_parent_index();
+}
+inline void NodeEnc::_internal_set_parent_index(::PROTOBUF_NAMESPACE_ID::int32 value) {
+  
+  parent_index_ = value;
+}
+inline void NodeEnc::set_parent_index(::PROTOBUF_NAMESPACE_ID::int32 value) {
+  _internal_set_parent_index(value);
+  // @@protoc_insertion_point(field_set:fedtree.NodeEnc.parent_index)
+}
+
+// float gain = 5;
+inline void NodeEnc::clear_gain() {
+  gain_ = 0;
+}
+inline float NodeEnc::_internal_gain() const {
+  return gain_;
+}
+inline float NodeEnc::gain() const {
+  // @@protoc_insertion_point(field_get:fedtree.NodeEnc.gain)
+  return _internal_gain();
+}
+inline void NodeEnc::_internal_set_gain(float value) {
+  
+  gain_ = value;
+}
+inline void NodeEnc::set_gain(float value) {
+  _internal_set_gain(value);
+  // @@protoc_insertion_point(field_set:fedtree.NodeEnc.gain)
+}
+
+// float base_weight = 6;
+inline void NodeEnc::clear_base_weight() {
+  base_weight_ = 0;
+}
+inline float NodeEnc::_internal_base_weight() const {
+  return base_weight_;
+}
+inline float NodeEnc::base_weight() const {
+  // @@protoc_insertion_point(field_get:fedtree.NodeEnc.base_weight)
+  return _internal_base_weight();
+}
+inline void NodeEnc::_internal_set_base_weight(float value) {
+  
+  base_weight_ = value;
+}
+inline void NodeEnc::set_base_weight(float value) {
+  _internal_set_base_weight(value);
+  // @@protoc_insertion_point(field_set:fedtree.NodeEnc.base_weight)
+}
+
+// int32 split_feature_id = 7;
+inline void NodeEnc::clear_split_feature_id() {
+  split_feature_id_ = 0;
+}
+inline ::PROTOBUF_NAMESPACE_ID::int32 NodeEnc::_internal_split_feature_id() const {
+  return split_feature_id_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::int32 NodeEnc::split_feature_id() const {
+  // @@protoc_insertion_point(field_get:fedtree.NodeEnc.split_feature_id)
+  return _internal_split_feature_id();
+}
+inline void NodeEnc::_internal_set_split_feature_id(::PROTOBUF_NAMESPACE_ID::int32 value) {
+  
+  split_feature_id_ = value;
+}
+inline void NodeEnc::set_split_feature_id(::PROTOBUF_NAMESPACE_ID::int32 value) {
+  _internal_set_split_feature_id(value);
+  // @@protoc_insertion_point(field_set:fedtree.NodeEnc.split_feature_id)
+}
+
+// int32 pid = 8;
+inline void NodeEnc::clear_pid() {
+  pid_ = 0;
+}
+inline ::PROTOBUF_NAMESPACE_ID::int32 NodeEnc::_internal_pid() const {
+  return pid_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::int32 NodeEnc::pid() const {
+  // @@protoc_insertion_point(field_get:fedtree.NodeEnc.pid)
+  return _internal_pid();
+}
+inline void NodeEnc::_internal_set_pid(::PROTOBUF_NAMESPACE_ID::int32 value) {
+  
+  pid_ = value;
+}
+inline void NodeEnc::set_pid(::PROTOBUF_NAMESPACE_ID::int32 value) {
+  _internal_set_pid(value);
+  // @@protoc_insertion_point(field_set:fedtree.NodeEnc.pid)
+}
+
+// float split_value = 9;
+inline void NodeEnc::clear_split_value() {
+  split_value_ = 0;
+}
+inline float NodeEnc::_internal_split_value() const {
+  return split_value_;
+}
+inline float NodeEnc::split_value() const {
+  // @@protoc_insertion_point(field_get:fedtree.NodeEnc.split_value)
+  return _internal_split_value();
+}
+inline void NodeEnc::_internal_set_split_value(float value) {
+  
+  split_value_ = value;
+}
+inline void NodeEnc::set_split_value(float value) {
+  _internal_set_split_value(value);
+  // @@protoc_insertion_point(field_set:fedtree.NodeEnc.split_value)
+}
+
+// int32 split_bid = 10;
+inline void NodeEnc::clear_split_bid() {
+  split_bid_ = 0;
+}
+inline ::PROTOBUF_NAMESPACE_ID::int32 NodeEnc::_internal_split_bid() const {
+  return split_bid_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::int32 NodeEnc::split_bid() const {
+  // @@protoc_insertion_point(field_get:fedtree.NodeEnc.split_bid)
+  return _internal_split_bid();
+}
+inline void NodeEnc::_internal_set_split_bid(::PROTOBUF_NAMESPACE_ID::int32 value) {
+  
+  split_bid_ = value;
+}
+inline void NodeEnc::set_split_bid(::PROTOBUF_NAMESPACE_ID::int32 value) {
+  _internal_set_split_bid(value);
+  // @@protoc_insertion_point(field_set:fedtree.NodeEnc.split_bid)
+}
+
+// bool default_right = 11;
+inline void NodeEnc::clear_default_right() {
+  default_right_ = false;
+}
+inline bool NodeEnc::_internal_default_right() const {
+  return default_right_;
+}
+inline bool NodeEnc::default_right() const {
+  // @@protoc_insertion_point(field_get:fedtree.NodeEnc.default_right)
+  return _internal_default_right();
+}
+inline void NodeEnc::_internal_set_default_right(bool value) {
+  
+  default_right_ = value;
+}
+inline void NodeEnc::set_default_right(bool value) {
+  _internal_set_default_right(value);
+  // @@protoc_insertion_point(field_set:fedtree.NodeEnc.default_right)
+}
+
+// bool is_leaf = 12;
+inline void NodeEnc::clear_is_leaf() {
+  is_leaf_ = false;
+}
+inline bool NodeEnc::_internal_is_leaf() const {
+  return is_leaf_;
+}
+inline bool NodeEnc::is_leaf() const {
+  // @@protoc_insertion_point(field_get:fedtree.NodeEnc.is_leaf)
+  return _internal_is_leaf();
+}
+inline void NodeEnc::_internal_set_is_leaf(bool value) {
+  
+  is_leaf_ = value;
+}
+inline void NodeEnc::set_is_leaf(bool value) {
+  _internal_set_is_leaf(value);
+  // @@protoc_insertion_point(field_set:fedtree.NodeEnc.is_leaf)
+}
+
+// bool is_valid = 13;
+inline void NodeEnc::clear_is_valid() {
+  is_valid_ = false;
+}
+inline bool NodeEnc::_internal_is_valid() const {
+  return is_valid_;
+}
+inline bool NodeEnc::is_valid() const {
+  // @@protoc_insertion_point(field_get:fedtree.NodeEnc.is_valid)
+  return _internal_is_valid();
+}
+inline void NodeEnc::_internal_set_is_valid(bool value) {
+  
+  is_valid_ = value;
+}
+inline void NodeEnc::set_is_valid(bool value) {
+  _internal_set_is_valid(value);
+  // @@protoc_insertion_point(field_set:fedtree.NodeEnc.is_valid)
+}
+
+// bool is_pruned = 14;
+inline void NodeEnc::clear_is_pruned() {
+  is_pruned_ = false;
+}
+inline bool NodeEnc::_internal_is_pruned() const {
+  return is_pruned_;
+}
+inline bool NodeEnc::is_pruned() const {
+  // @@protoc_insertion_point(field_get:fedtree.NodeEnc.is_pruned)
+  return _internal_is_pruned();
+}
+inline void NodeEnc::_internal_set_is_pruned(bool value) {
+  
+  is_pruned_ = value;
+}
+inline void NodeEnc::set_is_pruned(bool value) {
+  _internal_set_is_pruned(value);
+  // @@protoc_insertion_point(field_set:fedtree.NodeEnc.is_pruned)
+}
+
+// string sum_gh_pair_g_enc = 15;
+inline void NodeEnc::clear_sum_gh_pair_g_enc() {
+  sum_gh_pair_g_enc_.ClearToEmpty();
+}
+inline const std::string& NodeEnc::sum_gh_pair_g_enc() const {
+  // @@protoc_insertion_point(field_get:fedtree.NodeEnc.sum_gh_pair_g_enc)
+  return _internal_sum_gh_pair_g_enc();
+}
+inline void NodeEnc::set_sum_gh_pair_g_enc(const std::string& value) {
+  _internal_set_sum_gh_pair_g_enc(value);
+  // @@protoc_insertion_point(field_set:fedtree.NodeEnc.sum_gh_pair_g_enc)
+}
+inline std::string* NodeEnc::mutable_sum_gh_pair_g_enc() {
+  // @@protoc_insertion_point(field_mutable:fedtree.NodeEnc.sum_gh_pair_g_enc)
+  return _internal_mutable_sum_gh_pair_g_enc();
+}
+inline const std::string& NodeEnc::_internal_sum_gh_pair_g_enc() const {
+  return sum_gh_pair_g_enc_.Get();
+}
+inline void NodeEnc::_internal_set_sum_gh_pair_g_enc(const std::string& value) {
+  
+  sum_gh_pair_g_enc_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, value, GetArena());
+}
+inline void NodeEnc::set_sum_gh_pair_g_enc(std::string&& value) {
+  
+  sum_gh_pair_g_enc_.Set(
+    ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::move(value), GetArena());
+  // @@protoc_insertion_point(field_set_rvalue:fedtree.NodeEnc.sum_gh_pair_g_enc)
+}
+inline void NodeEnc::set_sum_gh_pair_g_enc(const char* value) {
+  GOOGLE_DCHECK(value != nullptr);
+  
+  sum_gh_pair_g_enc_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::string(value), GetArena());
+  // @@protoc_insertion_point(field_set_char:fedtree.NodeEnc.sum_gh_pair_g_enc)
+}
+inline void NodeEnc::set_sum_gh_pair_g_enc(const char* value,
+    size_t size) {
+  
+  sum_gh_pair_g_enc_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::string(
+      reinterpret_cast<const char*>(value), size), GetArena());
+  // @@protoc_insertion_point(field_set_pointer:fedtree.NodeEnc.sum_gh_pair_g_enc)
+}
+inline std::string* NodeEnc::_internal_mutable_sum_gh_pair_g_enc() {
+  
+  return sum_gh_pair_g_enc_.Mutable(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, GetArena());
+}
+inline std::string* NodeEnc::release_sum_gh_pair_g_enc() {
+  // @@protoc_insertion_point(field_release:fedtree.NodeEnc.sum_gh_pair_g_enc)
+  return sum_gh_pair_g_enc_.Release(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+}
+inline void NodeEnc::set_allocated_sum_gh_pair_g_enc(std::string* sum_gh_pair_g_enc) {
+  if (sum_gh_pair_g_enc != nullptr) {
+    
+  } else {
+    
+  }
+  sum_gh_pair_g_enc_.SetAllocated(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), sum_gh_pair_g_enc,
+      GetArena());
+  // @@protoc_insertion_point(field_set_allocated:fedtree.NodeEnc.sum_gh_pair_g_enc)
+}
+
+// string sum_gh_pair_h_enc = 16;
+inline void NodeEnc::clear_sum_gh_pair_h_enc() {
+  sum_gh_pair_h_enc_.ClearToEmpty();
+}
+inline const std::string& NodeEnc::sum_gh_pair_h_enc() const {
+  // @@protoc_insertion_point(field_get:fedtree.NodeEnc.sum_gh_pair_h_enc)
+  return _internal_sum_gh_pair_h_enc();
+}
+inline void NodeEnc::set_sum_gh_pair_h_enc(const std::string& value) {
+  _internal_set_sum_gh_pair_h_enc(value);
+  // @@protoc_insertion_point(field_set:fedtree.NodeEnc.sum_gh_pair_h_enc)
+}
+inline std::string* NodeEnc::mutable_sum_gh_pair_h_enc() {
+  // @@protoc_insertion_point(field_mutable:fedtree.NodeEnc.sum_gh_pair_h_enc)
+  return _internal_mutable_sum_gh_pair_h_enc();
+}
+inline const std::string& NodeEnc::_internal_sum_gh_pair_h_enc() const {
+  return sum_gh_pair_h_enc_.Get();
+}
+inline void NodeEnc::_internal_set_sum_gh_pair_h_enc(const std::string& value) {
+  
+  sum_gh_pair_h_enc_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, value, GetArena());
+}
+inline void NodeEnc::set_sum_gh_pair_h_enc(std::string&& value) {
+  
+  sum_gh_pair_h_enc_.Set(
+    ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::move(value), GetArena());
+  // @@protoc_insertion_point(field_set_rvalue:fedtree.NodeEnc.sum_gh_pair_h_enc)
+}
+inline void NodeEnc::set_sum_gh_pair_h_enc(const char* value) {
+  GOOGLE_DCHECK(value != nullptr);
+  
+  sum_gh_pair_h_enc_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::string(value), GetArena());
+  // @@protoc_insertion_point(field_set_char:fedtree.NodeEnc.sum_gh_pair_h_enc)
+}
+inline void NodeEnc::set_sum_gh_pair_h_enc(const char* value,
+    size_t size) {
+  
+  sum_gh_pair_h_enc_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::string(
+      reinterpret_cast<const char*>(value), size), GetArena());
+  // @@protoc_insertion_point(field_set_pointer:fedtree.NodeEnc.sum_gh_pair_h_enc)
+}
+inline std::string* NodeEnc::_internal_mutable_sum_gh_pair_h_enc() {
+  
+  return sum_gh_pair_h_enc_.Mutable(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, GetArena());
+}
+inline std::string* NodeEnc::release_sum_gh_pair_h_enc() {
+  // @@protoc_insertion_point(field_release:fedtree.NodeEnc.sum_gh_pair_h_enc)
+  return sum_gh_pair_h_enc_.Release(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+}
+inline void NodeEnc::set_allocated_sum_gh_pair_h_enc(std::string* sum_gh_pair_h_enc) {
+  if (sum_gh_pair_h_enc != nullptr) {
+    
+  } else {
+    
+  }
+  sum_gh_pair_h_enc_.SetAllocated(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), sum_gh_pair_h_enc,
+      GetArena());
+  // @@protoc_insertion_point(field_set_allocated:fedtree.NodeEnc.sum_gh_pair_h_enc)
+}
+
+// int32 n_instances = 17;
+inline void NodeEnc::clear_n_instances() {
+  n_instances_ = 0;
+}
+inline ::PROTOBUF_NAMESPACE_ID::int32 NodeEnc::_internal_n_instances() const {
+  return n_instances_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::int32 NodeEnc::n_instances() const {
+  // @@protoc_insertion_point(field_get:fedtree.NodeEnc.n_instances)
+  return _internal_n_instances();
+}
+inline void NodeEnc::_internal_set_n_instances(::PROTOBUF_NAMESPACE_ID::int32 value) {
+  
+  n_instances_ = value;
+}
+inline void NodeEnc::set_n_instances(::PROTOBUF_NAMESPACE_ID::int32 value) {
+  _internal_set_n_instances(value);
+  // @@protoc_insertion_point(field_set:fedtree.NodeEnc.n_instances)
+}
+
+// -------------------------------------------------------------------
+
 // Node
 
 // int32 final_id = 1;
@@ -4611,6 +5367,8 @@ Ins2NodeIDBatch::mutable_nid() {
 #ifdef __GNUC__
   #pragma GCC diagnostic pop
 #endif  // __GNUC__
+// -------------------------------------------------------------------
+
 // -------------------------------------------------------------------
 
 // -------------------------------------------------------------------

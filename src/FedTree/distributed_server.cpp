@@ -13,6 +13,46 @@ grpc::Status DistributedServer::TriggerUpdateGradients(::grpc::ServerContext *co
                                                        ::fedtree::Ready *response) {
     booster.update_gradients();
     LOG(DEBUG) << "gradients updated";
+    if (param.privacy_tech == "he") {
+        // TIPS 这里可以直接存好字符串，一步到位
+        
+        SyncArray<GHPair> tmp;
+        tmp.resize(booster.gradients.size());
+        tmp.copy_from(booster.gradients);
+
+        std::chrono::high_resolution_clock timer;
+        auto t_start = timer.now();
+        encrypt_gh_pairs(booster.gradients);
+        auto t_end = timer.now();
+        std::chrono::duration<double> used_time = t_end-t_start;
+        enc_time += used_time.count();
+        auto gh_data = booster.gradients.host_data();
+
+        int len = booster.gradients.size();
+        const int BATCH_SIZE = 5000;
+        tmp_gradients.resize((len+BATCH_SIZE-1)/BATCH_SIZE);
+        // #pragma omp parallel for
+        for (int beg = 0; beg < len; beg+=BATCH_SIZE) {
+            stringstream stream;
+            int end = min(len, beg+BATCH_SIZE);
+            fedtree::GHEncBatch ghb;
+            tmp_gradients[beg/BATCH_SIZE].clear_g_enc();
+            tmp_gradients[beg/BATCH_SIZE].clear_h_enc();
+
+            for (int i = beg; i < end; i++) {
+                stream << gh_data[i].g_enc;
+                tmp_gradients[beg/BATCH_SIZE].add_g_enc(stream.str());
+                stream.clear();
+                stream.str("");
+                stream << gh_data[i].h_enc;
+                tmp_gradients[beg/BATCH_SIZE].add_h_enc(stream.str());
+                stream.clear();
+                stream.str("");
+            }
+        }
+
+        booster.gradients.copy_from(tmp);
+    }
     update_gradients_success = true;
     return grpc::Status::OK;
 }
@@ -183,6 +223,15 @@ grpc::Status DistributedServer::TriggerAggregate(grpc::ServerContext *context, c
 
     SyncArray<float_type> gain(n_max_splits_new);
 
+    if (param.privacy_tech == "he") {
+        std::chrono::high_resolution_clock timer;
+        auto t1 = timer.now();
+        decrypt_gh_pairs(hist);
+        decrypt_gh_pairs(missing_gh);
+        auto t2 = timer.now();
+        std::chrono::duration<float> t3 = t2 - t1;
+        dec_time += t3.count();
+    }
     booster.fbuilder->compute_gain_in_a_level(gain, n_nodes_in_level, n_bins_new, hist_fid.host_data(), missing_gh,
                                               hist, n_column_new);
     LOG(DEBUG) << "gain: " << gain;
@@ -280,6 +329,38 @@ grpc::Status DistributedServer::SendNode(grpc::ServerContext *context, const fed
     return grpc::Status::OK;
 }
 
+
+grpc::Status DistributedServer::SendNodeEnc(grpc::ServerContext *context, const fedtree::NodeEnc *node, fedtree::PID *id) {
+    std::multimap<grpc::string_ref, grpc::string_ref> metadata = context->client_metadata();
+    auto pid_itr = metadata.find("pid");
+    int pid = std::stoi(pid_itr->second.data());
+
+    int nid = node->final_id();
+    auto nodes_data = booster.fbuilder->trees.nodes.host_data();
+    nodes_data[nid].final_id = node->final_id();
+    nodes_data[nid].lch_index = node->lch_index();
+    nodes_data[nid].rch_index = node->rch_index();
+    nodes_data[nid].parent_index = node->parent_index();
+    nodes_data[nid].gain = node->gain();
+    nodes_data[nid].base_weight = node->base_weight();
+    nodes_data[nid].split_feature_id = node->split_feature_id();
+    nodes_data[nid].pid = node->pid();
+    nodes_data[nid].split_value = node->split_value();
+    nodes_data[nid].split_bid = node->split_bid();
+    nodes_data[nid].default_right = node->default_right();
+    nodes_data[nid].is_leaf = node->is_leaf();
+    nodes_data[nid].is_valid = node->is_valid();
+    nodes_data[nid].is_pruned = node->is_pruned();
+    nodes_data[nid].sum_gh_pair.encrypted = true;
+    nodes_data[nid].sum_gh_pair.g_enc = NTL::to_ZZ(node->sum_gh_pair_g_enc().c_str());
+    nodes_data[nid].sum_gh_pair.h_enc = NTL::to_ZZ(node->sum_gh_pair_h_enc().c_str());
+    nodes_data[nid].sum_gh_pair.paillier = paillier;
+    nodes_data[nid].n_instances = node->n_instances();
+
+    LOG(DEBUG) << "Receive enc node info from " << pid;
+    return grpc::Status::OK;
+}
+
 grpc::Status DistributedServer::SendIns2NodeID(grpc::ServerContext *context,
                                                grpc::ServerReader<fedtree::Ins2NodeID> *reader, fedtree::PID *id) {
     std::multimap<grpc::string_ref, grpc::string_ref> metadata = context->client_metadata();
@@ -322,7 +403,19 @@ grpc::Status DistributedServer::GetNodes(grpc::ServerContext *context, const fed
     auto t_end = timer.now();
     std::chrono::duration<float> used_time = t_end - t_start;
     party_wait_times[id->id()] += used_time.count();
-
+    
+    if (param.privacy_tech == "he") {
+        auto t1 = timer.now();
+        auto node_data = booster.fbuilder->trees.nodes.host_data();
+        #pragma omp parallel for
+        for (int nid = (1 << l) - 1; nid < (2 << (l + 1)) - 1; nid++) {
+            decrypt_gh(node_data[nid].sum_gh_pair);
+            node_data[nid].calc_weight(param.gbdt_param.lambda);
+        }
+        auto t2 = timer.now();
+        std::chrono::duration<float> t3 = t2 - t1;
+        dec_time += t3.count();
+    }
     auto nodes_data = booster.fbuilder->trees.nodes.host_data();
     for (int i = (1 << l) - 1; i < (4 << l) - 1; i++) {
         fedtree::Node node;
@@ -422,6 +515,7 @@ void DistributedServer::VerticalInitVectors(int n_parties) {
     stoppable.resize(n_parties, true);
     party_tot_times.resize(n_parties, 0);
     party_comm_times.resize(n_parties, 0);
+    party_enc_times.resize(n_parties, 0);
 }
 
 void DistributedServer::HorizontalInitVectors(int n_parties) {
@@ -443,6 +537,7 @@ void DistributedServer::HorizontalInitVectors(int n_parties) {
     stoppable.resize(n_parties, true);
     party_tot_times.resize(n_parties, 0);
     party_comm_times.resize(n_parties, 0);
+    party_enc_times.resize(n_parties, 0);
 }
 
 void RunServer(DistributedServer &service) {
@@ -634,9 +729,14 @@ grpc::Status DistributedServer::TriggerCalcTree(grpc::ServerContext* context, co
     SyncArray <float_type> gain(n_max_splits);
     // if privacy tech == 'he', decrypt histogram
     if (param.privacy_tech == "he") {
-        TIMED_SCOPE(timerObj, "decrypting time");
+        // TIMED_SCOPE(timerObj, "decrypting time");
+        std::chrono::high_resolution_clock timer;
+        auto t1 = timer.now();
         decrypt_gh_pairs(hist);
         decrypt_gh_pairs(missing_gh);
+        auto t2 = timer.now();
+        std::chrono::duration<double> t3 = t2-t1;
+        dec_time += t3.count();
     }
     auto hist_fid_data = booster.fbuilder->parties_hist_fid[0].host_data();
     booster.fbuilder->compute_gain_in_a_level(gain, n_nodes_in_level, n_bins, hist_fid_data,
@@ -1011,6 +1111,30 @@ grpc::Status DistributedServer::GetGradientBatches(grpc::ServerContext *context,
     return grpc::Status::OK;
 }
 
+grpc::Status DistributedServer::GetGradientBatchesEnc(grpc::ServerContext *context, const fedtree::PID *id, 
+                                grpc::ServerWriter<fedtree::GHEncBatch> *writer) {
+    std::chrono::high_resolution_clock timer;
+    auto t_start = timer.now();
+    unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+    std::default_random_engine generator(seed);
+    std::uniform_int_distribution<int> delay_distribution(5, 10);
+    while (!update_gradients_success) {
+        std::this_thread::sleep_for(
+                std::chrono::milliseconds(delay_distribution(generator)));
+    }
+    auto t_end = timer.now();
+    std::chrono::duration<float> used_time = t_end - t_start;
+    int pid = id->id();  // useless in vertical training
+    party_wait_times[pid] += used_time.count();
+    for (const auto &e: tmp_gradients) {
+        if (!writer->Write(e)) {
+            break;
+        }
+    }
+
+    return grpc::Status::OK;
+}
+
 grpc::Status DistributedServer::SendHistogramBatchesEnc(grpc::ServerContext *context, grpc::ServerReader<fedtree::GHEncBatch> *reader,
                                 fedtree::PID *id) {
     
@@ -1055,8 +1179,10 @@ grpc::Status DistributedServer::StopServer(grpc::ServerContext *context, const f
     std::multimap<grpc::string_ref, grpc::string_ref> metadata = context->client_metadata();
     auto tot_itr = metadata.find("tot");
     auto comm_itr = metadata.find("comm");
+    auto enc_itr = metadata.find("enc");
     party_tot_times[request->id()] = std::stof(tot_itr->second.data());
     party_comm_times[request->id()] = std::stof(comm_itr->second.data());
+    party_enc_times[request->id()] = std::stof(enc_itr->second.data());
     unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
     std::default_random_engine generator(seed);
     std::uniform_int_distribution<int> delay_distribution(5, 10);
@@ -1076,7 +1202,9 @@ grpc::Status DistributedServer::StopServer(grpc::ServerContext *context, const f
     ready->set_content(party_wait_times[request->id()]);
     
     if (request->id() == 0) {
+        LOG(INFO) << "dec time: " << dec_time;
         LOG(INFO) << "wait times: " << party_wait_times;
+        LOG(INFO) << "enc times: " << party_enc_times;
         float sum1 = 0, sum2 = 0;
         for (auto e: party_tot_times)
             sum1 += e;
@@ -1101,11 +1229,15 @@ grpc::Status DistributedServer::StopServer(grpc::ServerContext *context, const f
             float tmp = real_comm_times[i] - sum2/param.n_parties;
             sum4 += tmp*tmp;
         }
-
+        float sum5 = 0;
+        for (auto e: party_enc_times) {
+            sum5 += e;
+        }
         LOG(INFO) << "avg train time: " << sum1/param.n_parties << "s";
         LOG(INFO) << "train time stddev: " << sqrt(sum3/param.n_parties) << "s";
         LOG(INFO) << "avg real comm time: " << sum2/param.n_parties << "s";
         LOG(INFO) << "real comm time stddev: " << sqrt(sum4/param.n_parties) << "s";
+        LOG(INFO) << "avg enc_dec time: " <<(sum5 / param.n_parties + dec_time + enc_time)<< "s";
     }
     
     return grpc::Status::OK;

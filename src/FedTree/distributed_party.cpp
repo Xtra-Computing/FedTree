@@ -217,6 +217,48 @@ void DistributedParty::SendNode(Tree::TreeNode &node_data) {
     }
 }
 
+void DistributedParty::SendNodeEnc(Tree::TreeNode &node_data) {
+    fedtree::NodeEnc node;
+    fedtree::PID id;
+    grpc::ClientContext context;
+    auto t_start = timer.now();
+    context.AddMetadata("pid", std::to_string(pid));
+    node.set_final_id(node_data.final_id);
+    node.set_lch_index(node_data.lch_index);
+    node.set_rch_index(node_data.rch_index);
+    node.set_parent_index(node_data.parent_index);
+    node.set_gain(node_data.gain);
+    node.set_base_weight(node_data.base_weight);
+    node.set_split_feature_id(node_data.split_feature_id);
+    node.set_pid(node_data.pid);
+    node.set_split_value(node_data.split_value);
+    node.set_split_bid(node_data.split_bid);
+    node.set_default_right(node_data.default_right);
+    node.set_is_leaf(node_data.is_leaf);
+    node.set_is_valid(node_data.is_valid);
+    node.set_is_pruned(node_data.is_pruned);
+    assert(node_data.sum_gh_pair.encrypted);
+    stringstream stream;
+    stream<<node_data.sum_gh_pair.g_enc;
+    node.set_sum_gh_pair_g_enc(stream.str());
+    stream.clear();
+    stream.str("");
+    stream<<node_data.sum_gh_pair.h_enc;
+    node.set_sum_gh_pair_h_enc(stream.str());
+    stream.clear();
+    stream.str("");
+    node.set_n_instances(node_data.n_instances);
+    grpc::Status status = stub_->SendNodeEnc(&context, node, &id);
+    auto t_end = timer.now();
+    std::chrono::duration<float> used_time = t_end - t_start;
+    comm_time += used_time.count();
+    if (status.ok()) {
+        LOG(DEBUG) << "Node Enc sent.";
+    } else {
+        LOG(ERROR) << "SendNodes rpc failed.";
+    }
+}
+
 void DistributedParty::SendIns2NodeID(SyncArray<int> &ins2node_id, int nid) {
     fedtree::PID id;
     grpc::ClientContext context;
@@ -843,6 +885,46 @@ void DistributedParty::GetGradientBatches() {
     }
 }
 
+void DistributedParty::GetGradientBatchesEnc() {
+    fedtree::PID id;
+    fedtree::GHEncBatch gh;
+    fedtree::GHEncBatch tot;
+    grpc::ClientContext context;
+    auto t_start = timer.now();
+    id.set_id(pid);
+    LOG(DEBUG) << "Receiving gradients from the server.";
+
+    std::unique_ptr<grpc::ClientReader<fedtree::GHEncBatch>> reader(stub_->GetGradientBatchesEnc(&context, id));
+
+    auto booster_gradients_data = booster.gradients.host_data();
+    
+    while (reader->Read(&gh)) {
+        tot.MergeFrom(gh);
+    }
+    grpc::Status status = reader->Finish();
+    auto t_end = timer.now();
+    std::chrono::duration<float> used_time = t_end - t_start;
+    comm_time += used_time.count();
+    int len = booster.gradients.size();
+    
+    assert(len == tot.g_enc_size());
+    assert(len == tot.h_enc_size());
+    #pragma omp parallel for
+    for (int i = 0; i < len; i++) {
+        booster_gradients_data[i].encrypted = true;
+        booster_gradients_data[i].paillier = paillier;
+        booster_gradients_data[i].g_enc = NTL::to_ZZ(tot.g_enc(i).c_str());
+        booster_gradients_data[i].h_enc = NTL::to_ZZ(tot.h_enc(i).c_str());
+        
+    }
+    if (status.ok()) {
+        LOG(DEBUG) << "All gradients received.";
+    } else {
+        LOG(ERROR) << "GetGradients rpc failed.";
+    }
+}
+
+
 void DistributedParty::SendHistogramBatchesEnc(const SyncArray<GHPair> &hist, int type) {
     fedtree::PID id;
     grpc::ClientContext context;
@@ -902,6 +984,7 @@ void DistributedParty::StopServer(float tot_time) {
     id.set_id(pid);
     context.AddMetadata("tot", std::to_string(tot_time));
     context.AddMetadata("comm", std::to_string(comm_time));
+    context.AddMetadata("enc", std::to_string(enc_time));
     grpc::Status status = stub_->StopServer(&context, id, &resp);
     LOG(INFO) << "communication time: " << comm_time << "s";
     LOG(INFO) << "wait time: " << resp.content() << "s";
@@ -927,13 +1010,25 @@ void DistributedParty::BeginBarrier() {
 } 
 
 void distributed_vertical_train(DistributedParty& party, FLParam &fl_param) {
+    if (fl_param.privacy_tech == "he") {
+        if (party.pid == 0) {
+            party.TriggerHomoInit();
+        }
+        party.GetPaillier();
+    }
     GBDTParam &param = fl_param.gbdt_param;
     party.SendDatasetInfo(party.booster.fbuilder->cut.cut_points_val.size(), party.dataset.n_features());
     for (int round = 0; round < param.n_trees; round++) {
+        
         vector<Tree> trees(param.tree_per_rounds);
         if (party.pid == 0)
             party.TriggerUpdateGradients();
-        party.GetGradientBatches();
+        if (fl_param.privacy_tech == "he") {
+            party.GetGradientBatchesEnc();
+        }
+        else {
+            party.GetGradientBatches();
+        }
         for (int t = 0; t < param.tree_per_rounds; t++) {
             Tree &tree = trees[t];
             party.booster.fbuilder->build_init(party.booster.gradients, t);
@@ -957,8 +1052,14 @@ void distributed_vertical_train(DistributedParty& party, FLParam &fl_param) {
                 party.booster.fbuilder->compute_histogram_in_a_level(l, n_max_splits, n_bins,
                                                                      n_nodes_in_level,
                                                                      hist_fid_data, missing_gh, hist);
-                party.SendHistogramBatches(hist, 0); // 0 represents hist
-                party.SendHistogramBatches(missing_gh, 1); // 1 represents missing_gh
+                if (fl_param.privacy_tech == "he") {
+                    party.SendHistogramBatchesEnc(hist, 0); // 0 represents hist
+                    party.SendHistogramBatchesEnc(missing_gh, 1); // 1 represents missing_gh
+                }
+                else {
+                    party.SendHistogramBatches(hist, 0); // 0 represents hist
+                    party.SendHistogramBatches(missing_gh, 1); // 1 represents missing_gh
+                }
                 party.SendHistFidBatches(hist_fid);
 
                 if (party.pid == 0)
@@ -988,9 +1089,17 @@ void distributed_vertical_train(DistributedParty& party, FLParam &fl_param) {
 
                     int lch = nodes_data[node_shifted].lch_index;
                     int rch = nodes_data[node_shifted].rch_index;
-                    party.SendNode(nodes_data[node_shifted]);
-                    party.SendNode(nodes_data[lch]);
-                    party.SendNode(nodes_data[rch]);
+                    if (fl_param.privacy_tech == "he") {
+                        party.SendNodeEnc(nodes_data[node_shifted]);
+                        party.SendNodeEnc(nodes_data[lch]);
+                        party.SendNodeEnc(nodes_data[rch]);
+                    }
+                    else {
+                        party.SendNode(nodes_data[node_shifted]);
+                        party.SendNode(nodes_data[lch]);
+                        party.SendNode(nodes_data[rch]);
+                    }
+                    
                     party.SendIns2NodeIDBatches(party.booster.fbuilder->ins2node_id, node_shifted);
                 }
 
@@ -1098,8 +1207,12 @@ void distributed_horizontal_train(DistributedParty& party, FLParam &fl_param) {
                 if (fl_param.privacy_tech == "he") {
                     {
                         TIMED_SCOPE(timerObj, "encrypting time");
+                        auto t_start = party.timer.now();
                         party.encrypt_histogram(hist);
                         party.encrypt_histogram(missing_gh);
+                        auto t_end = party.timer.now();
+                        std::chrono::duration<double> used_time = t_end - t_start;
+                        party.enc_time += used_time.count();
                     }
                     party.SendHistogramBatchesEnc(hist, 0);
                     party.SendHistogramBatchesEnc(missing_gh, 1);
@@ -1252,7 +1365,7 @@ int main(int argc, char **argv) {
         party.gbdt.predict_score(fl_param.gbdt_param, test_dataset);
     }
     
-    
+    LOG(INFO) << "encryption time:" << party.enc_time << "s";
     party.StopServer(train_time);
     return 0;
 }
