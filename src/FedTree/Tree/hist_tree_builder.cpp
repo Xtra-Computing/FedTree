@@ -4,7 +4,7 @@
 #include "FedTree/Tree/hist_tree_builder.h"
 
 #include "FedTree/util/cub_wrapper.h"
-#include "FedTree/util/device_lambda.h"
+//#include "FedTree/util/device_lambda.h"
 #include "thrust/iterator/counting_iterator.h"
 
 #include "thrust/iterator/discard_iterator.h"
@@ -209,8 +209,6 @@ void HistTreeBuilder::find_split_by_predefined_features(int level) {
             sp_data[i].rch_sum_gh = 0;
         }
         return;
-//        std::cout<<"0 n_split"<<std::endl;
-//        exit(0);
     }
     //todo: n_split=0
 //    int n_max_splits = n_max_nodes * n_bins;
@@ -1145,8 +1143,8 @@ void HistTreeBuilder::merge_histograms_client_propose(SyncArray<GHPair> &hist, S
     }
     cut_col_ptr_data[n_features] = index;
 
-    SyncArray<GHPair> merged_hist(n_max_splits);
-    auto merged_hist_data = merged_hist.host_data();
+    hist.resize(n_max_splits);
+    auto merged_hist_data = hist.host_data();
     int n_max_nodes = n_max_splits / (n_columns * max_num_bins);
 
 
@@ -1247,8 +1245,8 @@ void HistTreeBuilder::merge_histograms_client_propose(SyncArray<GHPair> &hist, S
 
     // Merge missing gh by summing
     int n_size = parties_missing_gh[0].size();
-    SyncArray<GHPair> merged_missing_gh(n_size);
-    auto merged_missing_gh_data = merged_missing_gh.host_data();
+    missing_gh.resize(n_size);
+    auto merged_missing_gh_data = missing_gh.host_data();
 
 #pragma omp parallel for
     for (int i = 0; i < parties_missing_gh.size(); i++) {
@@ -1260,10 +1258,10 @@ void HistTreeBuilder::merge_histograms_client_propose(SyncArray<GHPair> &hist, S
             missing_gh_dest = missing_gh_dest + missing_gh;
         }
     }
-    hist.resize(merged_hist.size());
-    hist.copy_from(merged_hist);
-    missing_gh.resize(n_size);
-    missing_gh.copy_from(merged_missing_gh);
+//    hist.resize(merged_hist.size());
+//    hist.copy_from(merged_hist);
+//    missing_gh.resize(n_size);
+//    missing_gh.copy_from(merged_missing_gh);
 }
 
 //assumption 1: bin sizes for the split of a feature are the same

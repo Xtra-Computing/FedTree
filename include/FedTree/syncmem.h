@@ -8,7 +8,7 @@
 #ifndef FEDTREE_SYNCMEM_H
 #define FEDTREE_SYNCMEM_H
 #include "common.h"
-#ifdef USE_CUDA
+#ifdef USE_CUDA_ARRAY
 // syncmem with cub
 #include "cub/util_allocator.cuh"
 using namespace cub;
@@ -16,7 +16,7 @@ using namespace cub;
 namespace thunder {
 
     inline void device_mem_copy(void *dst, const void *src, size_t size) {
-#ifdef USE_CUDA
+#ifdef USE_CUDA_ARRAY
         CUDA_CHECK(cudaMemcpy(dst, src, size, cudaMemcpyDefault));
 #else
         NO_GPU;
@@ -130,7 +130,7 @@ namespace thunder {
 #else
 namespace thunder {
     inline void malloc_host(void **ptr, size_t size) {
-#ifdef USE_CUDA
+#ifdef USE_CUDA_ARRAY
         CUDA_CHECK(cudaMallocHost(ptr, size));
 #else
         *ptr = malloc(size);
@@ -138,7 +138,7 @@ namespace thunder {
     }
 
     inline void free_host(void *ptr) {
-#ifdef USE_CUDA
+#ifdef USE_CUDA_ARRAY
         CUDA_CHECK(cudaFreeHost(ptr));
 #else
         free(ptr);
@@ -146,7 +146,7 @@ namespace thunder {
     }
 
     inline void device_mem_copy(void *dst, const void *src, size_t size) {
-#ifdef USE_CUDA
+#ifdef USE_CUDA_ARRAY
         CUDA_CHECK(cudaMemcpy(dst, src, size, cudaMemcpyDefault));
 #else
         NO_GPU;
@@ -218,7 +218,7 @@ namespace thunder {
         static size_t total_memory_size;
     };
 }
-#endif
+#endif //USE_CUDA_ARRAY
 
 using thunder::SyncMem;
 

@@ -6,12 +6,12 @@
 //
 
 #include <FedTree/syncmem.h>
-#ifdef USE_CUDA
+#ifdef USE_CUDA_ARRAY
 #include "FedTree/util/multi_device.h"
 
 namespace thunder {
     void SyncMem::malloc_host(void **ptr, size_t size) {
-#ifdef USE_CUDA
+#ifdef USE_CUDA_ARRAY
         host_allocator.DeviceAllocate(ptr, size);
 
 #else
@@ -20,7 +20,7 @@ namespace thunder {
     }
 
     void SyncMem::free_host(void *ptr) {
-#ifdef USE_CUDA
+#ifdef USE_CUDA_ARRAY
         host_allocator.DeviceFree(ptr);
 #else
         free(ptr);
@@ -34,7 +34,7 @@ namespace thunder {
 
     SyncMem::SyncMem(size_t size) : device_ptr(nullptr), host_ptr(nullptr), size_(size), head_(UNINITIALIZED),
                                     own_device_data(false), own_host_data(false) {
-#ifdef USE_CUDA
+#ifdef USE_CUDA_ARRAY
         CUDA_CHECK(cudaGetDevice(&device_id));
 #endif
     }
@@ -45,7 +45,7 @@ namespace thunder {
             free_host(host_ptr);
             host_ptr = nullptr;
         }
-#ifdef USE_CUDA
+#ifdef USE_CUDA_ARRAY
         DO_ON_DEVICE(device_id, {
             if (device_ptr && own_device_data) {
                 device_allocator.DeviceFree(device_ptr);
@@ -61,7 +61,7 @@ namespace thunder {
     }
 
     void *SyncMem::device_data() {
-#ifdef USE_CUDA
+#ifdef USE_CUDA_ARRAY
         to_device();
 #else
         NO_GPU;
@@ -86,7 +86,7 @@ namespace thunder {
                 own_host_data = true;
                 break;
             case DEVICE:
-#ifdef USE_CUDA
+#ifdef USE_CUDA_ARRAY
                 DO_ON_DEVICE(device_id, {
                     if (nullptr == host_ptr) {
                         malloc_host(&host_ptr, size_);
@@ -105,7 +105,7 @@ namespace thunder {
     }
 
     void SyncMem::to_device() {
-#ifdef USE_CUDA
+#ifdef USE_CUDA_ARRAY
         switch (head_) {
             case UNINITIALIZED:
                 CUDA_CHECK(device_allocator.DeviceAllocate(&device_ptr, size_));
@@ -143,7 +143,7 @@ namespace thunder {
     }
 
     void SyncMem::set_device_data(void *data) {
-#ifdef USE_CUDA
+#ifdef USE_CUDA_ARRAY
         DO_ON_DEVICE(device_id, {
             CHECK_NOTNULL(data);
             if (own_device_data) {
@@ -638,7 +638,7 @@ namespace thunder {
                 free_host(host_ptr);
                 host_ptr = nullptr;
             }
-#ifdef USE_CUDA
+#ifdef USE_CUDA_ARRAY
             if (device_ptr && own_device_data) {
                 CUDA_CHECK(cudaFree(device_ptr));
                 device_ptr = nullptr;
@@ -653,7 +653,7 @@ namespace thunder {
     }
 
     void *SyncMem::device_data() {
-#ifdef USE_CUDA
+#ifdef USE_CUDA_ARRAY
         to_device();
 #else
         NO_GPU;
@@ -679,7 +679,7 @@ namespace thunder {
                 total_memory_size += size_;
                 break;
             case DEVICE:
-#ifdef USE_CUDA
+#ifdef USE_CUDA_ARRAY
                 if (nullptr == host_ptr) {
                     CUDA_CHECK(cudaMallocHost(&host_ptr, size_));
                     CUDA_CHECK(cudaMemset(host_ptr, 0, size_));
@@ -696,7 +696,7 @@ namespace thunder {
     }
 
     void SyncMem::to_device() {
-#ifdef USE_CUDA
+#ifdef USE_CUDA_ARRAY
         switch (head_) {
             case UNINITIALIZED:
                 CUDA_CHECK(cudaMalloc(&device_ptr, size_));
@@ -733,7 +733,7 @@ namespace thunder {
     }
 
     void SyncMem::set_device_data(void *data) {
-#ifdef USE_CUDA
+#ifdef USE_CUDA_ARRAY
         CHECK_NOTNULL(data);
         if (own_device_data) {
             CUDA_CHECK(cudaFree(device_data()));
@@ -748,5 +748,5 @@ namespace thunder {
     }
 }
 
-#endif //USE_CUDA
+#endif //USE_CUDA_ARRAY
 
