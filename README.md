@@ -86,20 +86,12 @@ export CPLUS_INCLUDE_PATH=./build/_deps/grpc-src/third_party/protobuf/src/:$CPLU
 
 ./build/bin/FedTree-distributed-server ./examples/vertical_example.conf
 # open a new terminal
-./build/bin/FedTree-distributed-client ./examples/vertical_example.conf 0
+./build/bin/FedTree-distributed-party ./examples/vertical_example.conf 0
 # open another new terminal
-./build/bin/FedTree-distributed-client ./examples/vertical_example.conf 1
+./build/bin/FedTree-distributed-party ./examples/vertical_example.conf 1
 # run multiple copies of the client based on the n_parties param you specified
 ```
 
-
-# Features in development
-The following features are in development.
-
-- Distributed Computing.
-- Training on GPUs.
-- Federated Training of Random Forests.
-- Python interfaces.
 
 # Other information
 FedTree is built based on [ThunderGBM](https://github.com/Xtra-Computing/thundergbm), which is a fast GBDTs and Radom Forests training system on GPUs.
