@@ -1290,6 +1290,7 @@ int main(int argc, char **argv) {
     GBDTParam &param = fl_param.gbdt_param;
 
     DistributedServer server;
+    
     int n_parties = fl_param.n_parties;
     if (fl_param.mode == "vertical") {
         server.VerticalInitVectors(n_parties);
@@ -1310,18 +1311,19 @@ int main(int argc, char **argv) {
         server.booster.fbuilder->party_containers_init(fl_param.n_parties);
     }
 
-    if(param.objective.find("multi:") != std::string::npos || param.objective.find("binary:") != std::string::npos) {
-        int num_class = dataset.label.size();
-        if (param.num_class != num_class) {
-            LOG(INFO) << "updating number of classes from " << param.num_class << " to " << num_class;
-            param.num_class = num_class;
-        }
-        if(param.num_class > 2)
-            param.tree_per_rounds = param.num_class;
-    }
-    else if(param.objective.find("reg:") != std::string::npos){
-        param.num_class = 1;
-    }
+//    if(param.objective.find("multi:") != std::string::npos || param.objective.find("binary:") != std::string::npos) {
+//        int num_class = dataset.label.size();
+//        if (param.num_class != num_class) {
+//            LOG(INFO) << "updating number of classes from " << param.num_class << " to " << num_class;
+//            param.num_class = num_class;
+//        }
+//        if(param.num_class > 2)
+//            param.tree_per_rounds = param.num_class;
+//    }
+//    else if(param.objective.find("reg:") != std::string::npos){
+//        param.num_class = 1;
+//    }
+
     LOG(INFO) << "server init completed.";
     RunServer(server);
     return 0;
