@@ -1285,7 +1285,6 @@ int main(int argc, char **argv) {
     }
     GBDTParam &model_param = fl_param.gbdt_param;
     DataSet dataset;
-    dataset.load_from_file(model_param.path, fl_param);
 
     GBDTParam &param = fl_param.gbdt_param;
 
@@ -1293,6 +1292,7 @@ int main(int argc, char **argv) {
     
     int n_parties = fl_param.n_parties;
     if (fl_param.mode == "vertical") {
+        dataset.load_from_file(model_param.path, fl_param);
         server.VerticalInitVectors(n_parties);
         vector<int> n_instances_per_party(n_parties);
         server.distributed_vertical_init(fl_param, dataset.n_instances(), n_instances_per_party, dataset.y, dataset.label);
