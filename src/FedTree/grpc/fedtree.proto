@@ -152,6 +152,7 @@ message NodeEnc {
   string sum_gh_pair_g_enc = 15;
   string sum_gh_pair_h_enc = 16;
   int32 n_instances = 17; // number of instances inside the node.
+  bool is_enc = 18;
 }
 
 message Node {

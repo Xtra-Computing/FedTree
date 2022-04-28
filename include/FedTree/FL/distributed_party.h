@@ -39,7 +39,7 @@ public:
     void SendNode(Tree::TreeNode &node_data);
     void SendNodeEnc(Tree::TreeNode &node_data);
     
-    void SendIns2NodeID(SyncArray<int> &ins2node_id, int nid);
+    void SendIns2NodeID(SyncArray<int> &ins2node_id, int nid, int l);
 
     void GetNodes(int l);
 
@@ -81,7 +81,7 @@ public:
 
     void GetIns2NodeIDBatches();
 
-    void SendIns2NodeIDBatches(SyncArray<int> &ins2node_id, int nid);
+    void SendIns2NodeIDBatches(SyncArray<int> &ins2node_id, int nid, int l);
 
     void GetGradientBatches();
 

@@ -237,17 +237,19 @@ void DistributedParty::SendNodeEnc(Tree::TreeNode &node_data) {
     node.set_is_leaf(node_data.is_leaf);
     node.set_is_valid(node_data.is_valid);
     node.set_is_pruned(node_data.is_pruned);
-    assert(node_data.sum_gh_pair.encrypted);
-    stringstream stream;
-    stream<<node_data.sum_gh_pair.g_enc;
-    node.set_sum_gh_pair_g_enc(stream.str());
-    stream.clear();
-    stream.str("");
-    stream<<node_data.sum_gh_pair.h_enc;
-    node.set_sum_gh_pair_h_enc(stream.str());
-    stream.clear();
-    stream.str("");
+    if (node_data.sum_gh_pair.encrypted) {
+        stringstream stream;
+        stream<<node_data.sum_gh_pair.g_enc;
+        node.set_sum_gh_pair_g_enc(stream.str());
+        stream.clear();
+        stream.str("");
+        stream<<node_data.sum_gh_pair.h_enc;
+        node.set_sum_gh_pair_h_enc(stream.str());
+        stream.clear();
+        stream.str("");
+    }
     node.set_n_instances(node_data.n_instances);
+    node.set_is_enc(node_data.sum_gh_pair.encrypted);
     grpc::Status status = stub_->SendNodeEnc(&context, node, &id);
     auto t_end = timer.now();
     std::chrono::duration<float> used_time = t_end - t_start;
@@ -259,11 +261,12 @@ void DistributedParty::SendNodeEnc(Tree::TreeNode &node_data) {
     }
 }
 
-void DistributedParty::SendIns2NodeID(SyncArray<int> &ins2node_id, int nid) {
+void DistributedParty::SendIns2NodeID(SyncArray<int> &ins2node_id, int nid, int l) {
     fedtree::PID id;
     grpc::ClientContext context;
     auto t_start = timer.now();
     context.AddMetadata("pid", std::to_string(pid));
+    context.AddMetadata("l", std::to_string(l));
     std::unique_ptr<grpc::ClientWriter<fedtree::Ins2NodeID> > writer(
             stub_->SendIns2NodeID(&context, &id));
 
@@ -316,6 +319,7 @@ void DistributedParty::GetNodes(int l) {
         nodes_data[nid].is_leaf = node.is_leaf();
         nodes_data[nid].is_valid = node.is_valid();
         nodes_data[nid].is_pruned = node.is_pruned();
+        nodes_data[nid].sum_gh_pair.encrypted = false;
         nodes_data[nid].sum_gh_pair.g = node.sum_gh_pair_g();
         nodes_data[nid].sum_gh_pair.h = node.sum_gh_pair_h();
         nodes_data[nid].n_instances = node.n_instances();
@@ -811,11 +815,12 @@ void DistributedParty::GetIns2NodeIDBatches() {
         LOG(ERROR) << "GetIns2NodeIDBatches rpc failed.";
     }
 }
-void DistributedParty::SendIns2NodeIDBatches(SyncArray<int> &ins2node_id, int nid) {
+void DistributedParty::SendIns2NodeIDBatches(SyncArray<int> &ins2node_id, int nid, int l) {
     fedtree::PID id;
     grpc::ClientContext context;
     auto t_start = timer.now();
     context.AddMetadata("pid", std::to_string(pid));
+    context.AddMetadata("l", std::to_string(l));
     std::unique_ptr<grpc::ClientWriter<fedtree::Ins2NodeIDBatch> > writer(
             stub_->SendIns2NodeIDBatches(&context, &id));
 
@@ -1100,7 +1105,7 @@ void distributed_vertical_train(DistributedParty& party, FLParam &fl_param) {
                         party.SendNode(nodes_data[rch]);
                     }
                     
-                    party.SendIns2NodeIDBatches(party.booster.fbuilder->ins2node_id, node_shifted);
+                    party.SendIns2NodeIDBatches(party.booster.fbuilder->ins2node_id, node_shifted, l);
                 }
 
                 party.GetNodes(l);

@@ -453,6 +453,7 @@ const ::PROTOBUF_NAMESPACE_ID::uint32 TableStruct_fedtree_2eproto::offsets[] PRO
   PROTOBUF_FIELD_OFFSET(::fedtree::NodeEnc, sum_gh_pair_g_enc_),
   PROTOBUF_FIELD_OFFSET(::fedtree::NodeEnc, sum_gh_pair_h_enc_),
   PROTOBUF_FIELD_OFFSET(::fedtree::NodeEnc, n_instances_),
+  PROTOBUF_FIELD_OFFSET(::fedtree::NodeEnc, is_enc_),
   ~0u,  // no _has_bits_
   PROTOBUF_FIELD_OFFSET(::fedtree::Node, _internal_metadata_),
   ~0u,  // no _extensions_
@@ -506,9 +507,9 @@ static const ::PROTOBUF_NAMESPACE_ID::internal::MigrationSchema schemas[] PROTOB
   { 88, -1, sizeof(::fedtree::FID)},
   { 94, -1, sizeof(::fedtree::BestInfo)},
   { 104, -1, sizeof(::fedtree::NodeEnc)},
-  { 126, -1, sizeof(::fedtree::Node)},
-  { 148, -1, sizeof(::fedtree::Ins2NodeID)},
-  { 155, -1, sizeof(::fedtree::Ins2NodeIDBatch)},
+  { 127, -1, sizeof(::fedtree::Node)},
+  { 149, -1, sizeof(::fedtree::Ins2NodeID)},
+  { 156, -1, sizeof(::fedtree::Ins2NodeIDBatch)},
 };
 
 static ::PROTOBUF_NAMESPACE_ID::Message const * const file_default_instances[] = {
@@ -551,7 +552,7 @@ const char descriptor_table_protodef_fedtree_2eproto[] PROTOBUF_SECTION_VARIABLE
   "tInfo\022\016\n\006n_bins\030\001 \001(\005\022\021\n\tn_columns\030\002 \001(\005"
   "\"\021\n\003FID\022\n\n\002id\030\001 \001(\005\"S\n\010BestInfo\022\013\n\003pid\030\001"
   " \001(\005\022\013\n\003nid\030\002 \001(\005\022\013\n\003idx\030\003 \001(\005\022\022\n\nglobal"
-  "_fid\030\004 \001(\005\022\014\n\004gain\030\005 \001(\001\"\341\002\n\007NodeEnc\022\020\n\010"
+  "_fid\030\004 \001(\005\022\014\n\004gain\030\005 \001(\001\"\361\002\n\007NodeEnc\022\020\n\010"
   "final_id\030\001 \001(\005\022\021\n\tlch_index\030\002 \001(\005\022\021\n\trch"
   "_index\030\003 \001(\005\022\024\n\014parent_index\030\004 \001(\005\022\014\n\004ga"
   "in\030\005 \001(\002\022\023\n\013base_weight\030\006 \001(\002\022\030\n\020split_f"
@@ -560,69 +561,69 @@ const char descriptor_table_protodef_fedtree_2eproto[] PROTOBUF_SECTION_VARIABLE
   "right\030\013 \001(\010\022\017\n\007is_leaf\030\014 \001(\010\022\020\n\010is_valid"
   "\030\r \001(\010\022\021\n\tis_pruned\030\016 \001(\010\022\031\n\021sum_gh_pair"
   "_g_enc\030\017 \001(\t\022\031\n\021sum_gh_pair_h_enc\030\020 \001(\t\022"
-  "\023\n\013n_instances\030\021 \001(\005\"\326\002\n\004Node\022\020\n\010final_i"
-  "d\030\001 \001(\005\022\021\n\tlch_index\030\002 \001(\005\022\021\n\trch_index\030"
-  "\003 \001(\005\022\024\n\014parent_index\030\004 \001(\005\022\014\n\004gain\030\005 \001("
-  "\002\022\023\n\013base_weight\030\006 \001(\002\022\030\n\020split_feature_"
-  "id\030\007 \001(\005\022\013\n\003pid\030\010 \001(\005\022\023\n\013split_value\030\t \001"
-  "(\002\022\021\n\tsplit_bid\030\n \001(\005\022\025\n\rdefault_right\030\013"
-  " \001(\010\022\017\n\007is_leaf\030\014 \001(\010\022\020\n\010is_valid\030\r \001(\010\022"
-  "\021\n\tis_pruned\030\016 \001(\010\022\025\n\rsum_gh_pair_g\030\017 \001("
-  "\002\022\025\n\rsum_gh_pair_h\030\020 \001(\002\022\023\n\013n_instances\030"
-  "\021 \001(\005\"&\n\nIns2NodeID\022\013\n\003iid\030\001 \001(\005\022\013\n\003nid\030"
-  "\002 \001(\005\"3\n\017Ins2NodeIDBatch\022\017\n\003iid\030\001 \003(\005B\002\020"
-  "\001\022\017\n\003nid\030\002 \003(\005B\002\020\0012\355\017\n\007FedTree\0228\n\026Trigge"
-  "rUpdateGradients\022\014.fedtree.PID\032\016.fedtree"
-  ".Ready\"\000\0222\n\020TriggerBuildInit\022\014.fedtree.P"
-  "ID\032\016.fedtree.Ready\"\000\0221\n\014GetGradients\022\014.f"
-  "edtree.PID\032\017.fedtree.GHPair\"\0000\001\0227\n\017SendD"
-  "atasetInfo\022\024.fedtree.DatasetInfo\032\014.fedtr"
-  "ee.PID\"\000\0223\n\016SendHistograms\022\017.fedtree.GHP"
-  "air\032\014.fedtree.PID\"\000(\001\022-\n\013SendHistFid\022\014.f"
-  "edtree.FID\032\014.fedtree.PID\"\000(\001\0222\n\020TriggerA"
-  "ggregate\022\014.fedtree.PID\032\016.fedtree.Ready\"\000"
-  "\0222\n\013GetBestInfo\022\014.fedtree.PID\032\021.fedtree."
-  "BestInfo\"\0000\001\022)\n\010SendNode\022\r.fedtree.Node\032"
-  "\014.fedtree.PID\"\000\0227\n\016SendIns2NodeID\022\023.fedt"
-  "ree.Ins2NodeID\032\014.fedtree.PID\"\000(\001\022+\n\010GetN"
-  "odes\022\014.fedtree.PID\032\r.fedtree.Node\"\0000\001\0226\n"
-  "\rGetIns2NodeID\022\014.fedtree.PID\032\023.fedtree.I"
-  "ns2NodeID\"\0000\001\0221\n\017CheckIfContinue\022\014.fedtr"
-  "ee.PID\032\016.fedtree.Ready\"\000\022.\n\014TriggerPrune"
-  "\022\014.fedtree.PID\032\016.fedtree.Ready\"\000\022.\n\tSend"
-  "Range\022\017.fedtree.GHPair\032\014.fedtree.PID\"\000(\001"
-  "\022,\n\nTriggerCut\022\014.fedtree.PID\032\016.fedtree.R"
-  "eady\"\000\022-\n\010GetRange\022\014.fedtree.PID\032\017.fedtr"
-  "ee.GHPair\"\0000\001\022)\n\006SendGH\022\017.fedtree.GHPair"
-  "\032\014.fedtree.PID\"\000\0225\n\023TriggerBuildUsingGH\022"
-  "\014.fedtree.PID\032\016.fedtree.Ready\"\000\0221\n\017Trigg"
-  "erCalcTree\022\014.fedtree.PID\032\016.fedtree.Ready"
-  "\"\000\022*\n\013GetRootNode\022\014.fedtree.PID\032\r.fedtre"
-  "e.Node\0227\n\016GetSplitPoints\022\014.fedtree.PID\032\023"
-  ".fedtree.SplitPoint\"\0000\001\0222\n\020HCheckIfConti"
-  "nue\022\014.fedtree.PID\032\016.fedtree.Ready\"\000\022/\n\013S"
-  "coreReduce\022\016.fedtree.Score\032\016.fedtree.Sco"
-  "re\"\000\0221\n\017TriggerHomoInit\022\014.fedtree.PID\032\016."
-  "fedtree.Ready\"\000\0220\n\013GetPaillier\022\014.fedtree"
-  ".PID\032\021.fedtree.Paillier\"\000\0229\n\021SendHistogr"
-  "amsEnc\022\022.fedtree.GHPairEnc\032\014.fedtree.PID"
-  "\"\000(\001\0229\n\025SendBatchedHistograms\022\020.fedtree."
-  "GHArray\032\014.fedtree.PID\"\000\022:\n\024SendHistogram"
-  "Batches\022\020.fedtree.GHBatch\032\014.fedtree.PID\""
-  "\000(\001\0229\n\022SendHistFidBatches\022\021.fedtree.FIDB"
-  "atch\032\014.fedtree.PID\"\000(\001\022B\n\024GetIns2NodeIDB"
-  "atches\022\014.fedtree.PID\032\030.fedtree.Ins2NodeI"
-  "DBatch\"\0000\001\022C\n\025SendIns2NodeIDBatches\022\030.fe"
-  "dtree.Ins2NodeIDBatch\032\014.fedtree.PID\"\000(\001\022"
-  "8\n\022GetGradientBatches\022\014.fedtree.PID\032\020.fe"
-  "dtree.GHBatch\"\0000\001\022>\n\025GetGradientBatchesE"
-  "nc\022\014.fedtree.PID\032\023.fedtree.GHEncBatch\"\0000"
-  "\001\022/\n\013SendNodeEnc\022\020.fedtree.NodeEnc\032\014.fed"
-  "tree.PID\"\000\022@\n\027SendHistogramBatchesEnc\022\023."
-  "fedtree.GHEncBatch\032\014.fedtree.PID\"\000(\001\022,\n\n"
-  "StopServer\022\014.fedtree.PID\032\016.fedtree.Score"
-  "\"\000\022.\n\014BeginBarrier\022\014.fedtree.PID\032\016.fedtr"
-  "ee.Ready\"\000b\006proto3"
+  "\023\n\013n_instances\030\021 \001(\005\022\016\n\006is_enc\030\022 \001(\010\"\326\002\n"
+  "\004Node\022\020\n\010final_id\030\001 \001(\005\022\021\n\tlch_index\030\002 \001"
+  "(\005\022\021\n\trch_index\030\003 \001(\005\022\024\n\014parent_index\030\004 "
+  "\001(\005\022\014\n\004gain\030\005 \001(\002\022\023\n\013base_weight\030\006 \001(\002\022\030"
+  "\n\020split_feature_id\030\007 \001(\005\022\013\n\003pid\030\010 \001(\005\022\023\n"
+  "\013split_value\030\t \001(\002\022\021\n\tsplit_bid\030\n \001(\005\022\025\n"
+  "\rdefault_right\030\013 \001(\010\022\017\n\007is_leaf\030\014 \001(\010\022\020\n"
+  "\010is_valid\030\r \001(\010\022\021\n\tis_pruned\030\016 \001(\010\022\025\n\rsu"
+  "m_gh_pair_g\030\017 \001(\002\022\025\n\rsum_gh_pair_h\030\020 \001(\002"
+  "\022\023\n\013n_instances\030\021 \001(\005\"&\n\nIns2NodeID\022\013\n\003i"
+  "id\030\001 \001(\005\022\013\n\003nid\030\002 \001(\005\"3\n\017Ins2NodeIDBatch"
+  "\022\017\n\003iid\030\001 \003(\005B\002\020\001\022\017\n\003nid\030\002 \003(\005B\002\020\0012\355\017\n\007F"
+  "edTree\0228\n\026TriggerUpdateGradients\022\014.fedtr"
+  "ee.PID\032\016.fedtree.Ready\"\000\0222\n\020TriggerBuild"
+  "Init\022\014.fedtree.PID\032\016.fedtree.Ready\"\000\0221\n\014"
+  "GetGradients\022\014.fedtree.PID\032\017.fedtree.GHP"
+  "air\"\0000\001\0227\n\017SendDatasetInfo\022\024.fedtree.Dat"
+  "asetInfo\032\014.fedtree.PID\"\000\0223\n\016SendHistogra"
+  "ms\022\017.fedtree.GHPair\032\014.fedtree.PID\"\000(\001\022-\n"
+  "\013SendHistFid\022\014.fedtree.FID\032\014.fedtree.PID"
+  "\"\000(\001\0222\n\020TriggerAggregate\022\014.fedtree.PID\032\016"
+  ".fedtree.Ready\"\000\0222\n\013GetBestInfo\022\014.fedtre"
+  "e.PID\032\021.fedtree.BestInfo\"\0000\001\022)\n\010SendNode"
+  "\022\r.fedtree.Node\032\014.fedtree.PID\"\000\0227\n\016SendI"
+  "ns2NodeID\022\023.fedtree.Ins2NodeID\032\014.fedtree"
+  ".PID\"\000(\001\022+\n\010GetNodes\022\014.fedtree.PID\032\r.fed"
+  "tree.Node\"\0000\001\0226\n\rGetIns2NodeID\022\014.fedtree"
+  ".PID\032\023.fedtree.Ins2NodeID\"\0000\001\0221\n\017CheckIf"
+  "Continue\022\014.fedtree.PID\032\016.fedtree.Ready\"\000"
+  "\022.\n\014TriggerPrune\022\014.fedtree.PID\032\016.fedtree"
+  ".Ready\"\000\022.\n\tSendRange\022\017.fedtree.GHPair\032\014"
+  ".fedtree.PID\"\000(\001\022,\n\nTriggerCut\022\014.fedtree"
+  ".PID\032\016.fedtree.Ready\"\000\022-\n\010GetRange\022\014.fed"
+  "tree.PID\032\017.fedtree.GHPair\"\0000\001\022)\n\006SendGH\022"
+  "\017.fedtree.GHPair\032\014.fedtree.PID\"\000\0225\n\023Trig"
+  "gerBuildUsingGH\022\014.fedtree.PID\032\016.fedtree."
+  "Ready\"\000\0221\n\017TriggerCalcTree\022\014.fedtree.PID"
+  "\032\016.fedtree.Ready\"\000\022*\n\013GetRootNode\022\014.fedt"
+  "ree.PID\032\r.fedtree.Node\0227\n\016GetSplitPoints"
+  "\022\014.fedtree.PID\032\023.fedtree.SplitPoint\"\0000\001\022"
+  "2\n\020HCheckIfContinue\022\014.fedtree.PID\032\016.fedt"
+  "ree.Ready\"\000\022/\n\013ScoreReduce\022\016.fedtree.Sco"
+  "re\032\016.fedtree.Score\"\000\0221\n\017TriggerHomoInit\022"
+  "\014.fedtree.PID\032\016.fedtree.Ready\"\000\0220\n\013GetPa"
+  "illier\022\014.fedtree.PID\032\021.fedtree.Paillier\""
+  "\000\0229\n\021SendHistogramsEnc\022\022.fedtree.GHPairE"
+  "nc\032\014.fedtree.PID\"\000(\001\0229\n\025SendBatchedHisto"
+  "grams\022\020.fedtree.GHArray\032\014.fedtree.PID\"\000\022"
+  ":\n\024SendHistogramBatches\022\020.fedtree.GHBatc"
+  "h\032\014.fedtree.PID\"\000(\001\0229\n\022SendHistFidBatche"
+  "s\022\021.fedtree.FIDBatch\032\014.fedtree.PID\"\000(\001\022B"
+  "\n\024GetIns2NodeIDBatches\022\014.fedtree.PID\032\030.f"
+  "edtree.Ins2NodeIDBatch\"\0000\001\022C\n\025SendIns2No"
+  "deIDBatches\022\030.fedtree.Ins2NodeIDBatch\032\014."
+  "fedtree.PID\"\000(\001\0228\n\022GetGradientBatches\022\014."
+  "fedtree.PID\032\020.fedtree.GHBatch\"\0000\001\022>\n\025Get"
+  "GradientBatchesEnc\022\014.fedtree.PID\032\023.fedtr"
+  "ee.GHEncBatch\"\0000\001\022/\n\013SendNodeEnc\022\020.fedtr"
+  "ee.NodeEnc\032\014.fedtree.PID\"\000\022@\n\027SendHistog"
+  "ramBatchesEnc\022\023.fedtree.GHEncBatch\032\014.fed"
+  "tree.PID\"\000(\001\022,\n\nStopServer\022\014.fedtree.PID"
+  "\032\016.fedtree.Score\"\000\022.\n\014BeginBarrier\022\014.fed"
+  "tree.PID\032\016.fedtree.Ready\"\000b\006proto3"
   ;
 static const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable*const descriptor_table_fedtree_2eproto_deps[1] = {
 };
@@ -648,7 +649,7 @@ static ::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase*const descriptor_table_fed
 };
 static ::PROTOBUF_NAMESPACE_ID::internal::once_flag descriptor_table_fedtree_2eproto_once;
 const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable descriptor_table_fedtree_2eproto = {
-  false, false, descriptor_table_protodef_fedtree_2eproto, "fedtree.proto", 3578,
+  false, false, descriptor_table_protodef_fedtree_2eproto, "fedtree.proto", 3594,
   &descriptor_table_fedtree_2eproto_once, descriptor_table_fedtree_2eproto_sccs, descriptor_table_fedtree_2eproto_deps, 18, 0,
   schemas, file_default_instances, TableStruct_fedtree_2eproto::offsets,
   file_level_metadata_fedtree_2eproto, 18, file_level_enum_descriptors_fedtree_2eproto, file_level_service_descriptors_fedtree_2eproto,
@@ -4001,8 +4002,8 @@ NodeEnc::NodeEnc(const NodeEnc& from)
       GetArena());
   }
   ::memcpy(&final_id_, &from.final_id_,
-    static_cast<size_t>(reinterpret_cast<char*>(&n_instances_) -
-    reinterpret_cast<char*>(&final_id_)) + sizeof(n_instances_));
+    static_cast<size_t>(reinterpret_cast<char*>(&is_enc_) -
+    reinterpret_cast<char*>(&final_id_)) + sizeof(is_enc_));
   // @@protoc_insertion_point(copy_constructor:fedtree.NodeEnc)
 }
 
@@ -4012,8 +4013,8 @@ void NodeEnc::SharedCtor() {
   sum_gh_pair_h_enc_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
   ::memset(reinterpret_cast<char*>(this) + static_cast<size_t>(
       reinterpret_cast<char*>(&final_id_) - reinterpret_cast<char*>(this)),
-      0, static_cast<size_t>(reinterpret_cast<char*>(&n_instances_) -
-      reinterpret_cast<char*>(&final_id_)) + sizeof(n_instances_));
+      0, static_cast<size_t>(reinterpret_cast<char*>(&is_enc_) -
+      reinterpret_cast<char*>(&final_id_)) + sizeof(is_enc_));
 }
 
 NodeEnc::~NodeEnc() {
@@ -4052,8 +4053,8 @@ void NodeEnc::Clear() {
   sum_gh_pair_g_enc_.ClearToEmpty();
   sum_gh_pair_h_enc_.ClearToEmpty();
   ::memset(&final_id_, 0, static_cast<size_t>(
-      reinterpret_cast<char*>(&n_instances_) -
-      reinterpret_cast<char*>(&final_id_)) + sizeof(n_instances_));
+      reinterpret_cast<char*>(&is_enc_) -
+      reinterpret_cast<char*>(&final_id_)) + sizeof(is_enc_));
   _internal_metadata_.Clear<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
 }
 
@@ -4184,6 +4185,13 @@ const char* NodeEnc::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::in
       case 17:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 136)) {
           n_instances_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
+      // bool is_enc = 18;
+      case 18:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 144)) {
+          is_enc_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
           CHK_(ptr);
         } else goto handle_unusual;
         continue;
@@ -4325,6 +4333,12 @@ failure:
     target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteInt32ToArray(17, this->_internal_n_instances(), target);
   }
 
+  // bool is_enc = 18;
+  if (this->is_enc() != 0) {
+    target = stream->EnsureSpace(target);
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteBoolToArray(18, this->_internal_is_enc(), target);
+  }
+
   if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
     target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormat::InternalSerializeUnknownFieldsToArray(
         _internal_metadata_.unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(::PROTOBUF_NAMESPACE_ID::UnknownFieldSet::default_instance), target, stream);
@@ -4446,6 +4460,11 @@ size_t NodeEnc::ByteSizeLong() const {
         this->_internal_n_instances());
   }
 
+  // bool is_enc = 18;
+  if (this->is_enc() != 0) {
+    total_size += 2 + 1;
+  }
+
   if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
     return ::PROTOBUF_NAMESPACE_ID::internal::ComputeUnknownFieldsSize(
         _internal_metadata_, total_size, &_cached_size_);
@@ -4528,6 +4547,9 @@ void NodeEnc::MergeFrom(const NodeEnc& from) {
   if (from.n_instances() != 0) {
     _internal_set_n_instances(from._internal_n_instances());
   }
+  if (from.is_enc() != 0) {
+    _internal_set_is_enc(from._internal_is_enc());
+  }
 }
 
 void NodeEnc::CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
@@ -4554,8 +4576,8 @@ void NodeEnc::InternalSwap(NodeEnc* other) {
   sum_gh_pair_g_enc_.Swap(&other->sum_gh_pair_g_enc_, &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
   sum_gh_pair_h_enc_.Swap(&other->sum_gh_pair_h_enc_, &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
   ::PROTOBUF_NAMESPACE_ID::internal::memswap<
-      PROTOBUF_FIELD_OFFSET(NodeEnc, n_instances_)
-      + sizeof(NodeEnc::n_instances_)
+      PROTOBUF_FIELD_OFFSET(NodeEnc, is_enc_)
+      + sizeof(NodeEnc::is_enc_)
       - PROTOBUF_FIELD_OFFSET(NodeEnc, final_id_)>(
           reinterpret_cast<char*>(&final_id_),
           reinterpret_cast<char*>(&other->final_id_));

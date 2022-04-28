@@ -351,10 +351,13 @@ grpc::Status DistributedServer::SendNodeEnc(grpc::ServerContext *context, const 
     nodes_data[nid].is_leaf = node->is_leaf();
     nodes_data[nid].is_valid = node->is_valid();
     nodes_data[nid].is_pruned = node->is_pruned();
-    nodes_data[nid].sum_gh_pair.encrypted = true;
-    nodes_data[nid].sum_gh_pair.g_enc = NTL::to_ZZ(node->sum_gh_pair_g_enc().c_str());
-    nodes_data[nid].sum_gh_pair.h_enc = NTL::to_ZZ(node->sum_gh_pair_h_enc().c_str());
-    nodes_data[nid].sum_gh_pair.paillier = paillier;
+    if (node->is_enc()) {
+        nodes_data[nid].sum_gh_pair.encrypted = true;
+        nodes_data[nid].sum_gh_pair.g_enc = NTL::to_ZZ(node->sum_gh_pair_g_enc().c_str());
+        nodes_data[nid].sum_gh_pair.h_enc = NTL::to_ZZ(node->sum_gh_pair_h_enc().c_str());
+        nodes_data[nid].sum_gh_pair.paillier = paillier;
+    }
+
     nodes_data[nid].n_instances = node->n_instances();
 
     LOG(DEBUG) << "Receive enc node info from " << pid;
@@ -366,7 +369,8 @@ grpc::Status DistributedServer::SendIns2NodeID(grpc::ServerContext *context,
     std::multimap<grpc::string_ref, grpc::string_ref> metadata = context->client_metadata();
     auto pid_itr = metadata.find("pid");
     int pid = std::stoi(pid_itr->second.data());
-
+    auto l_itr = metadata.find("l");
+    int l = std::stoi(l_itr->second.data());
     fedtree::Ins2NodeID i2n;
     auto ins2node_id_data = booster.fbuilder->ins2node_id.host_data();
 
@@ -378,6 +382,21 @@ grpc::Status DistributedServer::SendIns2NodeID(grpc::ServerContext *context,
 
     LOG(DEBUG) << "Receive ins2node_id from " << pid;
     mutex.lock();
+    
+    if (param.privacy_tech == "he" && n_nodes_received+1 == (1 << l)) {
+        std::chrono::high_resolution_clock timer;
+        auto t1 = timer.now();
+        auto node_data = booster.fbuilder->trees.nodes.host_data();
+        #pragma omp parallel for
+        for (int nid = (1 << l) - 1; nid < (2 << (l + 1)) - 1; nid++) {
+            decrypt_gh(node_data[nid].sum_gh_pair);
+            node_data[nid].calc_weight(param.gbdt_param.lambda);
+        }
+        auto t2 = timer.now();
+        std::chrono::duration<float> t3 = t2 - t1;
+        dec_time += t3.count();
+        party_wait_times[pid] += t3.count();
+    }
     n_nodes_received += 1;
     mutex.unlock();
     return grpc::Status::OK;
@@ -404,20 +423,12 @@ grpc::Status DistributedServer::GetNodes(grpc::ServerContext *context, const fed
     std::chrono::duration<float> used_time = t_end - t_start;
     party_wait_times[id->id()] += used_time.count();
     
-    if (param.privacy_tech == "he") {
-        auto t1 = timer.now();
-        auto node_data = booster.fbuilder->trees.nodes.host_data();
-        #pragma omp parallel for
-        for (int nid = (1 << l) - 1; nid < (2 << (l + 1)) - 1; nid++) {
-            decrypt_gh(node_data[nid].sum_gh_pair);
-            node_data[nid].calc_weight(param.gbdt_param.lambda);
-        }
-        auto t2 = timer.now();
-        std::chrono::duration<float> t3 = t2 - t1;
-        dec_time += t3.count();
-    }
+    
     auto nodes_data = booster.fbuilder->trees.nodes.host_data();
     for (int i = (1 << l) - 1; i < (4 << l) - 1; i++) {
+        // if (id->id() == 0) {
+        //     LOG(INFO) << nodes_data[i];
+        // }
         fedtree::Node node;
         node.set_final_id(nodes_data[i].final_id);
         node.set_lch_index(nodes_data[i].lch_index);
@@ -1056,7 +1067,8 @@ grpc::Status DistributedServer::SendIns2NodeIDBatches(grpc::ServerContext *conte
     std::multimap<grpc::string_ref, grpc::string_ref> metadata = context->client_metadata();
     auto pid_itr = metadata.find("pid");
     int pid = std::stoi(pid_itr->second.data());
-
+    auto l_itr = metadata.find("l");
+    int l = std::stoi(l_itr->second.data());
     fedtree::Ins2NodeIDBatch i2n;
     auto ins2node_id_data = booster.fbuilder->ins2node_id.host_data();
 
@@ -1071,6 +1083,20 @@ grpc::Status DistributedServer::SendIns2NodeIDBatches(grpc::ServerContext *conte
 
     LOG(DEBUG) << "Receive ins2node_id batches from " << pid;
     mutex.lock();
+    if (param.privacy_tech == "he" && n_nodes_received+1 == (1 << l)) {
+        std::chrono::high_resolution_clock timer;
+        auto t1 = timer.now();
+        auto node_data = booster.fbuilder->trees.nodes.host_data();
+        #pragma omp parallel for
+        for (int nid = (1 << l) - 1; nid < (2 << (l + 1)) - 1; nid++) {
+            decrypt_gh(node_data[nid].sum_gh_pair);
+            node_data[nid].calc_weight(param.gbdt_param.lambda);
+        }
+        auto t2 = timer.now();
+        std::chrono::duration<float> t3 = t2 - t1;
+        dec_time += t3.count();
+        party_wait_times[pid] += t3.count();
+    }
     n_nodes_received += 1;
     mutex.unlock();
     return grpc::Status::OK;
@@ -1273,7 +1299,7 @@ int main(int argc, char **argv) {
     el::Loggers::addFlag(el::LoggingFlag::FixedTimeFormat);
     el::Loggers::reconfigureAllLoggers(el::Level::Trace, el::ConfigurationType::Enabled, "false");
     el::Loggers::reconfigureAllLoggers(el::Level::Debug, el::ConfigurationType::Enabled, "false");
-    // el::Loggers::reconfigureAllLoggers(el::ConfigurationType::PerformanceTracking, "false");
+    el::Loggers::reconfigureAllLoggers(el::ConfigurationType::PerformanceTracking, "false");
     int pid;
     FLParam fl_param;
     Parser parser;

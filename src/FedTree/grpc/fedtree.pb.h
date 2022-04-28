@@ -2500,6 +2500,7 @@ class NodeEnc PROTOBUF_FINAL :
     kIsValidFieldNumber = 13,
     kIsPrunedFieldNumber = 14,
     kNInstancesFieldNumber = 17,
+    kIsEncFieldNumber = 18,
   };
   // string sum_gh_pair_g_enc = 15;
   void clear_sum_gh_pair_g_enc();
@@ -2668,6 +2669,15 @@ class NodeEnc PROTOBUF_FINAL :
   void _internal_set_n_instances(::PROTOBUF_NAMESPACE_ID::int32 value);
   public:
 
+  // bool is_enc = 18;
+  void clear_is_enc();
+  bool is_enc() const;
+  void set_is_enc(bool value);
+  private:
+  bool _internal_is_enc() const;
+  void _internal_set_is_enc(bool value);
+  public:
+
   // @@protoc_insertion_point(class_scope:fedtree.NodeEnc)
  private:
   class _Internal;
@@ -2692,6 +2702,7 @@ class NodeEnc PROTOBUF_FINAL :
   bool is_valid_;
   bool is_pruned_;
   ::PROTOBUF_NAMESPACE_ID::int32 n_instances_;
+  bool is_enc_;
   mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
   friend struct ::TableStruct_fedtree_2eproto;
 };
@@ -4876,6 +4887,26 @@ inline void NodeEnc::_internal_set_n_instances(::PROTOBUF_NAMESPACE_ID::int32 va
 inline void NodeEnc::set_n_instances(::PROTOBUF_NAMESPACE_ID::int32 value) {
   _internal_set_n_instances(value);
   // @@protoc_insertion_point(field_set:fedtree.NodeEnc.n_instances)
+}
+
+// bool is_enc = 18;
+inline void NodeEnc::clear_is_enc() {
+  is_enc_ = false;
+}
+inline bool NodeEnc::_internal_is_enc() const {
+  return is_enc_;
+}
+inline bool NodeEnc::is_enc() const {
+  // @@protoc_insertion_point(field_get:fedtree.NodeEnc.is_enc)
+  return _internal_is_enc();
+}
+inline void NodeEnc::_internal_set_is_enc(bool value) {
+  
+  is_enc_ = value;
+}
+inline void NodeEnc::set_is_enc(bool value) {
+  _internal_set_is_enc(value);
+  // @@protoc_insertion_point(field_set:fedtree.NodeEnc.is_enc)
 }
 
 // -------------------------------------------------------------------
