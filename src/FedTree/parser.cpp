@@ -20,8 +20,8 @@ void Parser::parse_param(FLParam &fl_param, int argc, char **argv) {
     fl_param.privacy_tech = "he";
     fl_param.partition= true;
     fl_param.alpha = 100;
-    fl_param.n_hori = 2;
-    fl_param.n_verti = 2;
+    fl_param.n_hori = -1;
+    fl_param.n_verti = -1;
 
     fl_param.propose_split = "server";
     fl_param.merge_histogram = "server";
@@ -55,6 +55,7 @@ void Parser::parse_param(FLParam &fl_param, int argc, char **argv) {
     gbdt_param->tree_per_rounds = 1; // # tree of each round, depends on # class
     gbdt_param->metric = "default";
     gbdt_param->constant_h = 0.0;
+    gbdt_param->reorder_label = true; // whether reorder label or not
 
     if (argc < 2) {
         printf("Usage: <config>\n");
@@ -145,6 +146,8 @@ void Parser::parse_param(FLParam &fl_param, int argc, char **argv) {
                 gbdt_param->metric = val;
             else if (str_name.compare("constant_h") == 0)
                 gbdt_param->constant_h = atof(val);
+            else if (str_name.compare("reorder_label") == 0)
+                gbdt_param->reorder_label = atoi(val);
             else
                 LOG(INFO) << "\"" << name << "\" is unknown option!";
         } else {
@@ -169,10 +172,21 @@ void Parser::parse_param(FLParam &fl_param, int argc, char **argv) {
     if (fl_param.privacy_tech == "dp" && gbdt_param->constant_h == 0)
         gbdt_param->constant_h = 1.0;
 
-//    TODO: confirm handling spaces around "="
-//    for (int i = 0; i < argc; ++i) {
-//        parse_value(argv[i]);
-//    } //end parsing parameters
+    if (fl_param.n_hori == -1){
+        if(fl_param.mode == "horizontal"){
+            fl_param.n_hori == fl_param.n_parties;
+        }
+        else
+            fl_param.n_hori = 1;
+    }
+    if (fl_param.n_verti == -1){
+        if(fl_param.mode == "vertical"){
+            fl_param.n_verti == fl_param.n_parties;
+        }
+        else
+            fl_param.n_verti = 1;
+    }
+
 }
 
 // TODO: implement Tree and DataSet; check data structure compatibility
