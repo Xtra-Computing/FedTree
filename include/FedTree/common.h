@@ -295,19 +295,36 @@ struct GHPair {
         return !(*this == rhs);
     }
 
-    HOST_DEVICE GHPair() : g(0), h(0) {};
+    HOST_DEVICE GHPair() : g(0), h(0) {
+        #ifdef USE_CUDA
+        mpz_init(g_enc);
+        mpz_init(h_enc);
+        #endif
+    };
 
-    HOST_DEVICE GHPair(float_type v) : g(v), h(v) {};
+    HOST_DEVICE GHPair(float_type v) : g(v), h(v) {
+        #ifdef USE_CUDA
+        mpz_init(g_enc);
+        mpz_init(h_enc);
+        #endif
+    };
 
-    HOST_DEVICE GHPair(float_type g, float_type h) : g(g), h(h) {};
+    HOST_DEVICE GHPair(float_type g, float_type h) : g(g), h(h) {
+        #ifdef USE_CUDA
+        mpz_init(g_enc);
+        mpz_init(h_enc);
+        #endif
+    };
 
     GHPair(const GHPair& other) {
         g = other.g;
         h = other.h;
+        #ifdef USE_CUDA
+        mpz_init(g_enc);
+        mpz_init(h_enc);
+        #endif
         if(other.encrypted) {
             #ifdef USE_CUDA
-            mpz_init(g_enc);
-            mpz_init(h_enc);
             mpz_set(g_enc, other.g_enc);
             mpz_set(h_enc, other.h_enc);
             #else
