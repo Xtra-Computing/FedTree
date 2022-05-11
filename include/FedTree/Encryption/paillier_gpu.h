@@ -55,7 +55,7 @@ public:
 
     void decrypt(SyncArray<GHPair> &ciphertext);
 
-//    void decrypt(GHPair &message);
+    void decrypt(GHPair &message);
 
     void add(mpz_t &result, mpz_t &x, mpz_t &y);
     void mul(mpz_t result, mpz_t &x, mpz_t &y);

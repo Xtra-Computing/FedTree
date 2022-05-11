@@ -455,8 +455,10 @@ void Paillier_GPU::decrypt(SyncArray<GHPair> &message){
     cgbn_gh<BITS>* gh_enc_cpu = (cgbn_gh<BITS>*)malloc(sizeof(cgbn_gh<BITS>)*n_instances);
 
     for(int i = 0; i < n_instances; i++){
-        from_mpz(message_host_data[i].g_enc, gh_enc_cpu[i].g._limbs, BITS / 32);
-        from_mpz(message_host_data[i].h_enc, gh_enc_cpu[i].h._limbs, BITS / 32);
+        if(message_host_data[i].encrypted) {
+            from_mpz(message_host_data[i].g_enc, gh_enc_cpu[i].g._limbs, BITS / 32);
+            from_mpz(message_host_data[i].h_enc, gh_enc_cpu[i].h._limbs, BITS / 32);
+        }
     }
     cgbn_gh<BITS>* gh_enc_gpu;
     CUDA_CHECK(cudaMalloc((void **)&gh_enc_gpu, sizeof(cgbn_gh<BITS>) * n_instances));
@@ -476,19 +478,68 @@ void Paillier_GPU::decrypt(SyncArray<GHPair> &message){
     mpz_init(g_result);
     mpz_init(h_result);
     for(int i = 0; i < n_instances; i++){
-        long g_ul = 0, h_ul = 0;
-        to_mpz(g_result, gh_results[i].g._limbs, BITS/32);
-        to_mpz(h_result, gh_results[i].h._limbs, BITS/32);
-        mpz_export(&g_ul, 0, -1, sizeof(g_ul), 0, 0, g_result);
-        mpz_export(&h_ul, 0, -1, sizeof(h_ul), 0, 0, h_result);
-        message_host_data[i].g = (float_type) g_ul/1e6;
-        message_host_data[i].h = (float_type) h_ul/1e6;
+        if(message_host_data[i].encrypted) {
+            long g_ul = 0, h_ul = 0;
+            to_mpz(g_result, gh_results[i].g._limbs, BITS / 32);
+            to_mpz(h_result, gh_results[i].h._limbs, BITS / 32);
+            mpz_export(&g_ul, 0, -1, sizeof(g_ul), 0, 0, g_result);
+            mpz_export(&h_ul, 0, -1, sizeof(h_ul), 0, 0, h_result);
+            message_host_data[i].g = (float_type) g_ul / 1e6;
+            message_host_data[i].h = (float_type) h_ul / 1e6;
+        }
     }
     free(gh_results);
     mpz_clear(g_result);
     mpz_clear(h_result);
 }
 
+
+void Paillier_GPU::decrypt(GHPair &message){
+//    auto message_device_data = message.device_data();
+    auto message_host_data = message;
+//    cgbn_error_report_t *report;
+//    CUDA_CHECK(cgbn_error_report_alloc(&report));
+
+    int n_instances = 1;
+    cgbn_gh<BITS>* gh_enc_cpu = (cgbn_gh<BITS>*)malloc(sizeof(cgbn_gh<BITS>)*n_instances);
+
+    if(message.encrypted) {
+        from_mpz(message.g_enc, gh_enc_cpu[0].g._limbs, BITS / 32);
+        from_mpz(message.h_enc, gh_enc_cpu[0].h._limbs, BITS / 32);
+    }
+
+    cgbn_gh<BITS>* gh_enc_gpu;
+    CUDA_CHECK(cudaMalloc((void **)&gh_enc_gpu, sizeof(cgbn_gh<BITS>) * n_instances));
+    CUDA_CHECK(cudaMemcpy(gh_enc_gpu, gh_enc_cpu, sizeof(cgbn_gh<BITS>) * n_instances, cudaMemcpyHostToDevice));
+
+
+    cgbn_gh<BITS>* gh_results_gpu;
+    CUDA_CHECK(cudaMalloc((void **)&gh_results_gpu, sizeof(cgbn_gh<BITS>) * n_instances));
+//    std::cout<<"n_instances:"<<n_instances<<std::endl;
+    kernel_decrypt<<<(n_instances+3)/4, 128>>>(gh_enc_gpu, lambda_gpu, mu_gpu, n_gpu, n_square_gpu, gh_results_gpu, n_instances);
+    CUDA_CHECK(cudaDeviceSynchronize());
+    cgbn_gh<BITS>* gh_results = (cgbn_gh<BITS>*)malloc(sizeof(cgbn_gh<BITS>)*n_instances);
+    CUDA_CHECK(cudaMemcpy(gh_results, gh_results_gpu, sizeof(cgbn_gh<BITS>)*n_instances, cudaMemcpyDeviceToHost));
+    CUDA_CHECK(cudaFree(gh_results_gpu));
+//    auto message_host_data = message.host_data();
+    mpz_t g_result, h_result;
+    mpz_init(g_result);
+    mpz_init(h_result);
+
+    if(message.encrypted) {
+        long g_ul = 0, h_ul = 0;
+        to_mpz(g_result, gh_results[0].g._limbs, BITS / 32);
+        to_mpz(h_result, gh_results[0].h._limbs, BITS / 32);
+        mpz_export(&g_ul, 0, -1, sizeof(g_ul), 0, 0, g_result);
+        mpz_export(&h_ul, 0, -1, sizeof(h_ul), 0, 0, h_result);
+        message.g = (float_type) g_ul / 1e6;
+        message.h = (float_type) h_ul / 1e6;
+    }
+
+    free(gh_results);
+    mpz_clear(g_result);
+    mpz_clear(h_result);
+}
 
 //template<uint32_t BITS>
 //void Paillier_GPU::decrypt(GHPair &message){

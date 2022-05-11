@@ -96,9 +96,13 @@ struct GHPair {
         }
     }
 
+    /*
+     * segementation fault
     void homo_decrypt(const Paillier_GMP &pl) {
         if (encrypted) {
             mpz_t g_dec, h_dec;
+            mpz_init(g_dec);
+            mpz_init(h_dec);
             long g_l = 0, h_l = 0;
             pl.decrypt(g_dec, g_enc);
             pl.decrypt(h_dec, h_enc);
@@ -107,8 +111,11 @@ struct GHPair {
             g = (float_type) g_l / 1e6;
             h = (float_type) h_l / 1e6;
             encrypted = false;
+            //mpz_clear(g_dec);
+            //mpz_clear(h_dec);
         }
     }
+     */
 
 #else
     NTL::ZZ g_enc;
