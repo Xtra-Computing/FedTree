@@ -27,15 +27,12 @@ struct GBDTParam {
     std::string objective;
     int num_class;
     int tree_per_rounds; // #tree of each round, depends on #class
-
     int max_num_bin; // for histogram
-
     float constant_h; // fix h to a constant for DP
-
     int n_device;
-
     std::string tree_method;
     std::string metric;
+    bool reorder_label;
 };
 
 #endif //FEDTREE_GBDTPARAM_H

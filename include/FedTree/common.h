@@ -96,9 +96,13 @@ struct GHPair {
         }
     }
 
+    /*
+     * segementation fault
     void homo_decrypt(const Paillier_GMP &pl) {
         if (encrypted) {
             mpz_t g_dec, h_dec;
+            mpz_init(g_dec);
+            mpz_init(h_dec);
             long g_l = 0, h_l = 0;
             pl.decrypt(g_dec, g_enc);
             pl.decrypt(h_dec, h_enc);
@@ -107,8 +111,11 @@ struct GHPair {
             g = (float_type) g_l / 1e6;
             h = (float_type) h_l / 1e6;
             encrypted = false;
+            //mpz_clear(g_dec);
+            //mpz_clear(h_dec);
         }
     }
+     */
 
 #else
     NTL::ZZ g_enc;
@@ -295,19 +302,36 @@ struct GHPair {
         return !(*this == rhs);
     }
 
-    HOST_DEVICE GHPair() : g(0), h(0) {};
+    HOST_DEVICE GHPair() : g(0), h(0) {
+        #ifdef USE_CUDA
+        mpz_init(g_enc);
+        mpz_init(h_enc);
+        #endif
+    };
 
-    HOST_DEVICE GHPair(float_type v) : g(v), h(v) {};
+    HOST_DEVICE GHPair(float_type v) : g(v), h(v) {
+        #ifdef USE_CUDA
+        mpz_init(g_enc);
+        mpz_init(h_enc);
+        #endif
+    };
 
-    HOST_DEVICE GHPair(float_type g, float_type h) : g(g), h(h) {};
+    HOST_DEVICE GHPair(float_type g, float_type h) : g(g), h(h) {
+        #ifdef USE_CUDA
+        mpz_init(g_enc);
+        mpz_init(h_enc);
+        #endif
+    };
 
     GHPair(const GHPair& other) {
         g = other.g;
         h = other.h;
+        #ifdef USE_CUDA
+        mpz_init(g_enc);
+        mpz_init(h_enc);
+        #endif
         if(other.encrypted) {
             #ifdef USE_CUDA
-            mpz_init(g_enc);
-            mpz_init(h_enc);
             mpz_set(g_enc, other.g_enc);
             mpz_set(h_enc, other.h_enc);
             #else

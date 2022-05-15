@@ -76,6 +76,21 @@ void DataSet::group_label() {
     }
 }
 
+// assume that the labels are already well organized, i.e., 0, 1, 2, ...
+void DataSet::group_label_without_reorder() {
+    int max_y = 0;
+    for (int i = 0; i < y.size(); i++){
+        if(y[i] > max_y)
+            max_y = y[i];
+    }
+    label.clear();
+    for(int i = 0; i < max_y; i++){
+        label.push_back(i);
+        label_map[i] = i;
+    }
+}
+
+
 /**
  * return true if a character is related to digit
  */
@@ -329,7 +344,12 @@ void DataSet::load_from_file(string file_name, FLParam &param) {
     LOG(INFO) << "#instances = " << this->n_instances() << ", #features = " << this->n_features();
     if (ObjectiveFunction::need_load_group_file(param.gbdt_param.objective)) load_group_file(file_name + ".group");
     if (ObjectiveFunction::need_group_label(param.gbdt_param.objective) || param.gbdt_param.metric == "error") {
-        group_label();
+        if(param.gbdt_param.reorder_label) {
+            group_label();
+        }
+        else{
+            group_label_without_reorder();
+        }
         is_classification = true;
         param.gbdt_param.num_class = label.size();
     }

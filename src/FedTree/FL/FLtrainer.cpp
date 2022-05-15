@@ -504,12 +504,6 @@ void FLtrainer::vertical_fl_trainer(vector<Party> &parties, Server &server, FLPa
         if (params.privacy_tech == "he") {
             auto t1 = timer.now();
             temp_gradients.resize(server.booster.gradients.size());
-
-//            auto temp_gradients_data = temp_gradients.host_data();
-//            auto server_gradients_data = server.booster.gradients.host_data();
-//            for(int i = 0; i < temp_gradients.size();i++){
-//                temp_gradients_data[i] = server_gradients_data[i];
-//            }
             temp_gradients.copy_from(server.booster.gradients);
             server.homo_init();
             server.encrypt_gh_pairs(server.booster.gradients);
@@ -517,7 +511,6 @@ void FLtrainer::vertical_fl_trainer(vector<Party> &parties, Server &server, FLPa
             std::chrono::duration<float> t3 = t2 - t1;
             encryption_time += t3.count();
         }
-
         #pragma omp parallel for
         for (int j = 0; j < parties.size(); j++) {
             server.send_booster_gradients(parties[j]);
@@ -720,7 +713,7 @@ void FLtrainer::vertical_fl_trainer(vector<Party> &parties, Server &server, FLPa
                         server.send_node(nid, n_nodes_in_level, parties[pid]);
                     }
                 }
-
+                
                 if (!split_further) {
                     // add Laplace noise to leaf node values
                     if (params.privacy_tech == "dp") {
