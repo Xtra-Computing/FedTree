@@ -1320,7 +1320,7 @@ int main(int argc, char **argv) {
         printf("Usage: <config file path> <pid>\n");
         exit(0);
     }
-
+    GBDTParam &model_param = fl_param.gbdt_param;
     if(model_param.verbose == 0) {
         el::Loggers::reconfigureAllLoggers(el::Level::Debug, el::ConfigurationType::Enabled, "false");
         el::Loggers::reconfigureAllLoggers(el::Level::Trace, el::ConfigurationType::Enabled, "false");
@@ -1330,7 +1330,7 @@ int main(int argc, char **argv) {
         el::Loggers::reconfigureAllLoggers(el::Level::Debug, el::ConfigurationType::Enabled, "false");
         el::Loggers::reconfigureAllLoggers(el::Level::Trace, el::ConfigurationType::Enabled, "false");
     }
-    
+
     DistributedParty party(grpc::CreateChannel(fl_param.ip_address + ":50051",
                                                grpc::InsecureChannelCredentials()));
 
