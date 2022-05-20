@@ -1271,7 +1271,7 @@ INITIALIZE_EASYLOGGINGPP
 #endif
 int main(int argc, char **argv) {
     el::Loggers::reconfigureAllLoggers(el::ConfigurationType::Format, "%datetime %level %fbase:%line : %msg");
-    el::Loggers::addFlag(el::LoggingFlag::ColoredTerminalOutput);
+//    el::Loggers::addFlag(el::LoggingFlag::ColoredTerminalOutput);
     el::Loggers::addFlag(el::LoggingFlag::FixedTimeFormat);
 //    el::Loggers::reconfigureAllLoggers(el::Level::Trace, el::ConfigurationType::Enabled, "false");
 //    el::Loggers::reconfigureAllLoggers(el::Level::Debug, el::ConfigurationType::Enabled, "false");
