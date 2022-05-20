@@ -11,10 +11,11 @@
 
 grpc::Status DistributedServer::TriggerUpdateGradients(::grpc::ServerContext *context, const ::fedtree::PID *request,
                                                        ::fedtree::Ready *response) {
+//    LOG(INFO)<<"computation UpdateGradients start";
     booster.update_gradients();
     LOG(DEBUG) << "gradients updated";
     if (param.privacy_tech == "he") {
-        // TIPS 这里可以直接存好字符串，一步到位
+        // TIPS: store string
         
         SyncArray<GHPair> tmp;
         tmp.resize(booster.gradients.size());
@@ -54,6 +55,7 @@ grpc::Status DistributedServer::TriggerUpdateGradients(::grpc::ServerContext *co
         booster.gradients.copy_from(tmp);
     }
     update_gradients_success = true;
+//    LOG(INFO)<<"computation UpdateGradients end";
     return grpc::Status::OK;
 }
 
@@ -901,10 +903,10 @@ grpc::Status DistributedServer::ScoreReduce(grpc::ServerContext* context, const 
 
 grpc::Status DistributedServer::TriggerHomoInit(grpc::ServerContext *context, const fedtree::PID *request,
                                 fedtree::Ready *response) {
-    LOG(INFO) << "begin homo init";
+//    LOG(INFO) << "computation HomoInit start";
     homo_init();
     homo_init_success = true;
-    LOG(INFO) << "end homo init";
+//    LOG(INFO) << "computation HomoInit end";
     return grpc::Status::OK;
 }
 
@@ -1271,9 +1273,9 @@ int main(int argc, char **argv) {
     el::Loggers::reconfigureAllLoggers(el::ConfigurationType::Format, "%datetime %level %fbase:%line : %msg");
     el::Loggers::addFlag(el::LoggingFlag::ColoredTerminalOutput);
     el::Loggers::addFlag(el::LoggingFlag::FixedTimeFormat);
-    el::Loggers::reconfigureAllLoggers(el::Level::Trace, el::ConfigurationType::Enabled, "false");
-    el::Loggers::reconfigureAllLoggers(el::Level::Debug, el::ConfigurationType::Enabled, "false");
-    // el::Loggers::reconfigureAllLoggers(el::ConfigurationType::PerformanceTracking, "false");
+//    el::Loggers::reconfigureAllLoggers(el::Level::Trace, el::ConfigurationType::Enabled, "false");
+//    el::Loggers::reconfigureAllLoggers(el::Level::Debug, el::ConfigurationType::Enabled, "false");
+//    el::Loggers::reconfigureAllLoggers(el::ConfigurationType::PerformanceTracking, "false");
     int pid;
     FLParam fl_param;
     Parser parser;
@@ -1284,6 +1286,18 @@ int main(int argc, char **argv) {
         exit(0);
     }
     GBDTParam &model_param = fl_param.gbdt_param;
+    if(model_param.verbose == 0) {
+        el::Loggers::reconfigureAllLoggers(el::Level::Debug, el::ConfigurationType::Enabled, "false");
+        el::Loggers::reconfigureAllLoggers(el::Level::Trace, el::ConfigurationType::Enabled, "false");
+        el::Loggers::reconfigureAllLoggers(el::Level::Info, el::ConfigurationType::Enabled, "false");
+    }
+    else if (model_param.verbose == 1) {
+        el::Loggers::reconfigureAllLoggers(el::Level::Debug, el::ConfigurationType::Enabled, "false");
+        el::Loggers::reconfigureAllLoggers(el::Level::Trace, el::ConfigurationType::Enabled, "false");
+    }
+    if (!model_param.profiling) {
+        el::Loggers::reconfigureAllLoggers(el::ConfigurationType::PerformanceTracking, "false");
+    }
     DataSet dataset;
     dataset.load_from_file(model_param.path, fl_param);
 
