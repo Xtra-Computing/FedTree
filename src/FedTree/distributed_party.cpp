@@ -1330,7 +1330,9 @@ int main(int argc, char **argv) {
         el::Loggers::reconfigureAllLoggers(el::Level::Debug, el::ConfigurationType::Enabled, "false");
         el::Loggers::reconfigureAllLoggers(el::Level::Trace, el::ConfigurationType::Enabled, "false");
     }
-
+    if (!model_param.profiling) {
+        el::Loggers::reconfigureAllLoggers(el::ConfigurationType::PerformanceTracking, "false");
+    }
     DistributedParty party(grpc::CreateChannel(fl_param.ip_address + ":50051",
                                                grpc::InsecureChannelCredentials()));
 
