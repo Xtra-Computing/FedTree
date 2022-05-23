@@ -15,6 +15,7 @@ class DataSet{
     ///load dataset from file
 //    void load_from_file(const string& file_name, FLParam &param);
     void load_from_file(string file_name, FLParam &param);
+    void load_from_csv(string file_name, FLParam &param);
 //    void load_from_file_dense(string file_name, FLParam &param);
     void load_from_files(vector<string>file_names, FLParam &param);
     void load_group_file(string file_name);

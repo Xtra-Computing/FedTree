@@ -211,6 +211,10 @@ void line_count(const int nthread, const int buffer_size, vector<int> &line_coun
 }
 
 void DataSet::load_from_file(string file_name, FLParam &param) {
+    if(param.data_format=="csv") {
+        load_from_csv(file_name, param);
+        return;
+    }
     LOG(INFO) << "loading LIBSVM dataset from file ## " << file_name << " ##";
     std::chrono::high_resolution_clock timer;
     auto t_start = timer.now();
@@ -313,6 +317,206 @@ void DataSet::load_from_file(string file_name, FLParam &param) {
                         row_len_[tid].back()++;
                     }
                     p = q;
+                } // end inner while
+                line_begin = line_end;
+            } // end outer while
+        } // end num_thread
+        for (int i = 0; i < nthread; i++) {
+            if (max_feature[i] > n_features_)
+                n_features_ = max_feature[i];
+        }
+        for (int tid = 0; tid < nthread; tid++) {
+            csr_val.insert(csr_val.end(), val_[tid].begin(), val_[tid].end());
+            if(is_zero_base){
+                for (int i = 0; i < col_idx[tid].size(); ++i) {
+                    col_idx[tid][i]++;
+                }
+            }
+            csr_col_idx.insert(csr_col_idx.end(), col_idx[tid].begin(), col_idx[tid].end());
+            for (int row_len : row_len_[tid]) {
+                csr_row_ptr.push_back(csr_row_ptr.back() + row_len);
+            }
+        }
+        for (int i = 0; i < nthread; i++) {
+            this->y.insert(y.end(), y_[i].begin(), y_[i].end());
+            this->label.insert(label.end(), y_[i].begin(), y_[i].end());
+        }
+    } // end while
+
+    ifs.close();
+    free(buffer);
+    LOG(INFO) << "#instances = " << this->n_instances() << ", #features = " << this->n_features();
+    if (ObjectiveFunction::need_load_group_file(param.gbdt_param.objective)) load_group_file(file_name + ".group");
+    if (ObjectiveFunction::need_group_label(param.gbdt_param.objective) || param.gbdt_param.metric == "error") {
+        if(param.gbdt_param.reorder_label) {
+            group_label();
+        }
+        else{
+            group_label_without_reorder();
+        }
+        is_classification = true;
+        param.gbdt_param.num_class = label.size();
+    }
+
+    auto t_end = timer.now();
+    std::chrono::duration<float> used_time = t_end - t_start;
+    LOG(INFO) << "Load dataset using time: " << used_time.count() << " s";
+
+//    // TODO Estimate the required memory
+//    int nnz = this->csr_val.size();
+//    double mem_size = (double)nnz / 1024;
+//    mem_size /= 1024;
+//    mem_size /= 1024;
+//    mem_size *= 12;
+//    if(mem_size > (5 * param.n_device))
+//        this->use_cpu = true;
+}
+
+
+
+
+/* load a csv file that following format id,y,x0,x1, ... */
+void DataSet::load_from_csv(string file_name, FLParam &param) {
+    LOG(INFO) << "loading csv dataset from file ## " << file_name << " ##";
+    std::chrono::high_resolution_clock timer;
+    auto t_start = timer.now();
+
+    // initialize
+    y.clear();
+    csr_val.clear();
+    csr_col_idx.clear();
+    csr_row_ptr.resize(1, 0);
+    n_features_ = 0;
+
+    // open file stream
+    std::ifstream ifs(file_name, std::ifstream::binary);
+    CHECK(ifs.is_open()) << "file ## " << file_name << " ## not found. ";
+
+    string first_line;
+    std::getline(ifs, first_line);
+    std::istringstream iss(first_line);
+    vector<string> words;
+    string word;
+    bool has_label = 1;
+    while(getline(iss, word, ',')){
+        words.push_back(word);
+    }
+    if(words[0] != "id"){
+        std::cout<<"unsupported csv format"<<std::endl;
+        exit(1);
+    }
+    if(words[1]!="y") {
+        n_features_ = words.size() - 1;
+        has_label = 0;
+    }
+    else
+        n_features_ = words.size() - 2;
+
+
+
+    int buffer_size = 4 << 20;
+    char *buffer = (char *)malloc(buffer_size);
+    const int nthread = omp_get_max_threads();
+
+    auto find_last_line = [](char *ptr, const char *begin) {
+        while(ptr != begin && *ptr != '\n' && *ptr != '\r' && *ptr != '\0') --ptr;
+        return ptr;
+    };
+
+    // read and parse data
+    while(ifs) {
+        ifs.read(buffer, buffer_size);
+        char *head = buffer;
+        size_t size = ifs.gcount();
+
+        // create vectors for each thread
+        vector<vector<float_type>> y_(nthread);
+        vector<vector<float_type>> val_(nthread);
+        vector<vector<int>> col_idx(nthread);
+        vector<vector<int>> row_len_(nthread);
+        vector<int> max_feature(nthread, 0);
+        bool is_zero_base = false;
+
+#pragma omp parallel num_threads(nthread)
+        {
+            int tid = omp_get_thread_num(); // thread id
+            size_t nstep = (size + nthread - 1) / nthread;
+            size_t step_begin = (std::min)(tid * nstep, size - 1);
+            size_t step_end = (std::min)((tid + 1) * nstep, size - 1);
+
+            // a block is the data partition processed by a thread
+            char *block_begin = find_last_line((head + step_begin), head);
+            char *block_end = find_last_line((head + step_end), block_begin);
+
+            // move stream start position to the end of the last line after an epoch
+            if(tid == nthread - 1) {
+                if(ifs.eof()) {
+                    block_end = head + step_end;
+                } else {
+                    ifs.seekg(-(head + step_end - block_end), std::ios_base::cur);
+                }
+            }
+
+            // read instances line by line
+            char *line_begin = block_begin;
+            char *line_end = line_begin;
+            // to the end of the block
+            while(line_begin != block_end) {
+                line_end = line_begin + 1;
+                while(line_end != block_end && *line_end != '\n' && *line_end != '\r' && *line_end != '\0') ++line_end;
+                const char *p = line_begin;
+                const char *q = NULL;
+                row_len_[tid].push_back(0);
+
+                float_type id;
+                float_type temp_;
+                std::ptrdiff_t advanced = ignore_comment_and_blank(p, line_end);
+                p += advanced;
+                int r = parse_pair<float_type, float_type>(p, line_end, &q, id, temp_);
+//                std::cout<<"id:"<<id<<std::endl;
+                if (r < 1) {
+                    line_begin = line_end;
+                    continue;
+                }
+                p = q;
+                if(has_label) {
+                    float_type label;
+                    std::ptrdiff_t advanced = ignore_comment_and_blank(p, line_end);
+                    p += advanced;
+                    int r = parse_pair<float_type, float_type>(p, line_end, &q, label, temp_);
+                    if (r < 1) {
+                        line_begin = line_end;
+                        continue;
+                    }
+//                    std::cout<<"label:"<<label<<std::endl;
+                    // parse instance label
+                    y_[tid].push_back(label);
+                    p = q;
+                }
+                else
+                    y_[tid].push_back(0);
+
+                // parse feature id and value
+                int feature_id = 1;
+                while(p != line_end) {
+                    float_type value;
+                    std::ptrdiff_t advanced = ignore_comment_and_blank(p, line_end);
+                    p += advanced;
+
+                    int r = parse_pair(p, line_end, &q, value, temp_);
+                    if(r < 1) {
+                        p = q;
+                        continue;
+                    }
+                    if(r == 1) {
+                        col_idx[tid].push_back(feature_id - 1);
+                        val_[tid].push_back(value);
+                        if(feature_id > max_feature[tid])
+                            max_feature[tid] = feature_id;
+                        row_len_[tid].back()++;
+                    }
+                    p = q;
+                    feature_id ++;
                 } // end inner while
                 line_begin = line_end;
             } // end outer while
