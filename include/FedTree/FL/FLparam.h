@@ -26,6 +26,8 @@ public:
     string ip_address; // IP address of the server
     float ins_bagging_fraction; // randomly sample subset to train a tree without replacement
     int seed; // random seed for partitioning
+    string data_format; // data format: "libsvm" or "csv"
+    string label_location; // "server" or "party" for vertical FL
     GBDTParam gbdt_param; // parameters for the gbdt training
 };
 

@@ -29,6 +29,8 @@ void Parser::parse_param(FLParam &fl_param, int argc, char **argv) {
     fl_param.variance = 200;
     fl_param.ip_address = "localhost";
     fl_param.ins_bagging_fraction = 1.0;
+    fl_param.data_format = "libsvm";
+    fl_param.label_location = "server";
 
     fl_param.seed = 42;
 
@@ -67,7 +69,6 @@ void Parser::parse_param(FLParam &fl_param, int argc, char **argv) {
         char name[256], val[256];
         if (sscanf(name_val, "%[^=]=%s", name, val) == 2) {
             string str_name(name);
-
             // FL params
             if ((str_name.compare("n_parties") == 0) || (str_name.compare("num_parties") == 0) ||
                 (str_name.compare("n_clients") == 0) || (str_name.compare("num_clients") == 0) ||
@@ -99,6 +100,10 @@ void Parser::parse_param(FLParam &fl_param, int argc, char **argv) {
                 fl_param.merge_histogram = val;
             else if (str_name.compare("propose_split") == 0)
                 fl_param.propose_split = val;
+            else if (str_name.compare("data_format") == 0)
+                fl_param.data_format = val;
+            else if (str_name.compare("label_location") == 0)
+                fl_param.label_location = val;
             // GBDT params
             else if ((str_name.compare("max_depth") == 0) || (str_name.compare("depth") == 0))
                 gbdt_param->depth = atoi(val);
