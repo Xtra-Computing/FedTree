@@ -129,7 +129,7 @@ int main(int argc, char** argv){
         int num_class;
         if(fl_param.partition) {
             num_class = dataset.label.size();
-            if (param.num_class != num_class) {
+            if ((param.num_class == 1) && (param.num_class != num_class)) {
                 LOG(INFO) << "updating number of classes from " << param.num_class << " to " << num_class;
                 param.num_class = num_class;
             }

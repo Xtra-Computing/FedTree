@@ -1354,14 +1354,16 @@ int main(int argc, char **argv) {
     DataSet dataset;
     dataset.load_from_file(param.path, fl_param);
     DataSet test_dataset;
-    test_dataset.load_from_file(param.test_path, fl_param);
+    bool use_global_test_set = !param.test_path.empty();
+    if(use_global_test_set)
+        test_dataset.load_from_file(param.test_path, fl_param);
     Partition partition;
     vector<DataSet> subsets(fl_param.n_parties);
     std::map<int, vector<int>> batch_idxs;
 
     if(param.objective.find("multi:") != std::string::npos || param.objective.find("binary:") != std::string::npos) {
         int num_class = dataset.label.size();
-        if (param.num_class != num_class) {
+        if ((param.num_class == 1) && (param.num_class != num_class)) {
             LOG(INFO) << "updating number of classes from " << param.num_class << " to " << num_class;
             param.num_class = num_class;
         }
@@ -1381,17 +1383,9 @@ int main(int argc, char **argv) {
         }
         else {
             // calculate batch idxs
-            int stride = test_dataset.n_features()/fl_param.n_parties;
-            for (int p = 0; p < fl_param.n_parties-1; p++) {
-                batch_idxs[p] = vector<int>();
-                for (int id = 0; id < stride; id++) {
-                    batch_idxs[p].push_back(id+p*stride);
-                }
-            }
-            batch_idxs[fl_param.n_parties-1] = vector<int>();
-            for (int id = 0; id < test_dataset.n_features()-(fl_param.n_parties-1)*stride; id++) {
-                batch_idxs[fl_param.n_parties-1].push_back((fl_param.n_parties-1)*stride+id);
-            }
+            if(use_global_test_set)
+                for(int i = 0; i < test_dataset.n_features(); i++)
+                    batch_idxs[0].push_back(i);
             party.vertical_init(pid, dataset, fl_param);
         }
         party.BeginBarrier();
@@ -1403,7 +1397,8 @@ int main(int argc, char **argv) {
         LOG(INFO)<<"training end";
         train_time = used_time.count();
         LOG(INFO) << "train time: " << train_time<<"s";
-        party.gbdt.predict_score_vertical(fl_param.gbdt_param, test_dataset, batch_idxs);
+        if(use_global_test_set || fl_param.partition)
+            party.gbdt.predict_score_vertical(fl_param.gbdt_param, test_dataset, batch_idxs);
     }
     else if (fl_param.mode == "horizontal") {
         // draft
