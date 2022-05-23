@@ -16,7 +16,8 @@ The overall architecture of FedTree is shown below.
 You can refer to our primary documentation [here](https://fedtree.readthedocs.io/en/latest/index.html).
 ## Prerequisites
 * [CMake](https://cmake.org/) 3.15 or above
-* [NTL](https://libntl.org/) library
+* [GMP] (https://gmplib.org/) library
+* [NTL](https://libntl.org/)
 
 You can follow the following commands to install NTL library.
 
@@ -34,8 +35,7 @@ sudo make install
 If you install the NTL library at another location, please also modify the CMakeList files of FedTree accordingly (line 64 of CMakeLists.txt).
 ## Install submodules
 ```
-git submodule init src/test/googletest
-git submodule init thrust
+git submodule init
 git submodule update
 ```
 
