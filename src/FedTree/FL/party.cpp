@@ -26,6 +26,32 @@ void Party::init(int pid, DataSet &dataset, FLParam &param, SyncArray<bool> &fea
 
 };
 
+void Party::vertical_init(int pid, DataSet &dataset, FLParam &param) {
+//    LOG(INFO)<<"in party "<<pid<<" initilization";
+    this->pid = pid;
+    this->dataset = dataset;
+    this->param = param;
+    this->n_total_instances = dataset.n_instances();
+//        booster.init(dataset, param.gbdt_param);
+    booster.param = param.gbdt_param;
+    booster.fbuilder.reset(new HistTreeBuilder);
+    booster.fbuilder->init(dataset, param.gbdt_param); //if remove this line, cannot successfully run
+//    booster.obj.reset(ObjectiveFunction::create(param.gbdt_param.objective));
+//    booster.obj->configure(param.gbdt_param, dataset);
+//    if (param.gbdt_param.metric == "default") {
+//        booster.metric.reset(Metric::create(booster.obj->default_metric_name()));
+//    }else {
+//        booster.metric.reset(Metric::create(param.gbdt_param.metric));
+//    }
+//    booster.metric->configure(param.gbdt_param, dataset);
+//    booster.n_devices = param.gbdt_param.n_device;
+//    int n_outputs = param.gbdt_param.num_class * dataset.n_instances();
+//    booster.gradients.resize(n_outputs);
+//    booster.y = SyncArray<float_type>(dataset.n_instances());
+//    booster.y.copy_from(dataset.y.data(), dataset.n_instances());
+
+};
+
 void Party::bagging_init(int seed){
 
     this->bagging_inner_round = 0;

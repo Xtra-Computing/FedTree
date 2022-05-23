@@ -175,7 +175,7 @@ void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FL
     t_start = t_end;
 
     for (int i = 0; i < params.gbdt_param.n_trees; i++) {
-        LOG(DEBUG) << "ROUND " << i;
+        LOG(INFO) << "Training round " << i << " start";
         vector<Tree> trees_this_round;
         trees_this_round.resize(params.gbdt_param.tree_per_rounds);
 //        vector<Tree> trees(params.gbdt_param.tree_per_rounds);
@@ -213,7 +213,6 @@ void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FL
         }
         // for each tree per round
         for (int k = 0; k < params.gbdt_param.tree_per_rounds; k++) {
-//            LOG(INFO) << "ROUND" << k;
 //            Tree &tree = trees[k];
             // each party initialize ins2node_id, gradients, etc.
             // ask parties to send gradient and aggregate by server
@@ -424,6 +423,7 @@ void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FL
 
        LOG(INFO) << "averaged " << parties[0].booster.metric->get_name() << " = "
                   << score;
+        LOG(INFO) << "Training round " << i << " end";
     }
     auto t_stop = timer.now();
     std::chrono::duration<float> training_time = t_stop - start;
@@ -465,6 +465,7 @@ void FLtrainer::vertical_fl_trainer(vector<Party> &parties, Server &server, FLPa
     // for each boosting round
 
     for (int round = 0; round < params.gbdt_param.n_trees; round++) {
+//        LOG(INFO) << "Training round " << round << " start";
 
         vector<Tree> trees(params.gbdt_param.tree_per_rounds);
 
@@ -752,8 +753,14 @@ void FLtrainer::vertical_fl_trainer(vector<Party> &parties, Server &server, FLPa
             parties[p].gbdt.trees.push_back(trees);
         }
         server.global_trees.trees.push_back(trees);
-        LOG(INFO) << parties[0].booster.metric->get_name() << " = "
-                  << parties[0].booster.metric->get_score(parties[0].booster.fbuilder->get_y_predict());
+
+//        LOG(INFO) << parties[0].booster.metric->get_name() << " = "
+//                  << parties[0].booster.metric->get_score(parties[0].booster.fbuilder->get_y_predict());
+
+        LOG(INFO) << server.booster.metric->get_name() << " = "
+                  << server.booster.metric->get_score(server.booster.fbuilder->get_y_predict());
+
+//        LOG(INFO) << "Training round " << round << " end";
     }
 
     auto stop = timer.now();

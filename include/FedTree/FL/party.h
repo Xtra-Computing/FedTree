@@ -25,13 +25,9 @@ public:
 
     void bagging_init(int seed = -1);
 
-    void vertical_init(int pid, DataSet &dataset, FLParam &param) {
-        this->pid = pid;
-        this->dataset = dataset;
-        this->param = param;
-        this->n_total_instances = dataset.n_instances();
-        booster.init(dataset, param.gbdt_param);
-    };
+    void vertical_init(int pid, DataSet &dataset, FLParam &param);
+
+    void vertical_init_as_host(int pid, DataSet &dataset, FLParam &param);
 
     void send_booster_gradients(Party &party) {
         SyncArray<GHPair> gh = booster.get_gradients();
