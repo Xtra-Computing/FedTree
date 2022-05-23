@@ -45,8 +45,8 @@ void Party::vertical_init(int pid, DataSet &dataset, FLParam &param) {
 //    }
 //    booster.metric->configure(param.gbdt_param, dataset);
 //    booster.n_devices = param.gbdt_param.n_device;
-//    int n_outputs = param.gbdt_param.num_class * dataset.n_instances();
-//    booster.gradients.resize(n_outputs);
+    int n_outputs = param.gbdt_param.num_class * dataset.n_instances();
+    booster.gradients.resize(n_outputs);
 //    booster.y = SyncArray<float_type>(dataset.n_instances());
 //    booster.y.copy_from(dataset.y.data(), dataset.n_instances());
 

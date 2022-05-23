@@ -71,6 +71,8 @@ public:
     grpc::Status TriggerPrune(grpc::ServerContext *context, const fedtree::PID *pid,
                               fedtree::Ready *ready) override;
 
+    grpc::Status TriggerPrintScore(grpc::ServerContext *context, const fedtree::PID *pid, fedtree::Ready *ready) override;
+
     grpc::Status SendRange(grpc::ServerContext* context, grpc::ServerReader<fedtree::GHPair>* reader,
                                 fedtree::PID* response) override;
     

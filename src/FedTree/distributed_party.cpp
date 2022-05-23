@@ -401,6 +401,18 @@ void DistributedParty::TriggerPrune(int t) {
     }
 }
 
+void DistributedParty::TriggerPrintScore() {
+    fedtree::PID id;
+    fedtree::Ready ready;
+    grpc::ClientContext context;
+    grpc::Status status = stub_->TriggerPrintScore(&context, id, &ready);
+    if (status.ok()) {
+        LOG(DEBUG) << "Triggered the server to print score.";
+    } else {
+        LOG(ERROR) << "TriggerPrintScore rpc failed.";
+    }
+}
+
 void DistributedParty::SendRange(const vector<vector<float>>& ranges) {
     fedtree::PID id;
     grpc::ClientContext context;
@@ -1163,8 +1175,10 @@ void distributed_vertical_train(DistributedParty& party, FLParam &fl_param) {
             tree = party.booster.fbuilder->trees;
         }
         party.gbdt.trees.push_back(trees);
-        LOG(INFO) << party.booster.metric->get_name() << " = "
-                   << party.booster.metric->get_score(party.booster.fbuilder->get_y_predict());
+        if (party.pid == 0)
+            party.TriggerPrintScore();
+//        LOG(INFO) << party.booster.metric->get_name() << " = "
+//                   << party.booster.metric->get_score(party.booster.fbuilder->get_y_predict());
         LOG(INFO) << "Training round " << round << " end";
     }
 }

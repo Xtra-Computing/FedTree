@@ -509,6 +509,12 @@ grpc::Status DistributedServer::TriggerPrune(grpc::ServerContext *context, const
     return grpc::Status::OK;
 }
 
+grpc::Status DistributedServer::TriggerPrintScore(grpc::ServerContext *context, const fedtree::PID *pid, fedtree::Ready *ready) {
+    LOG(INFO) << booster.metric->get_name() << " = "
+              << booster.metric->get_score(booster.fbuilder->get_y_predict());
+    return grpc::Status::OK;
+}
+
 void DistributedServer::VerticalInitVectors(int n_parties) {
     hists_received.resize(n_parties, 0);
     missing_gh_received.resize(n_parties, 0);

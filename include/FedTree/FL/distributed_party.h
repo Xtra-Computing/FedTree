@@ -49,6 +49,8 @@ public:
 
     void TriggerPrune(int t);
 
+    void TriggerPrintScore();
+
     void SendRange(const vector<vector<float>>& ranges);
     
     void TriggerCut(int n_bins);

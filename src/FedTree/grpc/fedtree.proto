@@ -3,6 +3,9 @@ syntax = "proto3";
 package fedtree;
 
 // after modifying this file, run these two commands in the current folder
+// add protoc to the path
+// export PATH=../../../build/_deps/grpc-build/third_party/protobuf:PATH
+// export PATH=../../../build/_deps/grpc-build/:PATH
 // protoc -I ./ --grpc_out=. --plugin=protoc-gen-grpc=`which grpc_cpp_plugin` ./fedtree.proto
 // protoc -I ./ --cpp_out=. ./fedtree.proto
 
@@ -23,6 +26,7 @@ service FedTree {
   rpc GetIns2NodeID(PID) returns (stream Ins2NodeID) {}
   rpc CheckIfContinue(PID) returns (Ready) {}
   rpc TriggerPrune(PID) returns (Ready) {}
+  rpc TriggerPrintScore(PID) returns (Ready) {}
   
   rpc SendRange(stream GHPair) returns (PID) {}
   rpc TriggerCut(PID) returns (Ready) {}
