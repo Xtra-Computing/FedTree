@@ -27,11 +27,6 @@ void GBDT::train(GBDTParam &param, DataSet &dataset) {
         param.num_class = 1;
     }
 
-//    std::map<int, vector<int>> batch_idxs;
-//    Partition partition;
-//    vector<DataSet> subsets(3);
-//    partition.homo_partition(dataset, 3, true, subsets, batch_idxs);
-//
     Booster booster;
     booster.init(dataset, param);
     std::chrono::high_resolution_clock timer;

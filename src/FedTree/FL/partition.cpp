@@ -94,10 +94,7 @@ void Partition::homo_partition(const DataSet &dataset, const int n_parties, cons
         }
 
         assert(dataset.has_csc);
-        // TODO: check the reason why dataset is a const param
-//        if(!dataset.has_csc) {
-//            dataset.csr_to_csc();
-//        }
+
         for (int i = 0; i < dataset.csc_col_ptr.size() - 1; i++) {
             int csc_col_sub = 0;
             int party_id = part2party[i];
