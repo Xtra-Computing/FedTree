@@ -60,6 +60,7 @@ class DataSet{
     bool use_cpu = true;
     bool has_csc = false;
     bool is_classification = false;
+    bool has_label = true;
 };
 
 #endif //FEDTREE_DATASET_H

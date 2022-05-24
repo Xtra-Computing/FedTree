@@ -397,7 +397,7 @@ void DataSet::load_from_csv(string file_name, FLParam &param) {
     std::istringstream iss(first_line);
     vector<string> words;
     string word;
-    bool has_label = 1;
+    has_label = 1;
     while(getline(iss, word, ',')){
         words.push_back(word);
     }

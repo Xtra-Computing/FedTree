@@ -30,6 +30,7 @@ void Party::vertical_init(int pid, DataSet &dataset, FLParam &param) {
 //    LOG(INFO)<<"in party "<<pid<<" initilization";
     this->pid = pid;
     this->dataset = dataset;
+    this->has_label = dataset.has_label;
     this->param = param;
     this->n_total_instances = dataset.n_instances();
 //        booster.init(dataset, param.gbdt_param);

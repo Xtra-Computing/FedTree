@@ -15,6 +15,8 @@ public:
 
     void vertical_fl_trainer(vector<Party> &parties, Server &server, FLParam &params);
 
+    void vertical_fl_trainer_label_at_party(vector<Party> &parties, Server &server, FLParam &params);
+
     void hybrid_fl_trainer(vector<Party> &parties, Server &server, FLParam &params);
 
     void ensemble_trainer(vector<Party> &parties, Server &server, FLParam &params);

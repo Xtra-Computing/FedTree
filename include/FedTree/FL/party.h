@@ -169,6 +169,7 @@ public:
     DPnoises<double> DP;
     FLParam param;
     int n_total_instances;
+    int has_label; //whether has label or not, for vertical FL.
 
 private:
 //    AdditivelyHE HE;
