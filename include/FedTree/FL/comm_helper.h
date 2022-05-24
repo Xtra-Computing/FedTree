@@ -26,9 +26,18 @@ public:
     }
 
     template<class T>
-    SyncArray<T> concat_msyncarray(MSyncArray<T> &arrays, vector<int> parties_n_bins, int n_nodes_in_level) {
-        int n_bins_sum = accumulate(parties_n_bins.begin(), parties_n_bins.end(), 0);
-        int n_parties = parties_n_bins.size();
+    SyncArray<T> concat_msyncarray(MSyncArray<T> &arrays, int n_nodes_in_level) {
+        int n_parties = arrays.size();
+        int n_total_bins = 0;
+        vector<int> parties_n_bins(n_parties);
+        for(int i = 0; i < arrays.size(); i++) {
+            n_total_bins += arrays[i].size();
+            parties_n_bins[i] = arrays[i].size()/n_nodes_in_level;
+        }
+        int n_bins_sum = n_total_bins / n_nodes_in_level;
+//        int n_bins_sum = accumulate(parties_n_bins.begin(), parties_n_bins.end(), 0);
+//        int n_parties = parties_n_bins.size();
+
         SyncArray<T> concat_array(n_bins_sum * n_nodes_in_level);
         auto concat_array_data = concat_array.host_data();
         for (int i = 0; i < n_nodes_in_level; i++) {

@@ -550,6 +550,7 @@ void FLtrainer::vertical_fl_trainer(vector<Party> &parties, Server &server, FLPa
                 #pragma omp parallel for
                 for (int pid = 0; pid < parties.size(); pid++) {
                     int n_bins = parties[pid].booster.fbuilder->cut.cut_points_val.size();
+//                    std::cout<<"party "<<pid<<" n_bins:"<<n_bins<<std::endl;
                     parties_n_bins[pid] = n_bins;
                     int n_max_splits = n_max_nodes * n_bins;
                     int n_column = parties[pid].dataset.n_features();
@@ -594,10 +595,10 @@ void FLtrainer::vertical_fl_trainer(vector<Party> &parties, Server &server, FLPa
                 SyncArray<GHPair> missing_gh(n_column_new * n_nodes_in_level);
                 SyncArray<GHPair> hist(n_bins_new * n_nodes_in_level);
                 global_hist_fid.copy_from(
-                        comm_helper.concat_msyncarray(parties_global_hist_fid, parties_n_bins, n_nodes_in_level));
+                        comm_helper.concat_msyncarray(parties_global_hist_fid, n_nodes_in_level));
                 missing_gh.copy_from(
-                        comm_helper.concat_msyncarray(parties_missing_gh, parties_n_columns, n_nodes_in_level));
-                hist.copy_from(comm_helper.concat_msyncarray(parties_hist, parties_n_bins, n_nodes_in_level));
+                        comm_helper.concat_msyncarray(parties_missing_gh, n_nodes_in_level));
+                hist.copy_from(comm_helper.concat_msyncarray(parties_hist, n_nodes_in_level));
 
                 // server compute gain
                 SyncArray<float_type> gain(n_max_splits_new);

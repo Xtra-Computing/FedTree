@@ -1065,7 +1065,7 @@ void distributed_vertical_train(DistributedParty& party, FLParam &fl_param) {
         party.GetPaillier();
     }
     GBDTParam &param = fl_param.gbdt_param;
-    party.SendDatasetInfo(party.booster.fbuilder->cut.cut_points_val.size(), party.dataset.n_features());
+//    party.SendDatasetInfo(party.booster.fbuilder->cut.cut_points_val.size(), party.dataset.n_features());
     for (int round = 0; round < param.n_trees; round++) {
         LOG(INFO) << "training round " << round << " start";
         vector<Tree> trees(param.tree_per_rounds);

@@ -196,8 +196,22 @@ grpc::Status DistributedServer::TriggerAggregate(grpc::ServerContext *context, c
     int n_nodes_in_level = std::stoi(itr->second.data());
 
     booster.fbuilder->sp.resize(n_nodes_in_level);
-    int n_bins_new = accumulate(n_bins_per_party.begin(), n_bins_per_party.end(), 0);
-    int n_column_new = accumulate(n_columns_per_party.begin(), n_columns_per_party.end(), 0);
+    int n_total_bin = 0;
+    vector<int> n_bins_per_party(param.n_parties);
+    for(int i = 0; i < booster.fbuilder->parties_hist_fid.size(); i++){
+        n_total_bin += booster.fbuilder->parties_hist_fid[i].size();
+        n_bins_per_party[i] = booster.fbuilder->parties_hist_fid[i].size()/n_nodes_in_level;
+    }
+    int n_bins_new = n_total_bin / n_nodes_in_level;
+    int n_total_column = 0;
+    vector<int> n_columns_per_party(param.n_parties);
+    for(int i = 0; i < booster.fbuilder->parties_missing_gh.size(); i++){
+        n_total_column += booster.fbuilder->parties_missing_gh[i].size();
+        n_columns_per_party[i] = booster.fbuilder->parties_missing_gh[i].size()/n_nodes_in_level;
+    }
+    int n_column_new = n_total_column / n_nodes_in_level;
+//    int n_bins_new = accumulate(n_bins_per_party.begin(), n_bins_per_party.end(), 0);
+//    int n_column_new = accumulate(n_columns_per_party.begin(), n_columns_per_party.end(), 0);
     int n_max_nodes = 2 << model_param.depth;
     int n_max_splits_new = n_max_nodes * n_bins_new;
 
@@ -214,14 +228,11 @@ grpc::Status DistributedServer::TriggerAggregate(grpc::ServerContext *context, c
     }
 
     Comm comm_helper;
-    hist_fid.copy_from(comm_helper.concat_msyncarray(booster.fbuilder->parties_hist_fid,
-                                                     n_bins_per_party, n_nodes_in_level));
+    hist_fid.copy_from(comm_helper.concat_msyncarray(booster.fbuilder->parties_hist_fid, n_nodes_in_level));
 
-    missing_gh.copy_from(comm_helper.concat_msyncarray(booster.fbuilder->parties_missing_gh,
-                                                       n_columns_per_party, n_nodes_in_level));
+    missing_gh.copy_from(comm_helper.concat_msyncarray(booster.fbuilder->parties_missing_gh, n_nodes_in_level));
 
-    hist.copy_from(comm_helper.concat_msyncarray(booster.fbuilder->parties_hist,
-                                                 n_bins_per_party, n_nodes_in_level));
+    hist.copy_from(comm_helper.concat_msyncarray(booster.fbuilder->parties_hist,n_nodes_in_level));
 
     SyncArray<float_type> gain(n_max_splits_new);
 
