@@ -38,6 +38,7 @@ public:
     vector<GBDT> local_trees;
     GBDTParam model_param;
     vector<int> n_instances_per_party;
+    vector<bool> has_label;
     
 
 //    AdditivelyHE::PaillierPublicKey publicKey;

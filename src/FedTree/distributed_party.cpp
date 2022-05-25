@@ -1062,7 +1062,8 @@ void distributed_vertical_train(DistributedParty& party, FLParam &fl_param) {
         if (party.pid == 0) {
             party.TriggerHomoInit();
         }
-        party.GetPaillier();
+        if (!party.has_label)
+            party.GetPaillier();
     }
     GBDTParam &param = fl_param.gbdt_param;
 //    party.SendDatasetInfo(party.booster.fbuilder->cut.cut_points_val.size(), party.dataset.n_features());
@@ -1071,11 +1072,14 @@ void distributed_vertical_train(DistributedParty& party, FLParam &fl_param) {
         vector<Tree> trees(param.tree_per_rounds);
         if (party.pid == 0)
             party.TriggerUpdateGradients();
-        if (fl_param.privacy_tech == "he") {
+        if (fl_param.privacy_tech == "he" && !party.has_label) {
             party.GetGradientBatchesEnc();
         }
         else {
-            party.GetGradientBatches();
+            if(party.has_label)
+                party.booster.update_gradients();
+            else
+                party.GetGradientBatches();
         }
         for (int t = 0; t < param.tree_per_rounds; t++) {
             Tree &tree = trees[t];
@@ -1100,7 +1104,7 @@ void distributed_vertical_train(DistributedParty& party, FLParam &fl_param) {
                 party.booster.fbuilder->compute_histogram_in_a_level(l, n_max_splits, n_bins,
                                                                      n_nodes_in_level,
                                                                      hist_fid_data, missing_gh, hist);
-                if (fl_param.privacy_tech == "he") {
+                if (fl_param.privacy_tech == "he" && !party.has_label) {
                     party.SendHistogramBatchesEnc(hist, 0); // 0 represents hist
                     party.SendHistogramBatchesEnc(missing_gh, 1); // 1 represents missing_gh
                 }
@@ -1137,7 +1141,7 @@ void distributed_vertical_train(DistributedParty& party, FLParam &fl_param) {
 
                     int lch = nodes_data[node_shifted].lch_index;
                     int rch = nodes_data[node_shifted].rch_index;
-                    if (fl_param.privacy_tech == "he") {
+                    if (fl_param.privacy_tech == "he" && !party.has_label) {
                         party.SendNodeEnc(nodes_data[node_shifted]);
                         party.SendNodeEnc(nodes_data[lch]);
                         party.SendNodeEnc(nodes_data[rch]);

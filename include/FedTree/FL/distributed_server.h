@@ -142,15 +142,15 @@ public:
 
     vector<int> n_bins_per_party;
     vector<int> n_columns_per_party;
-    void distributed_vertical_init(FLParam &param, int n_total_instances, vector<int> &n_instances_per_party, vector<float_type> y, vector<float_type> label) {
+    void distributed_vertical_init(FLParam &param, int n_total_instances, vector<float_type> y, vector<float_type> label) {
         this->local_trees.resize(param.n_parties);
         this->param = param;
         this->model_param = param.gbdt_param;
         this->n_total_instances = n_total_instances;
-        this->n_instances_per_party = n_instances_per_party;
         this->n_bins_per_party.resize(param.n_parties);
         this->n_columns_per_party.resize(param.n_parties);
         this->global_trees.trees.clear();
+        this->has_label.resize(param.n_parties);
         dataset.y = y;
         dataset.n_features_ = 0;
         dataset.label = label;

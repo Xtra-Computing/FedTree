@@ -227,6 +227,20 @@ grpc::Status DistributedServer::TriggerAggregate(grpc::ServerContext *context, c
         }
     }
 
+    if (param.privacy_tech == "he") {
+        std::chrono::high_resolution_clock timer;
+        auto t1 = timer.now();
+        for(int i = 0; i < param.n_parties; i++){
+            if(!has_label[i]){
+                decrypt_gh_pairs(booster.fbuilder->parties_hist[i]);
+                decrypt_gh_pairs(booster.fbuilder->parties_missing_gh[i]);
+            }
+        }
+        auto t2 = timer.now();
+        std::chrono::duration<float> t3 = t2 - t1;
+        dec_time += t3.count();
+    }
+
     Comm comm_helper;
     hist_fid.copy_from(comm_helper.concat_msyncarray(booster.fbuilder->parties_hist_fid, n_nodes_in_level));
 
@@ -236,15 +250,7 @@ grpc::Status DistributedServer::TriggerAggregate(grpc::ServerContext *context, c
 
     SyncArray<float_type> gain(n_max_splits_new);
 
-    if (param.privacy_tech == "he") {
-        std::chrono::high_resolution_clock timer;
-        auto t1 = timer.now();
-        decrypt_gh_pairs(hist);
-        decrypt_gh_pairs(missing_gh);
-        auto t2 = timer.now();
-        std::chrono::duration<float> t3 = t2 - t1;
-        dec_time += t3.count();
-    }
+
     booster.fbuilder->compute_gain_in_a_level(gain, n_nodes_in_level, n_bins_new, hist_fid.host_data(), missing_gh,
                                               hist);
     LOG(DEBUG) << "gain: " << gain;
@@ -422,8 +428,10 @@ grpc::Status DistributedServer::GetNodes(grpc::ServerContext *context, const fed
         auto node_data = booster.fbuilder->trees.nodes.host_data();
         #pragma omp parallel for
         for (int nid = (1 << l) - 1; nid < (2 << (l + 1)) - 1; nid++) {
-            decrypt_gh(node_data[nid].sum_gh_pair);
-            node_data[nid].calc_weight(param.gbdt_param.lambda);
+            if(node_data[nid].sum_gh_pair.encrypted) {
+                decrypt_gh(node_data[nid].sum_gh_pair);
+                node_data[nid].calc_weight(param.gbdt_param.lambda);
+            }
         }
         auto t2 = timer.now();
         std::chrono::duration<float> t3 = t2 - t1;
@@ -1009,8 +1017,8 @@ grpc::Status DistributedServer::SendHistogramBatches(grpc::ServerContext *contex
     while(reader->Read(&tmp)) {
         all.MergeFrom(tmp);
     }
+    has_label[pid] = true;
     SyncArray<GHPair> &hists = (type == 0)? booster.fbuilder->parties_hist[pid]:booster.fbuilder->parties_missing_gh[pid];
-   
     int len = all.g_size();
     hists.resize(len);
     auto hist_data = hists.host_data();
@@ -1170,6 +1178,7 @@ grpc::Status DistributedServer::SendHistogramBatchesEnc(grpc::ServerContext *con
         all.MergeFrom(tmp);
     }
     }
+    has_label[pid] = 0;
     SyncArray<GHPair> &hists = (type == 0)? booster.fbuilder->parties_hist[pid]:booster.fbuilder->parties_missing_gh[pid];
     int len = all.g_enc_size();
     hists.resize(len);
@@ -1325,8 +1334,7 @@ int main(int argc, char **argv) {
     int n_parties = fl_param.n_parties;
     if (fl_param.mode == "vertical") {
         server.VerticalInitVectors(n_parties);
-        vector<int> n_instances_per_party(n_parties);
-        server.distributed_vertical_init(fl_param, dataset.n_instances(), n_instances_per_party, dataset.y, dataset.label);
+        server.distributed_vertical_init(fl_param, dataset.n_instances(), dataset.y, dataset.label);
     }
     else if (fl_param.mode == "horizontal") {
         server.HorizontalInitVectors(n_parties);

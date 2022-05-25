@@ -33,12 +33,16 @@ void Party::vertical_init(int pid, DataSet &dataset, FLParam &param) {
     this->has_label = dataset.has_label;
     this->param = param;
     this->n_total_instances = dataset.n_instances();
-//        booster.init(dataset, param.gbdt_param);
-    booster.param = param.gbdt_param;
-    booster.fbuilder.reset(new HistTreeBuilder);
-    booster.fbuilder->init(dataset, param.gbdt_param); //if remove this line, cannot successfully run
-//    booster.obj.reset(ObjectiveFunction::create(param.gbdt_param.objective));
-//    booster.obj->configure(param.gbdt_param, dataset);
+    if(has_label) {
+        booster.init(dataset, param.gbdt_param);
+    }
+    else {
+        booster.param = param.gbdt_param;
+        booster.fbuilder.reset(new HistTreeBuilder);
+        booster.fbuilder->init(dataset, param.gbdt_param); //if remove this line, cannot successfully run
+        int n_outputs = param.gbdt_param.num_class * dataset.n_instances();
+        booster.gradients.resize(n_outputs);
+    }
 //    if (param.gbdt_param.metric == "default") {
 //        booster.metric.reset(Metric::create(booster.obj->default_metric_name()));
 //    }else {
@@ -46,8 +50,7 @@ void Party::vertical_init(int pid, DataSet &dataset, FLParam &param) {
 //    }
 //    booster.metric->configure(param.gbdt_param, dataset);
 //    booster.n_devices = param.gbdt_param.n_device;
-    int n_outputs = param.gbdt_param.num_class * dataset.n_instances();
-    booster.gradients.resize(n_outputs);
+
 //    booster.y = SyncArray<float_type>(dataset.n_instances());
 //    booster.y.copy_from(dataset.y.data(), dataset.n_instances());
 

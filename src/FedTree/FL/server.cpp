@@ -72,6 +72,7 @@ void Server::vertical_init(FLParam &param, int n_total_instances, vector<int> &n
     this->n_total_instances = n_total_instances;
     this->n_instances_per_party = n_instances_per_party;
     this->global_trees.trees.clear();
+    this->has_label.resize(param.n_parties);
     dataset.y = y;
     dataset.n_features_ = 0;
     dataset.label = label;
