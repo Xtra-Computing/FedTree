@@ -348,6 +348,70 @@ grpc::Status DistributedServer::SendNode(grpc::ServerContext *context, const fed
     return grpc::Status::OK;
 }
 
+grpc::Status DistributedServer::SendNodes(grpc::ServerContext *context, const fedtree::NodeArray *node, fedtree::PID *id) {
+    std::multimap<grpc::string_ref, grpc::string_ref> metadata = context->client_metadata();
+    auto pid_itr = metadata.find("pid");
+    int pid = std::stoi(pid_itr->second.data());
+    int len = node->final_id_size();
+//    std::cout<<"len:"<<len<<std::endl;
+    for (int i = 0; i < len; i++) {
+        int nid = node->final_id(i);
+        auto nodes_data = booster.fbuilder->trees.nodes.host_data();
+        nodes_data[nid].final_id = node->final_id(i);
+        nodes_data[nid].lch_index = node->lch_index(i);
+        nodes_data[nid].rch_index = node->rch_index(i);
+        nodes_data[nid].parent_index = node->parent_index(i);
+        nodes_data[nid].gain = node->gain(i);
+        nodes_data[nid].base_weight = node->base_weight(i);
+        nodes_data[nid].split_feature_id = node->split_feature_id(i);
+        nodes_data[nid].pid = node->pid(i);
+        nodes_data[nid].split_value = node->split_value(i);
+        nodes_data[nid].split_bid = node->split_bid(i);
+        nodes_data[nid].default_right = node->default_right(i);
+        nodes_data[nid].is_leaf = node->is_leaf(i);
+        nodes_data[nid].is_valid = node->is_valid(i);
+        nodes_data[nid].is_pruned = node->is_pruned(i);
+        nodes_data[nid].sum_gh_pair.g = node->sum_gh_pair_g(i);
+        nodes_data[nid].sum_gh_pair.h = node->sum_gh_pair_h(i);
+        nodes_data[nid].n_instances = node->n_instances(i);
+    }
+
+    LOG(DEBUG) << "Receive node info from " << pid;
+    return grpc::Status::OK;
+}
+
+grpc::Status DistributedServer::SendNodesEnc(grpc::ServerContext *context, const fedtree::NodeEncArray *node, fedtree::PID *id) {
+    std::multimap<grpc::string_ref, grpc::string_ref> metadata = context->client_metadata();
+    auto pid_itr = metadata.find("pid");
+    int pid = std::stoi(pid_itr->second.data());
+    int len = node->final_id_size();
+    for (int i = 0; i < len; i++) {
+        int nid = node->final_id(i);
+        auto nodes_data = booster.fbuilder->trees.nodes.host_data();
+        nodes_data[nid].final_id = node->final_id(i);
+        nodes_data[nid].lch_index = node->lch_index(i);
+        nodes_data[nid].rch_index = node->rch_index(i);
+        nodes_data[nid].parent_index = node->parent_index(i);
+        nodes_data[nid].gain = node->gain(i);
+        nodes_data[nid].base_weight = node->base_weight(i);
+        nodes_data[nid].split_feature_id = node->split_feature_id(i);
+        nodes_data[nid].pid = node->pid(i);
+        nodes_data[nid].split_value = node->split_value(i);
+        nodes_data[nid].split_bid = node->split_bid(i);
+        nodes_data[nid].default_right = node->default_right(i);
+        nodes_data[nid].is_leaf = node->is_leaf(i);
+        nodes_data[nid].is_valid = node->is_valid(i);
+        nodes_data[nid].is_pruned = node->is_pruned(i);
+        nodes_data[nid].sum_gh_pair.encrypted = true;
+        nodes_data[nid].sum_gh_pair.g_enc = NTL::to_ZZ(node->sum_gh_pair_g_enc(i).c_str());
+        nodes_data[nid].sum_gh_pair.h_enc = NTL::to_ZZ(node->sum_gh_pair_h_enc(i).c_str());
+        nodes_data[nid].sum_gh_pair.paillier = paillier;
+        nodes_data[nid].n_instances = node->n_instances(i);
+    }
+
+    LOG(DEBUG) << "Receive node info from " << pid;
+    return grpc::Status::OK;
+}
 
 grpc::Status DistributedServer::SendNodeEnc(grpc::ServerContext *context, const fedtree::NodeEnc *node, fedtree::PID *id) {
     std::multimap<grpc::string_ref, grpc::string_ref> metadata = context->client_metadata();

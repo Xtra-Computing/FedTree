@@ -56,6 +56,8 @@ service FedTree {
   rpc GetGradientBatches(PID) returns (stream GHBatch) {}
   rpc GetGradientBatchesEnc(PID) returns (stream GHEncBatch) {}
   rpc SendNodeEnc(NodeEnc) returns (PID) {}
+  rpc SendNodes(NodeArray) returns (PID) {}
+  rpc SendNodesEnc(NodeEncArray) returns (PID) {}
   rpc SendHistogramBatchesEnc(stream GHEncBatch) returns(PID) {}
   
   rpc StopServer(PID) returns(Score) {}
@@ -176,6 +178,46 @@ message Node {
   float sum_gh_pair_g = 15;
   float sum_gh_pair_h = 16;
   int32 n_instances = 17; // number of instances inside the node.
+}
+
+message NodeEncArray{
+    repeated int32 final_id = 1 [packed=true];// node id after pruning, may not equal to node index
+    repeated int32 lch_index = 2 [packed=true];// index of left child
+    repeated int32 rch_index = 3 [packed=true];// index of right child
+    repeated int32 parent_index = 4 [packed=true];// index of parent node
+    repeated float gain = 5 [packed=true];// gain of splitting this node
+    repeated float base_weight = 6 [packed=true];
+    repeated int32 split_feature_id = 7 [packed=true];
+    repeated int32 pid = 8 [packed=true];
+    repeated float split_value = 9 [packed=true];
+    repeated int32 split_bid = 10 [packed=true];
+    repeated bool default_right = 11 [packed=true];
+    repeated bool is_leaf = 12 [packed=true];
+    repeated bool is_valid = 13 [packed=true];// non-valid nodes are those that are "children" of leaf nodes
+    repeated bool is_pruned = 14 [packed=true];// pruned after pruning
+    repeated string sum_gh_pair_g_enc = 15;
+    repeated string sum_gh_pair_h_enc = 16;
+    repeated int32 n_instances = 17 [packed=true]; // number of instances inside the node.
+}
+
+message NodeArray{
+    repeated int32 final_id = 1 [packed=true];// node id after pruning, may not equal to node index
+    repeated int32 lch_index = 2 [packed=true];// index of left child
+    repeated int32 rch_index = 3 [packed=true];// index of right child
+    repeated int32 parent_index = 4 [packed=true];// index of parent node
+    repeated float gain = 5 [packed=true];// gain of splitting this node
+    repeated float base_weight = 6 [packed=true];
+    repeated int32 split_feature_id = 7 [packed=true];
+    repeated int32 pid = 8 [packed=true];
+    repeated float split_value = 9 [packed=true];
+    repeated int32 split_bid = 10 [packed=true];
+    repeated bool default_right = 11 [packed=true];
+    repeated bool is_leaf = 12 [packed=true];
+    repeated bool is_valid = 13 [packed=true];// non-valid nodes are those that are "children" of leaf nodes
+    repeated bool is_pruned = 14 [packed=true];// pruned after pruning
+    repeated float sum_gh_pair_g = 15 [packed=true];
+    repeated float sum_gh_pair_h = 16 [packed=true];
+    repeated int32 n_instances = 17 [packed=true]; // number of instances inside the node.
 }
 
 message Ins2NodeID {

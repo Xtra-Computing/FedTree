@@ -221,6 +221,90 @@ void DistributedParty::SendNode(Tree::TreeNode &node_data) {
     }
 }
 
+void DistributedParty::OrganizeNodes(fedtree::NodeArray &nodes, Tree::TreeNode &node_data){
+    nodes.add_final_id(node_data.final_id);
+    nodes.add_lch_index(node_data.lch_index);
+    nodes.add_rch_index(node_data.rch_index);
+    nodes.add_parent_index(node_data.parent_index);
+    nodes.add_gain(node_data.gain);
+    nodes.add_base_weight(node_data.base_weight);
+    nodes.add_split_feature_id(node_data.split_feature_id);
+    nodes.add_pid(node_data.pid);
+    nodes.add_split_value(node_data.split_value);
+    nodes.add_split_bid(node_data.split_bid);
+    nodes.add_default_right(node_data.default_right);
+    nodes.add_is_leaf(node_data.is_leaf);
+    nodes.add_is_valid(node_data.is_valid);
+    nodes.add_is_pruned(node_data.is_pruned);
+    nodes.add_sum_gh_pair_g(node_data.sum_gh_pair.g);
+    nodes.add_sum_gh_pair_h(node_data.sum_gh_pair.h);
+    nodes.add_n_instances(node_data.n_instances);
+}
+
+void DistributedParty::SendNodes(fedtree::NodeArray &nodes) {
+    fedtree::PID id;
+    grpc::ClientContext context;
+    LOG(INFO)<<"communication Nodes start";
+    auto t_start = timer.now();
+    context.AddMetadata("pid", std::to_string(pid));
+    grpc::Status status = stub_->SendNodes(&context, nodes, &id);
+    auto t_end = timer.now();
+    std::chrono::duration<float> used_time = t_end - t_start;
+    LOG(INFO)<<"communication Nodes end";
+    comm_time += used_time.count();
+    if (status.ok()) {
+        LOG(DEBUG) << "Node Enc sent.";
+    } else {
+        LOG(ERROR) << "SendNodes rpc failed.";
+    }
+}
+
+void DistributedParty::OrganizeNodesEnc(fedtree::NodeEncArray &nodes, Tree::TreeNode &node_data){
+    nodes.add_final_id(node_data.final_id);
+    nodes.add_lch_index(node_data.lch_index);
+    nodes.add_rch_index(node_data.rch_index);
+    nodes.add_parent_index(node_data.parent_index);
+    nodes.add_gain(node_data.gain);
+    nodes.add_base_weight(node_data.base_weight);
+    nodes.add_split_feature_id(node_data.split_feature_id);
+    nodes.add_pid(node_data.pid);
+    nodes.add_split_value(node_data.split_value);
+    nodes.add_split_bid(node_data.split_bid);
+    nodes.add_default_right(node_data.default_right);
+    nodes.add_is_leaf(node_data.is_leaf);
+    nodes.add_is_valid(node_data.is_valid);
+    nodes.add_is_pruned(node_data.is_pruned);
+    assert(node_data.sum_gh_pair.encrypted);
+    stringstream stream;
+    stream<<node_data.sum_gh_pair.g_enc;
+    nodes.add_sum_gh_pair_g_enc(stream.str());
+    stream.clear();
+    stream.str("");
+    stream<<node_data.sum_gh_pair.h_enc;
+    nodes.add_sum_gh_pair_h_enc(stream.str());
+    stream.clear();
+    stream.str("");
+    nodes.add_n_instances(node_data.n_instances);
+}
+
+void DistributedParty::SendNodesEnc(fedtree::NodeEncArray &nodes) {
+    fedtree::PID id;
+    grpc::ClientContext context;
+    LOG(INFO)<<"communication NodeEnc start";
+    auto t_start = timer.now();
+    context.AddMetadata("pid", std::to_string(pid));
+    grpc::Status status = stub_->SendNodesEnc(&context, nodes, &id);
+    auto t_end = timer.now();
+    std::chrono::duration<float> used_time = t_end - t_start;
+    LOG(INFO)<<"communication NodeEnc end";
+    comm_time += used_time.count();
+    if (status.ok()) {
+        LOG(DEBUG) << "Node Enc sent.";
+    } else {
+        LOG(ERROR) << "SendNodes rpc failed.";
+    }
+}
+
 void DistributedParty::SendNodeEnc(Tree::TreeNode &node_data) {
     fedtree::NodeEnc node;
     fedtree::PID id;
@@ -1142,14 +1226,18 @@ void distributed_vertical_train(DistributedParty& party, FLParam &fl_param) {
                     int lch = nodes_data[node_shifted].lch_index;
                     int rch = nodes_data[node_shifted].rch_index;
                     if (fl_param.privacy_tech == "he" && !party.has_label) {
-                        party.SendNodeEnc(nodes_data[node_shifted]);
-                        party.SendNodeEnc(nodes_data[lch]);
-                        party.SendNodeEnc(nodes_data[rch]);
+                        fedtree::NodeEncArray nodes;
+                        party.OrganizeNodesEnc(nodes, nodes_data[node_shifted]);
+                        party.OrganizeNodesEnc(nodes, nodes_data[lch]);
+                        party.OrganizeNodesEnc(nodes, nodes_data[rch]);
+                        party.SendNodesEnc(nodes);
                     }
                     else {
-                        party.SendNode(nodes_data[node_shifted]);
-                        party.SendNode(nodes_data[lch]);
-                        party.SendNode(nodes_data[rch]);
+                        fedtree::NodeArray nodes;
+                        party.OrganizeNodes(nodes, nodes_data[node_shifted]);
+                        party.OrganizeNodes(nodes, nodes_data[lch]);
+                        party.OrganizeNodes(nodes, nodes_data[rch]);
+                        party.SendNodes(nodes);
                     }
                     
                     party.SendIns2NodeIDBatches(party.booster.fbuilder->ins2node_id, node_shifted);

@@ -232,7 +232,7 @@ int main(int argc, char** argv){
     } else if (fl_param.mode == "vertical") {
         if(fl_param.label_location == "server")
             trainer.vertical_fl_trainer(parties, server, fl_param);
-        else if(fl_param.label_location == "client")
+        else if(fl_param.label_location == "party")
             trainer.vertical_fl_trainer_label_at_party(parties, server, fl_param);
         else {
             LOG(INFO)<<"wrong label_location!";

@@ -38,7 +38,12 @@ public:
 
     void SendNode(Tree::TreeNode &node_data);
     void SendNodeEnc(Tree::TreeNode &node_data);
-    
+
+    void OrganizeNodesEnc(fedtree::NodeEncArray &nodes, Tree::TreeNode &node_data);
+    void SendNodesEnc(fedtree::NodeEncArray &nodes);
+    void OrganizeNodes(fedtree::NodeArray &nodes, Tree::TreeNode &node_data);
+    void SendNodes(fedtree::NodeArray &nodes);
+
     void SendIns2NodeID(SyncArray<int> &ins2node_id, int nid);
 
     void GetNodes(int l);

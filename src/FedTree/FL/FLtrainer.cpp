@@ -243,7 +243,7 @@ void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FL
                     auto cut_fid_data = parties[j].booster.fbuilder->cut.cut_fid.host_data();
                     int n_max_splits = n_max_nodes * n_bins;
                     int n_splits = n_nodes_in_level * n_bins;
-                    SyncArray<int> hist_fid(n_nodes_in_level * n_bins);
+                    SyncArray<int> hist_fid(n_splits);
                     auto hist_fid_data = hist_fid.host_data();
 
                     for (int i = 0; i < hist_fid.size(); i++)

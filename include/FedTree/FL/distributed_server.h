@@ -56,6 +56,8 @@ public:
     grpc::Status SendNode(grpc::ServerContext *context, const fedtree::Node *node,
                           fedtree::PID *id) override;
 
+    grpc::Status SendNodes(grpc::ServerContext *context, const fedtree::NodeArray *nodes, fedtree::PID *id) override;
+
     grpc::Status SendIns2NodeID(grpc::ServerContext *context, grpc::ServerReader<fedtree::Ins2NodeID> *reader,
                                 fedtree::PID *id) override;
 
@@ -135,7 +137,9 @@ public:
     
     grpc::Status SendNodeEnc(grpc::ServerContext *context, const fedtree::NodeEnc *node,
                           fedtree::PID *id) override;
-    
+
+    grpc::Status SendNodesEnc(grpc::ServerContext *context, const fedtree::NodeEncArray *nodes, fedtree::PID *id) override;
+
     void VerticalInitVectors(int n_parties);
 
     void HorizontalInitVectors(int n_parties);
