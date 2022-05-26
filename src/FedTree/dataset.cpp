@@ -342,7 +342,7 @@ void DataSet::load_from_file(string file_name, FLParam &param) {
             this->label.insert(label.end(), y_[i].begin(), y_[i].end());
         }
     } // end while
-
+    has_label=1;
     ifs.close();
     free(buffer);
     LOG(INFO) << "#instances = " << this->n_instances() << ", #features = " << this->n_features();
