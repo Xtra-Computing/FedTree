@@ -10,7 +10,7 @@ using namespace NTL;
 using namespace std;
 class DiffieHellman {
 public:
-    DiffieHellman() {};
+    DiffieHellman();
 
     DiffieHellman& operator=(DiffieHellman source) {
         this->p = source.p;
@@ -18,7 +18,7 @@ public:
 //        this->random = source.random;
         return *this;
     }
-    void primegen();
+//    void primegen();
 
     void init_variables(int n_parties);
     void generate_public_key();

@@ -46,7 +46,7 @@ struct TableStruct_fedtree_2eproto {
     PROTOBUF_SECTION_VARIABLE(protodesc_cold);
   static const ::PROTOBUF_NAMESPACE_ID::internal::AuxiliaryParseTableField aux[]
     PROTOBUF_SECTION_VARIABLE(protodesc_cold);
-  static const ::PROTOBUF_NAMESPACE_ID::internal::ParseTable schema[20]
+  static const ::PROTOBUF_NAMESPACE_ID::internal::ParseTable schema[24]
     PROTOBUF_SECTION_VARIABLE(protodesc_cold);
   static const ::PROTOBUF_NAMESPACE_ID::internal::FieldMetadata field_metadata[];
   static const ::PROTOBUF_NAMESPACE_ID::internal::SerializationTable serialization_table[];
@@ -57,6 +57,12 @@ namespace fedtree {
 class BestInfo;
 class BestInfoDefaultTypeInternal;
 extern BestInfoDefaultTypeInternal _BestInfo_default_instance_;
+class DHPublicKey;
+class DHPublicKeyDefaultTypeInternal;
+extern DHPublicKeyDefaultTypeInternal _DHPublicKey_default_instance_;
+class DHPublicKeys;
+class DHPublicKeysDefaultTypeInternal;
+extern DHPublicKeysDefaultTypeInternal _DHPublicKeys_default_instance_;
 class DatasetInfo;
 class DatasetInfoDefaultTypeInternal;
 extern DatasetInfoDefaultTypeInternal _DatasetInfo_default_instance_;
@@ -108,6 +114,12 @@ extern PaillierDefaultTypeInternal _Paillier_default_instance_;
 class Ready;
 class ReadyDefaultTypeInternal;
 extern ReadyDefaultTypeInternal _Ready_default_instance_;
+class SANoise;
+class SANoiseDefaultTypeInternal;
+extern SANoiseDefaultTypeInternal _SANoise_default_instance_;
+class SANoises;
+class SANoisesDefaultTypeInternal;
+extern SANoisesDefaultTypeInternal _SANoises_default_instance_;
 class Score;
 class ScoreDefaultTypeInternal;
 extern ScoreDefaultTypeInternal _Score_default_instance_;
@@ -117,6 +129,8 @@ extern SplitPointDefaultTypeInternal _SplitPoint_default_instance_;
 }  // namespace fedtree
 PROTOBUF_NAMESPACE_OPEN
 template<> ::fedtree::BestInfo* Arena::CreateMaybeMessage<::fedtree::BestInfo>(Arena*);
+template<> ::fedtree::DHPublicKey* Arena::CreateMaybeMessage<::fedtree::DHPublicKey>(Arena*);
+template<> ::fedtree::DHPublicKeys* Arena::CreateMaybeMessage<::fedtree::DHPublicKeys>(Arena*);
 template<> ::fedtree::DatasetInfo* Arena::CreateMaybeMessage<::fedtree::DatasetInfo>(Arena*);
 template<> ::fedtree::FID* Arena::CreateMaybeMessage<::fedtree::FID>(Arena*);
 template<> ::fedtree::FIDBatch* Arena::CreateMaybeMessage<::fedtree::FIDBatch>(Arena*);
@@ -134,6 +148,8 @@ template<> ::fedtree::NodeEncArray* Arena::CreateMaybeMessage<::fedtree::NodeEnc
 template<> ::fedtree::PID* Arena::CreateMaybeMessage<::fedtree::PID>(Arena*);
 template<> ::fedtree::Paillier* Arena::CreateMaybeMessage<::fedtree::Paillier>(Arena*);
 template<> ::fedtree::Ready* Arena::CreateMaybeMessage<::fedtree::Ready>(Arena*);
+template<> ::fedtree::SANoise* Arena::CreateMaybeMessage<::fedtree::SANoise>(Arena*);
+template<> ::fedtree::SANoises* Arena::CreateMaybeMessage<::fedtree::SANoises>(Arena*);
 template<> ::fedtree::Score* Arena::CreateMaybeMessage<::fedtree::Score>(Arena*);
 template<> ::fedtree::SplitPoint* Arena::CreateMaybeMessage<::fedtree::SplitPoint>(Arena*);
 PROTOBUF_NAMESPACE_CLOSE
@@ -4439,6 +4455,594 @@ class Ins2NodeIDBatch PROTOBUF_FINAL :
   mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
   friend struct ::TableStruct_fedtree_2eproto;
 };
+// -------------------------------------------------------------------
+
+class DHPublicKey PROTOBUF_FINAL :
+    public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:fedtree.DHPublicKey) */ {
+ public:
+  inline DHPublicKey() : DHPublicKey(nullptr) {}
+  virtual ~DHPublicKey();
+
+  DHPublicKey(const DHPublicKey& from);
+  DHPublicKey(DHPublicKey&& from) noexcept
+    : DHPublicKey() {
+    *this = ::std::move(from);
+  }
+
+  inline DHPublicKey& operator=(const DHPublicKey& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  inline DHPublicKey& operator=(DHPublicKey&& from) noexcept {
+    if (GetArena() == from.GetArena()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* descriptor() {
+    return GetDescriptor();
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* GetDescriptor() {
+    return GetMetadataStatic().descriptor;
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
+    return GetMetadataStatic().reflection;
+  }
+  static const DHPublicKey& default_instance();
+
+  static inline const DHPublicKey* internal_default_instance() {
+    return reinterpret_cast<const DHPublicKey*>(
+               &_DHPublicKey_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages =
+    20;
+
+  friend void swap(DHPublicKey& a, DHPublicKey& b) {
+    a.Swap(&b);
+  }
+  inline void Swap(DHPublicKey* other) {
+    if (other == this) return;
+    if (GetArena() == other->GetArena()) {
+      InternalSwap(other);
+    } else {
+      ::PROTOBUF_NAMESPACE_ID::internal::GenericSwap(this, other);
+    }
+  }
+  void UnsafeArenaSwap(DHPublicKey* other) {
+    if (other == this) return;
+    GOOGLE_DCHECK(GetArena() == other->GetArena());
+    InternalSwap(other);
+  }
+
+  // implements Message ----------------------------------------------
+
+  inline DHPublicKey* New() const final {
+    return CreateMaybeMessage<DHPublicKey>(nullptr);
+  }
+
+  DHPublicKey* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+    return CreateMaybeMessage<DHPublicKey>(arena);
+  }
+  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void CopyFrom(const DHPublicKey& from);
+  void MergeFrom(const DHPublicKey& from);
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
+  bool IsInitialized() const final;
+
+  size_t ByteSizeLong() const final;
+  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
+  ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
+      ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
+  int GetCachedSize() const final { return _cached_size_.Get(); }
+
+  private:
+  inline void SharedCtor();
+  inline void SharedDtor();
+  void SetCachedSize(int size) const final;
+  void InternalSwap(DHPublicKey* other);
+  friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
+  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
+    return "fedtree.DHPublicKey";
+  }
+  protected:
+  explicit DHPublicKey(::PROTOBUF_NAMESPACE_ID::Arena* arena);
+  private:
+  static void ArenaDtor(void* object);
+  inline void RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
+  public:
+
+  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
+  private:
+  static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
+    ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_fedtree_2eproto);
+    return ::descriptor_table_fedtree_2eproto.file_level_metadata[kIndexInFileMessages];
+  }
+
+  public:
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  enum : int {
+    kPkFieldNumber = 1,
+  };
+  // string pk = 1;
+  void clear_pk();
+  const std::string& pk() const;
+  void set_pk(const std::string& value);
+  void set_pk(std::string&& value);
+  void set_pk(const char* value);
+  void set_pk(const char* value, size_t size);
+  std::string* mutable_pk();
+  std::string* release_pk();
+  void set_allocated_pk(std::string* pk);
+  private:
+  const std::string& _internal_pk() const;
+  void _internal_set_pk(const std::string& value);
+  std::string* _internal_mutable_pk();
+  public:
+
+  // @@protoc_insertion_point(class_scope:fedtree.DHPublicKey)
+ private:
+  class _Internal;
+
+  template <typename T> friend class ::PROTOBUF_NAMESPACE_ID::Arena::InternalHelper;
+  typedef void InternalArenaConstructable_;
+  typedef void DestructorSkippable_;
+  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr pk_;
+  mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
+  friend struct ::TableStruct_fedtree_2eproto;
+};
+// -------------------------------------------------------------------
+
+class DHPublicKeys PROTOBUF_FINAL :
+    public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:fedtree.DHPublicKeys) */ {
+ public:
+  inline DHPublicKeys() : DHPublicKeys(nullptr) {}
+  virtual ~DHPublicKeys();
+
+  DHPublicKeys(const DHPublicKeys& from);
+  DHPublicKeys(DHPublicKeys&& from) noexcept
+    : DHPublicKeys() {
+    *this = ::std::move(from);
+  }
+
+  inline DHPublicKeys& operator=(const DHPublicKeys& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  inline DHPublicKeys& operator=(DHPublicKeys&& from) noexcept {
+    if (GetArena() == from.GetArena()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* descriptor() {
+    return GetDescriptor();
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* GetDescriptor() {
+    return GetMetadataStatic().descriptor;
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
+    return GetMetadataStatic().reflection;
+  }
+  static const DHPublicKeys& default_instance();
+
+  static inline const DHPublicKeys* internal_default_instance() {
+    return reinterpret_cast<const DHPublicKeys*>(
+               &_DHPublicKeys_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages =
+    21;
+
+  friend void swap(DHPublicKeys& a, DHPublicKeys& b) {
+    a.Swap(&b);
+  }
+  inline void Swap(DHPublicKeys* other) {
+    if (other == this) return;
+    if (GetArena() == other->GetArena()) {
+      InternalSwap(other);
+    } else {
+      ::PROTOBUF_NAMESPACE_ID::internal::GenericSwap(this, other);
+    }
+  }
+  void UnsafeArenaSwap(DHPublicKeys* other) {
+    if (other == this) return;
+    GOOGLE_DCHECK(GetArena() == other->GetArena());
+    InternalSwap(other);
+  }
+
+  // implements Message ----------------------------------------------
+
+  inline DHPublicKeys* New() const final {
+    return CreateMaybeMessage<DHPublicKeys>(nullptr);
+  }
+
+  DHPublicKeys* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+    return CreateMaybeMessage<DHPublicKeys>(arena);
+  }
+  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void CopyFrom(const DHPublicKeys& from);
+  void MergeFrom(const DHPublicKeys& from);
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
+  bool IsInitialized() const final;
+
+  size_t ByteSizeLong() const final;
+  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
+  ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
+      ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
+  int GetCachedSize() const final { return _cached_size_.Get(); }
+
+  private:
+  inline void SharedCtor();
+  inline void SharedDtor();
+  void SetCachedSize(int size) const final;
+  void InternalSwap(DHPublicKeys* other);
+  friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
+  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
+    return "fedtree.DHPublicKeys";
+  }
+  protected:
+  explicit DHPublicKeys(::PROTOBUF_NAMESPACE_ID::Arena* arena);
+  private:
+  static void ArenaDtor(void* object);
+  inline void RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
+  public:
+
+  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
+  private:
+  static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
+    ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_fedtree_2eproto);
+    return ::descriptor_table_fedtree_2eproto.file_level_metadata[kIndexInFileMessages];
+  }
+
+  public:
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  enum : int {
+    kPkFieldNumber = 1,
+  };
+  // repeated string pk = 1;
+  int pk_size() const;
+  private:
+  int _internal_pk_size() const;
+  public:
+  void clear_pk();
+  const std::string& pk(int index) const;
+  std::string* mutable_pk(int index);
+  void set_pk(int index, const std::string& value);
+  void set_pk(int index, std::string&& value);
+  void set_pk(int index, const char* value);
+  void set_pk(int index, const char* value, size_t size);
+  std::string* add_pk();
+  void add_pk(const std::string& value);
+  void add_pk(std::string&& value);
+  void add_pk(const char* value);
+  void add_pk(const char* value, size_t size);
+  const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<std::string>& pk() const;
+  ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<std::string>* mutable_pk();
+  private:
+  const std::string& _internal_pk(int index) const;
+  std::string* _internal_add_pk();
+  public:
+
+  // @@protoc_insertion_point(class_scope:fedtree.DHPublicKeys)
+ private:
+  class _Internal;
+
+  template <typename T> friend class ::PROTOBUF_NAMESPACE_ID::Arena::InternalHelper;
+  typedef void InternalArenaConstructable_;
+  typedef void DestructorSkippable_;
+  ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<std::string> pk_;
+  mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
+  friend struct ::TableStruct_fedtree_2eproto;
+};
+// -------------------------------------------------------------------
+
+class SANoise PROTOBUF_FINAL :
+    public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:fedtree.SANoise) */ {
+ public:
+  inline SANoise() : SANoise(nullptr) {}
+  virtual ~SANoise();
+
+  SANoise(const SANoise& from);
+  SANoise(SANoise&& from) noexcept
+    : SANoise() {
+    *this = ::std::move(from);
+  }
+
+  inline SANoise& operator=(const SANoise& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  inline SANoise& operator=(SANoise&& from) noexcept {
+    if (GetArena() == from.GetArena()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* descriptor() {
+    return GetDescriptor();
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* GetDescriptor() {
+    return GetMetadataStatic().descriptor;
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
+    return GetMetadataStatic().reflection;
+  }
+  static const SANoise& default_instance();
+
+  static inline const SANoise* internal_default_instance() {
+    return reinterpret_cast<const SANoise*>(
+               &_SANoise_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages =
+    22;
+
+  friend void swap(SANoise& a, SANoise& b) {
+    a.Swap(&b);
+  }
+  inline void Swap(SANoise* other) {
+    if (other == this) return;
+    if (GetArena() == other->GetArena()) {
+      InternalSwap(other);
+    } else {
+      ::PROTOBUF_NAMESPACE_ID::internal::GenericSwap(this, other);
+    }
+  }
+  void UnsafeArenaSwap(SANoise* other) {
+    if (other == this) return;
+    GOOGLE_DCHECK(GetArena() == other->GetArena());
+    InternalSwap(other);
+  }
+
+  // implements Message ----------------------------------------------
+
+  inline SANoise* New() const final {
+    return CreateMaybeMessage<SANoise>(nullptr);
+  }
+
+  SANoise* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+    return CreateMaybeMessage<SANoise>(arena);
+  }
+  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void CopyFrom(const SANoise& from);
+  void MergeFrom(const SANoise& from);
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
+  bool IsInitialized() const final;
+
+  size_t ByteSizeLong() const final;
+  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
+  ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
+      ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
+  int GetCachedSize() const final { return _cached_size_.Get(); }
+
+  private:
+  inline void SharedCtor();
+  inline void SharedDtor();
+  void SetCachedSize(int size) const final;
+  void InternalSwap(SANoise* other);
+  friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
+  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
+    return "fedtree.SANoise";
+  }
+  protected:
+  explicit SANoise(::PROTOBUF_NAMESPACE_ID::Arena* arena);
+  private:
+  static void ArenaDtor(void* object);
+  inline void RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
+  public:
+
+  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
+  private:
+  static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
+    ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_fedtree_2eproto);
+    return ::descriptor_table_fedtree_2eproto.file_level_metadata[kIndexInFileMessages];
+  }
+
+  public:
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  enum : int {
+    kNoiseFieldNumber = 1,
+  };
+  // string noise = 1;
+  void clear_noise();
+  const std::string& noise() const;
+  void set_noise(const std::string& value);
+  void set_noise(std::string&& value);
+  void set_noise(const char* value);
+  void set_noise(const char* value, size_t size);
+  std::string* mutable_noise();
+  std::string* release_noise();
+  void set_allocated_noise(std::string* noise);
+  private:
+  const std::string& _internal_noise() const;
+  void _internal_set_noise(const std::string& value);
+  std::string* _internal_mutable_noise();
+  public:
+
+  // @@protoc_insertion_point(class_scope:fedtree.SANoise)
+ private:
+  class _Internal;
+
+  template <typename T> friend class ::PROTOBUF_NAMESPACE_ID::Arena::InternalHelper;
+  typedef void InternalArenaConstructable_;
+  typedef void DestructorSkippable_;
+  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr noise_;
+  mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
+  friend struct ::TableStruct_fedtree_2eproto;
+};
+// -------------------------------------------------------------------
+
+class SANoises PROTOBUF_FINAL :
+    public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:fedtree.SANoises) */ {
+ public:
+  inline SANoises() : SANoises(nullptr) {}
+  virtual ~SANoises();
+
+  SANoises(const SANoises& from);
+  SANoises(SANoises&& from) noexcept
+    : SANoises() {
+    *this = ::std::move(from);
+  }
+
+  inline SANoises& operator=(const SANoises& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  inline SANoises& operator=(SANoises&& from) noexcept {
+    if (GetArena() == from.GetArena()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* descriptor() {
+    return GetDescriptor();
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* GetDescriptor() {
+    return GetMetadataStatic().descriptor;
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
+    return GetMetadataStatic().reflection;
+  }
+  static const SANoises& default_instance();
+
+  static inline const SANoises* internal_default_instance() {
+    return reinterpret_cast<const SANoises*>(
+               &_SANoises_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages =
+    23;
+
+  friend void swap(SANoises& a, SANoises& b) {
+    a.Swap(&b);
+  }
+  inline void Swap(SANoises* other) {
+    if (other == this) return;
+    if (GetArena() == other->GetArena()) {
+      InternalSwap(other);
+    } else {
+      ::PROTOBUF_NAMESPACE_ID::internal::GenericSwap(this, other);
+    }
+  }
+  void UnsafeArenaSwap(SANoises* other) {
+    if (other == this) return;
+    GOOGLE_DCHECK(GetArena() == other->GetArena());
+    InternalSwap(other);
+  }
+
+  // implements Message ----------------------------------------------
+
+  inline SANoises* New() const final {
+    return CreateMaybeMessage<SANoises>(nullptr);
+  }
+
+  SANoises* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+    return CreateMaybeMessage<SANoises>(arena);
+  }
+  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void CopyFrom(const SANoises& from);
+  void MergeFrom(const SANoises& from);
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
+  bool IsInitialized() const final;
+
+  size_t ByteSizeLong() const final;
+  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
+  ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
+      ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
+  int GetCachedSize() const final { return _cached_size_.Get(); }
+
+  private:
+  inline void SharedCtor();
+  inline void SharedDtor();
+  void SetCachedSize(int size) const final;
+  void InternalSwap(SANoises* other);
+  friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
+  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
+    return "fedtree.SANoises";
+  }
+  protected:
+  explicit SANoises(::PROTOBUF_NAMESPACE_ID::Arena* arena);
+  private:
+  static void ArenaDtor(void* object);
+  inline void RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
+  public:
+
+  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
+  private:
+  static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
+    ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_fedtree_2eproto);
+    return ::descriptor_table_fedtree_2eproto.file_level_metadata[kIndexInFileMessages];
+  }
+
+  public:
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  enum : int {
+    kNoisesFieldNumber = 1,
+  };
+  // repeated string noises = 1;
+  int noises_size() const;
+  private:
+  int _internal_noises_size() const;
+  public:
+  void clear_noises();
+  const std::string& noises(int index) const;
+  std::string* mutable_noises(int index);
+  void set_noises(int index, const std::string& value);
+  void set_noises(int index, std::string&& value);
+  void set_noises(int index, const char* value);
+  void set_noises(int index, const char* value, size_t size);
+  std::string* add_noises();
+  void add_noises(const std::string& value);
+  void add_noises(std::string&& value);
+  void add_noises(const char* value);
+  void add_noises(const char* value, size_t size);
+  const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<std::string>& noises() const;
+  ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<std::string>* mutable_noises();
+  private:
+  const std::string& _internal_noises(int index) const;
+  std::string* _internal_add_noises();
+  public:
+
+  // @@protoc_insertion_point(class_scope:fedtree.SANoises)
+ private:
+  class _Internal;
+
+  template <typename T> friend class ::PROTOBUF_NAMESPACE_ID::Arena::InternalHelper;
+  typedef void InternalArenaConstructable_;
+  typedef void DestructorSkippable_;
+  ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<std::string> noises_;
+  mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
+  friend struct ::TableStruct_fedtree_2eproto;
+};
 // ===================================================================
 
 
@@ -8134,9 +8738,303 @@ Ins2NodeIDBatch::mutable_nid() {
   return _internal_mutable_nid();
 }
 
+// -------------------------------------------------------------------
+
+// DHPublicKey
+
+// string pk = 1;
+inline void DHPublicKey::clear_pk() {
+  pk_.ClearToEmpty();
+}
+inline const std::string& DHPublicKey::pk() const {
+  // @@protoc_insertion_point(field_get:fedtree.DHPublicKey.pk)
+  return _internal_pk();
+}
+inline void DHPublicKey::set_pk(const std::string& value) {
+  _internal_set_pk(value);
+  // @@protoc_insertion_point(field_set:fedtree.DHPublicKey.pk)
+}
+inline std::string* DHPublicKey::mutable_pk() {
+  // @@protoc_insertion_point(field_mutable:fedtree.DHPublicKey.pk)
+  return _internal_mutable_pk();
+}
+inline const std::string& DHPublicKey::_internal_pk() const {
+  return pk_.Get();
+}
+inline void DHPublicKey::_internal_set_pk(const std::string& value) {
+  
+  pk_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, value, GetArena());
+}
+inline void DHPublicKey::set_pk(std::string&& value) {
+  
+  pk_.Set(
+    ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::move(value), GetArena());
+  // @@protoc_insertion_point(field_set_rvalue:fedtree.DHPublicKey.pk)
+}
+inline void DHPublicKey::set_pk(const char* value) {
+  GOOGLE_DCHECK(value != nullptr);
+  
+  pk_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::string(value), GetArena());
+  // @@protoc_insertion_point(field_set_char:fedtree.DHPublicKey.pk)
+}
+inline void DHPublicKey::set_pk(const char* value,
+    size_t size) {
+  
+  pk_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::string(
+      reinterpret_cast<const char*>(value), size), GetArena());
+  // @@protoc_insertion_point(field_set_pointer:fedtree.DHPublicKey.pk)
+}
+inline std::string* DHPublicKey::_internal_mutable_pk() {
+  
+  return pk_.Mutable(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, GetArena());
+}
+inline std::string* DHPublicKey::release_pk() {
+  // @@protoc_insertion_point(field_release:fedtree.DHPublicKey.pk)
+  return pk_.Release(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+}
+inline void DHPublicKey::set_allocated_pk(std::string* pk) {
+  if (pk != nullptr) {
+    
+  } else {
+    
+  }
+  pk_.SetAllocated(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), pk,
+      GetArena());
+  // @@protoc_insertion_point(field_set_allocated:fedtree.DHPublicKey.pk)
+}
+
+// -------------------------------------------------------------------
+
+// DHPublicKeys
+
+// repeated string pk = 1;
+inline int DHPublicKeys::_internal_pk_size() const {
+  return pk_.size();
+}
+inline int DHPublicKeys::pk_size() const {
+  return _internal_pk_size();
+}
+inline void DHPublicKeys::clear_pk() {
+  pk_.Clear();
+}
+inline std::string* DHPublicKeys::add_pk() {
+  // @@protoc_insertion_point(field_add_mutable:fedtree.DHPublicKeys.pk)
+  return _internal_add_pk();
+}
+inline const std::string& DHPublicKeys::_internal_pk(int index) const {
+  return pk_.Get(index);
+}
+inline const std::string& DHPublicKeys::pk(int index) const {
+  // @@protoc_insertion_point(field_get:fedtree.DHPublicKeys.pk)
+  return _internal_pk(index);
+}
+inline std::string* DHPublicKeys::mutable_pk(int index) {
+  // @@protoc_insertion_point(field_mutable:fedtree.DHPublicKeys.pk)
+  return pk_.Mutable(index);
+}
+inline void DHPublicKeys::set_pk(int index, const std::string& value) {
+  // @@protoc_insertion_point(field_set:fedtree.DHPublicKeys.pk)
+  pk_.Mutable(index)->assign(value);
+}
+inline void DHPublicKeys::set_pk(int index, std::string&& value) {
+  // @@protoc_insertion_point(field_set:fedtree.DHPublicKeys.pk)
+  pk_.Mutable(index)->assign(std::move(value));
+}
+inline void DHPublicKeys::set_pk(int index, const char* value) {
+  GOOGLE_DCHECK(value != nullptr);
+  pk_.Mutable(index)->assign(value);
+  // @@protoc_insertion_point(field_set_char:fedtree.DHPublicKeys.pk)
+}
+inline void DHPublicKeys::set_pk(int index, const char* value, size_t size) {
+  pk_.Mutable(index)->assign(
+    reinterpret_cast<const char*>(value), size);
+  // @@protoc_insertion_point(field_set_pointer:fedtree.DHPublicKeys.pk)
+}
+inline std::string* DHPublicKeys::_internal_add_pk() {
+  return pk_.Add();
+}
+inline void DHPublicKeys::add_pk(const std::string& value) {
+  pk_.Add()->assign(value);
+  // @@protoc_insertion_point(field_add:fedtree.DHPublicKeys.pk)
+}
+inline void DHPublicKeys::add_pk(std::string&& value) {
+  pk_.Add(std::move(value));
+  // @@protoc_insertion_point(field_add:fedtree.DHPublicKeys.pk)
+}
+inline void DHPublicKeys::add_pk(const char* value) {
+  GOOGLE_DCHECK(value != nullptr);
+  pk_.Add()->assign(value);
+  // @@protoc_insertion_point(field_add_char:fedtree.DHPublicKeys.pk)
+}
+inline void DHPublicKeys::add_pk(const char* value, size_t size) {
+  pk_.Add()->assign(reinterpret_cast<const char*>(value), size);
+  // @@protoc_insertion_point(field_add_pointer:fedtree.DHPublicKeys.pk)
+}
+inline const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<std::string>&
+DHPublicKeys::pk() const {
+  // @@protoc_insertion_point(field_list:fedtree.DHPublicKeys.pk)
+  return pk_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<std::string>*
+DHPublicKeys::mutable_pk() {
+  // @@protoc_insertion_point(field_mutable_list:fedtree.DHPublicKeys.pk)
+  return &pk_;
+}
+
+// -------------------------------------------------------------------
+
+// SANoise
+
+// string noise = 1;
+inline void SANoise::clear_noise() {
+  noise_.ClearToEmpty();
+}
+inline const std::string& SANoise::noise() const {
+  // @@protoc_insertion_point(field_get:fedtree.SANoise.noise)
+  return _internal_noise();
+}
+inline void SANoise::set_noise(const std::string& value) {
+  _internal_set_noise(value);
+  // @@protoc_insertion_point(field_set:fedtree.SANoise.noise)
+}
+inline std::string* SANoise::mutable_noise() {
+  // @@protoc_insertion_point(field_mutable:fedtree.SANoise.noise)
+  return _internal_mutable_noise();
+}
+inline const std::string& SANoise::_internal_noise() const {
+  return noise_.Get();
+}
+inline void SANoise::_internal_set_noise(const std::string& value) {
+  
+  noise_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, value, GetArena());
+}
+inline void SANoise::set_noise(std::string&& value) {
+  
+  noise_.Set(
+    ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::move(value), GetArena());
+  // @@protoc_insertion_point(field_set_rvalue:fedtree.SANoise.noise)
+}
+inline void SANoise::set_noise(const char* value) {
+  GOOGLE_DCHECK(value != nullptr);
+  
+  noise_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::string(value), GetArena());
+  // @@protoc_insertion_point(field_set_char:fedtree.SANoise.noise)
+}
+inline void SANoise::set_noise(const char* value,
+    size_t size) {
+  
+  noise_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::string(
+      reinterpret_cast<const char*>(value), size), GetArena());
+  // @@protoc_insertion_point(field_set_pointer:fedtree.SANoise.noise)
+}
+inline std::string* SANoise::_internal_mutable_noise() {
+  
+  return noise_.Mutable(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, GetArena());
+}
+inline std::string* SANoise::release_noise() {
+  // @@protoc_insertion_point(field_release:fedtree.SANoise.noise)
+  return noise_.Release(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+}
+inline void SANoise::set_allocated_noise(std::string* noise) {
+  if (noise != nullptr) {
+    
+  } else {
+    
+  }
+  noise_.SetAllocated(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), noise,
+      GetArena());
+  // @@protoc_insertion_point(field_set_allocated:fedtree.SANoise.noise)
+}
+
+// -------------------------------------------------------------------
+
+// SANoises
+
+// repeated string noises = 1;
+inline int SANoises::_internal_noises_size() const {
+  return noises_.size();
+}
+inline int SANoises::noises_size() const {
+  return _internal_noises_size();
+}
+inline void SANoises::clear_noises() {
+  noises_.Clear();
+}
+inline std::string* SANoises::add_noises() {
+  // @@protoc_insertion_point(field_add_mutable:fedtree.SANoises.noises)
+  return _internal_add_noises();
+}
+inline const std::string& SANoises::_internal_noises(int index) const {
+  return noises_.Get(index);
+}
+inline const std::string& SANoises::noises(int index) const {
+  // @@protoc_insertion_point(field_get:fedtree.SANoises.noises)
+  return _internal_noises(index);
+}
+inline std::string* SANoises::mutable_noises(int index) {
+  // @@protoc_insertion_point(field_mutable:fedtree.SANoises.noises)
+  return noises_.Mutable(index);
+}
+inline void SANoises::set_noises(int index, const std::string& value) {
+  // @@protoc_insertion_point(field_set:fedtree.SANoises.noises)
+  noises_.Mutable(index)->assign(value);
+}
+inline void SANoises::set_noises(int index, std::string&& value) {
+  // @@protoc_insertion_point(field_set:fedtree.SANoises.noises)
+  noises_.Mutable(index)->assign(std::move(value));
+}
+inline void SANoises::set_noises(int index, const char* value) {
+  GOOGLE_DCHECK(value != nullptr);
+  noises_.Mutable(index)->assign(value);
+  // @@protoc_insertion_point(field_set_char:fedtree.SANoises.noises)
+}
+inline void SANoises::set_noises(int index, const char* value, size_t size) {
+  noises_.Mutable(index)->assign(
+    reinterpret_cast<const char*>(value), size);
+  // @@protoc_insertion_point(field_set_pointer:fedtree.SANoises.noises)
+}
+inline std::string* SANoises::_internal_add_noises() {
+  return noises_.Add();
+}
+inline void SANoises::add_noises(const std::string& value) {
+  noises_.Add()->assign(value);
+  // @@protoc_insertion_point(field_add:fedtree.SANoises.noises)
+}
+inline void SANoises::add_noises(std::string&& value) {
+  noises_.Add(std::move(value));
+  // @@protoc_insertion_point(field_add:fedtree.SANoises.noises)
+}
+inline void SANoises::add_noises(const char* value) {
+  GOOGLE_DCHECK(value != nullptr);
+  noises_.Add()->assign(value);
+  // @@protoc_insertion_point(field_add_char:fedtree.SANoises.noises)
+}
+inline void SANoises::add_noises(const char* value, size_t size) {
+  noises_.Add()->assign(reinterpret_cast<const char*>(value), size);
+  // @@protoc_insertion_point(field_add_pointer:fedtree.SANoises.noises)
+}
+inline const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<std::string>&
+SANoises::noises() const {
+  // @@protoc_insertion_point(field_list:fedtree.SANoises.noises)
+  return noises_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<std::string>*
+SANoises::mutable_noises() {
+  // @@protoc_insertion_point(field_mutable_list:fedtree.SANoises.noises)
+  return &noises_;
+}
+
 #ifdef __GNUC__
   #pragma GCC diagnostic pop
 #endif  // __GNUC__
+// -------------------------------------------------------------------
+
+// -------------------------------------------------------------------
+
+// -------------------------------------------------------------------
+
+// -------------------------------------------------------------------
+
 // -------------------------------------------------------------------
 
 // -------------------------------------------------------------------

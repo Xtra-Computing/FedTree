@@ -135,7 +135,7 @@ ZZ hexToZZ(string hexVal){
     return val;
 }
 
-void DiffieHellman::primegen(){
+//void DiffieHellman::primegen(){
 //    std::random_device rd; // obtain a random number from hardware
 //    std::mt19937 gen(rd()); // seed the generator
 //    std::uniform_int_distribution<> distr(1e^5, 1e^8); // define the range
@@ -147,6 +147,11 @@ void DiffieHellman::primegen(){
 //    g = get_primitive(p);
 
     // from https://datatracker.ietf.org/doc/html/rfc2409#page-22
+
+//}
+DiffieHellman::DiffieHellman(){
+    //use default value as it does not affect the security
+    //from https://datatracker.ietf.org/doc/html/rfc2409#page-22
     p = hexToZZ("FFFFFFFFFFFFFFFFC90FDAA22168C234C4C6628B80DC1CD129024E088A67CC74020BBEA63B139B22514A08798E3404DDEF9519"
                 "B3CD3A431B302B0A6DF25F14374FE1356D6D51C245E485B576625E7EC6F44C42E9A637ED6B0BFF5CB6F406B7EDEE386BFB5A89"
                 "9FA5AE9F24117C4B1FE649286651ECE65381FFFFFFFFFFFFFFFF");

@@ -588,6 +588,115 @@ void DistributedParty::SendGH(GHPair party_gh) {
     }
 }
 
+void DistributedParty::SendDHPubKey() {
+    fedtree::DHPublicKey pk;
+    fedtree::PID id;
+    grpc::ClientContext context;
+    LOG(INFO)<<"communication DHPublicKey start";
+    auto t_start = timer.now();
+    context.AddMetadata("pid", std::to_string(pid));
+    stringstream stream;
+    stream<<dh.public_key;
+    pk.set_pk(stream.str());
+    stream.clear();
+    grpc::Status status = stub_->SendDHPubKey(&context, pk, &id);
+    auto t_end = timer.now();
+    std::chrono::duration<float> used_time = t_end - t_start;
+    LOG(INFO)<<"communication DHPublicKey end";
+    comm_time += used_time.count();
+    if (status.ok()) {
+        LOG(DEBUG) << "DHPublicKey sent.";
+    }
+    else {
+        LOG(ERROR) << "DHPublicKey rpc failed";
+    }
+}
+
+void DistributedParty::GetDHPubKey() {
+    grpc::ClientContext context;
+    fedtree::PID id;
+    fedtree::DHPublicKeys pk;
+    LOG(INFO)<<"communication PublicKey start";
+    auto t_start = timer.now();
+    id.set_id(pid);
+    std::unique_ptr<grpc::ClientReader<fedtree::DHPublicKeys> > reader(stub_->GetDHPubKeys(&context, id));
+    dh.other_public_keys.SetLength(n_parties);
+    reader->Read(&pk);
+    for(int i = 0; i < pk.pk_size(); i++) {
+        dh.other_public_keys[i] = NTL::to_ZZ(pk.pk(i).c_str());
+    }
+
+    std::cout<<"pid:"<<pid<<std::endl;
+    grpc::Status status = reader->Finish();
+    auto t_end = timer.now();
+    std::chrono::duration<float> used_time = t_end - t_start;
+    comm_time += used_time.count();
+    LOG(INFO)<<"communication PublicKey end";
+    if (status.ok()) {
+        LOG(INFO) << "Get DHPubKey from server";
+    }
+    else {
+        LOG(ERROR) << "GetDHPubKey rpc failed";
+    }
+}
+
+void DistributedParty::SendNoises(){
+    fedtree::SANoises san;
+    fedtree::PID id;
+    grpc::ClientContext context;
+    LOG(INFO)<<"communication Noises start";
+    auto t_start = timer.now();
+    context.AddMetadata("pid", std::to_string(pid));
+    stringstream stream;
+    for(int i = 0; i < dh.encrypted_noises.length(); i++){
+        stream<<dh.encrypted_noises[i];
+        san.add_noises(stream.str());
+        stream.clear();
+        stream.str("");
+    }
+    grpc::Status status = stub_->SendNoises(&context, san, &id);
+    auto t_end = timer.now();
+    std::chrono::duration<float> used_time = t_end - t_start;
+    LOG(INFO)<<"communication Noises end";
+    comm_time += used_time.count();
+    if (status.ok()) {
+        LOG(DEBUG) << "Noises sent.";
+    }
+    else {
+        LOG(ERROR) << "Noises rpc failed";
+    }
+}
+
+void DistributedParty::GetNoises() {
+    grpc::ClientContext context;
+    fedtree::PID id;
+    fedtree::SANoises san;
+    LOG(INFO)<<"communication Noises start";
+    auto t_start = timer.now();
+    id.set_id(pid);
+    std::unique_ptr<grpc::ClientReader<fedtree::SANoises> > reader(stub_->GetNoises(&context, id));
+    dh.received_encrypted_noises.SetLength(n_parties);
+    reader->Read(&san);
+    for(int i = 0; i < san.noises_size(); i++){
+        dh.received_encrypted_noises[i] = NTL::to_ZZ(san.noises(i).c_str());
+    }
+//    while (reader->Read(&san)) {
+//        dh.received_encrypted_noises[pid] = NTL::to_ZZ(san.noises().c_str());
+//        pid++;
+//    }
+    grpc::Status status = reader->Finish();
+    auto t_end = timer.now();
+    std::chrono::duration<float> used_time = t_end - t_start;
+    comm_time += used_time.count();
+    LOG(INFO)<<"communication Noises end";
+    if (status.ok()) {
+        LOG(INFO) << "GetNoises from server";
+    }
+    else {
+        LOG(ERROR) << "GetNoises rpc failed";
+    }
+}
+
 void DistributedParty::TriggerBuildUsingGH(int k) {
     grpc::ClientContext context;
     context.AddMetadata("k", std::to_string(k));
@@ -755,6 +864,20 @@ void DistributedParty::TriggerHomoInit() {
         LOG(ERROR) << "TriggerHomoInit rpc failed";
     }
 }
+
+void DistributedParty::TriggerSAInit() {
+    grpc::ClientContext context;
+    fedtree::PID id;
+    fedtree::Ready ready;
+    grpc::Status status = stub_->TriggerSAInit(&context, id, &ready);
+    if (status.ok()) {
+        LOG(DEBUG) << "Trigger Server to SA init";
+    }
+    else {
+        LOG(ERROR) << "TriggerSAInit rpc failed";
+    }
+}
+
 
 void DistributedParty::GetPaillier() {
     grpc::ClientContext context;
@@ -1283,6 +1406,18 @@ void distributed_horizontal_train(DistributedParty& party, FLParam &fl_param) {
         }
         party.GetPaillier();
     }
+    else if(fl_param.privacy_tech == "sa"){
+//        if (party.pid == 0){
+//            party.TriggerSAInit();
+//        }
+//        party.GetPG();
+        party.dh.generate_public_key();
+        party.dh.pid = party.pid;
+        party.dh.init_variables(party.n_parties);
+        party.SendDHPubKey();
+        party.GetDHPubKey();
+        party.dh.compute_shared_keys();
+    }
     DifferentialPrivacy dp_manager = DifferentialPrivacy();
     if (fl_param.privacy_tech == "dp") {
         LOG(INFO) << "Start DP init";
@@ -1325,6 +1460,12 @@ void distributed_horizontal_train(DistributedParty& party, FLParam &fl_param) {
                 party.TriggerBuildUsingGH(k);
             }
             for (int d = 0; d < fl_param.gbdt_param.depth; d++) {
+                if (fl_param.privacy_tech == "sa"){
+                    party.dh.generate_noises();
+                    party.SendNoises();
+                    party.GetNoises();
+                    party.dh.decrypt_noises();
+                }
                 int n_nodes_in_level = 1 << d;
                 int n_max_nodes = 2 << fl_param.gbdt_param.depth;
                 int n_column = party.dataset.n_features();
@@ -1360,6 +1501,12 @@ void distributed_horizontal_train(DistributedParty& party, FLParam &fl_param) {
                     }
                     party.SendHistogramBatchesEnc(hist, 0);
                     party.SendHistogramBatchesEnc(missing_gh, 1);
+                }
+                else if(fl_param.privacy_tech == "sa"){
+                    party.add_noise_to_histogram(hist);
+                    party.add_noise_to_histogram(missing_gh);
+                    party.SendHistogramBatches(hist, 0);
+                    party.SendHistogramBatches(missing_gh, 1);
                 }
                 else {
                     party.SendHistogramBatches(hist, 0);
@@ -1441,7 +1588,7 @@ int main(int argc, char **argv) {
     }
     DistributedParty party(grpc::CreateChannel(fl_param.ip_address + ":50051",
                                                grpc::InsecureChannelCredentials()));
-
+    party.n_parties = fl_param.n_parties;
     GBDTParam &param = fl_param.gbdt_param;
     DataSet dataset;
     dataset.load_from_file(param.path, fl_param);

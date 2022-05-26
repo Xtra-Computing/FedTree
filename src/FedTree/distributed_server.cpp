@@ -629,6 +629,9 @@ void DistributedServer::HorizontalInitVectors(int n_parties) {
     party_tot_times.resize(n_parties, 0);
     party_comm_times.resize(n_parties, 0);
     party_enc_times.resize(n_parties, 0);
+
+    party_DHKey_received.resize(n_parties, 0);
+    party_noises_received.resize(n_parties, 0);
 }
 
 void RunServer(DistributedServer &service) {
@@ -764,6 +767,117 @@ grpc::Status DistributedServer::SendGH(grpc::ServerContext* context, const fedtr
         gh_rounds += 1;
     }
     mutex.unlock();
+    return grpc::Status::OK;
+}
+
+grpc::Status DistributedServer::SendDHPubKey(grpc::ServerContext* context, const fedtree::DHPublicKey* request,
+                                       fedtree::PID* response) {
+
+    std::multimap<grpc::string_ref, grpc::string_ref> metadata = context->client_metadata();
+    auto pid_itr = metadata.find("pid");
+    int pid = std::stoi(pid_itr->second.data());
+    party_DHKey_received[pid] += 1;
+    LOG(DEBUG) << "Receive DHPubKey from " << pid;
+    if(dh.other_public_keys.length() != param.n_parties)
+        dh.other_public_keys.SetLength(param.n_parties);
+    dh.other_public_keys[pid] = NTL::to_ZZ(request->pk().c_str());
+    std::chrono::high_resolution_clock timer;
+    auto t_start = timer.now();
+
+    unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+    std::default_random_engine generator(seed);
+    std::uniform_int_distribution<int> delay_distribution(5, 10);
+    while (true) {
+        bool cont = true;
+        for (int i = 0; i < param.n_parties; i++) {
+            if (party_DHKey_received[i] < 1) {
+                cont = false;
+            }
+        }
+        if (cont) {
+            break;
+        }
+        std::this_thread::sleep_for(
+                std::chrono::milliseconds(delay_distribution(generator)));
+    }
+    auto t_end = timer.now();
+    std::chrono::duration<float> used_time = t_end - t_start;
+    party_wait_times[pid] += used_time.count();
+    return grpc::Status::OK;
+}
+
+grpc::Status DistributedServer::GetDHPubKeys(grpc::ServerContext *context, const fedtree::PID *id,
+                                              grpc::ServerWriter<fedtree::DHPublicKeys> *writer) {
+    fedtree::DHPublicKeys pk;
+    for (int i = 0; i < dh.other_public_keys.length(); i++){
+        stringstream stream;
+        stream<<dh.other_public_keys[i];
+        pk.add_pk(stream.str());
+        stream.clear();
+        stream.str("");
+    }
+    writer->Write(pk);
+    // std::cout << "Send ins2node_id to " << id->id() << std::endl;
+    LOG(DEBUG) << "Send DHPubKeys to " << id->id();
+    return grpc::Status::OK;
+}
+
+grpc::Status DistributedServer::SendNoises(grpc::ServerContext* context, const fedtree::SANoises* request, fedtree::PID* response){
+    std::multimap<grpc::string_ref, grpc::string_ref> metadata = context->client_metadata();
+    auto pid_itr = metadata.find("pid");
+    int pid = std::stoi(pid_itr->second.data());
+    party_noises_received[pid] += 1;
+    LOG(DEBUG) << "Receive Noises from " << pid;
+    if(dh.received_encrypted_noises.length() != param.n_parties * param.n_parties)
+        dh.received_encrypted_noises.SetLength(param.n_parties * param.n_parties);
+    for(int i = 0; i < param.n_parties; i++){
+        dh.received_encrypted_noises[pid * param.n_parties + i] = NTL::to_ZZ(request->noises(i).c_str());
+    }
+    std::chrono::high_resolution_clock timer;
+    auto t_start = timer.now();
+
+    unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+    std::default_random_engine generator(seed);
+    std::uniform_int_distribution<int> delay_distribution(5, 10);
+    while (true) {
+        bool cont = true;
+        for (int i = 0; i < param.n_parties; i++) {
+            if (party_noises_received[i] < noise_rounds) {
+                cont = false;
+            }
+        }
+        if (cont) {
+            break;
+        }
+        std::this_thread::sleep_for(
+                std::chrono::milliseconds(delay_distribution(generator)));
+    }
+    auto t_end = timer.now();
+    std::chrono::duration<float> used_time = t_end - t_start;
+    party_wait_times[pid] += used_time.count();
+    mutex.lock();
+    noise_cnt = (noise_cnt + 1) % param.n_parties;
+    if (noise_cnt == 0) {
+        noise_rounds += 1;
+    }
+    mutex.unlock();
+    return grpc::Status::OK;
+}
+
+grpc::Status DistributedServer::GetNoises(grpc::ServerContext *context, const fedtree::PID *id,
+                                             grpc::ServerWriter<fedtree::SANoises> *writer) {
+    int pid = id->id();
+    fedtree::SANoises pk;
+    for (int i = 0; i < param.n_parties; i++){
+        stringstream stream;
+        stream<<dh.received_encrypted_noises[i * param.n_parties + pid];
+        pk.add_noises(stream.str());
+        stream.clear();
+        stream.str("");
+    }
+    writer->Write(pk);
+    // std::cout << "Send ins2node_id to " << id->id() << std::endl;
+    LOG(DEBUG) << "Send Noises to " << pid;
     return grpc::Status::OK;
 }
 
@@ -995,6 +1109,14 @@ grpc::Status DistributedServer::TriggerHomoInit(grpc::ServerContext *context, co
 //    LOG(INFO) << "computation HomoInit start";
     homo_init();
     homo_init_success = true;
+//    LOG(INFO) << "computation HomoInit end";
+    return grpc::Status::OK;
+}
+
+grpc::Status DistributedServer::TriggerSAInit(grpc::ServerContext *context, const fedtree::PID *request,
+                                                fedtree::Ready *response) {
+//    LOG(INFO) << "computation HomoInit start";
+//    dh.primegen();
 //    LOG(INFO) << "computation HomoInit end";
     return grpc::Status::OK;
 }

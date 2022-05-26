@@ -87,6 +87,14 @@ public:
 
     grpc::Status SendGH(grpc::ServerContext* context, const fedtree::GHPair* request, fedtree::PID* response) override;
 
+    grpc::Status SendDHPubKey(grpc::ServerContext* context, const fedtree::DHPublicKey* request, fedtree::PID* response) override;
+
+    grpc::Status GetDHPubKeys(grpc::ServerContext* context, const fedtree::PID* request, grpc::ServerWriter<fedtree::DHPublicKeys>* response) override;
+
+    grpc::Status SendNoises(grpc::ServerContext* context, const fedtree::SANoises* request, fedtree::PID* response) override;
+
+    grpc::Status GetNoises(grpc::ServerContext* context, const fedtree::PID* request, grpc::ServerWriter<fedtree::SANoises>* response) override;
+
     grpc::Status TriggerBuildUsingGH(grpc::ServerContext* context, const fedtree::PID* request, fedtree::Ready* response) override;
     
     grpc::Status ScoreReduce(grpc::ServerContext* context, const fedtree::Score* request, fedtree::Score* response) override;
@@ -102,6 +110,8 @@ public:
                                  fedtree::Ready *ready) override;
 
     grpc::Status TriggerHomoInit(grpc::ServerContext *context, const fedtree::PID *request, fedtree::Ready *response) override;
+
+    grpc::Status TriggerSAInit(grpc::ServerContext *context, const fedtree::PID *request, fedtree::Ready *response) override;
 
     grpc::Status GetPaillier(grpc::ServerContext *context, const fedtree::PID *request, fedtree::Paillier * response) override;
     
@@ -196,6 +206,10 @@ private:
     vector<GHPair> party_ghs;
     int gh_rounds = 1;
     bool build_gh_success = false;
+    vector<int> party_DHKey_received;
+    vector<int> party_noises_received;
+    int noise_rounds = 1;
+    int noise_cnt = 0;
 
     bool calc_success = false;
     

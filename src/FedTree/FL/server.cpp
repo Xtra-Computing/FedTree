@@ -30,6 +30,7 @@ void Server::horizontal_init(FLParam &param) {
     this->local_trees.resize(param.n_parties);
     this->model_param = param.gbdt_param;
     this->global_trees.trees.clear();
+    this->has_label.resize(param.n_parties);
     booster.fbuilder.reset(new HistTreeBuilder);
     booster.fbuilder->init_nocutpoints(dataSet, param.gbdt_param); //if remove this line, cannot successfully run
     booster.param = param.gbdt_param;

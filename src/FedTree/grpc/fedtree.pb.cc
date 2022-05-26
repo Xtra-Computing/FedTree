@@ -95,6 +95,22 @@ class Ins2NodeIDBatchDefaultTypeInternal {
  public:
   ::PROTOBUF_NAMESPACE_ID::internal::ExplicitlyConstructed<Ins2NodeIDBatch> _instance;
 } _Ins2NodeIDBatch_default_instance_;
+class DHPublicKeyDefaultTypeInternal {
+ public:
+  ::PROTOBUF_NAMESPACE_ID::internal::ExplicitlyConstructed<DHPublicKey> _instance;
+} _DHPublicKey_default_instance_;
+class DHPublicKeysDefaultTypeInternal {
+ public:
+  ::PROTOBUF_NAMESPACE_ID::internal::ExplicitlyConstructed<DHPublicKeys> _instance;
+} _DHPublicKeys_default_instance_;
+class SANoiseDefaultTypeInternal {
+ public:
+  ::PROTOBUF_NAMESPACE_ID::internal::ExplicitlyConstructed<SANoise> _instance;
+} _SANoise_default_instance_;
+class SANoisesDefaultTypeInternal {
+ public:
+  ::PROTOBUF_NAMESPACE_ID::internal::ExplicitlyConstructed<SANoises> _instance;
+} _SANoises_default_instance_;
 }  // namespace fedtree
 static void InitDefaultsscc_info_BestInfo_fedtree_2eproto() {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
@@ -108,6 +124,32 @@ static void InitDefaultsscc_info_BestInfo_fedtree_2eproto() {
 
 ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_BestInfo_fedtree_2eproto =
     {{ATOMIC_VAR_INIT(::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase::kUninitialized), 0, 0, InitDefaultsscc_info_BestInfo_fedtree_2eproto}, {}};
+
+static void InitDefaultsscc_info_DHPublicKey_fedtree_2eproto() {
+  GOOGLE_PROTOBUF_VERIFY_VERSION;
+
+  {
+    void* ptr = &::fedtree::_DHPublicKey_default_instance_;
+    new (ptr) ::fedtree::DHPublicKey();
+    ::PROTOBUF_NAMESPACE_ID::internal::OnShutdownDestroyMessage(ptr);
+  }
+}
+
+::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_DHPublicKey_fedtree_2eproto =
+    {{ATOMIC_VAR_INIT(::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase::kUninitialized), 0, 0, InitDefaultsscc_info_DHPublicKey_fedtree_2eproto}, {}};
+
+static void InitDefaultsscc_info_DHPublicKeys_fedtree_2eproto() {
+  GOOGLE_PROTOBUF_VERIFY_VERSION;
+
+  {
+    void* ptr = &::fedtree::_DHPublicKeys_default_instance_;
+    new (ptr) ::fedtree::DHPublicKeys();
+    ::PROTOBUF_NAMESPACE_ID::internal::OnShutdownDestroyMessage(ptr);
+  }
+}
+
+::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_DHPublicKeys_fedtree_2eproto =
+    {{ATOMIC_VAR_INIT(::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase::kUninitialized), 0, 0, InitDefaultsscc_info_DHPublicKeys_fedtree_2eproto}, {}};
 
 static void InitDefaultsscc_info_DatasetInfo_fedtree_2eproto() {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
@@ -330,6 +372,32 @@ static void InitDefaultsscc_info_Ready_fedtree_2eproto() {
 ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_Ready_fedtree_2eproto =
     {{ATOMIC_VAR_INIT(::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase::kUninitialized), 0, 0, InitDefaultsscc_info_Ready_fedtree_2eproto}, {}};
 
+static void InitDefaultsscc_info_SANoise_fedtree_2eproto() {
+  GOOGLE_PROTOBUF_VERIFY_VERSION;
+
+  {
+    void* ptr = &::fedtree::_SANoise_default_instance_;
+    new (ptr) ::fedtree::SANoise();
+    ::PROTOBUF_NAMESPACE_ID::internal::OnShutdownDestroyMessage(ptr);
+  }
+}
+
+::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_SANoise_fedtree_2eproto =
+    {{ATOMIC_VAR_INIT(::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase::kUninitialized), 0, 0, InitDefaultsscc_info_SANoise_fedtree_2eproto}, {}};
+
+static void InitDefaultsscc_info_SANoises_fedtree_2eproto() {
+  GOOGLE_PROTOBUF_VERIFY_VERSION;
+
+  {
+    void* ptr = &::fedtree::_SANoises_default_instance_;
+    new (ptr) ::fedtree::SANoises();
+    ::PROTOBUF_NAMESPACE_ID::internal::OnShutdownDestroyMessage(ptr);
+  }
+}
+
+::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_SANoises_fedtree_2eproto =
+    {{ATOMIC_VAR_INIT(::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase::kUninitialized), 0, 0, InitDefaultsscc_info_SANoises_fedtree_2eproto}, {}};
+
 static void InitDefaultsscc_info_Score_fedtree_2eproto() {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
 
@@ -356,7 +424,7 @@ static void InitDefaultsscc_info_SplitPoint_fedtree_2eproto() {
 ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_SplitPoint_fedtree_2eproto =
     {{ATOMIC_VAR_INIT(::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase::kUninitialized), 0, 0, InitDefaultsscc_info_SplitPoint_fedtree_2eproto}, {}};
 
-static ::PROTOBUF_NAMESPACE_ID::Metadata file_level_metadata_fedtree_2eproto[20];
+static ::PROTOBUF_NAMESPACE_ID::Metadata file_level_metadata_fedtree_2eproto[24];
 static constexpr ::PROTOBUF_NAMESPACE_ID::EnumDescriptor const** file_level_enum_descriptors_fedtree_2eproto = nullptr;
 static constexpr ::PROTOBUF_NAMESPACE_ID::ServiceDescriptor const** file_level_service_descriptors_fedtree_2eproto = nullptr;
 
@@ -567,6 +635,30 @@ const ::PROTOBUF_NAMESPACE_ID::uint32 TableStruct_fedtree_2eproto::offsets[] PRO
   ~0u,  // no _weak_field_map_
   PROTOBUF_FIELD_OFFSET(::fedtree::Ins2NodeIDBatch, iid_),
   PROTOBUF_FIELD_OFFSET(::fedtree::Ins2NodeIDBatch, nid_),
+  ~0u,  // no _has_bits_
+  PROTOBUF_FIELD_OFFSET(::fedtree::DHPublicKey, _internal_metadata_),
+  ~0u,  // no _extensions_
+  ~0u,  // no _oneof_case_
+  ~0u,  // no _weak_field_map_
+  PROTOBUF_FIELD_OFFSET(::fedtree::DHPublicKey, pk_),
+  ~0u,  // no _has_bits_
+  PROTOBUF_FIELD_OFFSET(::fedtree::DHPublicKeys, _internal_metadata_),
+  ~0u,  // no _extensions_
+  ~0u,  // no _oneof_case_
+  ~0u,  // no _weak_field_map_
+  PROTOBUF_FIELD_OFFSET(::fedtree::DHPublicKeys, pk_),
+  ~0u,  // no _has_bits_
+  PROTOBUF_FIELD_OFFSET(::fedtree::SANoise, _internal_metadata_),
+  ~0u,  // no _extensions_
+  ~0u,  // no _oneof_case_
+  ~0u,  // no _weak_field_map_
+  PROTOBUF_FIELD_OFFSET(::fedtree::SANoise, noise_),
+  ~0u,  // no _has_bits_
+  PROTOBUF_FIELD_OFFSET(::fedtree::SANoises, _internal_metadata_),
+  ~0u,  // no _extensions_
+  ~0u,  // no _oneof_case_
+  ~0u,  // no _weak_field_map_
+  PROTOBUF_FIELD_OFFSET(::fedtree::SANoises, noises_),
 };
 static const ::PROTOBUF_NAMESPACE_ID::internal::MigrationSchema schemas[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) = {
   { 0, -1, sizeof(::fedtree::FIDBatch)},
@@ -589,6 +681,10 @@ static const ::PROTOBUF_NAMESPACE_ID::internal::MigrationSchema schemas[] PROTOB
   { 170, -1, sizeof(::fedtree::NodeArray)},
   { 192, -1, sizeof(::fedtree::Ins2NodeID)},
   { 199, -1, sizeof(::fedtree::Ins2NodeIDBatch)},
+  { 206, -1, sizeof(::fedtree::DHPublicKey)},
+  { 212, -1, sizeof(::fedtree::DHPublicKeys)},
+  { 218, -1, sizeof(::fedtree::SANoise)},
+  { 224, -1, sizeof(::fedtree::SANoises)},
 };
 
 static ::PROTOBUF_NAMESPACE_ID::Message const * const file_default_instances[] = {
@@ -612,6 +708,10 @@ static ::PROTOBUF_NAMESPACE_ID::Message const * const file_default_instances[] =
   reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::fedtree::_NodeArray_default_instance_),
   reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::fedtree::_Ins2NodeID_default_instance_),
   reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::fedtree::_Ins2NodeIDBatch_default_instance_),
+  reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::fedtree::_DHPublicKey_default_instance_),
+  reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::fedtree::_DHPublicKeys_default_instance_),
+  reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::fedtree::_SANoise_default_instance_),
+  reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::fedtree::_SANoises_default_instance_),
 };
 
 const char descriptor_table_protodef_fedtree_2eproto[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) =
@@ -674,67 +774,78 @@ const char descriptor_table_protodef_fedtree_2eproto[] PROTOBUF_SECTION_VARIABLE
   "gh_pair_h\030\020 \003(\002B\002\020\001\022\027\n\013n_instances\030\021 \003(\005"
   "B\002\020\001\"&\n\nIns2NodeID\022\013\n\003iid\030\001 \001(\005\022\013\n\003nid\030\002"
   " \001(\005\"3\n\017Ins2NodeIDBatch\022\017\n\003iid\030\001 \003(\005B\002\020\001"
-  "\022\017\n\003nid\030\002 \003(\005B\002\020\0012\212\021\n\007FedTree\0228\n\026Trigger"
-  "UpdateGradients\022\014.fedtree.PID\032\016.fedtree."
-  "Ready\"\000\0222\n\020TriggerBuildInit\022\014.fedtree.PI"
-  "D\032\016.fedtree.Ready\"\000\0221\n\014GetGradients\022\014.fe"
-  "dtree.PID\032\017.fedtree.GHPair\"\0000\001\0227\n\017SendDa"
-  "tasetInfo\022\024.fedtree.DatasetInfo\032\014.fedtre"
-  "e.PID\"\000\0223\n\016SendHistograms\022\017.fedtree.GHPa"
-  "ir\032\014.fedtree.PID\"\000(\001\022-\n\013SendHistFid\022\014.fe"
-  "dtree.FID\032\014.fedtree.PID\"\000(\001\0222\n\020TriggerAg"
-  "gregate\022\014.fedtree.PID\032\016.fedtree.Ready\"\000\022"
-  "2\n\013GetBestInfo\022\014.fedtree.PID\032\021.fedtree.B"
-  "estInfo\"\0000\001\022)\n\010SendNode\022\r.fedtree.Node\032\014"
-  ".fedtree.PID\"\000\0227\n\016SendIns2NodeID\022\023.fedtr"
-  "ee.Ins2NodeID\032\014.fedtree.PID\"\000(\001\022+\n\010GetNo"
-  "des\022\014.fedtree.PID\032\r.fedtree.Node\"\0000\001\0226\n\r"
-  "GetIns2NodeID\022\014.fedtree.PID\032\023.fedtree.In"
-  "s2NodeID\"\0000\001\0221\n\017CheckIfContinue\022\014.fedtre"
-  "e.PID\032\016.fedtree.Ready\"\000\022.\n\014TriggerPrune\022"
-  "\014.fedtree.PID\032\016.fedtree.Ready\"\000\0223\n\021Trigg"
-  "erPrintScore\022\014.fedtree.PID\032\016.fedtree.Rea"
-  "dy\"\000\022.\n\tSendRange\022\017.fedtree.GHPair\032\014.fed"
-  "tree.PID\"\000(\001\022,\n\nTriggerCut\022\014.fedtree.PID"
-  "\032\016.fedtree.Ready\"\000\022-\n\010GetRange\022\014.fedtree"
-  ".PID\032\017.fedtree.GHPair\"\0000\001\022)\n\006SendGH\022\017.fe"
-  "dtree.GHPair\032\014.fedtree.PID\"\000\0225\n\023TriggerB"
-  "uildUsingGH\022\014.fedtree.PID\032\016.fedtree.Read"
-  "y\"\000\0221\n\017TriggerCalcTree\022\014.fedtree.PID\032\016.f"
-  "edtree.Ready\"\000\022*\n\013GetRootNode\022\014.fedtree."
-  "PID\032\r.fedtree.Node\0227\n\016GetSplitPoints\022\014.f"
-  "edtree.PID\032\023.fedtree.SplitPoint\"\0000\001\0222\n\020H"
-  "CheckIfContinue\022\014.fedtree.PID\032\016.fedtree."
-  "Ready\"\000\022/\n\013ScoreReduce\022\016.fedtree.Score\032\016"
-  ".fedtree.Score\"\000\0221\n\017TriggerHomoInit\022\014.fe"
-  "dtree.PID\032\016.fedtree.Ready\"\000\0220\n\013GetPailli"
-  "er\022\014.fedtree.PID\032\021.fedtree.Paillier\"\000\0229\n"
-  "\021SendHistogramsEnc\022\022.fedtree.GHPairEnc\032\014"
-  ".fedtree.PID\"\000(\001\0229\n\025SendBatchedHistogram"
-  "s\022\020.fedtree.GHArray\032\014.fedtree.PID\"\000\022:\n\024S"
-  "endHistogramBatches\022\020.fedtree.GHBatch\032\014."
-  "fedtree.PID\"\000(\001\0229\n\022SendHistFidBatches\022\021."
-  "fedtree.FIDBatch\032\014.fedtree.PID\"\000(\001\022B\n\024Ge"
-  "tIns2NodeIDBatches\022\014.fedtree.PID\032\030.fedtr"
-  "ee.Ins2NodeIDBatch\"\0000\001\022C\n\025SendIns2NodeID"
-  "Batches\022\030.fedtree.Ins2NodeIDBatch\032\014.fedt"
-  "ree.PID\"\000(\001\0228\n\022GetGradientBatches\022\014.fedt"
-  "ree.PID\032\020.fedtree.GHBatch\"\0000\001\022>\n\025GetGrad"
-  "ientBatchesEnc\022\014.fedtree.PID\032\023.fedtree.G"
-  "HEncBatch\"\0000\001\022/\n\013SendNodeEnc\022\020.fedtree.N"
-  "odeEnc\032\014.fedtree.PID\"\000\022/\n\tSendNodes\022\022.fe"
-  "dtree.NodeArray\032\014.fedtree.PID\"\000\0225\n\014SendN"
-  "odesEnc\022\025.fedtree.NodeEncArray\032\014.fedtree"
-  ".PID\"\000\022@\n\027SendHistogramBatchesEnc\022\023.fedt"
-  "ree.GHEncBatch\032\014.fedtree.PID\"\000(\001\022,\n\nStop"
-  "Server\022\014.fedtree.PID\032\016.fedtree.Score\"\000\022."
-  "\n\014BeginBarrier\022\014.fedtree.PID\032\016.fedtree.R"
-  "eady\"\000b\006proto3"
+  "\022\017\n\003nid\030\002 \003(\005B\002\020\001\"\031\n\013DHPublicKey\022\n\n\002pk\030\001"
+  " \001(\t\"\032\n\014DHPublicKeys\022\n\n\002pk\030\001 \003(\t\"\030\n\007SANo"
+  "ise\022\r\n\005noise\030\001 \001(\t\"\032\n\010SANoises\022\016\n\006noises"
+  "\030\001 \003(\t2\215\023\n\007FedTree\0228\n\026TriggerUpdateGradi"
+  "ents\022\014.fedtree.PID\032\016.fedtree.Ready\"\000\0222\n\020"
+  "TriggerBuildInit\022\014.fedtree.PID\032\016.fedtree"
+  ".Ready\"\000\0221\n\014GetGradients\022\014.fedtree.PID\032\017"
+  ".fedtree.GHPair\"\0000\001\0227\n\017SendDatasetInfo\022\024"
+  ".fedtree.DatasetInfo\032\014.fedtree.PID\"\000\0223\n\016"
+  "SendHistograms\022\017.fedtree.GHPair\032\014.fedtre"
+  "e.PID\"\000(\001\022-\n\013SendHistFid\022\014.fedtree.FID\032\014"
+  ".fedtree.PID\"\000(\001\0222\n\020TriggerAggregate\022\014.f"
+  "edtree.PID\032\016.fedtree.Ready\"\000\0222\n\013GetBestI"
+  "nfo\022\014.fedtree.PID\032\021.fedtree.BestInfo\"\0000\001"
+  "\022)\n\010SendNode\022\r.fedtree.Node\032\014.fedtree.PI"
+  "D\"\000\0227\n\016SendIns2NodeID\022\023.fedtree.Ins2Node"
+  "ID\032\014.fedtree.PID\"\000(\001\022+\n\010GetNodes\022\014.fedtr"
+  "ee.PID\032\r.fedtree.Node\"\0000\001\0226\n\rGetIns2Node"
+  "ID\022\014.fedtree.PID\032\023.fedtree.Ins2NodeID\"\0000"
+  "\001\0221\n\017CheckIfContinue\022\014.fedtree.PID\032\016.fed"
+  "tree.Ready\"\000\022.\n\014TriggerPrune\022\014.fedtree.P"
+  "ID\032\016.fedtree.Ready\"\000\0223\n\021TriggerPrintScor"
+  "e\022\014.fedtree.PID\032\016.fedtree.Ready\"\000\022.\n\tSen"
+  "dRange\022\017.fedtree.GHPair\032\014.fedtree.PID\"\000("
+  "\001\022,\n\nTriggerCut\022\014.fedtree.PID\032\016.fedtree."
+  "Ready\"\000\022-\n\010GetRange\022\014.fedtree.PID\032\017.fedt"
+  "ree.GHPair\"\0000\001\022)\n\006SendGH\022\017.fedtree.GHPai"
+  "r\032\014.fedtree.PID\"\000\0224\n\014SendDHPubKey\022\024.fedt"
+  "ree.DHPublicKey\032\014.fedtree.PID\"\000\0227\n\014GetDH"
+  "PubKeys\022\014.fedtree.PID\032\025.fedtree.DHPublic"
+  "Keys\"\0000\001\022/\n\nSendNoises\022\021.fedtree.SANoise"
+  "s\032\014.fedtree.PID\"\000\0220\n\tGetNoises\022\014.fedtree"
+  ".PID\032\021.fedtree.SANoises\"\0000\001\0225\n\023TriggerBu"
+  "ildUsingGH\022\014.fedtree.PID\032\016.fedtree.Ready"
+  "\"\000\0221\n\017TriggerCalcTree\022\014.fedtree.PID\032\016.fe"
+  "dtree.Ready\"\000\022*\n\013GetRootNode\022\014.fedtree.P"
+  "ID\032\r.fedtree.Node\0227\n\016GetSplitPoints\022\014.fe"
+  "dtree.PID\032\023.fedtree.SplitPoint\"\0000\001\0222\n\020HC"
+  "heckIfContinue\022\014.fedtree.PID\032\016.fedtree.R"
+  "eady\"\000\022/\n\013ScoreReduce\022\016.fedtree.Score\032\016."
+  "fedtree.Score\"\000\0221\n\017TriggerHomoInit\022\014.fed"
+  "tree.PID\032\016.fedtree.Ready\"\000\022/\n\rTriggerSAI"
+  "nit\022\014.fedtree.PID\032\016.fedtree.Ready\"\000\0220\n\013G"
+  "etPaillier\022\014.fedtree.PID\032\021.fedtree.Paill"
+  "ier\"\000\0229\n\021SendHistogramsEnc\022\022.fedtree.GHP"
+  "airEnc\032\014.fedtree.PID\"\000(\001\0229\n\025SendBatchedH"
+  "istograms\022\020.fedtree.GHArray\032\014.fedtree.PI"
+  "D\"\000\022:\n\024SendHistogramBatches\022\020.fedtree.GH"
+  "Batch\032\014.fedtree.PID\"\000(\001\0229\n\022SendHistFidBa"
+  "tches\022\021.fedtree.FIDBatch\032\014.fedtree.PID\"\000"
+  "(\001\022B\n\024GetIns2NodeIDBatches\022\014.fedtree.PID"
+  "\032\030.fedtree.Ins2NodeIDBatch\"\0000\001\022C\n\025SendIn"
+  "s2NodeIDBatches\022\030.fedtree.Ins2NodeIDBatc"
+  "h\032\014.fedtree.PID\"\000(\001\0228\n\022GetGradientBatche"
+  "s\022\014.fedtree.PID\032\020.fedtree.GHBatch\"\0000\001\022>\n"
+  "\025GetGradientBatchesEnc\022\014.fedtree.PID\032\023.f"
+  "edtree.GHEncBatch\"\0000\001\022/\n\013SendNodeEnc\022\020.f"
+  "edtree.NodeEnc\032\014.fedtree.PID\"\000\022/\n\tSendNo"
+  "des\022\022.fedtree.NodeArray\032\014.fedtree.PID\"\000\022"
+  "5\n\014SendNodesEnc\022\025.fedtree.NodeEncArray\032\014"
+  ".fedtree.PID\"\000\022@\n\027SendHistogramBatchesEn"
+  "c\022\023.fedtree.GHEncBatch\032\014.fedtree.PID\"\000(\001"
+  "\022,\n\nStopServer\022\014.fedtree.PID\032\016.fedtree.S"
+  "core\"\000\022.\n\014BeginBarrier\022\014.fedtree.PID\032\016.f"
+  "edtree.Ready\"\000b\006proto3"
   ;
 static const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable*const descriptor_table_fedtree_2eproto_deps[1] = {
 };
-static ::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase*const descriptor_table_fedtree_2eproto_sccs[20] = {
+static ::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase*const descriptor_table_fedtree_2eproto_sccs[24] = {
   &scc_info_BestInfo_fedtree_2eproto.base,
+  &scc_info_DHPublicKey_fedtree_2eproto.base,
+  &scc_info_DHPublicKeys_fedtree_2eproto.base,
   &scc_info_DatasetInfo_fedtree_2eproto.base,
   &scc_info_FID_fedtree_2eproto.base,
   &scc_info_FIDBatch_fedtree_2eproto.base,
@@ -752,15 +863,17 @@ static ::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase*const descriptor_table_fed
   &scc_info_PID_fedtree_2eproto.base,
   &scc_info_Paillier_fedtree_2eproto.base,
   &scc_info_Ready_fedtree_2eproto.base,
+  &scc_info_SANoise_fedtree_2eproto.base,
+  &scc_info_SANoises_fedtree_2eproto.base,
   &scc_info_Score_fedtree_2eproto.base,
   &scc_info_SplitPoint_fedtree_2eproto.base,
 };
 static ::PROTOBUF_NAMESPACE_ID::internal::once_flag descriptor_table_fedtree_2eproto_once;
 const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable descriptor_table_fedtree_2eproto = {
-  false, false, descriptor_table_protodef_fedtree_2eproto, "fedtree.proto", 4574,
-  &descriptor_table_fedtree_2eproto_once, descriptor_table_fedtree_2eproto_sccs, descriptor_table_fedtree_2eproto_deps, 20, 0,
+  false, false, descriptor_table_protodef_fedtree_2eproto, "fedtree.proto", 4942,
+  &descriptor_table_fedtree_2eproto_once, descriptor_table_fedtree_2eproto_sccs, descriptor_table_fedtree_2eproto_deps, 24, 0,
   schemas, file_default_instances, TableStruct_fedtree_2eproto::offsets,
-  file_level_metadata_fedtree_2eproto, 20, file_level_enum_descriptors_fedtree_2eproto, file_level_service_descriptors_fedtree_2eproto,
+  file_level_metadata_fedtree_2eproto, 24, file_level_enum_descriptors_fedtree_2eproto, file_level_service_descriptors_fedtree_2eproto,
 };
 
 // Force running AddDescriptors() at dynamic initialization time.
@@ -7298,6 +7411,828 @@ void Ins2NodeIDBatch::InternalSwap(Ins2NodeIDBatch* other) {
 }
 
 
+// ===================================================================
+
+class DHPublicKey::_Internal {
+ public:
+};
+
+DHPublicKey::DHPublicKey(::PROTOBUF_NAMESPACE_ID::Arena* arena)
+  : ::PROTOBUF_NAMESPACE_ID::Message(arena) {
+  SharedCtor();
+  RegisterArenaDtor(arena);
+  // @@protoc_insertion_point(arena_constructor:fedtree.DHPublicKey)
+}
+DHPublicKey::DHPublicKey(const DHPublicKey& from)
+  : ::PROTOBUF_NAMESPACE_ID::Message() {
+  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
+  pk_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+  if (!from._internal_pk().empty()) {
+    pk_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, from._internal_pk(), 
+      GetArena());
+  }
+  // @@protoc_insertion_point(copy_constructor:fedtree.DHPublicKey)
+}
+
+void DHPublicKey::SharedCtor() {
+  ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&scc_info_DHPublicKey_fedtree_2eproto.base);
+  pk_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+}
+
+DHPublicKey::~DHPublicKey() {
+  // @@protoc_insertion_point(destructor:fedtree.DHPublicKey)
+  SharedDtor();
+  _internal_metadata_.Delete<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
+}
+
+void DHPublicKey::SharedDtor() {
+  GOOGLE_DCHECK(GetArena() == nullptr);
+  pk_.DestroyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+}
+
+void DHPublicKey::ArenaDtor(void* object) {
+  DHPublicKey* _this = reinterpret_cast< DHPublicKey* >(object);
+  (void)_this;
+}
+void DHPublicKey::RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena*) {
+}
+void DHPublicKey::SetCachedSize(int size) const {
+  _cached_size_.Set(size);
+}
+const DHPublicKey& DHPublicKey::default_instance() {
+  ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&::scc_info_DHPublicKey_fedtree_2eproto.base);
+  return *internal_default_instance();
+}
+
+
+void DHPublicKey::Clear() {
+// @@protoc_insertion_point(message_clear_start:fedtree.DHPublicKey)
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void) cached_has_bits;
+
+  pk_.ClearToEmpty();
+  _internal_metadata_.Clear<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
+}
+
+const char* DHPublicKey::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) {
+#define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
+  while (!ctx->Done(&ptr)) {
+    ::PROTOBUF_NAMESPACE_ID::uint32 tag;
+    ptr = ::PROTOBUF_NAMESPACE_ID::internal::ReadTag(ptr, &tag);
+    CHK_(ptr);
+    switch (tag >> 3) {
+      // string pk = 1;
+      case 1:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 10)) {
+          auto str = _internal_mutable_pk();
+          ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParser(str, ptr, ctx);
+          CHK_(::PROTOBUF_NAMESPACE_ID::internal::VerifyUTF8(str, "fedtree.DHPublicKey.pk"));
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
+      default: {
+      handle_unusual:
+        if ((tag & 7) == 4 || tag == 0) {
+          ctx->SetLastTag(tag);
+          goto success;
+        }
+        ptr = UnknownFieldParse(tag,
+            _internal_metadata_.mutable_unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(),
+            ptr, ctx);
+        CHK_(ptr != nullptr);
+        continue;
+      }
+    }  // switch
+  }  // while
+success:
+  return ptr;
+failure:
+  ptr = nullptr;
+  goto success;
+#undef CHK_
+}
+
+::PROTOBUF_NAMESPACE_ID::uint8* DHPublicKey::_InternalSerialize(
+    ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
+  // @@protoc_insertion_point(serialize_to_array_start:fedtree.DHPublicKey)
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
+
+  // string pk = 1;
+  if (this->pk().size() > 0) {
+    ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::VerifyUtf8String(
+      this->_internal_pk().data(), static_cast<int>(this->_internal_pk().length()),
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::SERIALIZE,
+      "fedtree.DHPublicKey.pk");
+    target = stream->WriteStringMaybeAliased(
+        1, this->_internal_pk(), target);
+  }
+
+  if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormat::InternalSerializeUnknownFieldsToArray(
+        _internal_metadata_.unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(::PROTOBUF_NAMESPACE_ID::UnknownFieldSet::default_instance), target, stream);
+  }
+  // @@protoc_insertion_point(serialize_to_array_end:fedtree.DHPublicKey)
+  return target;
+}
+
+size_t DHPublicKey::ByteSizeLong() const {
+// @@protoc_insertion_point(message_byte_size_start:fedtree.DHPublicKey)
+  size_t total_size = 0;
+
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void) cached_has_bits;
+
+  // string pk = 1;
+  if (this->pk().size() > 0) {
+    total_size += 1 +
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::StringSize(
+        this->_internal_pk());
+  }
+
+  if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
+    return ::PROTOBUF_NAMESPACE_ID::internal::ComputeUnknownFieldsSize(
+        _internal_metadata_, total_size, &_cached_size_);
+  }
+  int cached_size = ::PROTOBUF_NAMESPACE_ID::internal::ToCachedSize(total_size);
+  SetCachedSize(cached_size);
+  return total_size;
+}
+
+void DHPublicKey::MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
+// @@protoc_insertion_point(generalized_merge_from_start:fedtree.DHPublicKey)
+  GOOGLE_DCHECK_NE(&from, this);
+  const DHPublicKey* source =
+      ::PROTOBUF_NAMESPACE_ID::DynamicCastToGenerated<DHPublicKey>(
+          &from);
+  if (source == nullptr) {
+  // @@protoc_insertion_point(generalized_merge_from_cast_fail:fedtree.DHPublicKey)
+    ::PROTOBUF_NAMESPACE_ID::internal::ReflectionOps::Merge(from, this);
+  } else {
+  // @@protoc_insertion_point(generalized_merge_from_cast_success:fedtree.DHPublicKey)
+    MergeFrom(*source);
+  }
+}
+
+void DHPublicKey::MergeFrom(const DHPublicKey& from) {
+// @@protoc_insertion_point(class_specific_merge_from_start:fedtree.DHPublicKey)
+  GOOGLE_DCHECK_NE(&from, this);
+  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
+
+  if (from.pk().size() > 0) {
+    _internal_set_pk(from._internal_pk());
+  }
+}
+
+void DHPublicKey::CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
+// @@protoc_insertion_point(generalized_copy_from_start:fedtree.DHPublicKey)
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+void DHPublicKey::CopyFrom(const DHPublicKey& from) {
+// @@protoc_insertion_point(class_specific_copy_from_start:fedtree.DHPublicKey)
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+bool DHPublicKey::IsInitialized() const {
+  return true;
+}
+
+void DHPublicKey::InternalSwap(DHPublicKey* other) {
+  using std::swap;
+  _internal_metadata_.Swap<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(&other->_internal_metadata_);
+  pk_.Swap(&other->pk_, &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+}
+
+::PROTOBUF_NAMESPACE_ID::Metadata DHPublicKey::GetMetadata() const {
+  return GetMetadataStatic();
+}
+
+
+// ===================================================================
+
+class DHPublicKeys::_Internal {
+ public:
+};
+
+DHPublicKeys::DHPublicKeys(::PROTOBUF_NAMESPACE_ID::Arena* arena)
+  : ::PROTOBUF_NAMESPACE_ID::Message(arena),
+  pk_(arena) {
+  SharedCtor();
+  RegisterArenaDtor(arena);
+  // @@protoc_insertion_point(arena_constructor:fedtree.DHPublicKeys)
+}
+DHPublicKeys::DHPublicKeys(const DHPublicKeys& from)
+  : ::PROTOBUF_NAMESPACE_ID::Message(),
+      pk_(from.pk_) {
+  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
+  // @@protoc_insertion_point(copy_constructor:fedtree.DHPublicKeys)
+}
+
+void DHPublicKeys::SharedCtor() {
+  ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&scc_info_DHPublicKeys_fedtree_2eproto.base);
+}
+
+DHPublicKeys::~DHPublicKeys() {
+  // @@protoc_insertion_point(destructor:fedtree.DHPublicKeys)
+  SharedDtor();
+  _internal_metadata_.Delete<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
+}
+
+void DHPublicKeys::SharedDtor() {
+  GOOGLE_DCHECK(GetArena() == nullptr);
+}
+
+void DHPublicKeys::ArenaDtor(void* object) {
+  DHPublicKeys* _this = reinterpret_cast< DHPublicKeys* >(object);
+  (void)_this;
+}
+void DHPublicKeys::RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena*) {
+}
+void DHPublicKeys::SetCachedSize(int size) const {
+  _cached_size_.Set(size);
+}
+const DHPublicKeys& DHPublicKeys::default_instance() {
+  ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&::scc_info_DHPublicKeys_fedtree_2eproto.base);
+  return *internal_default_instance();
+}
+
+
+void DHPublicKeys::Clear() {
+// @@protoc_insertion_point(message_clear_start:fedtree.DHPublicKeys)
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void) cached_has_bits;
+
+  pk_.Clear();
+  _internal_metadata_.Clear<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
+}
+
+const char* DHPublicKeys::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) {
+#define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
+  while (!ctx->Done(&ptr)) {
+    ::PROTOBUF_NAMESPACE_ID::uint32 tag;
+    ptr = ::PROTOBUF_NAMESPACE_ID::internal::ReadTag(ptr, &tag);
+    CHK_(ptr);
+    switch (tag >> 3) {
+      // repeated string pk = 1;
+      case 1:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 10)) {
+          ptr -= 1;
+          do {
+            ptr += 1;
+            auto str = _internal_add_pk();
+            ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParser(str, ptr, ctx);
+            CHK_(::PROTOBUF_NAMESPACE_ID::internal::VerifyUTF8(str, "fedtree.DHPublicKeys.pk"));
+            CHK_(ptr);
+            if (!ctx->DataAvailable(ptr)) break;
+          } while (::PROTOBUF_NAMESPACE_ID::internal::ExpectTag<10>(ptr));
+        } else goto handle_unusual;
+        continue;
+      default: {
+      handle_unusual:
+        if ((tag & 7) == 4 || tag == 0) {
+          ctx->SetLastTag(tag);
+          goto success;
+        }
+        ptr = UnknownFieldParse(tag,
+            _internal_metadata_.mutable_unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(),
+            ptr, ctx);
+        CHK_(ptr != nullptr);
+        continue;
+      }
+    }  // switch
+  }  // while
+success:
+  return ptr;
+failure:
+  ptr = nullptr;
+  goto success;
+#undef CHK_
+}
+
+::PROTOBUF_NAMESPACE_ID::uint8* DHPublicKeys::_InternalSerialize(
+    ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
+  // @@protoc_insertion_point(serialize_to_array_start:fedtree.DHPublicKeys)
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
+
+  // repeated string pk = 1;
+  for (int i = 0, n = this->_internal_pk_size(); i < n; i++) {
+    const auto& s = this->_internal_pk(i);
+    ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::VerifyUtf8String(
+      s.data(), static_cast<int>(s.length()),
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::SERIALIZE,
+      "fedtree.DHPublicKeys.pk");
+    target = stream->WriteString(1, s, target);
+  }
+
+  if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormat::InternalSerializeUnknownFieldsToArray(
+        _internal_metadata_.unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(::PROTOBUF_NAMESPACE_ID::UnknownFieldSet::default_instance), target, stream);
+  }
+  // @@protoc_insertion_point(serialize_to_array_end:fedtree.DHPublicKeys)
+  return target;
+}
+
+size_t DHPublicKeys::ByteSizeLong() const {
+// @@protoc_insertion_point(message_byte_size_start:fedtree.DHPublicKeys)
+  size_t total_size = 0;
+
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void) cached_has_bits;
+
+  // repeated string pk = 1;
+  total_size += 1 *
+      ::PROTOBUF_NAMESPACE_ID::internal::FromIntSize(pk_.size());
+  for (int i = 0, n = pk_.size(); i < n; i++) {
+    total_size += ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::StringSize(
+      pk_.Get(i));
+  }
+
+  if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
+    return ::PROTOBUF_NAMESPACE_ID::internal::ComputeUnknownFieldsSize(
+        _internal_metadata_, total_size, &_cached_size_);
+  }
+  int cached_size = ::PROTOBUF_NAMESPACE_ID::internal::ToCachedSize(total_size);
+  SetCachedSize(cached_size);
+  return total_size;
+}
+
+void DHPublicKeys::MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
+// @@protoc_insertion_point(generalized_merge_from_start:fedtree.DHPublicKeys)
+  GOOGLE_DCHECK_NE(&from, this);
+  const DHPublicKeys* source =
+      ::PROTOBUF_NAMESPACE_ID::DynamicCastToGenerated<DHPublicKeys>(
+          &from);
+  if (source == nullptr) {
+  // @@protoc_insertion_point(generalized_merge_from_cast_fail:fedtree.DHPublicKeys)
+    ::PROTOBUF_NAMESPACE_ID::internal::ReflectionOps::Merge(from, this);
+  } else {
+  // @@protoc_insertion_point(generalized_merge_from_cast_success:fedtree.DHPublicKeys)
+    MergeFrom(*source);
+  }
+}
+
+void DHPublicKeys::MergeFrom(const DHPublicKeys& from) {
+// @@protoc_insertion_point(class_specific_merge_from_start:fedtree.DHPublicKeys)
+  GOOGLE_DCHECK_NE(&from, this);
+  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
+
+  pk_.MergeFrom(from.pk_);
+}
+
+void DHPublicKeys::CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
+// @@protoc_insertion_point(generalized_copy_from_start:fedtree.DHPublicKeys)
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+void DHPublicKeys::CopyFrom(const DHPublicKeys& from) {
+// @@protoc_insertion_point(class_specific_copy_from_start:fedtree.DHPublicKeys)
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+bool DHPublicKeys::IsInitialized() const {
+  return true;
+}
+
+void DHPublicKeys::InternalSwap(DHPublicKeys* other) {
+  using std::swap;
+  _internal_metadata_.Swap<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(&other->_internal_metadata_);
+  pk_.InternalSwap(&other->pk_);
+}
+
+::PROTOBUF_NAMESPACE_ID::Metadata DHPublicKeys::GetMetadata() const {
+  return GetMetadataStatic();
+}
+
+
+// ===================================================================
+
+class SANoise::_Internal {
+ public:
+};
+
+SANoise::SANoise(::PROTOBUF_NAMESPACE_ID::Arena* arena)
+  : ::PROTOBUF_NAMESPACE_ID::Message(arena) {
+  SharedCtor();
+  RegisterArenaDtor(arena);
+  // @@protoc_insertion_point(arena_constructor:fedtree.SANoise)
+}
+SANoise::SANoise(const SANoise& from)
+  : ::PROTOBUF_NAMESPACE_ID::Message() {
+  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
+  noise_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+  if (!from._internal_noise().empty()) {
+    noise_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, from._internal_noise(), 
+      GetArena());
+  }
+  // @@protoc_insertion_point(copy_constructor:fedtree.SANoise)
+}
+
+void SANoise::SharedCtor() {
+  ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&scc_info_SANoise_fedtree_2eproto.base);
+  noise_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+}
+
+SANoise::~SANoise() {
+  // @@protoc_insertion_point(destructor:fedtree.SANoise)
+  SharedDtor();
+  _internal_metadata_.Delete<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
+}
+
+void SANoise::SharedDtor() {
+  GOOGLE_DCHECK(GetArena() == nullptr);
+  noise_.DestroyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+}
+
+void SANoise::ArenaDtor(void* object) {
+  SANoise* _this = reinterpret_cast< SANoise* >(object);
+  (void)_this;
+}
+void SANoise::RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena*) {
+}
+void SANoise::SetCachedSize(int size) const {
+  _cached_size_.Set(size);
+}
+const SANoise& SANoise::default_instance() {
+  ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&::scc_info_SANoise_fedtree_2eproto.base);
+  return *internal_default_instance();
+}
+
+
+void SANoise::Clear() {
+// @@protoc_insertion_point(message_clear_start:fedtree.SANoise)
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void) cached_has_bits;
+
+  noise_.ClearToEmpty();
+  _internal_metadata_.Clear<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
+}
+
+const char* SANoise::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) {
+#define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
+  while (!ctx->Done(&ptr)) {
+    ::PROTOBUF_NAMESPACE_ID::uint32 tag;
+    ptr = ::PROTOBUF_NAMESPACE_ID::internal::ReadTag(ptr, &tag);
+    CHK_(ptr);
+    switch (tag >> 3) {
+      // string noise = 1;
+      case 1:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 10)) {
+          auto str = _internal_mutable_noise();
+          ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParser(str, ptr, ctx);
+          CHK_(::PROTOBUF_NAMESPACE_ID::internal::VerifyUTF8(str, "fedtree.SANoise.noise"));
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
+      default: {
+      handle_unusual:
+        if ((tag & 7) == 4 || tag == 0) {
+          ctx->SetLastTag(tag);
+          goto success;
+        }
+        ptr = UnknownFieldParse(tag,
+            _internal_metadata_.mutable_unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(),
+            ptr, ctx);
+        CHK_(ptr != nullptr);
+        continue;
+      }
+    }  // switch
+  }  // while
+success:
+  return ptr;
+failure:
+  ptr = nullptr;
+  goto success;
+#undef CHK_
+}
+
+::PROTOBUF_NAMESPACE_ID::uint8* SANoise::_InternalSerialize(
+    ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
+  // @@protoc_insertion_point(serialize_to_array_start:fedtree.SANoise)
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
+
+  // string noise = 1;
+  if (this->noise().size() > 0) {
+    ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::VerifyUtf8String(
+      this->_internal_noise().data(), static_cast<int>(this->_internal_noise().length()),
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::SERIALIZE,
+      "fedtree.SANoise.noise");
+    target = stream->WriteStringMaybeAliased(
+        1, this->_internal_noise(), target);
+  }
+
+  if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormat::InternalSerializeUnknownFieldsToArray(
+        _internal_metadata_.unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(::PROTOBUF_NAMESPACE_ID::UnknownFieldSet::default_instance), target, stream);
+  }
+  // @@protoc_insertion_point(serialize_to_array_end:fedtree.SANoise)
+  return target;
+}
+
+size_t SANoise::ByteSizeLong() const {
+// @@protoc_insertion_point(message_byte_size_start:fedtree.SANoise)
+  size_t total_size = 0;
+
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void) cached_has_bits;
+
+  // string noise = 1;
+  if (this->noise().size() > 0) {
+    total_size += 1 +
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::StringSize(
+        this->_internal_noise());
+  }
+
+  if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
+    return ::PROTOBUF_NAMESPACE_ID::internal::ComputeUnknownFieldsSize(
+        _internal_metadata_, total_size, &_cached_size_);
+  }
+  int cached_size = ::PROTOBUF_NAMESPACE_ID::internal::ToCachedSize(total_size);
+  SetCachedSize(cached_size);
+  return total_size;
+}
+
+void SANoise::MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
+// @@protoc_insertion_point(generalized_merge_from_start:fedtree.SANoise)
+  GOOGLE_DCHECK_NE(&from, this);
+  const SANoise* source =
+      ::PROTOBUF_NAMESPACE_ID::DynamicCastToGenerated<SANoise>(
+          &from);
+  if (source == nullptr) {
+  // @@protoc_insertion_point(generalized_merge_from_cast_fail:fedtree.SANoise)
+    ::PROTOBUF_NAMESPACE_ID::internal::ReflectionOps::Merge(from, this);
+  } else {
+  // @@protoc_insertion_point(generalized_merge_from_cast_success:fedtree.SANoise)
+    MergeFrom(*source);
+  }
+}
+
+void SANoise::MergeFrom(const SANoise& from) {
+// @@protoc_insertion_point(class_specific_merge_from_start:fedtree.SANoise)
+  GOOGLE_DCHECK_NE(&from, this);
+  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
+
+  if (from.noise().size() > 0) {
+    _internal_set_noise(from._internal_noise());
+  }
+}
+
+void SANoise::CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
+// @@protoc_insertion_point(generalized_copy_from_start:fedtree.SANoise)
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+void SANoise::CopyFrom(const SANoise& from) {
+// @@protoc_insertion_point(class_specific_copy_from_start:fedtree.SANoise)
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+bool SANoise::IsInitialized() const {
+  return true;
+}
+
+void SANoise::InternalSwap(SANoise* other) {
+  using std::swap;
+  _internal_metadata_.Swap<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(&other->_internal_metadata_);
+  noise_.Swap(&other->noise_, &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+}
+
+::PROTOBUF_NAMESPACE_ID::Metadata SANoise::GetMetadata() const {
+  return GetMetadataStatic();
+}
+
+
+// ===================================================================
+
+class SANoises::_Internal {
+ public:
+};
+
+SANoises::SANoises(::PROTOBUF_NAMESPACE_ID::Arena* arena)
+  : ::PROTOBUF_NAMESPACE_ID::Message(arena),
+  noises_(arena) {
+  SharedCtor();
+  RegisterArenaDtor(arena);
+  // @@protoc_insertion_point(arena_constructor:fedtree.SANoises)
+}
+SANoises::SANoises(const SANoises& from)
+  : ::PROTOBUF_NAMESPACE_ID::Message(),
+      noises_(from.noises_) {
+  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
+  // @@protoc_insertion_point(copy_constructor:fedtree.SANoises)
+}
+
+void SANoises::SharedCtor() {
+  ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&scc_info_SANoises_fedtree_2eproto.base);
+}
+
+SANoises::~SANoises() {
+  // @@protoc_insertion_point(destructor:fedtree.SANoises)
+  SharedDtor();
+  _internal_metadata_.Delete<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
+}
+
+void SANoises::SharedDtor() {
+  GOOGLE_DCHECK(GetArena() == nullptr);
+}
+
+void SANoises::ArenaDtor(void* object) {
+  SANoises* _this = reinterpret_cast< SANoises* >(object);
+  (void)_this;
+}
+void SANoises::RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena*) {
+}
+void SANoises::SetCachedSize(int size) const {
+  _cached_size_.Set(size);
+}
+const SANoises& SANoises::default_instance() {
+  ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&::scc_info_SANoises_fedtree_2eproto.base);
+  return *internal_default_instance();
+}
+
+
+void SANoises::Clear() {
+// @@protoc_insertion_point(message_clear_start:fedtree.SANoises)
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void) cached_has_bits;
+
+  noises_.Clear();
+  _internal_metadata_.Clear<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
+}
+
+const char* SANoises::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) {
+#define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
+  while (!ctx->Done(&ptr)) {
+    ::PROTOBUF_NAMESPACE_ID::uint32 tag;
+    ptr = ::PROTOBUF_NAMESPACE_ID::internal::ReadTag(ptr, &tag);
+    CHK_(ptr);
+    switch (tag >> 3) {
+      // repeated string noises = 1;
+      case 1:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 10)) {
+          ptr -= 1;
+          do {
+            ptr += 1;
+            auto str = _internal_add_noises();
+            ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParser(str, ptr, ctx);
+            CHK_(::PROTOBUF_NAMESPACE_ID::internal::VerifyUTF8(str, "fedtree.SANoises.noises"));
+            CHK_(ptr);
+            if (!ctx->DataAvailable(ptr)) break;
+          } while (::PROTOBUF_NAMESPACE_ID::internal::ExpectTag<10>(ptr));
+        } else goto handle_unusual;
+        continue;
+      default: {
+      handle_unusual:
+        if ((tag & 7) == 4 || tag == 0) {
+          ctx->SetLastTag(tag);
+          goto success;
+        }
+        ptr = UnknownFieldParse(tag,
+            _internal_metadata_.mutable_unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(),
+            ptr, ctx);
+        CHK_(ptr != nullptr);
+        continue;
+      }
+    }  // switch
+  }  // while
+success:
+  return ptr;
+failure:
+  ptr = nullptr;
+  goto success;
+#undef CHK_
+}
+
+::PROTOBUF_NAMESPACE_ID::uint8* SANoises::_InternalSerialize(
+    ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
+  // @@protoc_insertion_point(serialize_to_array_start:fedtree.SANoises)
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
+
+  // repeated string noises = 1;
+  for (int i = 0, n = this->_internal_noises_size(); i < n; i++) {
+    const auto& s = this->_internal_noises(i);
+    ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::VerifyUtf8String(
+      s.data(), static_cast<int>(s.length()),
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::SERIALIZE,
+      "fedtree.SANoises.noises");
+    target = stream->WriteString(1, s, target);
+  }
+
+  if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormat::InternalSerializeUnknownFieldsToArray(
+        _internal_metadata_.unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(::PROTOBUF_NAMESPACE_ID::UnknownFieldSet::default_instance), target, stream);
+  }
+  // @@protoc_insertion_point(serialize_to_array_end:fedtree.SANoises)
+  return target;
+}
+
+size_t SANoises::ByteSizeLong() const {
+// @@protoc_insertion_point(message_byte_size_start:fedtree.SANoises)
+  size_t total_size = 0;
+
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void) cached_has_bits;
+
+  // repeated string noises = 1;
+  total_size += 1 *
+      ::PROTOBUF_NAMESPACE_ID::internal::FromIntSize(noises_.size());
+  for (int i = 0, n = noises_.size(); i < n; i++) {
+    total_size += ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::StringSize(
+      noises_.Get(i));
+  }
+
+  if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
+    return ::PROTOBUF_NAMESPACE_ID::internal::ComputeUnknownFieldsSize(
+        _internal_metadata_, total_size, &_cached_size_);
+  }
+  int cached_size = ::PROTOBUF_NAMESPACE_ID::internal::ToCachedSize(total_size);
+  SetCachedSize(cached_size);
+  return total_size;
+}
+
+void SANoises::MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
+// @@protoc_insertion_point(generalized_merge_from_start:fedtree.SANoises)
+  GOOGLE_DCHECK_NE(&from, this);
+  const SANoises* source =
+      ::PROTOBUF_NAMESPACE_ID::DynamicCastToGenerated<SANoises>(
+          &from);
+  if (source == nullptr) {
+  // @@protoc_insertion_point(generalized_merge_from_cast_fail:fedtree.SANoises)
+    ::PROTOBUF_NAMESPACE_ID::internal::ReflectionOps::Merge(from, this);
+  } else {
+  // @@protoc_insertion_point(generalized_merge_from_cast_success:fedtree.SANoises)
+    MergeFrom(*source);
+  }
+}
+
+void SANoises::MergeFrom(const SANoises& from) {
+// @@protoc_insertion_point(class_specific_merge_from_start:fedtree.SANoises)
+  GOOGLE_DCHECK_NE(&from, this);
+  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
+
+  noises_.MergeFrom(from.noises_);
+}
+
+void SANoises::CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
+// @@protoc_insertion_point(generalized_copy_from_start:fedtree.SANoises)
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+void SANoises::CopyFrom(const SANoises& from) {
+// @@protoc_insertion_point(class_specific_copy_from_start:fedtree.SANoises)
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+bool SANoises::IsInitialized() const {
+  return true;
+}
+
+void SANoises::InternalSwap(SANoises* other) {
+  using std::swap;
+  _internal_metadata_.Swap<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(&other->_internal_metadata_);
+  noises_.InternalSwap(&other->noises_);
+}
+
+::PROTOBUF_NAMESPACE_ID::Metadata SANoises::GetMetadata() const {
+  return GetMetadataStatic();
+}
+
+
 // @@protoc_insertion_point(namespace_scope)
 }  // namespace fedtree
 PROTOBUF_NAMESPACE_OPEN
@@ -7360,6 +8295,18 @@ template<> PROTOBUF_NOINLINE ::fedtree::Ins2NodeID* Arena::CreateMaybeMessage< :
 }
 template<> PROTOBUF_NOINLINE ::fedtree::Ins2NodeIDBatch* Arena::CreateMaybeMessage< ::fedtree::Ins2NodeIDBatch >(Arena* arena) {
   return Arena::CreateMessageInternal< ::fedtree::Ins2NodeIDBatch >(arena);
+}
+template<> PROTOBUF_NOINLINE ::fedtree::DHPublicKey* Arena::CreateMaybeMessage< ::fedtree::DHPublicKey >(Arena* arena) {
+  return Arena::CreateMessageInternal< ::fedtree::DHPublicKey >(arena);
+}
+template<> PROTOBUF_NOINLINE ::fedtree::DHPublicKeys* Arena::CreateMaybeMessage< ::fedtree::DHPublicKeys >(Arena* arena) {
+  return Arena::CreateMessageInternal< ::fedtree::DHPublicKeys >(arena);
+}
+template<> PROTOBUF_NOINLINE ::fedtree::SANoise* Arena::CreateMaybeMessage< ::fedtree::SANoise >(Arena* arena) {
+  return Arena::CreateMessageInternal< ::fedtree::SANoise >(arena);
+}
+template<> PROTOBUF_NOINLINE ::fedtree::SANoises* Arena::CreateMaybeMessage< ::fedtree::SANoises >(Arena* arena) {
+  return Arena::CreateMessageInternal< ::fedtree::SANoises >(arena);
 }
 PROTOBUF_NAMESPACE_CLOSE
 

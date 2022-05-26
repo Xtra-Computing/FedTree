@@ -32,6 +32,10 @@ service FedTree {
   rpc TriggerCut(PID) returns (Ready) {}
   rpc GetRange(PID) returns(stream GHPair) {}
   rpc SendGH(GHPair) returns (PID) {}
+  rpc SendDHPubKey(DHPublicKey) returns (PID) {}
+  rpc GetDHPubKeys (PID) returns (stream DHPublicKeys) {}
+  rpc SendNoises(SANoises) returns (PID) {}
+  rpc GetNoises (PID) returns (stream SANoises) {}
   // TODO sendGHEncrypted 
   rpc TriggerBuildUsingGH(PID) returns (Ready) {}
   rpc TriggerCalcTree(PID) returns (Ready) {}
@@ -40,7 +44,8 @@ service FedTree {
   rpc HCheckIfContinue(PID) returns (Ready) {}
   rpc ScoreReduce(Score) returns (Score) {}
 
-  rpc TriggerHomoInit(PID) returns (Ready) {} 
+  rpc TriggerHomoInit(PID) returns (Ready) {}
+  rpc TriggerSAInit(PID) returns (Ready) {}
   rpc GetPaillier(PID) returns (Paillier) {}
   
   rpc SendHistogramsEnc(stream GHPairEnc) returns(PID) {}
@@ -228,4 +233,20 @@ message Ins2NodeID {
 message Ins2NodeIDBatch {
   repeated int32 iid = 1 [packed=true];
   repeated int32 nid = 2 [packed=true];
+}
+
+message DHPublicKey{
+  string pk = 1;
+}
+
+message DHPublicKeys{
+  repeated string pk = 1;
+}
+
+
+message SANoise{
+  string noise = 1;
+}
+message SANoises{
+  repeated string noises = 1;
 }

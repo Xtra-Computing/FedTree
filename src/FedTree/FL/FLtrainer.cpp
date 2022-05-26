@@ -35,9 +35,9 @@ void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FL
     }
     else if(params.privacy_tech == "sa"){
         LOG(INFO)<<"Start SA init";
-        server.dh.primegen();
+//        server.dh.primegen();
         for(int i = 0; i < n_parties; i++){
-            parties[i].dh = server.dh;
+//            parties[i].dh = server.dh;
             parties[i].dh.generate_public_key();
         }
         for(int i = 0; i < n_parties; i++){
