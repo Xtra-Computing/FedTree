@@ -33,6 +33,25 @@ void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FL
         }
         LOG(INFO) << "End of HE init";
     }
+    else if(params.privacy_tech == "sa"){
+        LOG(INFO)<<"Start SA init";
+        server.dh.primegen();
+        for(int i = 0; i < n_parties; i++){
+            parties[i].dh = server.dh;
+            parties[i].dh.generate_public_key();
+        }
+        for(int i = 0; i < n_parties; i++){
+            parties[i].dh.pid = i;
+            parties[i].dh.init_variables(n_parties);
+            for(int j = 0; j < n_parties; j++) {
+                if(j != i) {
+                    parties[i].dh.other_public_keys[j] = parties[j].dh.public_key;
+                }
+            }
+            parties[i].dh.compute_shared_keys();
+        }
+        LOG(INFO)<<"End of SA init";
+    }
     DifferentialPrivacy dp_manager = DifferentialPrivacy();
     if (params.privacy_tech == "dp"){
         LOG(INFO) << "Start DP init";
@@ -235,6 +254,18 @@ void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FL
 
                 // Each Party Compute Histogram
                 // each party compute hist, send hist to server or party
+                if (params.privacy_tech == "sa"){
+                    for(int i = 0; i < n_parties; i++) {
+                        parties[i].dh.generate_noises();
+                    }
+                    for(int i = 0; i < n_parties; i++) {
+                        for(int j = 0; j < n_parties; j++) {
+                            if(j!=i)
+                                parties[i].dh.received_encrypted_noises[j] = parties[j].dh.encrypted_noises[i];
+                        }
+                        parties[i].dh.decrypt_noises();
+                    }
+                }
                 #pragma omp parallel for
                 for (int j = 0; j < n_parties; j++) {
                     int n_column = parties[j].dataset.n_features();
@@ -267,11 +298,13 @@ void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FL
                         auto t1 = timer.now();
                         parties[j].encrypt_histogram(hist);
                         parties[j].encrypt_histogram(missing_gh);
-
-//                        for(int i = 0; i < )
                         auto t2 = timer.now();
                         std::chrono::duration<float> t3 = t2 - t1;
                         encryption_time[j] += t3.count();
+                    }
+                    else if(params.privacy_tech == "sa"){
+                        parties[j].add_noise_to_histogram(hist);
+                        parties[j].add_noise_to_histogram(missing_gh);
                     }
 
                     aggregator.booster.fbuilder->append_hist(hist, missing_gh, n_partition, n_splits, j);

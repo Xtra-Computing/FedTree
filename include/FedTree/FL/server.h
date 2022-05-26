@@ -49,6 +49,7 @@ public:
 #else
     Paillier paillier;
 #endif
+    DiffieHellman dh;
 
     void send_key(Party &party) {
         party.paillier = paillier;

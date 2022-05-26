@@ -76,7 +76,8 @@ void Parser::parse_param(FLParam &fl_param, int argc, char **argv) {
                 fl_param.n_parties = atoi(val);
             else if (str_name.compare("mode") == 0)
                 fl_param.mode = val;
-            else if ((str_name.compare("privacy") == 0) || (str_name.compare("privacy_tech") == 0) || (str_name.compare("privacy_method") == 0))
+            else if ((str_name.compare("privacy") == 0) || (str_name.compare("privacy_tech") == 0) ||
+                    (str_name.compare("privacy_method") == 0) || (str_name.compare("security_tech") == 0))
                 fl_param.privacy_tech = val;
             else if (str_name.compare("partition") == 0)
                 fl_param.partition = atoi(val);

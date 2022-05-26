@@ -16,7 +16,7 @@
 #ifdef USE_CUDA
 #include "FedTree/Encryption/paillier_gpu.h"
 #endif
-
+#include "FedTree/Encryption/diffie_hellman.h"
 
 
 class Party {
@@ -139,6 +139,28 @@ public:
 #endif
     }
 
+    void add_noise_to_histogram(SyncArray<GHPair> &hist){
+        auto hist_data = hist.host_data();
+        float sum_generated_noises = 0;
+        float sum_decrypted_noises = 0;
+        for(int j = 0; j < dh.generated_noises.size(); j++) {
+            if(j!=pid) {
+                sum_generated_noises += dh.generated_noises[j];
+            }
+        }
+        for(int j = 0; j < dh.decrypted_noises.size(); j++) {
+            if(j!=pid) {
+                sum_decrypted_noises += dh.decrypted_noises[j];
+            }
+        }
+        float delta_noise = sum_generated_noises - sum_decrypted_noises;
+        #pragma omp parallel for
+        for(int i = 0; i < hist.size(); i++){
+            hist_data[i].g += delta_noise;
+            hist_data[i].h += delta_noise;
+        }
+    }
+
 //    void encrypt_gradient(GHPair &ghpair) {
 //        ghpair.homo_encrypt(paillier.paillier_cpu);
 //    }
@@ -159,6 +181,7 @@ public:
 #else
     Paillier paillier;
 #endif
+    DiffieHellman dh;
     Booster booster;
     GBDT gbdt;
     DataSet dataset;

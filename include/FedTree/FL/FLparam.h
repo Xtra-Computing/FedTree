@@ -18,7 +18,7 @@ public:
     int n_verti; //the number of vertical partitioning subsets in hybrid partition.
     string mode; // "horizontal", "vertical", "hybrid", or "centralized"
     string partition_mode; // "horizontal", "vertical" or "hybrid"
-    string privacy_tech; //"none" or "he" or "dp"
+    string privacy_tech; //"none" or "he" (homomorphic encryption) or "dp" (differential privacy) or "sa" (secure aggregation)
     string propose_split; // "server" or "client"
     string merge_histogram; // "server" or "client"
     float variance; // variance of dp noise if privacy_tech=="dp"
