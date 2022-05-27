@@ -84,7 +84,7 @@ void DataSet::group_label_without_reorder() {
             max_y = y[i];
     }
     label.clear();
-    for(int i = 0; i < max_y; i++){
+    for(int i = 0; i <= max_y; i++){
         label.push_back(i);
         label_map[i] = i;
     }
@@ -488,7 +488,7 @@ void DataSet::load_from_csv(string file_name, FLParam &param) {
                         line_begin = line_end;
                         continue;
                     }
-//                    std::cout<<"label:"<<label<<std::endl;
+                    //std::cout<<"label:"<<label<<std::endl;
                     // parse instance label
                     y_[tid].push_back(label);
                     p = q;
@@ -555,7 +555,6 @@ void DataSet::load_from_csv(string file_name, FLParam &param) {
             group_label_without_reorder();
         }
         is_classification = true;
-        param.gbdt_param.num_class = label.size();
     }
 
     auto t_end = timer.now();
