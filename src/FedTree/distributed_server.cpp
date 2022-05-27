@@ -1510,8 +1510,7 @@ int main(int argc, char **argv) {
     if (!model_param.profiling) {
         el::Loggers::reconfigureAllLoggers(el::ConfigurationType::PerformanceTracking, "false");
     }
-    DataSet dataset;
-    dataset.load_from_file(model_param.path, fl_param);
+
 
     GBDTParam &param = fl_param.gbdt_param;
 
@@ -1519,6 +1518,8 @@ int main(int argc, char **argv) {
     
     int n_parties = fl_param.n_parties;
     if (fl_param.mode == "vertical") {
+        DataSet dataset;
+        dataset.load_from_file(model_param.path, fl_param);
         server.VerticalInitVectors(n_parties);
         server.distributed_vertical_init(fl_param, dataset.n_instances(), dataset.y, dataset.label);
     }
