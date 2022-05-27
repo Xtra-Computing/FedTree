@@ -625,8 +625,6 @@ void DistributedParty::GetDHPubKey() {
     for(int i = 0; i < pk.pk_size(); i++) {
         dh.other_public_keys[i] = NTL::to_ZZ(pk.pk(i).c_str());
     }
-
-    std::cout<<"pid:"<<pid<<std::endl;
     grpc::Status status = reader->Finish();
     auto t_end = timer.now();
     std::chrono::duration<float> used_time = t_end - t_start;
@@ -1661,7 +1659,8 @@ int main(int argc, char **argv) {
         LOG(INFO)<<"training end";
         train_time = used_time.count();
         LOG(INFO) << "train time: " << train_time<<"s";
-        party.gbdt.predict_score(fl_param.gbdt_param, test_dataset);
+        if(use_global_test_set)
+            party.gbdt.predict_score(fl_param.gbdt_param, test_dataset);
     }
     
     LOG(INFO) << "encryption time:" << party.enc_time << "s";
