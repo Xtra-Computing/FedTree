@@ -2,11 +2,11 @@
 
 # Overview
 **FedTree** is a federated learning system for tree-based models. It is designed to be highly **efficient**, **effective**,
-and **secure**. It is **under development** and has the following features currently.
+and **secure**. It has the following features currently.
 
 - Federated training of gradient boosting decision trees.
 - Parallel computing on multi-core CPUs.
-- Supporting homomorphic encryption and differential privacy.
+- Supporting homomorphic encryption, secure aggregation and differential privacy.
 - Supporting classification and regression.
 
 The overall architecture of FedTree is shown below.
