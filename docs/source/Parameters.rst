@@ -33,7 +33,7 @@ Parameters for Federated Setting
     - ``iid``: IID data partitioning
     - ``noniid``: non-IID data partitioning
 
-* ``ip_address`` [default=``localhost``, type=string]
+* ``ip_address`` [default=``localhost``, type=string, alias: ``server_ip_address``]
     - The ip address of the server in distributed FedTree.
 
 Parameters for GBDTs
@@ -55,7 +55,7 @@ Parameters for GBDTs
 
     - The maximum number of bins in a histogram.
 
-* ``learning_rate`` [default=1, type=float, alias(only for c++): ``eta``]
+* ``learning_rate`` [default=1, type=float, alias: ``eta``]
 
     - Valid domain: [0,1]. This option is to set the weight of newly trained tree. Use ``eta < 1`` to mitigate overfitting.
 
@@ -73,11 +73,11 @@ Parameters for GBDTs
 
     - The minimum sum of instance weight (measured by the second order derivative) needed in a child node.
 
-* ``lambda`` [default=1, type=float, alias(only for c++): ``lambda_tgbm`` or ``reg_lambda``]
+* ``lambda`` [default=1, type=float, alias: ``lambda_tgbm`` or ``reg_lambda``]
 
     - L2 regularization term on weights.
 
-* ``gamma`` [default=1, type=float, alias(only for c++): ``min_split_loss``]
+* ``gamma`` [default=1, type=float, alias: ``min_split_loss``]
 
     - The minimum loss reduction required to make a further split on a leaf node of the tree. ``gamma`` is used in the pruning stage.
 

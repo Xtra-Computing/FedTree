@@ -91,7 +91,7 @@ void Parser::parse_param(FLParam &fl_param, int argc, char **argv) {
                 fl_param.n_verti = atoi(val);
             else if (str_name.compare("privacy_budget") == 0)
                 fl_param.privacy_budget = atof(val);
-            else if (str_name.compare("ip_address") == 0)
+            else if ((str_name.compare("ip_address") == 0) || (str_name.compare("server_ip_address") == 0))
                 fl_param.ip_address = val;
             else if (str_name.compare("ins_bagging_fraction") == 0)
                 fl_param.ins_bagging_fraction = atof(val);

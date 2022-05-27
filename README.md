@@ -33,8 +33,10 @@ sudo make install
 
 
 If you install the NTL library at another location, please pass the location to the `NTL_PATH` when building the library (e.g., `cmake .. -DNTL_PATH="PATH_TO_NTL"`).
-## Install submodules
+## Clone and Install submodules
 ```
+git clone https://github.com/Xtra-Computing/FedTree.git
+cd FedTree
 git submodule init
 git submodule update
 ```
@@ -86,32 +88,32 @@ mkdir build && cd build
 cmake .. -DDISTRIBUTED=ON
 make -j
 ```
-Specify the ip address of the server machine in the configuration file (`ip_address=xxx`). Run `FedTree-distributed-server` in the server machine and run `FedTree-distributed-party` in the party machines. 
+Then, write your configuration file where you should specify the ip address of the server machine (`ip_address=xxx`). Run `FedTree-distributed-server` in the server machine and run `FedTree-distributed-party` in the party machines. 
 Here are two examples for horizontal FedTree and vertical FedTree.
 
 [//]: # (export CPLUS_INCLUDE_PATH=./build/_deps/grpc-src/include/:$CPLUS_INCLUDE_PATH)
 [//]: # (export CPLUS_INCLUDE_PATH=./build/_deps/grpc-src/third_party/protobuf/src/:$CPLUS_INCLUDE_PATH)
 
-Horizontal FedTree
+## Distributed Horizontal FedTree
 ```bash
 # under 'FedTree' directory
 # under server machine
-./build/bin/FedTree-distributed-server ./examples/breast_distributed_horizontal_server.conf
+./build/bin/FedTree-distributed-server ./examples/adult/a9a_horizontal_server.conf
 # under party machine 0
-./build/bin/FedTree-distributed-party ./examples/breast_distributed_horizontal_p0.conf 0
+./build/bin/FedTree-distributed-party ./examples/adult/a9a_horizontal_p0.conf 0
 # under party machine 1
-./build/bin/FedTree-distributed-party ./examples/vertical_example.conf 1
+./build/bin/FedTree-distributed-party ./examples/adult/a9a_horizontal_p1.conf 1
 ```
 
-Vertical FedTree
+## Distributed Vertical FedTree
 ```bash
 # under 'FedTree' directory
 # under server (i.e., the party with label) machine 0
-./build/bin/FedTree-distributed-server ./examples/breast_distributed_vertical_p0_withlabel.conf
+./build/bin/FedTree-distributed-server ./examples/credit/credit_vertical_p0_withlabel.conf
 # open a new terminal
-./build/bin/FedTree-distributed-party ./examples/breast_distributed_vertical_p0_withlabel.conf 0
+./build/bin/FedTree-distributed-party ./examples/credit/credit_vertical_p0_withlabel.conf 0
 # Under party machine 1
-./build/bin/FedTree-distributed-party ./examples/breast_distributed_vertical_p0_withlabel.conf 1
+./build/bin/FedTree-distributed-party ./examples/credit/credit_vertical_p1.conf 1
 ```
 
 # Other information
