@@ -21,12 +21,20 @@ Parameters for Federated Setting
 
 * ``privacy_method`` [default = ``none``, type=string]
     - ``none``: no additional method is used to protect the communicated messages (raw data is not transferred).
-    - ``he``: use homomorphic encryption to protect the communicated messages.
-    - ``dp``: use differential privacy to protect the communicated messages.
+    - ``he``: use homomorphic encryption to protect the communicated messages (for vertical FedTree).
+    - ``sa``: use secure aggregation to protect the communicated messages (for horizontal FedTree).
+    - ``dp``: use differential privacy to protect the communicated messages (for simulation).
+
+* ``partition`` or ``simulation`` [default = ``0``, type = bool]
+    - ``0``: distributed setting
+    - ``1``: standalone simulation
 
 * ``partition_mode`` [default=``iid``, type=string]
     - ``iid``: IID data partitioning
     - ``noniid``: non-IID data partitioning
+
+* ``ip_address`` [default=``localhost``, type=string]
+    - The ip address of the server in distributed FedTree.
 
 Parameters for GBDTs
 --------------------
