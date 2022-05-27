@@ -36,6 +36,10 @@ Parameters for Federated Setting
 * ``ip_address`` [default=``localhost``, type=string, alias: ``server_ip_address``]
     - The ip address of the server in distributed FedTree.
 
+* ``data_format`` [defatul=``libsvm``, type=string]
+    - ``libsvm``: the input data is in a libsvm format (label feature_id1:feature_value1  feature_id2:feature_value2). See `here <https://github.com/Xtra-Computing/FedTree/blob/main/dataset/test_dataset.txt>`_ for an example.
+    - ``csv``: the input data is in a csv format (the first row is the header and the other rows are feature values). See `here <https://github.com/Xtra-Computing/FedTree/blob/main/dataset/credit/credit_vertical_p0_withlabel.csv>`_
+
 Parameters for GBDTs
 --------------------
 
