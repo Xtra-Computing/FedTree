@@ -94,11 +94,14 @@ int main(int argc, char** argv){
 
     DataSet test_dataset;
     if (use_global_test_set) {
-        if(model_param.reorder_label && fl_param.partition)
+        if(model_param.reorder_label && fl_param.partition) {
             test_dataset.label_map = dataset.label_map;
+        }
         test_dataset.load_from_file(model_param.test_path, fl_param);
-        if(model_param.reorder_label && fl_param.partition)
+        if(model_param.reorder_label && fl_param.partition) {
             test_dataset.label = dataset.label;
+            fl_param.gbdt_param.num_class = test_dataset.label.size();
+        }
     }
 
     if(!fl_param.partition){
@@ -140,7 +143,6 @@ int main(int argc, char** argv){
     else if(param.objective.find("reg:") != std::string::npos){
         param.num_class = 1;
     }
-
     vector<Party> parties(n_parties);
     vector<int> n_instances_per_party(n_parties);
     Server server;
@@ -170,7 +172,7 @@ int main(int argc, char** argv){
     if (param.tree_method == "auto")
         param.tree_method = "hist";
     else if (param.tree_method != "hist"){
-        std::cout<<"FedTree only supports histogram-based training yet";
+        LOG(INFO)<<"FedTree only supports histogram-based training yet";
         exit(1);
     }
     std::vector<float_type> scores;

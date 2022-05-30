@@ -166,6 +166,11 @@ void Parser::parse_param(FLParam &fl_param, int argc, char **argv) {
 
     };
 
+//    if ((fl_param.partitioning == 0) && fl_param.reorder_label){
+//        LOG(INFO)<<"Ignoring reorder_label option in distributed setting. Please ensure that the labels are 0, 1, 2, ... if you are conducting classification tasks.";
+//        fl_param.reorder_label = false;
+//    }
+
     //read configuration file
     std::ifstream conf_file(argv[1]);
     std::string line;

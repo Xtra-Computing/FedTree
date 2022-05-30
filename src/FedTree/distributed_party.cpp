@@ -1,5 +1,5 @@
 //
-// Created by 韩雨萱 on 11/4/21.
+// Created by yuxuan on 11/4/21.
 //
 
 #include "FedTree/FL/distributed_party.h"
@@ -1443,7 +1443,7 @@ void distributed_horizontal_train(DistributedParty& party, FLParam &fl_param) {
         vector<Tree> trees(fl_param.gbdt_param.tree_per_rounds);
         party.booster.update_gradients();
         if (fl_param.privacy_tech == "dp") {
-            // TODO 加密
+            // TODO
             // auto gradient_data = party.booster.gradients.host_data();
             // for(int i = 0; i < party.booster.gradients.size(); i++){
             //     dp_manager.clip_gradient_value(gradient_data[i].g);
@@ -1614,17 +1614,17 @@ int main(int argc, char **argv) {
     if (fl_param.mode == "vertical") {
 //        LOG(INFO) << "vertical dir";
         dataset.csr_to_csc();
-        if (fl_param.partition) {
-            partition.homo_partition(dataset, fl_param.n_parties, false, subsets, batch_idxs);
-            party.vertical_init(pid, subsets[pid], fl_param);
-        }
-        else {
+//        if (fl_param.partition) {
+//            partition.homo_partition(dataset, fl_param.n_parties, false, subsets, batch_idxs);
+//            party.vertical_init(pid, subsets[pid], fl_param);
+//        }
+//        else {
             // calculate batch idxs
-            if(use_global_test_set)
-                for(int i = 0; i < test_dataset.n_features(); i++)
-                    batch_idxs[0].push_back(i);
-            party.vertical_init(pid, dataset, fl_param);
-        }
+        if(use_global_test_set)
+            for(int i = 0; i < test_dataset.n_features(); i++)
+                batch_idxs[0].push_back(i);
+        party.vertical_init(pid, dataset, fl_param);
+//        }
         party.BeginBarrier();
         LOG(INFO)<<"training start";
         auto t_start = party.timer.now();

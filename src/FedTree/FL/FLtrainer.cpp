@@ -498,7 +498,7 @@ void FLtrainer::vertical_fl_trainer(vector<Party> &parties, Server &server, FLPa
     // for each boosting round
 
     for (int round = 0; round < params.gbdt_param.n_trees; round++) {
-//        LOG(INFO) << "Training round " << round << " start";
+        LOG(INFO) << "Training round " << round << " start";
 
         vector<Tree> trees(params.gbdt_param.tree_per_rounds);
 
@@ -794,7 +794,7 @@ void FLtrainer::vertical_fl_trainer(vector<Party> &parties, Server &server, FLPa
         LOG(INFO) << server.booster.metric->get_name() << " = "
                   << server.booster.metric->get_score(server.booster.fbuilder->get_y_predict());
 
-//        LOG(INFO) << "Training round " << round << " end";
+        LOG(INFO) << "Training round " << round << " end";
     }
 
     auto stop = timer.now();

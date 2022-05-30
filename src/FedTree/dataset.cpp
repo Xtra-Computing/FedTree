@@ -293,8 +293,21 @@ void DataSet::load_from_file(string file_name, FLParam &param) {
                     line_begin = line_end;
                     continue;
                 }
-                // parse instance label
-                y_[tid].push_back(label);
+                else if (r == 1) {
+                    // parse instance label
+                    y_[tid].push_back(label);
+                    has_label = true;
+                }
+                else if (r == 2){
+                    y_[tid].push_back(-1);
+                    // there is no label; label is feature_id and temp_ is value
+                    col_idx[tid].push_back(label - 1);
+                    val_[tid].push_back(temp_);
+                    if(label > max_feature[tid])
+                        max_feature[tid] = label;
+                    row_len_[tid].back()++;
+                    has_label = false;
+                }
 
                 // parse feature id and value
                 p = q;
@@ -342,7 +355,7 @@ void DataSet::load_from_file(string file_name, FLParam &param) {
             this->label.insert(label.end(), y_[i].begin(), y_[i].end());
         }
     } // end while
-    has_label=1;
+//    has_label=1;
     ifs.close();
     free(buffer);
     LOG(INFO) << "#instances = " << this->n_instances() << ", #features = " << this->n_features();
