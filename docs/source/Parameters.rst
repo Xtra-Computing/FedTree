@@ -36,9 +36,12 @@ Parameters for Federated Setting
 * ``ip_address`` [default=``localhost``, type=string, alias: ``server_ip_address``]
     - The ip address of the server in distributed FedTree.
 
-* ``data_format`` [defatul=``libsvm``, type=string]
-    - ``libsvm``: the input data is in a libsvm format (label feature_id1:feature_value1  feature_id2:feature_value2). See `here <https://github.com/Xtra-Computing/FedTree/blob/main/dataset/test_dataset.txt>`_ for an example.
-    - ``csv``: the input data is in a csv format (the first row is the header and the other rows are feature values). See `here <https://github.com/Xtra-Computing/FedTree/blob/main/dataset/credit/credit_vertical_p0_withlabel.csv>`_
+* ``data_format`` [default=``libsvm``, type=string]
+    - ``libsvm``: the input data is in a libsvm format (label feature_id1:feature_value1  feature_id2:feature_value2). See `here <https://github.com/Xtra-Computing/FedTree/blob/main/dataset/test_dataset.txt>`__ for an example.
+    - ``csv``: the input data is in a csv format (the first row is the header and the other rows are feature values). See `here <https://github.com/Xtra-Computing/FedTree/blob/main/dataset/credit/credit_vertical_p0_withlabel.csv>`__ for an example.
+
+* ``reorder_label`` [default=``true``, type=bool]
+    - For classification task in standalone simulation, if the labels are not organized as ``0 1 2 ...`` (e.g., the labels are -1 and 1), the users can set `reorder_label` to `true`. For distributed setting, users are suggested to organize the labels in prior and set `reorder_label` to `false`.
 
 Parameters for GBDTs
 --------------------
