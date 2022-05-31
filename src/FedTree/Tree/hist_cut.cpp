@@ -290,23 +290,45 @@ void HistCut::get_cut_points_by_parties_cut_sampling(vector<HistCut> parties_cut
  */
 void HistCut::get_cut_points_by_feature_range(vector<vector<float>> f_range, int max_num_bins) {
     int n_features = f_range.size();
-    cut_points_val.resize(n_features * max_num_bins);
     cut_col_ptr.resize(n_features + 1);
-    cut_fid.resize(n_features * max_num_bins);
-
-    auto cut_points_val_data = cut_points_val.host_data();
     auto cut_col_ptr_data = cut_col_ptr.host_data();
-    auto cut_fid_data = cut_fid.host_data();
+    vector<int> n_bin_per_features(n_features);
     #pragma omp parallel for
     for(int fid = 0; fid < n_features; fid ++) {
-        cut_col_ptr_data[fid] = fid * max_num_bins;
         float val_range = f_range[fid][1] - f_range[fid][0];
         float val_step = val_range / max_num_bins;
+        int n_bin = max_num_bins;
+        if(val_step == 0){
+            n_bin = 1;
+        }
+        else {
+            while (val_step < 1e-6) {
+                val_step *= 2;
+                n_bin /= 2;
+            }
+        }
+        cut_col_ptr_data[fid + 1] = n_bin;
+        n_bin_per_features[fid] = n_bin;
+    }
+    for(int i = 1; i < cut_col_ptr.size(); i++) {
+        cut_col_ptr_data[i] += cut_col_ptr_data[i-1];
+    }
+    int n_total_bins = cut_col_ptr_data[n_features];
+    cut_points_val.resize(n_total_bins);
+    cut_fid.resize(n_total_bins);
+    auto cut_points_val_data = cut_points_val.host_data();
+    auto cut_fid_data = cut_fid.host_data();
+    for(int fid = 0; fid < n_features; fid++){
+         float val_range = f_range[fid][1] - f_range[fid][0];
+         int n_bin = n_bin_per_features[fid];
+         float val_step = val_range / n_bin;
         //todo: compress the cut points if distance is small
-        for(int i = 0; i < max_num_bins; i ++) {
-            cut_fid_data[fid * max_num_bins + i] = fid;
-            cut_points_val_data[fid * max_num_bins + i] = f_range[fid][1] - i * val_step;
+        for(int i = 0; i < n_bin; i ++) {
+            cut_fid_data[cut_col_ptr_data[fid] + i] = fid;
+            cut_points_val_data[cut_col_ptr_data[fid]+ i] = f_range[fid][1] - i * val_step;
         }
     }
-    cut_col_ptr_data[n_features] = n_features * max_num_bins;
+
+
+
 }

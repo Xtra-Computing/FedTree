@@ -563,7 +563,6 @@ void DistributedParty::GetRangeAndSet(int n_bins) {
     }
     booster.fbuilder->cut.get_cut_points_by_feature_range(feature_range, n_bins);
     booster.fbuilder->get_bin_ids();
-
 }
 
 void DistributedParty::SendGH(GHPair party_gh) {
@@ -1614,17 +1613,17 @@ int main(int argc, char **argv) {
     if (fl_param.mode == "vertical") {
 //        LOG(INFO) << "vertical dir";
         dataset.csr_to_csc();
-//        if (fl_param.partition) {
-//            partition.homo_partition(dataset, fl_param.n_parties, false, subsets, batch_idxs);
-//            party.vertical_init(pid, subsets[pid], fl_param);
-//        }
-//        else {
+        if (fl_param.partition) {
+            partition.homo_partition(dataset, fl_param.n_parties, false, subsets, batch_idxs);
+            party.vertical_init(pid, subsets[pid], fl_param);
+        }
+        else {
             // calculate batch idxs
-        if(use_global_test_set)
-            for(int i = 0; i < test_dataset.n_features(); i++)
-                batch_idxs[0].push_back(i);
-        party.vertical_init(pid, dataset, fl_param);
-//        }
+            if(use_global_test_set)
+                for(int i = 0; i < test_dataset.n_features(); i++)
+                    batch_idxs[0].push_back(i);
+            party.vertical_init(pid, dataset, fl_param);
+        }
         party.BeginBarrier();
         LOG(INFO)<<"training start";
         auto t_start = party.timer.now();
@@ -1634,7 +1633,7 @@ int main(int argc, char **argv) {
         LOG(INFO)<<"training end";
         train_time = used_time.count();
         LOG(INFO) << "train time: " << train_time<<"s";
-        if(use_global_test_set || fl_param.partition)
+        if(use_global_test_set)
             party.gbdt.predict_score_vertical(fl_param.gbdt_param, test_dataset, batch_idxs);
     }
     else if (fl_param.mode == "horizontal") {

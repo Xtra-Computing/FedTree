@@ -25,9 +25,9 @@ Parameters for Federated Setting
     - ``sa``: use secure aggregation to protect the communicated messages (for horizontal FedTree).
     - ``dp``: use differential privacy to protect the communicated messages (for simulation).
 
-* ``partition`` or ``simulation`` [default = ``0``, type = bool]
-    - ``0``: distributed setting
-    - ``1``: standalone simulation
+* ``partition`` [default = ``0``, type = bool]
+    - ``0``: each party has a prepared local dataset
+    - ``1``: there is a global dataset and users require FedTree to partition it to multiple subsets to simulate federated setting.
 
 * ``partition_mode`` [default=``iid``, type=string]
     - ``iid``: IID data partitioning

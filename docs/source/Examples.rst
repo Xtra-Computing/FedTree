@@ -35,6 +35,7 @@ Supposing the ip address of the server is a.b.c.d, in the party machine 1, the c
         n_parties=2
         objective=binary:logistic
         mode=horizontal
+        partition=0
         privacy_tech=sa
         learning_rate=0.1
         max_depth=6
@@ -69,6 +70,7 @@ Suppose party machine 1 is the aggregator. Then, we need to write a server confi
         test_data=./dataset/adult/a9a_vertical_test
         n_parties=2
         mode=vertical
+        partition=0
         reorder_label=1
         objective=binary:logistic
         privacy_tech=he
@@ -84,6 +86,7 @@ For each party machine, supposing the ip address of the aggregator is a.b.c.d, w
         test_data=./dataset/adult/a9a_vertical_test
         n_parties=2
         mode=vertical
+        partition=0
         reorder_label=1
         objective=binary:logistic
         privacy_tech=he
