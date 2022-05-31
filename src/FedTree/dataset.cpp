@@ -77,14 +77,14 @@ void DataSet::group_label() {
 }
 
 // assume that the labels are already well organized, i.e., 0, 1, 2, ...
-void DataSet::group_label_without_reorder() {
-    int max_y = 0;
-    for (int i = 0; i < y.size(); i++){
-        if(y[i] > max_y)
-            max_y = y[i];
-    }
+void DataSet::group_label_without_reorder(int n_class) {
+//    int max_y = 0;
+//    for (int i = 0; i < y.size(); i++){
+//        if(y[i] > max_y)
+//            max_y = y[i];
+//    }
     label.clear();
-    for(int i = 0; i <= max_y; i++){
+    for(int i = 0; i < n_class; i++){
         label.push_back(i);
         label_map[i] = i;
     }
@@ -358,6 +358,10 @@ void DataSet::load_from_file(string file_name, FLParam &param) {
 //    has_label=1;
     ifs.close();
     free(buffer);
+    if(param.n_features != -1) {
+        CHECK_GE(param.n_features, n_features_) << "n_features is wrong!";
+        n_features_ = param.n_features;
+    }
     LOG(INFO) << "#instances = " << this->n_instances() << ", #features = " << this->n_features();
     if (ObjectiveFunction::need_load_group_file(param.gbdt_param.objective)) load_group_file(file_name + ".group");
     if (ObjectiveFunction::need_group_label(param.gbdt_param.objective) || param.gbdt_param.metric == "error") {
@@ -365,7 +369,7 @@ void DataSet::load_from_file(string file_name, FLParam &param) {
             group_label();
         }
         else{
-            group_label_without_reorder();
+            group_label_without_reorder(param.gbdt_param.num_class);
         }
         is_classification = true;
         param.gbdt_param.num_class = label.size();
@@ -565,7 +569,7 @@ void DataSet::load_from_csv(string file_name, FLParam &param) {
             group_label();
         }
         else{
-            group_label_without_reorder();
+            group_label_without_reorder(param.gbdt_param.num_class);
         }
         is_classification = true;
     }

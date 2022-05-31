@@ -28,6 +28,7 @@ public:
     int seed; // random seed for partitioning
     string data_format; // data format: "libsvm" or "csv"
     string label_location; // "server" or "party" for vertical FL
+    int n_features; //specify the number of features for horizontal FL with sparse datasets
     GBDTParam gbdt_param; // parameters for the gbdt training
 };
 

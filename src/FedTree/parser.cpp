@@ -31,8 +31,8 @@ void Parser::parse_param(FLParam &fl_param, int argc, char **argv) {
     fl_param.ins_bagging_fraction = 1.0;
     fl_param.data_format = "libsvm";
     fl_param.label_location = "server";
-
     fl_param.seed = 42;
+    fl_param.n_features = -1;
 
     GBDTParam *gbdt_param = &fl_param.gbdt_param;
 
@@ -105,6 +105,8 @@ void Parser::parse_param(FLParam &fl_param, int argc, char **argv) {
                 fl_param.data_format = val;
             else if (str_name.compare("label_location") == 0)
                 fl_param.label_location = val;
+            else if (str_name.compare("n_features") == 0)
+                fl_param.n_features = atoi(val);
             // GBDT params
             else if ((str_name.compare("max_depth") == 0) || (str_name.compare("depth") == 0))
                 gbdt_param->depth = atoi(val);
