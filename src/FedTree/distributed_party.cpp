@@ -1638,8 +1638,6 @@ int main(int argc, char **argv) {
             party.gbdt.predict_score_vertical(fl_param.gbdt_param, test_dataset, batch_idxs);
     }
     else if (fl_param.mode == "horizontal") {
-        // draft
-        LOG(INFO) << "horizontal dir, developing";
         SyncArray<bool> dummy_map;
         // horizontal does not need feature_map parameter
         if (fl_param.partition) {
