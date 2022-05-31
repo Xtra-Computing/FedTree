@@ -306,6 +306,8 @@ void HistCut::get_cut_points_by_feature_range(vector<vector<float>> f_range, int
                 val_step *= 2;
                 n_bin /= 2;
             }
+            if(n_bin == 0)
+                n_bin == 1;
         }
         cut_col_ptr_data[fid + 1] = n_bin;
         n_bin_per_features[fid] = n_bin;
