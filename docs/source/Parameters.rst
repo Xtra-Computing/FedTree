@@ -43,6 +43,8 @@ Parameters for Federated Setting
 * ``reorder_label`` [default=``true``, type=bool]
     - For classification task in standalone simulation, if the labels are not organized as ``0 1 2 ...`` (e.g., the labels are -1 and 1), the users can set `reorder_label` to `true`. For distributed setting, users are suggested to organize the labels in prior and set `reorder_label` to `false`.
 
+* ``n_features`` [default=-1, type=int]
+    - Number of features of the datasets. It needs to be specified when conducting horizontal FedTree and using sparse datasets.
 Parameters for GBDTs
 --------------------
 
