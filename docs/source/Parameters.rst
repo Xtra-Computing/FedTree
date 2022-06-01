@@ -23,7 +23,7 @@ Parameters for Federated Setting
     - ``none``: no additional method is used to protect the communicated messages (raw data is not transferred).
     - ``he``: use homomorphic encryption to protect the communicated messages (for vertical FedTree).
     - ``sa``: use secure aggregation to protect the communicated messages (for horizontal FedTree).
-    - ``dp``: use differential privacy to protect the communicated messages (for simulation).
+    - ``dp``: use differential privacy to protect the communicated messages (currently only works for single machine simulation).
 
 * ``partition`` [default = ``0``, type = bool]
     - ``0``: each party has a prepared local dataset
