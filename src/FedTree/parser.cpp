@@ -30,7 +30,6 @@ void Parser::parse_param(FLParam &fl_param, int argc, char **argv) {
     fl_param.ip_address = "localhost";
     fl_param.ins_bagging_fraction = 1.0;
     fl_param.data_format = "libsvm";
-    fl_param.label_location = "server";
     fl_param.seed = 42;
     fl_param.n_features = -1;
 
@@ -43,7 +42,7 @@ void Parser::parse_param(FLParam &fl_param, int argc, char **argv) {
     gbdt_param->lambda = 1;
     gbdt_param->gamma = 1;
     gbdt_param->rt_eps = 1e-6;
-    gbdt_param->max_num_bin = 255;
+    gbdt_param->max_num_bin = 32;
     gbdt_param->verbose = 1;
     gbdt_param->profiling = false;
     gbdt_param->column_sampling_rate = 1;
@@ -103,8 +102,6 @@ void Parser::parse_param(FLParam &fl_param, int argc, char **argv) {
                 fl_param.propose_split = val;
             else if (str_name.compare("data_format") == 0)
                 fl_param.data_format = val;
-            else if (str_name.compare("label_location") == 0)
-                fl_param.label_location = val;
             else if (str_name.compare("n_features") == 0)
                 fl_param.n_features = atoi(val);
             // GBDT params
