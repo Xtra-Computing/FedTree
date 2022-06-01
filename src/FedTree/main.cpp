@@ -232,14 +232,7 @@ int main(int argc, char** argv){
             }
         }
     } else if (fl_param.mode == "vertical") {
-        if(fl_param.label_location == "server")
-            trainer.vertical_fl_trainer(parties, server, fl_param);
-        else if(fl_param.label_location == "party")
-            trainer.vertical_fl_trainer_label_at_party(parties, server, fl_param);
-        else {
-            LOG(INFO)<<"wrong label_location!";
-            exit(1);
-        }
+        trainer.vertical_fl_trainer(parties, server, fl_param);
         float_type score;
         score = parties[0].gbdt.predict_score_vertical(fl_param.gbdt_param, test_dataset, batch_idxs);
         scores.push_back(score);
