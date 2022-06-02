@@ -60,9 +60,9 @@ Parameters for GBDTs
     - The number of training iterations. ``n_trees`` equals to the number of trees in GBDTs.
 
 
-* ``max_num_bin`` [default=255, type=int]
+* ``max_num_bin`` [default=32, type=int]
 
-    - The maximum number of bins in a histogram.
+    - The maximum number of bins in a histogram. The value needs to be smaller than 256.
 
 * ``learning_rate`` [default=1, type=float, alias: ``eta``]
 
