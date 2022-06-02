@@ -46,7 +46,7 @@ struct TableStruct_fedtree_2eproto {
     PROTOBUF_SECTION_VARIABLE(protodesc_cold);
   static const ::PROTOBUF_NAMESPACE_ID::internal::AuxiliaryParseTableField aux[]
     PROTOBUF_SECTION_VARIABLE(protodesc_cold);
-  static const ::PROTOBUF_NAMESPACE_ID::internal::ParseTable schema[24]
+  static const ::PROTOBUF_NAMESPACE_ID::internal::ParseTable schema[25]
     PROTOBUF_SECTION_VARIABLE(protodesc_cold);
   static const ::PROTOBUF_NAMESPACE_ID::internal::FieldMetadata field_metadata[];
   static const ::PROTOBUF_NAMESPACE_ID::internal::SerializationTable serialization_table[];
@@ -57,6 +57,9 @@ namespace fedtree {
 class BestInfo;
 class BestInfoDefaultTypeInternal;
 extern BestInfoDefaultTypeInternal _BestInfo_default_instance_;
+class CutPoints;
+class CutPointsDefaultTypeInternal;
+extern CutPointsDefaultTypeInternal _CutPoints_default_instance_;
 class DHPublicKey;
 class DHPublicKeyDefaultTypeInternal;
 extern DHPublicKeyDefaultTypeInternal _DHPublicKey_default_instance_;
@@ -129,6 +132,7 @@ extern SplitPointDefaultTypeInternal _SplitPoint_default_instance_;
 }  // namespace fedtree
 PROTOBUF_NAMESPACE_OPEN
 template<> ::fedtree::BestInfo* Arena::CreateMaybeMessage<::fedtree::BestInfo>(Arena*);
+template<> ::fedtree::CutPoints* Arena::CreateMaybeMessage<::fedtree::CutPoints>(Arena*);
 template<> ::fedtree::DHPublicKey* Arena::CreateMaybeMessage<::fedtree::DHPublicKey>(Arena*);
 template<> ::fedtree::DHPublicKeys* Arena::CreateMaybeMessage<::fedtree::DHPublicKeys>(Arena*);
 template<> ::fedtree::DatasetInfo* Arena::CreateMaybeMessage<::fedtree::DatasetInfo>(Arena*);
@@ -5043,6 +5047,206 @@ class SANoises PROTOBUF_FINAL :
   mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
   friend struct ::TableStruct_fedtree_2eproto;
 };
+// -------------------------------------------------------------------
+
+class CutPoints PROTOBUF_FINAL :
+    public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:fedtree.CutPoints) */ {
+ public:
+  inline CutPoints() : CutPoints(nullptr) {}
+  virtual ~CutPoints();
+
+  CutPoints(const CutPoints& from);
+  CutPoints(CutPoints&& from) noexcept
+    : CutPoints() {
+    *this = ::std::move(from);
+  }
+
+  inline CutPoints& operator=(const CutPoints& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  inline CutPoints& operator=(CutPoints&& from) noexcept {
+    if (GetArena() == from.GetArena()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* descriptor() {
+    return GetDescriptor();
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* GetDescriptor() {
+    return GetMetadataStatic().descriptor;
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
+    return GetMetadataStatic().reflection;
+  }
+  static const CutPoints& default_instance();
+
+  static inline const CutPoints* internal_default_instance() {
+    return reinterpret_cast<const CutPoints*>(
+               &_CutPoints_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages =
+    24;
+
+  friend void swap(CutPoints& a, CutPoints& b) {
+    a.Swap(&b);
+  }
+  inline void Swap(CutPoints* other) {
+    if (other == this) return;
+    if (GetArena() == other->GetArena()) {
+      InternalSwap(other);
+    } else {
+      ::PROTOBUF_NAMESPACE_ID::internal::GenericSwap(this, other);
+    }
+  }
+  void UnsafeArenaSwap(CutPoints* other) {
+    if (other == this) return;
+    GOOGLE_DCHECK(GetArena() == other->GetArena());
+    InternalSwap(other);
+  }
+
+  // implements Message ----------------------------------------------
+
+  inline CutPoints* New() const final {
+    return CreateMaybeMessage<CutPoints>(nullptr);
+  }
+
+  CutPoints* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+    return CreateMaybeMessage<CutPoints>(arena);
+  }
+  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void CopyFrom(const CutPoints& from);
+  void MergeFrom(const CutPoints& from);
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
+  bool IsInitialized() const final;
+
+  size_t ByteSizeLong() const final;
+  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
+  ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
+      ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
+  int GetCachedSize() const final { return _cached_size_.Get(); }
+
+  private:
+  inline void SharedCtor();
+  inline void SharedDtor();
+  void SetCachedSize(int size) const final;
+  void InternalSwap(CutPoints* other);
+  friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
+  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
+    return "fedtree.CutPoints";
+  }
+  protected:
+  explicit CutPoints(::PROTOBUF_NAMESPACE_ID::Arena* arena);
+  private:
+  static void ArenaDtor(void* object);
+  inline void RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
+  public:
+
+  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
+  private:
+  static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
+    ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_fedtree_2eproto);
+    return ::descriptor_table_fedtree_2eproto.file_level_metadata[kIndexInFileMessages];
+  }
+
+  public:
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  enum : int {
+    kCutPointsValFieldNumber = 1,
+    kCutColPtrFieldNumber = 2,
+    kCutFidFieldNumber = 3,
+  };
+  // repeated double cut_points_val = 1 [packed = true];
+  int cut_points_val_size() const;
+  private:
+  int _internal_cut_points_val_size() const;
+  public:
+  void clear_cut_points_val();
+  private:
+  double _internal_cut_points_val(int index) const;
+  const ::PROTOBUF_NAMESPACE_ID::RepeatedField< double >&
+      _internal_cut_points_val() const;
+  void _internal_add_cut_points_val(double value);
+  ::PROTOBUF_NAMESPACE_ID::RepeatedField< double >*
+      _internal_mutable_cut_points_val();
+  public:
+  double cut_points_val(int index) const;
+  void set_cut_points_val(int index, double value);
+  void add_cut_points_val(double value);
+  const ::PROTOBUF_NAMESPACE_ID::RepeatedField< double >&
+      cut_points_val() const;
+  ::PROTOBUF_NAMESPACE_ID::RepeatedField< double >*
+      mutable_cut_points_val();
+
+  // repeated int32 cut_col_ptr = 2 [packed = true];
+  int cut_col_ptr_size() const;
+  private:
+  int _internal_cut_col_ptr_size() const;
+  public:
+  void clear_cut_col_ptr();
+  private:
+  ::PROTOBUF_NAMESPACE_ID::int32 _internal_cut_col_ptr(int index) const;
+  const ::PROTOBUF_NAMESPACE_ID::RepeatedField< ::PROTOBUF_NAMESPACE_ID::int32 >&
+      _internal_cut_col_ptr() const;
+  void _internal_add_cut_col_ptr(::PROTOBUF_NAMESPACE_ID::int32 value);
+  ::PROTOBUF_NAMESPACE_ID::RepeatedField< ::PROTOBUF_NAMESPACE_ID::int32 >*
+      _internal_mutable_cut_col_ptr();
+  public:
+  ::PROTOBUF_NAMESPACE_ID::int32 cut_col_ptr(int index) const;
+  void set_cut_col_ptr(int index, ::PROTOBUF_NAMESPACE_ID::int32 value);
+  void add_cut_col_ptr(::PROTOBUF_NAMESPACE_ID::int32 value);
+  const ::PROTOBUF_NAMESPACE_ID::RepeatedField< ::PROTOBUF_NAMESPACE_ID::int32 >&
+      cut_col_ptr() const;
+  ::PROTOBUF_NAMESPACE_ID::RepeatedField< ::PROTOBUF_NAMESPACE_ID::int32 >*
+      mutable_cut_col_ptr();
+
+  // repeated int32 cut_fid = 3 [packed = true];
+  int cut_fid_size() const;
+  private:
+  int _internal_cut_fid_size() const;
+  public:
+  void clear_cut_fid();
+  private:
+  ::PROTOBUF_NAMESPACE_ID::int32 _internal_cut_fid(int index) const;
+  const ::PROTOBUF_NAMESPACE_ID::RepeatedField< ::PROTOBUF_NAMESPACE_ID::int32 >&
+      _internal_cut_fid() const;
+  void _internal_add_cut_fid(::PROTOBUF_NAMESPACE_ID::int32 value);
+  ::PROTOBUF_NAMESPACE_ID::RepeatedField< ::PROTOBUF_NAMESPACE_ID::int32 >*
+      _internal_mutable_cut_fid();
+  public:
+  ::PROTOBUF_NAMESPACE_ID::int32 cut_fid(int index) const;
+  void set_cut_fid(int index, ::PROTOBUF_NAMESPACE_ID::int32 value);
+  void add_cut_fid(::PROTOBUF_NAMESPACE_ID::int32 value);
+  const ::PROTOBUF_NAMESPACE_ID::RepeatedField< ::PROTOBUF_NAMESPACE_ID::int32 >&
+      cut_fid() const;
+  ::PROTOBUF_NAMESPACE_ID::RepeatedField< ::PROTOBUF_NAMESPACE_ID::int32 >*
+      mutable_cut_fid();
+
+  // @@protoc_insertion_point(class_scope:fedtree.CutPoints)
+ private:
+  class _Internal;
+
+  template <typename T> friend class ::PROTOBUF_NAMESPACE_ID::Arena::InternalHelper;
+  typedef void InternalArenaConstructable_;
+  typedef void DestructorSkippable_;
+  ::PROTOBUF_NAMESPACE_ID::RepeatedField< double > cut_points_val_;
+  mutable std::atomic<int> _cut_points_val_cached_byte_size_;
+  ::PROTOBUF_NAMESPACE_ID::RepeatedField< ::PROTOBUF_NAMESPACE_ID::int32 > cut_col_ptr_;
+  mutable std::atomic<int> _cut_col_ptr_cached_byte_size_;
+  ::PROTOBUF_NAMESPACE_ID::RepeatedField< ::PROTOBUF_NAMESPACE_ID::int32 > cut_fid_;
+  mutable std::atomic<int> _cut_fid_cached_byte_size_;
+  mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
+  friend struct ::TableStruct_fedtree_2eproto;
+};
 // ===================================================================
 
 
@@ -9024,9 +9228,156 @@ SANoises::mutable_noises() {
   return &noises_;
 }
 
+// -------------------------------------------------------------------
+
+// CutPoints
+
+// repeated double cut_points_val = 1 [packed = true];
+inline int CutPoints::_internal_cut_points_val_size() const {
+  return cut_points_val_.size();
+}
+inline int CutPoints::cut_points_val_size() const {
+  return _internal_cut_points_val_size();
+}
+inline void CutPoints::clear_cut_points_val() {
+  cut_points_val_.Clear();
+}
+inline double CutPoints::_internal_cut_points_val(int index) const {
+  return cut_points_val_.Get(index);
+}
+inline double CutPoints::cut_points_val(int index) const {
+  // @@protoc_insertion_point(field_get:fedtree.CutPoints.cut_points_val)
+  return _internal_cut_points_val(index);
+}
+inline void CutPoints::set_cut_points_val(int index, double value) {
+  cut_points_val_.Set(index, value);
+  // @@protoc_insertion_point(field_set:fedtree.CutPoints.cut_points_val)
+}
+inline void CutPoints::_internal_add_cut_points_val(double value) {
+  cut_points_val_.Add(value);
+}
+inline void CutPoints::add_cut_points_val(double value) {
+  _internal_add_cut_points_val(value);
+  // @@protoc_insertion_point(field_add:fedtree.CutPoints.cut_points_val)
+}
+inline const ::PROTOBUF_NAMESPACE_ID::RepeatedField< double >&
+CutPoints::_internal_cut_points_val() const {
+  return cut_points_val_;
+}
+inline const ::PROTOBUF_NAMESPACE_ID::RepeatedField< double >&
+CutPoints::cut_points_val() const {
+  // @@protoc_insertion_point(field_list:fedtree.CutPoints.cut_points_val)
+  return _internal_cut_points_val();
+}
+inline ::PROTOBUF_NAMESPACE_ID::RepeatedField< double >*
+CutPoints::_internal_mutable_cut_points_val() {
+  return &cut_points_val_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::RepeatedField< double >*
+CutPoints::mutable_cut_points_val() {
+  // @@protoc_insertion_point(field_mutable_list:fedtree.CutPoints.cut_points_val)
+  return _internal_mutable_cut_points_val();
+}
+
+// repeated int32 cut_col_ptr = 2 [packed = true];
+inline int CutPoints::_internal_cut_col_ptr_size() const {
+  return cut_col_ptr_.size();
+}
+inline int CutPoints::cut_col_ptr_size() const {
+  return _internal_cut_col_ptr_size();
+}
+inline void CutPoints::clear_cut_col_ptr() {
+  cut_col_ptr_.Clear();
+}
+inline ::PROTOBUF_NAMESPACE_ID::int32 CutPoints::_internal_cut_col_ptr(int index) const {
+  return cut_col_ptr_.Get(index);
+}
+inline ::PROTOBUF_NAMESPACE_ID::int32 CutPoints::cut_col_ptr(int index) const {
+  // @@protoc_insertion_point(field_get:fedtree.CutPoints.cut_col_ptr)
+  return _internal_cut_col_ptr(index);
+}
+inline void CutPoints::set_cut_col_ptr(int index, ::PROTOBUF_NAMESPACE_ID::int32 value) {
+  cut_col_ptr_.Set(index, value);
+  // @@protoc_insertion_point(field_set:fedtree.CutPoints.cut_col_ptr)
+}
+inline void CutPoints::_internal_add_cut_col_ptr(::PROTOBUF_NAMESPACE_ID::int32 value) {
+  cut_col_ptr_.Add(value);
+}
+inline void CutPoints::add_cut_col_ptr(::PROTOBUF_NAMESPACE_ID::int32 value) {
+  _internal_add_cut_col_ptr(value);
+  // @@protoc_insertion_point(field_add:fedtree.CutPoints.cut_col_ptr)
+}
+inline const ::PROTOBUF_NAMESPACE_ID::RepeatedField< ::PROTOBUF_NAMESPACE_ID::int32 >&
+CutPoints::_internal_cut_col_ptr() const {
+  return cut_col_ptr_;
+}
+inline const ::PROTOBUF_NAMESPACE_ID::RepeatedField< ::PROTOBUF_NAMESPACE_ID::int32 >&
+CutPoints::cut_col_ptr() const {
+  // @@protoc_insertion_point(field_list:fedtree.CutPoints.cut_col_ptr)
+  return _internal_cut_col_ptr();
+}
+inline ::PROTOBUF_NAMESPACE_ID::RepeatedField< ::PROTOBUF_NAMESPACE_ID::int32 >*
+CutPoints::_internal_mutable_cut_col_ptr() {
+  return &cut_col_ptr_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::RepeatedField< ::PROTOBUF_NAMESPACE_ID::int32 >*
+CutPoints::mutable_cut_col_ptr() {
+  // @@protoc_insertion_point(field_mutable_list:fedtree.CutPoints.cut_col_ptr)
+  return _internal_mutable_cut_col_ptr();
+}
+
+// repeated int32 cut_fid = 3 [packed = true];
+inline int CutPoints::_internal_cut_fid_size() const {
+  return cut_fid_.size();
+}
+inline int CutPoints::cut_fid_size() const {
+  return _internal_cut_fid_size();
+}
+inline void CutPoints::clear_cut_fid() {
+  cut_fid_.Clear();
+}
+inline ::PROTOBUF_NAMESPACE_ID::int32 CutPoints::_internal_cut_fid(int index) const {
+  return cut_fid_.Get(index);
+}
+inline ::PROTOBUF_NAMESPACE_ID::int32 CutPoints::cut_fid(int index) const {
+  // @@protoc_insertion_point(field_get:fedtree.CutPoints.cut_fid)
+  return _internal_cut_fid(index);
+}
+inline void CutPoints::set_cut_fid(int index, ::PROTOBUF_NAMESPACE_ID::int32 value) {
+  cut_fid_.Set(index, value);
+  // @@protoc_insertion_point(field_set:fedtree.CutPoints.cut_fid)
+}
+inline void CutPoints::_internal_add_cut_fid(::PROTOBUF_NAMESPACE_ID::int32 value) {
+  cut_fid_.Add(value);
+}
+inline void CutPoints::add_cut_fid(::PROTOBUF_NAMESPACE_ID::int32 value) {
+  _internal_add_cut_fid(value);
+  // @@protoc_insertion_point(field_add:fedtree.CutPoints.cut_fid)
+}
+inline const ::PROTOBUF_NAMESPACE_ID::RepeatedField< ::PROTOBUF_NAMESPACE_ID::int32 >&
+CutPoints::_internal_cut_fid() const {
+  return cut_fid_;
+}
+inline const ::PROTOBUF_NAMESPACE_ID::RepeatedField< ::PROTOBUF_NAMESPACE_ID::int32 >&
+CutPoints::cut_fid() const {
+  // @@protoc_insertion_point(field_list:fedtree.CutPoints.cut_fid)
+  return _internal_cut_fid();
+}
+inline ::PROTOBUF_NAMESPACE_ID::RepeatedField< ::PROTOBUF_NAMESPACE_ID::int32 >*
+CutPoints::_internal_mutable_cut_fid() {
+  return &cut_fid_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::RepeatedField< ::PROTOBUF_NAMESPACE_ID::int32 >*
+CutPoints::mutable_cut_fid() {
+  // @@protoc_insertion_point(field_mutable_list:fedtree.CutPoints.cut_fid)
+  return _internal_mutable_cut_fid();
+}
+
 #ifdef __GNUC__
   #pragma GCC diagnostic pop
 #endif  // __GNUC__
+// -------------------------------------------------------------------
+
 // -------------------------------------------------------------------
 
 // -------------------------------------------------------------------

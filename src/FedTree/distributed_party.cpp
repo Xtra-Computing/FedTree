@@ -497,7 +497,7 @@ void DistributedParty::TriggerPrintScore() {
     }
 }
 
-void DistributedParty::SendRange(const vector<vector<float>>& ranges) {
+void DistributedParty::SendRange(const vector<vector<float_type>>& ranges) {
     fedtree::PID id;
     grpc::ClientContext context;
     LOG(INFO)<<"communication Range start";
@@ -547,7 +547,7 @@ void DistributedParty::GetRangeAndSet(int n_bins) {
     id.set_id(pid);
     std::unique_ptr<grpc::ClientReader<fedtree::GHPair>> reader(stub_->GetRange(&context, id));
     fedtree::GHPair range;
-    vector<vector<float>> feature_range;
+    vector<vector<float_type>> feature_range;
     while(reader->Read(&range)) {
         feature_range.push_back({range.g(), range.h()});
     }
@@ -691,6 +691,80 @@ void DistributedParty::GetNoises() {
     }
     else {
         LOG(ERROR) << "GetNoises rpc failed";
+    }
+}
+
+void DistributedParty::SendCutPoints(){
+    fedtree::CutPoints cp;
+    fedtree::PID id;
+    grpc::ClientContext context;
+    LOG(INFO)<<"communication CutPoints start";
+    auto t_start = timer.now();
+    context.AddMetadata("pid", std::to_string(pid));
+    stringstream stream;
+    auto cut_val_data = booster.fbuilder->cut.cut_points_val.host_data();
+    auto cut_col_ptr_data = booster.fbuilder->cut.cut_col_ptr.host_data();
+    auto cut_fid_data = booster.fbuilder->cut.cut_fid.host_data();
+    for(int i = 0; i < booster.fbuilder->cut.cut_points_val.size(); i++){
+        cp.add_cut_points_val(cut_val_data[i]);
+        cp.add_cut_fid(cut_fid_data[i]);
+    }
+    for(int i = 0; i < booster.fbuilder->cut.cut_col_ptr.size(); i++){
+        cp.add_cut_col_ptr(cut_col_ptr_data[i]);
+    }
+    grpc::Status status = stub_->SendCutPoints(&context, cp, &id);
+    auto t_end = timer.now();
+    std::chrono::duration<float> used_time = t_end - t_start;
+    LOG(INFO)<<"communication CutPoints end";
+    comm_time += used_time.count();
+    if (status.ok()) {
+        LOG(DEBUG) << "CutPoints sent.";
+    }
+    else {
+        LOG(ERROR) << "CutPoints rpc failed";
+    }
+}
+
+void DistributedParty::GetCutPoints() {
+    grpc::ClientContext context;
+    fedtree::PID id;
+    fedtree::CutPoints cp;
+    LOG(INFO)<<"communication CutPoints start";
+    auto t_start = timer.now();
+    id.set_id(pid);
+    std::unique_ptr<grpc::ClientReader<fedtree::CutPoints> > reader(stub_->GetCutPoints(&context, id));
+    reader->Read(&cp);
+
+    int cut_points_val_size = cp.cut_points_val_size();
+    int cut_col_ptr_size = cp.cut_col_ptr_size();
+    booster.fbuilder->cut.cut_points_val.resize(cut_points_val_size);
+    booster.fbuilder->cut.cut_col_ptr.resize(cut_col_ptr_size);
+    booster.fbuilder->cut.cut_fid.resize(cut_points_val_size);
+
+    auto cut_val_data = booster.fbuilder->cut.cut_points_val.host_data();
+    auto cut_col_ptr_data = booster.fbuilder->cut.cut_col_ptr.host_data();
+    auto cut_fid_data = booster.fbuilder->cut.cut_fid.host_data();
+    for(int i = 0; i < cut_points_val_size; i++){
+        cut_val_data[i] = cp.cut_points_val(i);
+        cut_fid_data[i] = cp.cut_fid(i);
+    }
+    for(int i = 0; i < cut_col_ptr_size; i++){
+        cut_col_ptr_data[i] = cp.cut_col_ptr(i);
+    }
+//    while (reader->Read(&san)) {
+//        dh.received_encrypted_noises[pid] = NTL::to_ZZ(san.noises().c_str());
+//        pid++;
+//    }
+    grpc::Status status = reader->Finish();
+    auto t_end = timer.now();
+    std::chrono::duration<float> used_time = t_end - t_start;
+    comm_time += used_time.count();
+    LOG(INFO)<<"communication CutPoints end";
+    if (status.ok()) {
+        LOG(INFO) << "GetCutPoints from server";
+    }
+    else {
+        LOG(ERROR) << "GetCutPoints rpc failed";
     }
 }
 
@@ -1422,21 +1496,27 @@ void distributed_horizontal_train(DistributedParty& party, FLParam &fl_param) {
     }
 
     int n_bins = fl_param.gbdt_param.max_num_bin;
-    // get and send feature range
-    vector<vector<float>> feature_range(party.get_num_feature());
-    for (int i = 0; i < party.get_num_feature(); i++) {
-        feature_range[i] = party.get_feature_range_by_feature_index(i);
-    }
+    if(fl_param.propose_split == "server") {
+        // get and send feature range
+        vector<vector<float_type>> feature_range(party.get_num_feature());
+        for (int i = 0; i < party.get_num_feature(); i++) {
+            feature_range[i] = party.get_feature_range_by_feature_index(i);
+        }
 
-    party.SendRange(feature_range);
-    if (party.pid == 0) {
-        //trigger send
-        party.TriggerCut(n_bins);
+        party.SendRange(feature_range);
+        if (party.pid == 0) {
+            //trigger send
+            party.TriggerCut(n_bins);
+        }
+        // GetRange
+        party.GetRangeAndSet(n_bins);
+        // initialization end
     }
-    // GetRange
-    party.GetRangeAndSet(n_bins);
-    // initialization end
-
+    else if(fl_param.propose_split == "party"){
+//        party.booster.fbuilder->cut.get_cut_points_fast(party.dataset, n_bins, party.dataset.n_instances());
+        party.SendCutPoints();
+        party.GetCutPoints();
+    }
     for (int i = 0; i < fl_param.gbdt_param.n_trees; i++) {
         LOG(INFO) << "Training round " << i << " start";
         vector<Tree> trees(fl_param.gbdt_param.tree_per_rounds);
@@ -1658,6 +1738,9 @@ int main(int argc, char **argv) {
         LOG(INFO) << "train time: " << train_time<<"s";
         if(use_global_test_set)
             party.gbdt.predict_score(fl_param.gbdt_param, test_dataset);
+    }
+    else if (fl_param.mode == "ensemble"){
+
     }
     
     LOG(INFO) << "encryption time:" << party.enc_time << "s";

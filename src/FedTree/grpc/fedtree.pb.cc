@@ -111,6 +111,10 @@ class SANoisesDefaultTypeInternal {
  public:
   ::PROTOBUF_NAMESPACE_ID::internal::ExplicitlyConstructed<SANoises> _instance;
 } _SANoises_default_instance_;
+class CutPointsDefaultTypeInternal {
+ public:
+  ::PROTOBUF_NAMESPACE_ID::internal::ExplicitlyConstructed<CutPoints> _instance;
+} _CutPoints_default_instance_;
 }  // namespace fedtree
 static void InitDefaultsscc_info_BestInfo_fedtree_2eproto() {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
@@ -124,6 +128,19 @@ static void InitDefaultsscc_info_BestInfo_fedtree_2eproto() {
 
 ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_BestInfo_fedtree_2eproto =
     {{ATOMIC_VAR_INIT(::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase::kUninitialized), 0, 0, InitDefaultsscc_info_BestInfo_fedtree_2eproto}, {}};
+
+static void InitDefaultsscc_info_CutPoints_fedtree_2eproto() {
+  GOOGLE_PROTOBUF_VERIFY_VERSION;
+
+  {
+    void* ptr = &::fedtree::_CutPoints_default_instance_;
+    new (ptr) ::fedtree::CutPoints();
+    ::PROTOBUF_NAMESPACE_ID::internal::OnShutdownDestroyMessage(ptr);
+  }
+}
+
+::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_CutPoints_fedtree_2eproto =
+    {{ATOMIC_VAR_INIT(::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase::kUninitialized), 0, 0, InitDefaultsscc_info_CutPoints_fedtree_2eproto}, {}};
 
 static void InitDefaultsscc_info_DHPublicKey_fedtree_2eproto() {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
@@ -424,7 +441,7 @@ static void InitDefaultsscc_info_SplitPoint_fedtree_2eproto() {
 ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_SplitPoint_fedtree_2eproto =
     {{ATOMIC_VAR_INIT(::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase::kUninitialized), 0, 0, InitDefaultsscc_info_SplitPoint_fedtree_2eproto}, {}};
 
-static ::PROTOBUF_NAMESPACE_ID::Metadata file_level_metadata_fedtree_2eproto[24];
+static ::PROTOBUF_NAMESPACE_ID::Metadata file_level_metadata_fedtree_2eproto[25];
 static constexpr ::PROTOBUF_NAMESPACE_ID::EnumDescriptor const** file_level_enum_descriptors_fedtree_2eproto = nullptr;
 static constexpr ::PROTOBUF_NAMESPACE_ID::ServiceDescriptor const** file_level_service_descriptors_fedtree_2eproto = nullptr;
 
@@ -659,6 +676,14 @@ const ::PROTOBUF_NAMESPACE_ID::uint32 TableStruct_fedtree_2eproto::offsets[] PRO
   ~0u,  // no _oneof_case_
   ~0u,  // no _weak_field_map_
   PROTOBUF_FIELD_OFFSET(::fedtree::SANoises, noises_),
+  ~0u,  // no _has_bits_
+  PROTOBUF_FIELD_OFFSET(::fedtree::CutPoints, _internal_metadata_),
+  ~0u,  // no _extensions_
+  ~0u,  // no _oneof_case_
+  ~0u,  // no _weak_field_map_
+  PROTOBUF_FIELD_OFFSET(::fedtree::CutPoints, cut_points_val_),
+  PROTOBUF_FIELD_OFFSET(::fedtree::CutPoints, cut_col_ptr_),
+  PROTOBUF_FIELD_OFFSET(::fedtree::CutPoints, cut_fid_),
 };
 static const ::PROTOBUF_NAMESPACE_ID::internal::MigrationSchema schemas[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) = {
   { 0, -1, sizeof(::fedtree::FIDBatch)},
@@ -685,6 +710,7 @@ static const ::PROTOBUF_NAMESPACE_ID::internal::MigrationSchema schemas[] PROTOB
   { 212, -1, sizeof(::fedtree::DHPublicKeys)},
   { 218, -1, sizeof(::fedtree::SANoise)},
   { 224, -1, sizeof(::fedtree::SANoises)},
+  { 230, -1, sizeof(::fedtree::CutPoints)},
 };
 
 static ::PROTOBUF_NAMESPACE_ID::Message const * const file_default_instances[] = {
@@ -712,6 +738,7 @@ static ::PROTOBUF_NAMESPACE_ID::Message const * const file_default_instances[] =
   reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::fedtree::_DHPublicKeys_default_instance_),
   reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::fedtree::_SANoise_default_instance_),
   reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::fedtree::_SANoises_default_instance_),
+  reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::fedtree::_CutPoints_default_instance_),
 };
 
 const char descriptor_table_protodef_fedtree_2eproto[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) =
@@ -777,73 +804,79 @@ const char descriptor_table_protodef_fedtree_2eproto[] PROTOBUF_SECTION_VARIABLE
   "\022\017\n\003nid\030\002 \003(\005B\002\020\001\"\031\n\013DHPublicKey\022\n\n\002pk\030\001"
   " \001(\t\"\032\n\014DHPublicKeys\022\n\n\002pk\030\001 \003(\t\"\030\n\007SANo"
   "ise\022\r\n\005noise\030\001 \001(\t\"\032\n\010SANoises\022\016\n\006noises"
-  "\030\001 \003(\t2\215\023\n\007FedTree\0228\n\026TriggerUpdateGradi"
-  "ents\022\014.fedtree.PID\032\016.fedtree.Ready\"\000\0222\n\020"
-  "TriggerBuildInit\022\014.fedtree.PID\032\016.fedtree"
-  ".Ready\"\000\0221\n\014GetGradients\022\014.fedtree.PID\032\017"
-  ".fedtree.GHPair\"\0000\001\0227\n\017SendDatasetInfo\022\024"
-  ".fedtree.DatasetInfo\032\014.fedtree.PID\"\000\0223\n\016"
-  "SendHistograms\022\017.fedtree.GHPair\032\014.fedtre"
-  "e.PID\"\000(\001\022-\n\013SendHistFid\022\014.fedtree.FID\032\014"
-  ".fedtree.PID\"\000(\001\0222\n\020TriggerAggregate\022\014.f"
-  "edtree.PID\032\016.fedtree.Ready\"\000\0222\n\013GetBestI"
-  "nfo\022\014.fedtree.PID\032\021.fedtree.BestInfo\"\0000\001"
-  "\022)\n\010SendNode\022\r.fedtree.Node\032\014.fedtree.PI"
-  "D\"\000\0227\n\016SendIns2NodeID\022\023.fedtree.Ins2Node"
-  "ID\032\014.fedtree.PID\"\000(\001\022+\n\010GetNodes\022\014.fedtr"
-  "ee.PID\032\r.fedtree.Node\"\0000\001\0226\n\rGetIns2Node"
-  "ID\022\014.fedtree.PID\032\023.fedtree.Ins2NodeID\"\0000"
-  "\001\0221\n\017CheckIfContinue\022\014.fedtree.PID\032\016.fed"
-  "tree.Ready\"\000\022.\n\014TriggerPrune\022\014.fedtree.P"
-  "ID\032\016.fedtree.Ready\"\000\0223\n\021TriggerPrintScor"
-  "e\022\014.fedtree.PID\032\016.fedtree.Ready\"\000\022.\n\tSen"
-  "dRange\022\017.fedtree.GHPair\032\014.fedtree.PID\"\000("
-  "\001\022,\n\nTriggerCut\022\014.fedtree.PID\032\016.fedtree."
-  "Ready\"\000\022-\n\010GetRange\022\014.fedtree.PID\032\017.fedt"
-  "ree.GHPair\"\0000\001\022)\n\006SendGH\022\017.fedtree.GHPai"
-  "r\032\014.fedtree.PID\"\000\0224\n\014SendDHPubKey\022\024.fedt"
-  "ree.DHPublicKey\032\014.fedtree.PID\"\000\0227\n\014GetDH"
-  "PubKeys\022\014.fedtree.PID\032\025.fedtree.DHPublic"
-  "Keys\"\0000\001\022/\n\nSendNoises\022\021.fedtree.SANoise"
-  "s\032\014.fedtree.PID\"\000\0220\n\tGetNoises\022\014.fedtree"
-  ".PID\032\021.fedtree.SANoises\"\0000\001\0225\n\023TriggerBu"
-  "ildUsingGH\022\014.fedtree.PID\032\016.fedtree.Ready"
-  "\"\000\0221\n\017TriggerCalcTree\022\014.fedtree.PID\032\016.fe"
-  "dtree.Ready\"\000\022*\n\013GetRootNode\022\014.fedtree.P"
-  "ID\032\r.fedtree.Node\0227\n\016GetSplitPoints\022\014.fe"
-  "dtree.PID\032\023.fedtree.SplitPoint\"\0000\001\0222\n\020HC"
-  "heckIfContinue\022\014.fedtree.PID\032\016.fedtree.R"
-  "eady\"\000\022/\n\013ScoreReduce\022\016.fedtree.Score\032\016."
-  "fedtree.Score\"\000\0221\n\017TriggerHomoInit\022\014.fed"
-  "tree.PID\032\016.fedtree.Ready\"\000\022/\n\rTriggerSAI"
-  "nit\022\014.fedtree.PID\032\016.fedtree.Ready\"\000\0220\n\013G"
-  "etPaillier\022\014.fedtree.PID\032\021.fedtree.Paill"
-  "ier\"\000\0229\n\021SendHistogramsEnc\022\022.fedtree.GHP"
-  "airEnc\032\014.fedtree.PID\"\000(\001\0229\n\025SendBatchedH"
-  "istograms\022\020.fedtree.GHArray\032\014.fedtree.PI"
-  "D\"\000\022:\n\024SendHistogramBatches\022\020.fedtree.GH"
-  "Batch\032\014.fedtree.PID\"\000(\001\0229\n\022SendHistFidBa"
-  "tches\022\021.fedtree.FIDBatch\032\014.fedtree.PID\"\000"
-  "(\001\022B\n\024GetIns2NodeIDBatches\022\014.fedtree.PID"
-  "\032\030.fedtree.Ins2NodeIDBatch\"\0000\001\022C\n\025SendIn"
-  "s2NodeIDBatches\022\030.fedtree.Ins2NodeIDBatc"
-  "h\032\014.fedtree.PID\"\000(\001\0228\n\022GetGradientBatche"
-  "s\022\014.fedtree.PID\032\020.fedtree.GHBatch\"\0000\001\022>\n"
-  "\025GetGradientBatchesEnc\022\014.fedtree.PID\032\023.f"
-  "edtree.GHEncBatch\"\0000\001\022/\n\013SendNodeEnc\022\020.f"
-  "edtree.NodeEnc\032\014.fedtree.PID\"\000\022/\n\tSendNo"
-  "des\022\022.fedtree.NodeArray\032\014.fedtree.PID\"\000\022"
-  "5\n\014SendNodesEnc\022\025.fedtree.NodeEncArray\032\014"
-  ".fedtree.PID\"\000\022@\n\027SendHistogramBatchesEn"
-  "c\022\023.fedtree.GHEncBatch\032\014.fedtree.PID\"\000(\001"
-  "\022,\n\nStopServer\022\014.fedtree.PID\032\016.fedtree.S"
-  "core\"\000\022.\n\014BeginBarrier\022\014.fedtree.PID\032\016.f"
-  "edtree.Ready\"\000b\006proto3"
+  "\030\001 \003(\t\"U\n\tCutPoints\022\032\n\016cut_points_val\030\001 "
+  "\003(\001B\002\020\001\022\027\n\013cut_col_ptr\030\002 \003(\005B\002\020\001\022\023\n\007cut_"
+  "fid\030\003 \003(\005B\002\020\0012\370\023\n\007FedTree\0228\n\026TriggerUpda"
+  "teGradients\022\014.fedtree.PID\032\016.fedtree.Read"
+  "y\"\000\0222\n\020TriggerBuildInit\022\014.fedtree.PID\032\016."
+  "fedtree.Ready\"\000\0221\n\014GetGradients\022\014.fedtre"
+  "e.PID\032\017.fedtree.GHPair\"\0000\001\0227\n\017SendDatase"
+  "tInfo\022\024.fedtree.DatasetInfo\032\014.fedtree.PI"
+  "D\"\000\0223\n\016SendHistograms\022\017.fedtree.GHPair\032\014"
+  ".fedtree.PID\"\000(\001\022-\n\013SendHistFid\022\014.fedtre"
+  "e.FID\032\014.fedtree.PID\"\000(\001\0222\n\020TriggerAggreg"
+  "ate\022\014.fedtree.PID\032\016.fedtree.Ready\"\000\0222\n\013G"
+  "etBestInfo\022\014.fedtree.PID\032\021.fedtree.BestI"
+  "nfo\"\0000\001\022)\n\010SendNode\022\r.fedtree.Node\032\014.fed"
+  "tree.PID\"\000\0227\n\016SendIns2NodeID\022\023.fedtree.I"
+  "ns2NodeID\032\014.fedtree.PID\"\000(\001\022+\n\010GetNodes\022"
+  "\014.fedtree.PID\032\r.fedtree.Node\"\0000\001\0226\n\rGetI"
+  "ns2NodeID\022\014.fedtree.PID\032\023.fedtree.Ins2No"
+  "deID\"\0000\001\0221\n\017CheckIfContinue\022\014.fedtree.PI"
+  "D\032\016.fedtree.Ready\"\000\022.\n\014TriggerPrune\022\014.fe"
+  "dtree.PID\032\016.fedtree.Ready\"\000\0223\n\021TriggerPr"
+  "intScore\022\014.fedtree.PID\032\016.fedtree.Ready\"\000"
+  "\022.\n\tSendRange\022\017.fedtree.GHPair\032\014.fedtree"
+  ".PID\"\000(\001\022,\n\nTriggerCut\022\014.fedtree.PID\032\016.f"
+  "edtree.Ready\"\000\022-\n\010GetRange\022\014.fedtree.PID"
+  "\032\017.fedtree.GHPair\"\0000\001\022)\n\006SendGH\022\017.fedtre"
+  "e.GHPair\032\014.fedtree.PID\"\000\0224\n\014SendDHPubKey"
+  "\022\024.fedtree.DHPublicKey\032\014.fedtree.PID\"\000\0227"
+  "\n\014GetDHPubKeys\022\014.fedtree.PID\032\025.fedtree.D"
+  "HPublicKeys\"\0000\001\022/\n\nSendNoises\022\021.fedtree."
+  "SANoises\032\014.fedtree.PID\"\000\0220\n\tGetNoises\022\014."
+  "fedtree.PID\032\021.fedtree.SANoises\"\0000\001\0223\n\rSe"
+  "ndCutPoints\022\022.fedtree.CutPoints\032\014.fedtre"
+  "e.PID\"\000\0224\n\014GetCutPoints\022\014.fedtree.PID\032\022."
+  "fedtree.CutPoints\"\0000\001\0225\n\023TriggerBuildUsi"
+  "ngGH\022\014.fedtree.PID\032\016.fedtree.Ready\"\000\0221\n\017"
+  "TriggerCalcTree\022\014.fedtree.PID\032\016.fedtree."
+  "Ready\"\000\022*\n\013GetRootNode\022\014.fedtree.PID\032\r.f"
+  "edtree.Node\0227\n\016GetSplitPoints\022\014.fedtree."
+  "PID\032\023.fedtree.SplitPoint\"\0000\001\0222\n\020HCheckIf"
+  "Continue\022\014.fedtree.PID\032\016.fedtree.Ready\"\000"
+  "\022/\n\013ScoreReduce\022\016.fedtree.Score\032\016.fedtre"
+  "e.Score\"\000\0221\n\017TriggerHomoInit\022\014.fedtree.P"
+  "ID\032\016.fedtree.Ready\"\000\022/\n\rTriggerSAInit\022\014."
+  "fedtree.PID\032\016.fedtree.Ready\"\000\0220\n\013GetPail"
+  "lier\022\014.fedtree.PID\032\021.fedtree.Paillier\"\000\022"
+  "9\n\021SendHistogramsEnc\022\022.fedtree.GHPairEnc"
+  "\032\014.fedtree.PID\"\000(\001\0229\n\025SendBatchedHistogr"
+  "ams\022\020.fedtree.GHArray\032\014.fedtree.PID\"\000\022:\n"
+  "\024SendHistogramBatches\022\020.fedtree.GHBatch\032"
+  "\014.fedtree.PID\"\000(\001\0229\n\022SendHistFidBatches\022"
+  "\021.fedtree.FIDBatch\032\014.fedtree.PID\"\000(\001\022B\n\024"
+  "GetIns2NodeIDBatches\022\014.fedtree.PID\032\030.fed"
+  "tree.Ins2NodeIDBatch\"\0000\001\022C\n\025SendIns2Node"
+  "IDBatches\022\030.fedtree.Ins2NodeIDBatch\032\014.fe"
+  "dtree.PID\"\000(\001\0228\n\022GetGradientBatches\022\014.fe"
+  "dtree.PID\032\020.fedtree.GHBatch\"\0000\001\022>\n\025GetGr"
+  "adientBatchesEnc\022\014.fedtree.PID\032\023.fedtree"
+  ".GHEncBatch\"\0000\001\022/\n\013SendNodeEnc\022\020.fedtree"
+  ".NodeEnc\032\014.fedtree.PID\"\000\022/\n\tSendNodes\022\022."
+  "fedtree.NodeArray\032\014.fedtree.PID\"\000\0225\n\014Sen"
+  "dNodesEnc\022\025.fedtree.NodeEncArray\032\014.fedtr"
+  "ee.PID\"\000\022@\n\027SendHistogramBatchesEnc\022\023.fe"
+  "dtree.GHEncBatch\032\014.fedtree.PID\"\000(\001\022,\n\nSt"
+  "opServer\022\014.fedtree.PID\032\016.fedtree.Score\"\000"
+  "\022.\n\014BeginBarrier\022\014.fedtree.PID\032\016.fedtree"
+  ".Ready\"\000b\006proto3"
   ;
 static const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable*const descriptor_table_fedtree_2eproto_deps[1] = {
 };
-static ::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase*const descriptor_table_fedtree_2eproto_sccs[24] = {
+static ::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase*const descriptor_table_fedtree_2eproto_sccs[25] = {
   &scc_info_BestInfo_fedtree_2eproto.base,
+  &scc_info_CutPoints_fedtree_2eproto.base,
   &scc_info_DHPublicKey_fedtree_2eproto.base,
   &scc_info_DHPublicKeys_fedtree_2eproto.base,
   &scc_info_DatasetInfo_fedtree_2eproto.base,
@@ -870,10 +903,10 @@ static ::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase*const descriptor_table_fed
 };
 static ::PROTOBUF_NAMESPACE_ID::internal::once_flag descriptor_table_fedtree_2eproto_once;
 const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable descriptor_table_fedtree_2eproto = {
-  false, false, descriptor_table_protodef_fedtree_2eproto, "fedtree.proto", 4942,
-  &descriptor_table_fedtree_2eproto_once, descriptor_table_fedtree_2eproto_sccs, descriptor_table_fedtree_2eproto_deps, 24, 0,
+  false, false, descriptor_table_protodef_fedtree_2eproto, "fedtree.proto", 5136,
+  &descriptor_table_fedtree_2eproto_once, descriptor_table_fedtree_2eproto_sccs, descriptor_table_fedtree_2eproto_deps, 25, 0,
   schemas, file_default_instances, TableStruct_fedtree_2eproto::offsets,
-  file_level_metadata_fedtree_2eproto, 24, file_level_enum_descriptors_fedtree_2eproto, file_level_service_descriptors_fedtree_2eproto,
+  file_level_metadata_fedtree_2eproto, 25, file_level_enum_descriptors_fedtree_2eproto, file_level_service_descriptors_fedtree_2eproto,
 };
 
 // Force running AddDescriptors() at dynamic initialization time.
@@ -8233,6 +8266,286 @@ void SANoises::InternalSwap(SANoises* other) {
 }
 
 
+// ===================================================================
+
+class CutPoints::_Internal {
+ public:
+};
+
+CutPoints::CutPoints(::PROTOBUF_NAMESPACE_ID::Arena* arena)
+  : ::PROTOBUF_NAMESPACE_ID::Message(arena),
+  cut_points_val_(arena),
+  cut_col_ptr_(arena),
+  cut_fid_(arena) {
+  SharedCtor();
+  RegisterArenaDtor(arena);
+  // @@protoc_insertion_point(arena_constructor:fedtree.CutPoints)
+}
+CutPoints::CutPoints(const CutPoints& from)
+  : ::PROTOBUF_NAMESPACE_ID::Message(),
+      cut_points_val_(from.cut_points_val_),
+      cut_col_ptr_(from.cut_col_ptr_),
+      cut_fid_(from.cut_fid_) {
+  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
+  // @@protoc_insertion_point(copy_constructor:fedtree.CutPoints)
+}
+
+void CutPoints::SharedCtor() {
+}
+
+CutPoints::~CutPoints() {
+  // @@protoc_insertion_point(destructor:fedtree.CutPoints)
+  SharedDtor();
+  _internal_metadata_.Delete<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
+}
+
+void CutPoints::SharedDtor() {
+  GOOGLE_DCHECK(GetArena() == nullptr);
+}
+
+void CutPoints::ArenaDtor(void* object) {
+  CutPoints* _this = reinterpret_cast< CutPoints* >(object);
+  (void)_this;
+}
+void CutPoints::RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena*) {
+}
+void CutPoints::SetCachedSize(int size) const {
+  _cached_size_.Set(size);
+}
+const CutPoints& CutPoints::default_instance() {
+  ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&::scc_info_CutPoints_fedtree_2eproto.base);
+  return *internal_default_instance();
+}
+
+
+void CutPoints::Clear() {
+// @@protoc_insertion_point(message_clear_start:fedtree.CutPoints)
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void) cached_has_bits;
+
+  cut_points_val_.Clear();
+  cut_col_ptr_.Clear();
+  cut_fid_.Clear();
+  _internal_metadata_.Clear<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
+}
+
+const char* CutPoints::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) {
+#define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
+  while (!ctx->Done(&ptr)) {
+    ::PROTOBUF_NAMESPACE_ID::uint32 tag;
+    ptr = ::PROTOBUF_NAMESPACE_ID::internal::ReadTag(ptr, &tag);
+    CHK_(ptr);
+    switch (tag >> 3) {
+      // repeated double cut_points_val = 1 [packed = true];
+      case 1:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 10)) {
+          ptr = ::PROTOBUF_NAMESPACE_ID::internal::PackedDoubleParser(_internal_mutable_cut_points_val(), ptr, ctx);
+          CHK_(ptr);
+        } else if (static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 9) {
+          _internal_add_cut_points_val(::PROTOBUF_NAMESPACE_ID::internal::UnalignedLoad<double>(ptr));
+          ptr += sizeof(double);
+        } else goto handle_unusual;
+        continue;
+      // repeated int32 cut_col_ptr = 2 [packed = true];
+      case 2:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 18)) {
+          ptr = ::PROTOBUF_NAMESPACE_ID::internal::PackedInt32Parser(_internal_mutable_cut_col_ptr(), ptr, ctx);
+          CHK_(ptr);
+        } else if (static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 16) {
+          _internal_add_cut_col_ptr(::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr));
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
+      // repeated int32 cut_fid = 3 [packed = true];
+      case 3:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 26)) {
+          ptr = ::PROTOBUF_NAMESPACE_ID::internal::PackedInt32Parser(_internal_mutable_cut_fid(), ptr, ctx);
+          CHK_(ptr);
+        } else if (static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 24) {
+          _internal_add_cut_fid(::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr));
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
+      default: {
+      handle_unusual:
+        if ((tag & 7) == 4 || tag == 0) {
+          ctx->SetLastTag(tag);
+          goto success;
+        }
+        ptr = UnknownFieldParse(tag,
+            _internal_metadata_.mutable_unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(),
+            ptr, ctx);
+        CHK_(ptr != nullptr);
+        continue;
+      }
+    }  // switch
+  }  // while
+success:
+  return ptr;
+failure:
+  ptr = nullptr;
+  goto success;
+#undef CHK_
+}
+
+::PROTOBUF_NAMESPACE_ID::uint8* CutPoints::_InternalSerialize(
+    ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
+  // @@protoc_insertion_point(serialize_to_array_start:fedtree.CutPoints)
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
+
+  // repeated double cut_points_val = 1 [packed = true];
+  if (this->_internal_cut_points_val_size() > 0) {
+    target = stream->WriteFixedPacked(1, _internal_cut_points_val(), target);
+  }
+
+  // repeated int32 cut_col_ptr = 2 [packed = true];
+  {
+    int byte_size = _cut_col_ptr_cached_byte_size_.load(std::memory_order_relaxed);
+    if (byte_size > 0) {
+      target = stream->WriteInt32Packed(
+          2, _internal_cut_col_ptr(), byte_size, target);
+    }
+  }
+
+  // repeated int32 cut_fid = 3 [packed = true];
+  {
+    int byte_size = _cut_fid_cached_byte_size_.load(std::memory_order_relaxed);
+    if (byte_size > 0) {
+      target = stream->WriteInt32Packed(
+          3, _internal_cut_fid(), byte_size, target);
+    }
+  }
+
+  if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormat::InternalSerializeUnknownFieldsToArray(
+        _internal_metadata_.unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(::PROTOBUF_NAMESPACE_ID::UnknownFieldSet::default_instance), target, stream);
+  }
+  // @@protoc_insertion_point(serialize_to_array_end:fedtree.CutPoints)
+  return target;
+}
+
+size_t CutPoints::ByteSizeLong() const {
+// @@protoc_insertion_point(message_byte_size_start:fedtree.CutPoints)
+  size_t total_size = 0;
+
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void) cached_has_bits;
+
+  // repeated double cut_points_val = 1 [packed = true];
+  {
+    unsigned int count = static_cast<unsigned int>(this->_internal_cut_points_val_size());
+    size_t data_size = 8UL * count;
+    if (data_size > 0) {
+      total_size += 1 +
+        ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::Int32Size(
+            static_cast<::PROTOBUF_NAMESPACE_ID::int32>(data_size));
+    }
+    int cached_size = ::PROTOBUF_NAMESPACE_ID::internal::ToCachedSize(data_size);
+    _cut_points_val_cached_byte_size_.store(cached_size,
+                                    std::memory_order_relaxed);
+    total_size += data_size;
+  }
+
+  // repeated int32 cut_col_ptr = 2 [packed = true];
+  {
+    size_t data_size = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::
+      Int32Size(this->cut_col_ptr_);
+    if (data_size > 0) {
+      total_size += 1 +
+        ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::Int32Size(
+            static_cast<::PROTOBUF_NAMESPACE_ID::int32>(data_size));
+    }
+    int cached_size = ::PROTOBUF_NAMESPACE_ID::internal::ToCachedSize(data_size);
+    _cut_col_ptr_cached_byte_size_.store(cached_size,
+                                    std::memory_order_relaxed);
+    total_size += data_size;
+  }
+
+  // repeated int32 cut_fid = 3 [packed = true];
+  {
+    size_t data_size = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::
+      Int32Size(this->cut_fid_);
+    if (data_size > 0) {
+      total_size += 1 +
+        ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::Int32Size(
+            static_cast<::PROTOBUF_NAMESPACE_ID::int32>(data_size));
+    }
+    int cached_size = ::PROTOBUF_NAMESPACE_ID::internal::ToCachedSize(data_size);
+    _cut_fid_cached_byte_size_.store(cached_size,
+                                    std::memory_order_relaxed);
+    total_size += data_size;
+  }
+
+  if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
+    return ::PROTOBUF_NAMESPACE_ID::internal::ComputeUnknownFieldsSize(
+        _internal_metadata_, total_size, &_cached_size_);
+  }
+  int cached_size = ::PROTOBUF_NAMESPACE_ID::internal::ToCachedSize(total_size);
+  SetCachedSize(cached_size);
+  return total_size;
+}
+
+void CutPoints::MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
+// @@protoc_insertion_point(generalized_merge_from_start:fedtree.CutPoints)
+  GOOGLE_DCHECK_NE(&from, this);
+  const CutPoints* source =
+      ::PROTOBUF_NAMESPACE_ID::DynamicCastToGenerated<CutPoints>(
+          &from);
+  if (source == nullptr) {
+  // @@protoc_insertion_point(generalized_merge_from_cast_fail:fedtree.CutPoints)
+    ::PROTOBUF_NAMESPACE_ID::internal::ReflectionOps::Merge(from, this);
+  } else {
+  // @@protoc_insertion_point(generalized_merge_from_cast_success:fedtree.CutPoints)
+    MergeFrom(*source);
+  }
+}
+
+void CutPoints::MergeFrom(const CutPoints& from) {
+// @@protoc_insertion_point(class_specific_merge_from_start:fedtree.CutPoints)
+  GOOGLE_DCHECK_NE(&from, this);
+  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
+
+  cut_points_val_.MergeFrom(from.cut_points_val_);
+  cut_col_ptr_.MergeFrom(from.cut_col_ptr_);
+  cut_fid_.MergeFrom(from.cut_fid_);
+}
+
+void CutPoints::CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
+// @@protoc_insertion_point(generalized_copy_from_start:fedtree.CutPoints)
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+void CutPoints::CopyFrom(const CutPoints& from) {
+// @@protoc_insertion_point(class_specific_copy_from_start:fedtree.CutPoints)
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+bool CutPoints::IsInitialized() const {
+  return true;
+}
+
+void CutPoints::InternalSwap(CutPoints* other) {
+  using std::swap;
+  _internal_metadata_.Swap<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(&other->_internal_metadata_);
+  cut_points_val_.InternalSwap(&other->cut_points_val_);
+  cut_col_ptr_.InternalSwap(&other->cut_col_ptr_);
+  cut_fid_.InternalSwap(&other->cut_fid_);
+}
+
+::PROTOBUF_NAMESPACE_ID::Metadata CutPoints::GetMetadata() const {
+  return GetMetadataStatic();
+}
+
+
 // @@protoc_insertion_point(namespace_scope)
 }  // namespace fedtree
 PROTOBUF_NAMESPACE_OPEN
@@ -8307,6 +8620,9 @@ template<> PROTOBUF_NOINLINE ::fedtree::SANoise* Arena::CreateMaybeMessage< ::fe
 }
 template<> PROTOBUF_NOINLINE ::fedtree::SANoises* Arena::CreateMaybeMessage< ::fedtree::SANoises >(Arena* arena) {
   return Arena::CreateMessageInternal< ::fedtree::SANoises >(arena);
+}
+template<> PROTOBUF_NOINLINE ::fedtree::CutPoints* Arena::CreateMaybeMessage< ::fedtree::CutPoints >(Arena* arena) {
+  return Arena::CreateMessageInternal< ::fedtree::CutPoints >(arena);
 }
 PROTOBUF_NAMESPACE_CLOSE
 

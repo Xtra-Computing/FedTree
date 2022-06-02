@@ -64,11 +64,11 @@ void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FL
     if (params.propose_split == "server") {
         // loop through all party to find max and min for each feature
         float inf = std::numeric_limits<float>::infinity();
-        vector<vector<float>> feature_range(parties[0].get_num_feature());
+        vector<vector<float_type>> feature_range(parties[0].get_num_feature());
         for (int n = 0; n < parties[0].get_num_feature(); n++) {
-            vector<float> min_max = {inf, -inf};
+            vector<float_type> min_max = {inf, -inf};
             for (int p = 0; p < n_parties; p++) {
-                vector<float> temp = parties[p].get_feature_range_by_feature_index(n);
+                vector<float_type> temp = parties[p].get_feature_range_by_feature_index(n);
                 if (temp[0] <= min_max[0])
                     min_max[0] = temp[0];
                 if (temp[1] >= min_max[1])
@@ -84,11 +84,16 @@ void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FL
             parties[p].booster.fbuilder->get_bin_ids();
         }
 
-    } else if (params.propose_split == "client" || params.propose_split == "client_pre" || params.propose_split == "client_post") {
+    } else if (params.propose_split == "party" || params.propose_split == "client" || params.propose_split == "client_pre" || params.propose_split == "client_post") {
         for (int p = 0; p < n_parties; p++) {
-            auto dataset = parties[p].dataset;
-            parties[p].booster.fbuilder->cut.get_cut_points_fast(dataset, n_bins, dataset.n_instances());
-            aggregator.booster.fbuilder->append_to_parties_cut(parties[p].booster.fbuilder->cut, p);
+//            auto dataset = parties[p].dataset;
+//            parties[p].booster.fbuilder->cut.get_cut_points_fast(dataset, n_bins, dataset.n_instances());
+            server.booster.fbuilder->append_to_parties_cut(parties[p].booster.fbuilder->cut, p);
+        }
+        server.booster.fbuilder->cut.get_cut_points_by_parties_cut_sampling(server.booster.fbuilder->parties_cut, n_bins);
+        for (int p = 0; p < n_parties; p++){
+            parties[p].booster.fbuilder->set_cut(server.booster.fbuilder->cut);
+            parties[p].booster.fbuilder->get_bin_ids();
         }
         if (params.propose_split == "client_pre") {
             // find feature range of each feature for each party
@@ -322,7 +327,7 @@ void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FL
                 // set these parameters to fit merged histogram
                 n_bins = aggregator.booster.fbuilder->cut.cut_points_val.size();
                 int n_max_splits = n_max_nodes * n_bins;
-                if (params.propose_split == "server" || params.propose_split == "client_pre") {
+                if (params.propose_split == "server" || params.propose_split == "client_pre" || params.propose_split == "party") {
 //                    if (params.privacy_tech == "he") {
 //                        hist.resize(aggregator.booster.fbuilder->parties_hist[0].size());
 //                        missing_gh.resize(aggregator.booster.fbuilder->parties_missing_gh[0].size());
@@ -334,11 +339,11 @@ void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FL
 //                    server.booster.fbuilder->set_last_missing_gh(missing_gh);
 //                    LOG(INFO) << hist;
                 }else if (params.propose_split == "client_post") {
-                    vector<vector<vector<float>>> feature_range_for_client(parties[0].get_num_feature());
+                    vector<vector<vector<float_type>>> feature_range_for_client(parties[0].get_num_feature());
                     for (int n = 0; n < parties[0].get_num_feature(); n++) {
                         feature_range_for_client[n].resize(parties.size());
                         for (int p = 0; p < parties.size(); p++) {
-                            vector<float> temp = parties[p].get_feature_range_by_feature_index(n);
+                            vector<float_type> temp = parties[p].get_feature_range_by_feature_index(n);
                             feature_range_for_client[n][p] = temp;
                         }
                     }
@@ -590,10 +595,9 @@ void FLtrainer::vertical_fl_trainer(vector<Party> &parties, Server &server, FLPa
                 for (int pid = 0; pid < parties.size(); pid++)
                     parties_n_columns[pid] = parties[pid].dataset.n_features();
 
-#pragma omp parallel for
+                #pragma omp parallel for
                 for (int pid = 0; pid < parties.size(); pid++) {
                     int n_bins = parties[pid].booster.fbuilder->cut.cut_points_val.size();
-//                    std::cout<<"party "<<pid<<" n_bins:"<<n_bins<<std::endl;
                     parties_n_bins[pid] = n_bins;
                     int n_max_splits = n_max_nodes * n_bins;
                     int n_column = parties[pid].dataset.n_features();

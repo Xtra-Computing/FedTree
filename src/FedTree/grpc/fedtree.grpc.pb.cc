@@ -45,6 +45,8 @@ static const char* FedTree_method_names[] = {
   "/fedtree.FedTree/GetDHPubKeys",
   "/fedtree.FedTree/SendNoises",
   "/fedtree.FedTree/GetNoises",
+  "/fedtree.FedTree/SendCutPoints",
+  "/fedtree.FedTree/GetCutPoints",
   "/fedtree.FedTree/TriggerBuildUsingGH",
   "/fedtree.FedTree/TriggerCalcTree",
   "/fedtree.FedTree/GetRootNode",
@@ -100,29 +102,31 @@ FedTree::Stub::Stub(const std::shared_ptr< ::grpc::ChannelInterface>& channel)
   , rpcmethod_GetDHPubKeys_(FedTree_method_names[20], ::grpc::internal::RpcMethod::SERVER_STREAMING, channel)
   , rpcmethod_SendNoises_(FedTree_method_names[21], ::grpc::internal::RpcMethod::NORMAL_RPC, channel)
   , rpcmethod_GetNoises_(FedTree_method_names[22], ::grpc::internal::RpcMethod::SERVER_STREAMING, channel)
-  , rpcmethod_TriggerBuildUsingGH_(FedTree_method_names[23], ::grpc::internal::RpcMethod::NORMAL_RPC, channel)
-  , rpcmethod_TriggerCalcTree_(FedTree_method_names[24], ::grpc::internal::RpcMethod::NORMAL_RPC, channel)
-  , rpcmethod_GetRootNode_(FedTree_method_names[25], ::grpc::internal::RpcMethod::NORMAL_RPC, channel)
-  , rpcmethod_GetSplitPoints_(FedTree_method_names[26], ::grpc::internal::RpcMethod::SERVER_STREAMING, channel)
-  , rpcmethod_HCheckIfContinue_(FedTree_method_names[27], ::grpc::internal::RpcMethod::NORMAL_RPC, channel)
-  , rpcmethod_ScoreReduce_(FedTree_method_names[28], ::grpc::internal::RpcMethod::NORMAL_RPC, channel)
-  , rpcmethod_TriggerHomoInit_(FedTree_method_names[29], ::grpc::internal::RpcMethod::NORMAL_RPC, channel)
-  , rpcmethod_TriggerSAInit_(FedTree_method_names[30], ::grpc::internal::RpcMethod::NORMAL_RPC, channel)
-  , rpcmethod_GetPaillier_(FedTree_method_names[31], ::grpc::internal::RpcMethod::NORMAL_RPC, channel)
-  , rpcmethod_SendHistogramsEnc_(FedTree_method_names[32], ::grpc::internal::RpcMethod::CLIENT_STREAMING, channel)
-  , rpcmethod_SendBatchedHistograms_(FedTree_method_names[33], ::grpc::internal::RpcMethod::NORMAL_RPC, channel)
-  , rpcmethod_SendHistogramBatches_(FedTree_method_names[34], ::grpc::internal::RpcMethod::CLIENT_STREAMING, channel)
-  , rpcmethod_SendHistFidBatches_(FedTree_method_names[35], ::grpc::internal::RpcMethod::CLIENT_STREAMING, channel)
-  , rpcmethod_GetIns2NodeIDBatches_(FedTree_method_names[36], ::grpc::internal::RpcMethod::SERVER_STREAMING, channel)
-  , rpcmethod_SendIns2NodeIDBatches_(FedTree_method_names[37], ::grpc::internal::RpcMethod::CLIENT_STREAMING, channel)
-  , rpcmethod_GetGradientBatches_(FedTree_method_names[38], ::grpc::internal::RpcMethod::SERVER_STREAMING, channel)
-  , rpcmethod_GetGradientBatchesEnc_(FedTree_method_names[39], ::grpc::internal::RpcMethod::SERVER_STREAMING, channel)
-  , rpcmethod_SendNodeEnc_(FedTree_method_names[40], ::grpc::internal::RpcMethod::NORMAL_RPC, channel)
-  , rpcmethod_SendNodes_(FedTree_method_names[41], ::grpc::internal::RpcMethod::NORMAL_RPC, channel)
-  , rpcmethod_SendNodesEnc_(FedTree_method_names[42], ::grpc::internal::RpcMethod::NORMAL_RPC, channel)
-  , rpcmethod_SendHistogramBatchesEnc_(FedTree_method_names[43], ::grpc::internal::RpcMethod::CLIENT_STREAMING, channel)
-  , rpcmethod_StopServer_(FedTree_method_names[44], ::grpc::internal::RpcMethod::NORMAL_RPC, channel)
-  , rpcmethod_BeginBarrier_(FedTree_method_names[45], ::grpc::internal::RpcMethod::NORMAL_RPC, channel)
+  , rpcmethod_SendCutPoints_(FedTree_method_names[23], ::grpc::internal::RpcMethod::NORMAL_RPC, channel)
+  , rpcmethod_GetCutPoints_(FedTree_method_names[24], ::grpc::internal::RpcMethod::SERVER_STREAMING, channel)
+  , rpcmethod_TriggerBuildUsingGH_(FedTree_method_names[25], ::grpc::internal::RpcMethod::NORMAL_RPC, channel)
+  , rpcmethod_TriggerCalcTree_(FedTree_method_names[26], ::grpc::internal::RpcMethod::NORMAL_RPC, channel)
+  , rpcmethod_GetRootNode_(FedTree_method_names[27], ::grpc::internal::RpcMethod::NORMAL_RPC, channel)
+  , rpcmethod_GetSplitPoints_(FedTree_method_names[28], ::grpc::internal::RpcMethod::SERVER_STREAMING, channel)
+  , rpcmethod_HCheckIfContinue_(FedTree_method_names[29], ::grpc::internal::RpcMethod::NORMAL_RPC, channel)
+  , rpcmethod_ScoreReduce_(FedTree_method_names[30], ::grpc::internal::RpcMethod::NORMAL_RPC, channel)
+  , rpcmethod_TriggerHomoInit_(FedTree_method_names[31], ::grpc::internal::RpcMethod::NORMAL_RPC, channel)
+  , rpcmethod_TriggerSAInit_(FedTree_method_names[32], ::grpc::internal::RpcMethod::NORMAL_RPC, channel)
+  , rpcmethod_GetPaillier_(FedTree_method_names[33], ::grpc::internal::RpcMethod::NORMAL_RPC, channel)
+  , rpcmethod_SendHistogramsEnc_(FedTree_method_names[34], ::grpc::internal::RpcMethod::CLIENT_STREAMING, channel)
+  , rpcmethod_SendBatchedHistograms_(FedTree_method_names[35], ::grpc::internal::RpcMethod::NORMAL_RPC, channel)
+  , rpcmethod_SendHistogramBatches_(FedTree_method_names[36], ::grpc::internal::RpcMethod::CLIENT_STREAMING, channel)
+  , rpcmethod_SendHistFidBatches_(FedTree_method_names[37], ::grpc::internal::RpcMethod::CLIENT_STREAMING, channel)
+  , rpcmethod_GetIns2NodeIDBatches_(FedTree_method_names[38], ::grpc::internal::RpcMethod::SERVER_STREAMING, channel)
+  , rpcmethod_SendIns2NodeIDBatches_(FedTree_method_names[39], ::grpc::internal::RpcMethod::CLIENT_STREAMING, channel)
+  , rpcmethod_GetGradientBatches_(FedTree_method_names[40], ::grpc::internal::RpcMethod::SERVER_STREAMING, channel)
+  , rpcmethod_GetGradientBatchesEnc_(FedTree_method_names[41], ::grpc::internal::RpcMethod::SERVER_STREAMING, channel)
+  , rpcmethod_SendNodeEnc_(FedTree_method_names[42], ::grpc::internal::RpcMethod::NORMAL_RPC, channel)
+  , rpcmethod_SendNodes_(FedTree_method_names[43], ::grpc::internal::RpcMethod::NORMAL_RPC, channel)
+  , rpcmethod_SendNodesEnc_(FedTree_method_names[44], ::grpc::internal::RpcMethod::NORMAL_RPC, channel)
+  , rpcmethod_SendHistogramBatchesEnc_(FedTree_method_names[45], ::grpc::internal::RpcMethod::CLIENT_STREAMING, channel)
+  , rpcmethod_StopServer_(FedTree_method_names[46], ::grpc::internal::RpcMethod::NORMAL_RPC, channel)
+  , rpcmethod_BeginBarrier_(FedTree_method_names[47], ::grpc::internal::RpcMethod::NORMAL_RPC, channel)
   {}
 
 ::grpc::Status FedTree::Stub::TriggerUpdateGradients(::grpc::ClientContext* context, const ::fedtree::PID& request, ::fedtree::Ready* response) {
@@ -575,6 +579,45 @@ void FedTree::Stub::experimental_async::GetNoises(::grpc::ClientContext* context
 
 ::grpc::ClientAsyncReader< ::fedtree::SANoises>* FedTree::Stub::PrepareAsyncGetNoisesRaw(::grpc::ClientContext* context, const ::fedtree::PID& request, ::grpc::CompletionQueue* cq) {
   return ::grpc::internal::ClientAsyncReaderFactory< ::fedtree::SANoises>::Create(channel_.get(), cq, rpcmethod_GetNoises_, context, request, false, nullptr);
+}
+
+::grpc::Status FedTree::Stub::SendCutPoints(::grpc::ClientContext* context, const ::fedtree::CutPoints& request, ::fedtree::PID* response) {
+  return ::grpc::internal::BlockingUnaryCall< ::fedtree::CutPoints, ::fedtree::PID, ::grpc::protobuf::MessageLite, ::grpc::protobuf::MessageLite>(channel_.get(), rpcmethod_SendCutPoints_, context, request, response);
+}
+
+void FedTree::Stub::experimental_async::SendCutPoints(::grpc::ClientContext* context, const ::fedtree::CutPoints* request, ::fedtree::PID* response, std::function<void(::grpc::Status)> f) {
+  ::grpc::internal::CallbackUnaryCall< ::fedtree::CutPoints, ::fedtree::PID, ::grpc::protobuf::MessageLite, ::grpc::protobuf::MessageLite>(stub_->channel_.get(), stub_->rpcmethod_SendCutPoints_, context, request, response, std::move(f));
+}
+
+void FedTree::Stub::experimental_async::SendCutPoints(::grpc::ClientContext* context, const ::fedtree::CutPoints* request, ::fedtree::PID* response, ::grpc::experimental::ClientUnaryReactor* reactor) {
+  ::grpc::internal::ClientCallbackUnaryFactory::Create< ::grpc::protobuf::MessageLite, ::grpc::protobuf::MessageLite>(stub_->channel_.get(), stub_->rpcmethod_SendCutPoints_, context, request, response, reactor);
+}
+
+::grpc::ClientAsyncResponseReader< ::fedtree::PID>* FedTree::Stub::PrepareAsyncSendCutPointsRaw(::grpc::ClientContext* context, const ::fedtree::CutPoints& request, ::grpc::CompletionQueue* cq) {
+  return ::grpc::internal::ClientAsyncResponseReaderHelper::Create< ::fedtree::PID, ::fedtree::CutPoints, ::grpc::protobuf::MessageLite, ::grpc::protobuf::MessageLite>(channel_.get(), cq, rpcmethod_SendCutPoints_, context, request);
+}
+
+::grpc::ClientAsyncResponseReader< ::fedtree::PID>* FedTree::Stub::AsyncSendCutPointsRaw(::grpc::ClientContext* context, const ::fedtree::CutPoints& request, ::grpc::CompletionQueue* cq) {
+  auto* result =
+    this->PrepareAsyncSendCutPointsRaw(context, request, cq);
+  result->StartCall();
+  return result;
+}
+
+::grpc::ClientReader< ::fedtree::CutPoints>* FedTree::Stub::GetCutPointsRaw(::grpc::ClientContext* context, const ::fedtree::PID& request) {
+  return ::grpc::internal::ClientReaderFactory< ::fedtree::CutPoints>::Create(channel_.get(), rpcmethod_GetCutPoints_, context, request);
+}
+
+void FedTree::Stub::experimental_async::GetCutPoints(::grpc::ClientContext* context, ::fedtree::PID* request, ::grpc::experimental::ClientReadReactor< ::fedtree::CutPoints>* reactor) {
+  ::grpc::internal::ClientCallbackReaderFactory< ::fedtree::CutPoints>::Create(stub_->channel_.get(), stub_->rpcmethod_GetCutPoints_, context, request, reactor);
+}
+
+::grpc::ClientAsyncReader< ::fedtree::CutPoints>* FedTree::Stub::AsyncGetCutPointsRaw(::grpc::ClientContext* context, const ::fedtree::PID& request, ::grpc::CompletionQueue* cq, void* tag) {
+  return ::grpc::internal::ClientAsyncReaderFactory< ::fedtree::CutPoints>::Create(channel_.get(), cq, rpcmethod_GetCutPoints_, context, request, true, tag);
+}
+
+::grpc::ClientAsyncReader< ::fedtree::CutPoints>* FedTree::Stub::PrepareAsyncGetCutPointsRaw(::grpc::ClientContext* context, const ::fedtree::PID& request, ::grpc::CompletionQueue* cq) {
+  return ::grpc::internal::ClientAsyncReaderFactory< ::fedtree::CutPoints>::Create(channel_.get(), cq, rpcmethod_GetCutPoints_, context, request, false, nullptr);
 }
 
 ::grpc::Status FedTree::Stub::TriggerBuildUsingGH(::grpc::ClientContext* context, const ::fedtree::PID& request, ::fedtree::Ready* response) {
@@ -1277,6 +1320,26 @@ FedTree::Service::Service() {
   AddMethod(new ::grpc::internal::RpcServiceMethod(
       FedTree_method_names[23],
       ::grpc::internal::RpcMethod::NORMAL_RPC,
+      new ::grpc::internal::RpcMethodHandler< FedTree::Service, ::fedtree::CutPoints, ::fedtree::PID, ::grpc::protobuf::MessageLite, ::grpc::protobuf::MessageLite>(
+          [](FedTree::Service* service,
+             ::grpc::ServerContext* ctx,
+             const ::fedtree::CutPoints* req,
+             ::fedtree::PID* resp) {
+               return service->SendCutPoints(ctx, req, resp);
+             }, this)));
+  AddMethod(new ::grpc::internal::RpcServiceMethod(
+      FedTree_method_names[24],
+      ::grpc::internal::RpcMethod::SERVER_STREAMING,
+      new ::grpc::internal::ServerStreamingHandler< FedTree::Service, ::fedtree::PID, ::fedtree::CutPoints>(
+          [](FedTree::Service* service,
+             ::grpc::ServerContext* ctx,
+             const ::fedtree::PID* req,
+             ::grpc::ServerWriter<::fedtree::CutPoints>* writer) {
+               return service->GetCutPoints(ctx, req, writer);
+             }, this)));
+  AddMethod(new ::grpc::internal::RpcServiceMethod(
+      FedTree_method_names[25],
+      ::grpc::internal::RpcMethod::NORMAL_RPC,
       new ::grpc::internal::RpcMethodHandler< FedTree::Service, ::fedtree::PID, ::fedtree::Ready, ::grpc::protobuf::MessageLite, ::grpc::protobuf::MessageLite>(
           [](FedTree::Service* service,
              ::grpc::ServerContext* ctx,
@@ -1285,7 +1348,7 @@ FedTree::Service::Service() {
                return service->TriggerBuildUsingGH(ctx, req, resp);
              }, this)));
   AddMethod(new ::grpc::internal::RpcServiceMethod(
-      FedTree_method_names[24],
+      FedTree_method_names[26],
       ::grpc::internal::RpcMethod::NORMAL_RPC,
       new ::grpc::internal::RpcMethodHandler< FedTree::Service, ::fedtree::PID, ::fedtree::Ready, ::grpc::protobuf::MessageLite, ::grpc::protobuf::MessageLite>(
           [](FedTree::Service* service,
@@ -1295,7 +1358,7 @@ FedTree::Service::Service() {
                return service->TriggerCalcTree(ctx, req, resp);
              }, this)));
   AddMethod(new ::grpc::internal::RpcServiceMethod(
-      FedTree_method_names[25],
+      FedTree_method_names[27],
       ::grpc::internal::RpcMethod::NORMAL_RPC,
       new ::grpc::internal::RpcMethodHandler< FedTree::Service, ::fedtree::PID, ::fedtree::Node, ::grpc::protobuf::MessageLite, ::grpc::protobuf::MessageLite>(
           [](FedTree::Service* service,
@@ -1305,7 +1368,7 @@ FedTree::Service::Service() {
                return service->GetRootNode(ctx, req, resp);
              }, this)));
   AddMethod(new ::grpc::internal::RpcServiceMethod(
-      FedTree_method_names[26],
+      FedTree_method_names[28],
       ::grpc::internal::RpcMethod::SERVER_STREAMING,
       new ::grpc::internal::ServerStreamingHandler< FedTree::Service, ::fedtree::PID, ::fedtree::SplitPoint>(
           [](FedTree::Service* service,
@@ -1315,7 +1378,7 @@ FedTree::Service::Service() {
                return service->GetSplitPoints(ctx, req, writer);
              }, this)));
   AddMethod(new ::grpc::internal::RpcServiceMethod(
-      FedTree_method_names[27],
+      FedTree_method_names[29],
       ::grpc::internal::RpcMethod::NORMAL_RPC,
       new ::grpc::internal::RpcMethodHandler< FedTree::Service, ::fedtree::PID, ::fedtree::Ready, ::grpc::protobuf::MessageLite, ::grpc::protobuf::MessageLite>(
           [](FedTree::Service* service,
@@ -1325,7 +1388,7 @@ FedTree::Service::Service() {
                return service->HCheckIfContinue(ctx, req, resp);
              }, this)));
   AddMethod(new ::grpc::internal::RpcServiceMethod(
-      FedTree_method_names[28],
+      FedTree_method_names[30],
       ::grpc::internal::RpcMethod::NORMAL_RPC,
       new ::grpc::internal::RpcMethodHandler< FedTree::Service, ::fedtree::Score, ::fedtree::Score, ::grpc::protobuf::MessageLite, ::grpc::protobuf::MessageLite>(
           [](FedTree::Service* service,
@@ -1335,7 +1398,7 @@ FedTree::Service::Service() {
                return service->ScoreReduce(ctx, req, resp);
              }, this)));
   AddMethod(new ::grpc::internal::RpcServiceMethod(
-      FedTree_method_names[29],
+      FedTree_method_names[31],
       ::grpc::internal::RpcMethod::NORMAL_RPC,
       new ::grpc::internal::RpcMethodHandler< FedTree::Service, ::fedtree::PID, ::fedtree::Ready, ::grpc::protobuf::MessageLite, ::grpc::protobuf::MessageLite>(
           [](FedTree::Service* service,
@@ -1345,7 +1408,7 @@ FedTree::Service::Service() {
                return service->TriggerHomoInit(ctx, req, resp);
              }, this)));
   AddMethod(new ::grpc::internal::RpcServiceMethod(
-      FedTree_method_names[30],
+      FedTree_method_names[32],
       ::grpc::internal::RpcMethod::NORMAL_RPC,
       new ::grpc::internal::RpcMethodHandler< FedTree::Service, ::fedtree::PID, ::fedtree::Ready, ::grpc::protobuf::MessageLite, ::grpc::protobuf::MessageLite>(
           [](FedTree::Service* service,
@@ -1355,7 +1418,7 @@ FedTree::Service::Service() {
                return service->TriggerSAInit(ctx, req, resp);
              }, this)));
   AddMethod(new ::grpc::internal::RpcServiceMethod(
-      FedTree_method_names[31],
+      FedTree_method_names[33],
       ::grpc::internal::RpcMethod::NORMAL_RPC,
       new ::grpc::internal::RpcMethodHandler< FedTree::Service, ::fedtree::PID, ::fedtree::Paillier, ::grpc::protobuf::MessageLite, ::grpc::protobuf::MessageLite>(
           [](FedTree::Service* service,
@@ -1365,7 +1428,7 @@ FedTree::Service::Service() {
                return service->GetPaillier(ctx, req, resp);
              }, this)));
   AddMethod(new ::grpc::internal::RpcServiceMethod(
-      FedTree_method_names[32],
+      FedTree_method_names[34],
       ::grpc::internal::RpcMethod::CLIENT_STREAMING,
       new ::grpc::internal::ClientStreamingHandler< FedTree::Service, ::fedtree::GHPairEnc, ::fedtree::PID>(
           [](FedTree::Service* service,
@@ -1375,7 +1438,7 @@ FedTree::Service::Service() {
                return service->SendHistogramsEnc(ctx, reader, resp);
              }, this)));
   AddMethod(new ::grpc::internal::RpcServiceMethod(
-      FedTree_method_names[33],
+      FedTree_method_names[35],
       ::grpc::internal::RpcMethod::NORMAL_RPC,
       new ::grpc::internal::RpcMethodHandler< FedTree::Service, ::fedtree::GHArray, ::fedtree::PID, ::grpc::protobuf::MessageLite, ::grpc::protobuf::MessageLite>(
           [](FedTree::Service* service,
@@ -1385,7 +1448,7 @@ FedTree::Service::Service() {
                return service->SendBatchedHistograms(ctx, req, resp);
              }, this)));
   AddMethod(new ::grpc::internal::RpcServiceMethod(
-      FedTree_method_names[34],
+      FedTree_method_names[36],
       ::grpc::internal::RpcMethod::CLIENT_STREAMING,
       new ::grpc::internal::ClientStreamingHandler< FedTree::Service, ::fedtree::GHBatch, ::fedtree::PID>(
           [](FedTree::Service* service,
@@ -1395,7 +1458,7 @@ FedTree::Service::Service() {
                return service->SendHistogramBatches(ctx, reader, resp);
              }, this)));
   AddMethod(new ::grpc::internal::RpcServiceMethod(
-      FedTree_method_names[35],
+      FedTree_method_names[37],
       ::grpc::internal::RpcMethod::CLIENT_STREAMING,
       new ::grpc::internal::ClientStreamingHandler< FedTree::Service, ::fedtree::FIDBatch, ::fedtree::PID>(
           [](FedTree::Service* service,
@@ -1405,7 +1468,7 @@ FedTree::Service::Service() {
                return service->SendHistFidBatches(ctx, reader, resp);
              }, this)));
   AddMethod(new ::grpc::internal::RpcServiceMethod(
-      FedTree_method_names[36],
+      FedTree_method_names[38],
       ::grpc::internal::RpcMethod::SERVER_STREAMING,
       new ::grpc::internal::ServerStreamingHandler< FedTree::Service, ::fedtree::PID, ::fedtree::Ins2NodeIDBatch>(
           [](FedTree::Service* service,
@@ -1415,7 +1478,7 @@ FedTree::Service::Service() {
                return service->GetIns2NodeIDBatches(ctx, req, writer);
              }, this)));
   AddMethod(new ::grpc::internal::RpcServiceMethod(
-      FedTree_method_names[37],
+      FedTree_method_names[39],
       ::grpc::internal::RpcMethod::CLIENT_STREAMING,
       new ::grpc::internal::ClientStreamingHandler< FedTree::Service, ::fedtree::Ins2NodeIDBatch, ::fedtree::PID>(
           [](FedTree::Service* service,
@@ -1425,7 +1488,7 @@ FedTree::Service::Service() {
                return service->SendIns2NodeIDBatches(ctx, reader, resp);
              }, this)));
   AddMethod(new ::grpc::internal::RpcServiceMethod(
-      FedTree_method_names[38],
+      FedTree_method_names[40],
       ::grpc::internal::RpcMethod::SERVER_STREAMING,
       new ::grpc::internal::ServerStreamingHandler< FedTree::Service, ::fedtree::PID, ::fedtree::GHBatch>(
           [](FedTree::Service* service,
@@ -1435,7 +1498,7 @@ FedTree::Service::Service() {
                return service->GetGradientBatches(ctx, req, writer);
              }, this)));
   AddMethod(new ::grpc::internal::RpcServiceMethod(
-      FedTree_method_names[39],
+      FedTree_method_names[41],
       ::grpc::internal::RpcMethod::SERVER_STREAMING,
       new ::grpc::internal::ServerStreamingHandler< FedTree::Service, ::fedtree::PID, ::fedtree::GHEncBatch>(
           [](FedTree::Service* service,
@@ -1445,7 +1508,7 @@ FedTree::Service::Service() {
                return service->GetGradientBatchesEnc(ctx, req, writer);
              }, this)));
   AddMethod(new ::grpc::internal::RpcServiceMethod(
-      FedTree_method_names[40],
+      FedTree_method_names[42],
       ::grpc::internal::RpcMethod::NORMAL_RPC,
       new ::grpc::internal::RpcMethodHandler< FedTree::Service, ::fedtree::NodeEnc, ::fedtree::PID, ::grpc::protobuf::MessageLite, ::grpc::protobuf::MessageLite>(
           [](FedTree::Service* service,
@@ -1455,7 +1518,7 @@ FedTree::Service::Service() {
                return service->SendNodeEnc(ctx, req, resp);
              }, this)));
   AddMethod(new ::grpc::internal::RpcServiceMethod(
-      FedTree_method_names[41],
+      FedTree_method_names[43],
       ::grpc::internal::RpcMethod::NORMAL_RPC,
       new ::grpc::internal::RpcMethodHandler< FedTree::Service, ::fedtree::NodeArray, ::fedtree::PID, ::grpc::protobuf::MessageLite, ::grpc::protobuf::MessageLite>(
           [](FedTree::Service* service,
@@ -1465,7 +1528,7 @@ FedTree::Service::Service() {
                return service->SendNodes(ctx, req, resp);
              }, this)));
   AddMethod(new ::grpc::internal::RpcServiceMethod(
-      FedTree_method_names[42],
+      FedTree_method_names[44],
       ::grpc::internal::RpcMethod::NORMAL_RPC,
       new ::grpc::internal::RpcMethodHandler< FedTree::Service, ::fedtree::NodeEncArray, ::fedtree::PID, ::grpc::protobuf::MessageLite, ::grpc::protobuf::MessageLite>(
           [](FedTree::Service* service,
@@ -1475,7 +1538,7 @@ FedTree::Service::Service() {
                return service->SendNodesEnc(ctx, req, resp);
              }, this)));
   AddMethod(new ::grpc::internal::RpcServiceMethod(
-      FedTree_method_names[43],
+      FedTree_method_names[45],
       ::grpc::internal::RpcMethod::CLIENT_STREAMING,
       new ::grpc::internal::ClientStreamingHandler< FedTree::Service, ::fedtree::GHEncBatch, ::fedtree::PID>(
           [](FedTree::Service* service,
@@ -1485,7 +1548,7 @@ FedTree::Service::Service() {
                return service->SendHistogramBatchesEnc(ctx, reader, resp);
              }, this)));
   AddMethod(new ::grpc::internal::RpcServiceMethod(
-      FedTree_method_names[44],
+      FedTree_method_names[46],
       ::grpc::internal::RpcMethod::NORMAL_RPC,
       new ::grpc::internal::RpcMethodHandler< FedTree::Service, ::fedtree::PID, ::fedtree::Score, ::grpc::protobuf::MessageLite, ::grpc::protobuf::MessageLite>(
           [](FedTree::Service* service,
@@ -1495,7 +1558,7 @@ FedTree::Service::Service() {
                return service->StopServer(ctx, req, resp);
              }, this)));
   AddMethod(new ::grpc::internal::RpcServiceMethod(
-      FedTree_method_names[45],
+      FedTree_method_names[47],
       ::grpc::internal::RpcMethod::NORMAL_RPC,
       new ::grpc::internal::RpcMethodHandler< FedTree::Service, ::fedtree::PID, ::fedtree::Ready, ::grpc::protobuf::MessageLite, ::grpc::protobuf::MessageLite>(
           [](FedTree::Service* service,
@@ -1664,6 +1727,20 @@ FedTree::Service::~Service() {
 }
 
 ::grpc::Status FedTree::Service::GetNoises(::grpc::ServerContext* context, const ::fedtree::PID* request, ::grpc::ServerWriter< ::fedtree::SANoises>* writer) {
+  (void) context;
+  (void) request;
+  (void) writer;
+  return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
+}
+
+::grpc::Status FedTree::Service::SendCutPoints(::grpc::ServerContext* context, const ::fedtree::CutPoints* request, ::fedtree::PID* response) {
+  (void) context;
+  (void) request;
+  (void) response;
+  return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
+}
+
+::grpc::Status FedTree::Service::GetCutPoints(::grpc::ServerContext* context, const ::fedtree::PID* request, ::grpc::ServerWriter< ::fedtree::CutPoints>* writer) {
   (void) context;
   (void) request;
   (void) writer;
