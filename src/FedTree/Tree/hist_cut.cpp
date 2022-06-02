@@ -264,9 +264,6 @@ void HistCut::get_cut_points_by_parties_cut_sampling(vector<HistCut> &parties_cu
             cut_fid_data[cut_col_ptr_data[i]+j] = i;
         }
     }
-    LOG(INFO) << cut_col_ptr;
-    LOG(INFO) << cut_points_val;
-    LOG(INFO) << cut_fid;
 }
 
 /**
