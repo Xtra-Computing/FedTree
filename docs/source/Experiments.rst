@@ -15,7 +15,7 @@ The other parameters of all approaches are set to the default setting of FedTree
 Effectiveness
 ^^^^^^^^^^^^^
 We first compare the accuracy of federated training and centralized training using `XGBoost <https://github.com/dmlc/xgboost>`_ and `ThunderGBM <https://github.com/Xtra-Computing/thundergbm>`_. The results are shown below.
-We report AUC for adult and RMSE for abalone. We can observe that the performance of FedTree is very close to ThunderGBM. Also, SA and HE do not affect the model performance.
+We report AUC for adult and RMSE for abalone. We can observe that the performance of FedTree is same as ThunderGBM. Also, SA and HE do not affect the model performance.
 
 +----------+---------+------------+--------------+-----------------+---------------+------------------+------------------+--------------------+
 | datasets | XGBoost | ThunderGBM | FedTree-Hori | FedTree-Hori+SA | FedTree-Verti | FedTree-Verti+HE | Homo-SecureBoost | Hetero-SecureBoost |

@@ -45,6 +45,10 @@ Parameters for Federated Setting
 
 * ``n_features`` [default=-1, type=int]
     - Number of features of the datasets. It needs to be specified when conducting horizontal FedTree with sparse datasets.
+
+* ``propose_split`` [default=``server``, type=string]
+    - ``server``: the server proposes candidate split points according to the range of each feature in horizontal FedTree.
+    - ``party``: the parties propose possible split points. Then, the server merge them and sample at most num_max_bin candidate split points in horizontal FedTree.
 Parameters for GBDTs
 --------------------
 
