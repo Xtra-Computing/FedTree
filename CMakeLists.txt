@@ -15,7 +15,7 @@ option(USE_CUDA_ARRAY "Compile with CUDA for training" OFF)
 option(DISTRIBUTED "Build for distributed computing" ON)
 option(USE_DOUBLE "Use double as gradient_type" OFF)
 set(BUILD_TESTS OFF CACHE BOOL "Build Tests")
-set(NTL_PATH "/usr/local" CACHE STRING "NTL Path")
+set(NTL_PATH "~/usr/local" CACHE STRING "NTL Path")
 
 #find_package(Threads)
 find_package(OpenMP REQUIRED)
@@ -98,7 +98,7 @@ set(COMMON_INCLUDES ${PROJECT_SOURCE_DIR}/include ${CMAKE_CURRENT_BINARY_DIR})
 if(USE_CUDA)
     list(REMOVE_ITEM COMMON_INCLUDES "${PROJECT_SOURCE_DIR}/include/FedTree/Encryption/paillier.h")
 else()
-    list(REMOVE_ITEM COMMON_INCLUDES "${PROJECT_SOURCE_DIR}/include/FedTree/Encryption/paillier_gpu.h")
+    list(REMOVE_ITEM COMMON_INCLUDES "${PROJECT_SOURCE_DIR}/include/FedTree/Encryption/paillier_gpu.h" "${PROJECT_SOURCE_DIR}/include/FedTree/Encryption/paillier_gmp.h")
 endif()
 
 

@@ -1661,7 +1661,8 @@ int main(int argc, char **argv) {
         LOG(INFO)<<"training end";
         train_time = used_time.count();
         LOG(INFO) << "train time: " << train_time<<"s";
-        party.gbdt.predict_score(fl_param.gbdt_param, test_dataset);
+        if(use_global_test_set)
+		party.gbdt.predict_score(fl_param.gbdt_param, test_dataset);
     }
     
     LOG(INFO) << "encryption time:" << party.enc_time << "s";
