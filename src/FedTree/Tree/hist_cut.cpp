@@ -273,6 +273,7 @@ void HistCut::get_cut_points_by_feature_range(vector<vector<float_type>> f_range
     cut_col_ptr.resize(n_features + 1);
     auto cut_col_ptr_data = cut_col_ptr.host_data();
     vector<int> n_bin_per_features(n_features);
+    float inf = std::numeric_limits<float>::infinity();
     #pragma omp parallel for
     for(int fid = 0; fid < n_features; fid ++) {
         float_type val_range = f_range[fid][1] - f_range[fid][0];
@@ -280,6 +281,9 @@ void HistCut::get_cut_points_by_feature_range(vector<vector<float_type>> f_range
         int n_bin = max_num_bins;
         if(val_step == 0){
             n_bin = 1;
+        }
+        else if((val_step == inf) || (val_step == -inf)){
+            n_bin = 0;
         }
         else {
             while (val_step < 1e-6) {
