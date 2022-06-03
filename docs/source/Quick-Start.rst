@@ -1,18 +1,22 @@
 Quick Start
 ===========
 
-This is an example to run FedTree.
+Here we present an example to simulate vertical federated learning with FedTree to help you understand the procedure of using FedTree.
 
-Prepare a dataset
-~~~~~~~~~~~~~~~~~
-You should first prepare a svmlight/libsvm format dataset. Example datasets can be downloaded from `LIBSVM`_ website.
+Prepare a dataset / datasets
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+You can either prepare a global dataset to simulate the federated setting by partitioning in FedTree or prepare a local dataset for each party.
 
-We have provided ``test_dataset.txt`` under ``dataset`` subdirectory.
+For the data format, FedTree supports svmlight/libsvm format (each row is an instance with ``label feature_id1:feature_value1  feature_id2:feature_value2 ...``)
+and csv format (the first row is the header ``id,label,feature_id1,feature_id2,...`` and the other rows are the corresponding values).
+See `here <https://github.com/Xtra-Computing/FedTree/blob/main/dataset/test_dataset.txt>`__ for an example of libsvm format dataset
+and `here <https://github.com/Xtra-Computing/FedTree/blob/main/dataset/credit/credit_vertical_p0_withlabel.csv>`__ for an example of csv format dataset.
 
 Configure the Parameters
 ~~~~~~~~~~~~~~~~~~~~~~~~
 You can set the parameters in a file, e.g., ``machine.conf`` under ``dataset`` subdirectory.
-We can set the following example parameters to run vertical federated learning using homomorphic encryption to protect the communicated message.
+For example, we can set the following example parameters to run vertical federated learning using homomorphic encryption to protect the communicated message.
+For more details about the parameters, please refer to `here <https://fedtree.readthedocs.io/en/latest/Parameters.html#>`__.
 
     .. code::
 
@@ -28,7 +32,7 @@ We can set the following example parameters to run vertical federated learning u
 
 Run FedTree
 ~~~~~~~~~~~
-After you install FedTree, you can simply run the following commands under ``FedTree`` directory.
+After you install FedTree, you can simply run the following commands under ``FedTree`` directory to simulate vertical federated learning in a single machine.
 
     .. code::
 

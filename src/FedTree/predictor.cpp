@@ -3,7 +3,7 @@
 //
 
 #include "FedTree/predictor.h"
-#include "FedTree/util/device_lambda.h"
+//#include "FedTree/util/device_lambda.h"
 #include "FedTree/objective/objective_function.h"
 
 void Predictor::get_y_predict (const GBDTParam &model_param, const vector<vector<Tree>> &boosted_model,
@@ -36,7 +36,7 @@ void Predictor::get_y_predict (const GBDTParam &model_param, const vector<vector
     csr_row_ptr.copy_from(dataSet.csr_row_ptr.data(), dataSet.csr_row_ptr.size());
 
     //do prediction
-    auto model_device_data = model.host_data();
+    auto model_host_data = model.host_data();
     auto predict_data = y_predict.host_data();
     auto csr_col_idx_data = csr_col_idx.host_data();
     auto csr_val_data = csr_val.host_data();
@@ -77,7 +77,7 @@ void Predictor::get_y_predict (const GBDTParam &model_param, const vector<vector
             auto predict_data_class = predict_data + t * n_instances;
             float_type sum = 0;
             for (int iter = 0; iter < num_iter; iter++) {
-                const Tree::TreeNode *node_data = model_device_data + iter * num_class * num_node + t * num_node;
+                const Tree::TreeNode *node_data = model_host_data + iter * num_class * num_node + t * num_node;
                 Tree::TreeNode curNode = node_data[0];
                 int cur_nid = 0; //node id
                 while (!curNode.is_leaf) {

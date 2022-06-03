@@ -3,11 +3,11 @@
 //
 
 #include "FedTree/metric/multiclass_metric.h"
-#include "FedTree/util/device_lambda.h"
+//#include "FedTree/util/device_lambda.h"
 #include "thrust/reduce.h"
 #include "thrust/execution_policy.h"
 
-
+using namespace std;
 float_type MulticlassAccuracy::get_score(const SyncArray<float_type> &y_p) const {
     CHECK_EQ(num_class * y.size(), y_p.size()) << num_class << " * " << y.size() << " != " << y_p.size();
     int n_instances = y.size();
@@ -34,6 +34,8 @@ float_type MulticlassAccuracy::get_score(const SyncArray<float_type> &y_p) const
 }
 
 float_type BinaryClassMetric::get_score(const SyncArray<float_type> &y_p) const {
+    /* 
+    // compute test error
     int n_instances = y.size();
     auto y_data = y.host_data();
     auto yp_data = y_p.host_data();
@@ -47,4 +49,50 @@ float_type BinaryClassMetric::get_score(const SyncArray<float_type> &y_p) const 
     }
     float acc = thrust::reduce(thrust::host, is_true_data, is_true_data + n_instances) / (float) n_instances;
     return 1 - acc;
+    */
+    //compute AUC
+    int n = y.size();
+    int pos = 0;
+    vector<pair<float_type, int>> pl;
+    auto y_data = y.host_data();
+    auto yp_data = y_p.host_data();
+    for (int i = 0; i < n; i++) {
+        pos += y_data[i];
+        pl.emplace_back(yp_data[i], y_data[i]);
+    }
+    sort(pl.begin(), pl.end());
+    double pos_sum = 0;
+    for (int left = 0, right = 0; right < n; left = right) {
+        float_type sum = 0, cnt = 0;
+        while (right < n && pl[right].first == pl[left].first) {
+            cnt += pl[right++].second;
+            sum += right + 1;
+        }
+        pos_sum += sum * cnt / (right - left);
+    }
+    return (pos_sum - (pos * (pos + 1) / 2)) / (pos * (n - pos));
 }
+/*
+float_type BinaryClassMetric::get_auc(const SyncArray<float_type>& y_p) {
+    int n = y.size();
+    int pos = 0;
+    vector<pair<float_type, int>> pl;
+    auto y_data = y.host_data();
+    auto yp_data = y_p.host_data();
+    for (int i = 0; i < n; i++) {
+        pos += y_data[i];
+        pl.emplace_back(yp_data[i], y_data[i]);
+    }
+    sort(pl.begin(), pl.end());
+    double pos_sum = 0;
+    for (int left = 0, right = 0; right < n; left = right) {
+        double sum = 0, cnt = 0;
+        while (right < n && pl[right].first == pl[left].first) {
+            cnt += pl[right++].second;
+            sum += right + 1;
+        }
+        pos_sum += sum * cnt / (right - left);
+    }
+    return (pos_sum - (pos * (pos + 1) / 2)) / (pos * (n - pos));
+}
+*/

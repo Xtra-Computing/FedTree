@@ -2,11 +2,11 @@
 
 # Overview
 **FedTree** is a federated learning system for tree-based models. It is designed to be highly **efficient**, **effective**,
-and **secure**. It currently has the following features.
+and **secure**. It has the following features currently.
 
 - Federated training of gradient boosting decision trees.
 - Parallel computing on multi-core CPUs.
-- Supporting homomorphic encryption and differential privacy.
+- Supporting homomorphic encryption, secure aggregation and differential privacy.
 - Supporting classification and regression.
 
 The overall architecture of FedTree is shown below.
@@ -16,7 +16,8 @@ The overall architecture of FedTree is shown below.
 You can refer to our primary documentation [here](https://fedtree.readthedocs.io/en/latest/index.html).
 ## Prerequisites
 * [CMake](https://cmake.org/) 3.15 or above
-* [NTL](https://libntl.org/) library
+* [GMP](https://gmplib.org/) library
+* [NTL](https://libntl.org/)
 
 You can follow the following commands to install NTL library.
 
@@ -24,20 +25,22 @@ You can follow the following commands to install NTL library.
 wget https://libntl.org/ntl-11.4.4.tar.gz
 tar -xvf ntl-11.4.4.tar.gz
 cd ntl-11.4.4/src
-./configure
+./configure SHARED=on
 make
 make check
 sudo make install
 ```
 
 
-If you install the NTL library at another location, please also modify the CMakeList files of FedTree accordingly (line 64 of CMakeLists.txt).
-## Install submodules
+If you install the NTL library at another location, please pass the location to the `NTL_PATH` when building the library (e.g., `cmake .. -DNTL_PATH="PATH_TO_NTL"`).
+## Clone and Install submodules
 ```
-git submodule init src/test/googletest
-git submodule init thrust
+git clone https://github.com/Xtra-Computing/FedTree.git
+cd FedTree
+git submodule init
 git submodule update
 ```
+# Standalone Simulation
 
 ## Build on Linux
 
@@ -77,13 +80,41 @@ make -j
 ./build/bin/FedTree-train ./examples/vertical_example.conf
 ```
 
-# Features in development
-The following features are in development.
 
-- Distributed Computing.
-- Training on GPUs.
-- Federated Training of Random Forests.
-- Python interfaces.
+# Distributed Setting
+For each machine that participates in FL, it needs to build the library first.
+```bash
+mkdir build && cd build
+cmake .. -DDISTRIBUTED=ON
+make -j
+```
+Then, write your configuration file where you should specify the ip address of the server machine (`ip_address=xxx`). Run `FedTree-distributed-server` in the server machine and run `FedTree-distributed-party` in the party machines. 
+Here are two examples for horizontal FedTree and vertical FedTree.
+
+[//]: # (export CPLUS_INCLUDE_PATH=./build/_deps/grpc-src/include/:$CPLUS_INCLUDE_PATH)
+[//]: # (export CPLUS_INCLUDE_PATH=./build/_deps/grpc-src/third_party/protobuf/src/:$CPLUS_INCLUDE_PATH)
+
+## Distributed Horizontal FedTree
+```bash
+# under 'FedTree' directory
+# under server machine
+./build/bin/FedTree-distributed-server ./examples/adult/a9a_horizontal_server.conf
+# under party machine 0
+./build/bin/FedTree-distributed-party ./examples/adult/a9a_horizontal_p0.conf 0
+# under party machine 1
+./build/bin/FedTree-distributed-party ./examples/adult/a9a_horizontal_p1.conf 1
+```
+
+## Distributed Vertical FedTree
+```bash
+# under 'FedTree' directory
+# under server (i.e., the party with label) machine 0
+./build/bin/FedTree-distributed-server ./examples/credit/credit_vertical_p0_withlabel.conf
+# open a new terminal
+./build/bin/FedTree-distributed-party ./examples/credit/credit_vertical_p0_withlabel.conf 0
+# Under party machine 1
+./build/bin/FedTree-distributed-party ./examples/credit/credit_vertical_p1.conf 1
+```
 
 # Other information
 FedTree is built based on [ThunderGBM](https://github.com/Xtra-Computing/thundergbm), which is a fast GBDTs and Radom Forests training system on GPUs.

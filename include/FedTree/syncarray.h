@@ -90,7 +90,7 @@ public:
      */
     void copy_from(const T *source, size_t count) {
 
-#ifdef USE_CUDA
+#ifdef USE_CUDA_ARRAY
         thunder::device_mem_copy(mem->device_data(), source, sizeof(T) * count);
 #else
         memcpy(mem->host_data(), source, sizeof(T) * count);
@@ -100,7 +100,7 @@ public:
     void copy_from(const SyncArray<T> &source) {
 
         CHECK_EQ(size(), source.size()) << "destination and source count doesn't match";
-#ifdef USE_CUDA
+#ifdef USE_CUDA_ARRAY
         if (get_owner_id() == source.get_owner_id())
             copy_from(source.device_data(), source.size());
         else
@@ -161,7 +161,7 @@ public:
             ostream << ", ...(" << size() - el::base::consts::kMaxLogPerContainer << " more)";
         }
     };
-#ifdef USE_CUDA
+#ifdef USE_CUDA_ARRAY
     int get_owner_id() const {
         return mem->get_owner_id();
     }

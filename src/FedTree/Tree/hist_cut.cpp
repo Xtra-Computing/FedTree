@@ -1,12 +1,15 @@
 // created by Tianyuan on 12/1/20
 
 #include "FedTree/Tree/hist_cut.h"
-#include "FedTree/util/device_lambda.h"
-#include "FedTree/util/cub_wrapper.h"
+//#include "FedTree/util/device_lambda.h"
+//#include "FedTree/util/cub_wrapper.h"
 #include <thrust/iterator/constant_iterator.h>
 #include <thrust/transform.h>
 #include "thrust/unique.h"
 #include "thrust/execution_policy.h"
+
+#include <algorithm>
+#include <random>
 
 
 void HistCut::get_cut_points_by_data_range(DataSet &dataset, int max_num_bins, int n_instances){
@@ -92,19 +95,21 @@ void syncarray_resize_cpu(SyncArray<T> &buf_array, int new_size) {
     buf_array.copy_from(tmp_array);
 }
 
-void unique_by_flag(SyncArray<float> &target_arr, SyncArray<int> &flags, int n_columns) {
+//remove unique values by each flag
+void unique_by_flag(SyncArray<float_type> &target_arr, SyncArray<int> &flags, int n_columns) {
     using namespace thrust::placeholders;
 
 //    float max_elem = max_elements(target_arr);
     float max_elem = *thrust::max_element(thrust::host, target_arr.host_data(), target_arr.host_end());
-    CHECK_LT(max_elem + n_columns * (max_elem + 1), INT_MAX) << "Max_values is too large to be transformed";
+    float min_elem = *thrust::min_element(thrust::host, target_arr.host_data(), target_arr.host_end());
+    CHECK_LT(max_elem + n_columns * (max_elem - min_elem + 1), INT_MAX) << "Max_values is too large to be transformed";
     // 1. transform data into unique ranges
     thrust::transform(thrust::host,
                       target_arr.host_data(),
                       target_arr.host_end(),
                       flags.host_data(),
                       target_arr.host_data(),
-                      (_1 + _2 * (max_elem + 1)));
+                      (_1 + _2 * (max_elem - min_elem + 1)));
     // 2. sort the transformed data
     thrust::sort(thrust::host, target_arr.host_data(), target_arr.host_end(), thrust::greater<float>());
     thrust::reverse(thrust::host, flags.host_data(), flags.host_end());
@@ -119,7 +124,7 @@ void unique_by_flag(SyncArray<float> &target_arr, SyncArray<int> &flags, int n_c
                       target_arr.host_end(),
                       flags.host_data(),
                       target_arr.host_data(),
-                      (_1 - _2 * (max_elem + 1)));
+                      (_1 - _2 * (max_elem - min_elem + 1)));
     thrust::sort_by_key(thrust::host, flags.host_data(), flags.host_end(), target_arr.host_data());
 }
 
@@ -133,6 +138,7 @@ void HistCut::get_cut_points_fast(DataSet &dataset, int max_num_bins, int n_inst
     cut_points_val.resize(dataset.csc_val.size());
     cut_col_ptr.resize(dataset.csc_col_ptr.size());
     cut_fid.resize(dataset.csc_val.size());
+
     cut_points_val.copy_from(&dataset.csc_val[0], dataset.csc_val.size());
     auto csc_ptr = &dataset.csc_col_ptr[0];
 
@@ -188,30 +194,123 @@ void HistCut::get_cut_points_fast(DataSet &dataset, int max_num_bins, int n_inst
 }
 
 /**
+ * Generate cut points for each feature based on the generated cut points of all parties
+ * @param parties_cut
+ * @param max_num_bins
+ */
+void HistCut::get_cut_points_by_parties_cut_sampling(vector<HistCut> &parties_cut, int max_num_bin) {
+    // find feature range of each feature for each party
+    int n_columns = parties_cut[0].cut_col_ptr.size() - 1;
+    vector<vector<float_type>> ranges(n_columns);
+
+    // Merging all cut points into one single cut points
+    for (int n = 0; n < n_columns; n++) {
+        for (int p = 0; p < parties_cut.size(); p++) {
+            auto parties_cut_col_data = parties_cut[p].cut_col_ptr.host_data();
+            auto parties_cut_points_val_data = parties_cut[p].cut_points_val.host_data();
+
+            int column_start = parties_cut_col_data[n];
+            int column_end = parties_cut_col_data[n+1];
+
+            for (int i = column_start; i < column_end; i++) {
+                ranges[n].push_back(parties_cut_points_val_data[i]);
+            }
+        }
+    }
+    // Once we have gathered the sorted range, we can randomly sample the cut points to match with the number of bins
+    vector<vector<float_type>> samples(n_columns);
+    for (int fid = 0; fid < n_columns; fid++) {
+        vector<float_type>& sample = samples[fid];
+
+        // Always keep the maximum value
+        auto max_element = *std::max_element(ranges[fid].begin(), ranges[fid].end());
+        sample.push_back(max_element);
+
+        // Randomly sample number of cut point according to max num bins
+        unsigned seed = 0;
+        std::shuffle(ranges[fid].begin(), ranges[fid].end(), std::default_random_engine(seed));
+
+
+        for (int i = 0; i < ranges[fid].size(); i++) {
+            if (sample.size() == max_num_bin)
+                break;
+
+            auto element = ranges[fid][i];
+            // Check if element already in cut points val data
+            if (not (std::find(sample.begin(), sample.end(), element) != sample.end()))
+                sample.push_back(element);
+        }
+
+        // Sort the sample in descending order
+        std::sort(sample.begin(), sample.end(), std::greater<float_type>());
+    }
+    int n_total_bins = 0;
+    cut_col_ptr.resize(n_columns + 1);
+    auto cut_col_ptr_data = cut_col_ptr.host_data();
+    for(int i = 0; i < n_columns; i++){
+        n_total_bins += samples[i].size();
+        cut_col_ptr_data[i+1] = n_total_bins;
+    }
+    cut_points_val.resize(n_total_bins);
+    cut_fid.resize(n_total_bins);
+    auto cut_points_val_data = cut_points_val.host_data();
+    auto cut_fid_data = cut_fid.host_data();
+    for(int i = 0; i < n_columns; i++){
+        for(int j = 0; j < samples[i].size(); j++){
+            cut_points_val_data[cut_col_ptr_data[i]+j] = samples[i][j];
+            cut_fid_data[cut_col_ptr_data[i]+j] = i;
+        }
+    }
+}
+
+/**
  * Generates cut points for each feature based on numeric ranges of feature values
  * @param f_range Min and max values for each feature.
  * @param max_num_bins Number of cut points for each feature.
  */
-void HistCut::get_cut_points_by_feature_range(vector<vector<float>> f_range, int max_num_bins) {
+void HistCut::get_cut_points_by_feature_range(vector<vector<float_type>> f_range, int max_num_bins) {
     int n_features = f_range.size();
-
-    cut_points_val.resize(n_features * max_num_bins);
     cut_col_ptr.resize(n_features + 1);
-    cut_fid.resize(n_features * max_num_bins);
-
-    auto cut_points_val_data = cut_points_val.host_data();
     auto cut_col_ptr_data = cut_col_ptr.host_data();
-    auto cut_fid_data = cut_fid.host_data();
+    vector<int> n_bin_per_features(n_features);
     #pragma omp parallel for
     for(int fid = 0; fid < n_features; fid ++) {
-        cut_col_ptr_data[fid] = fid * max_num_bins;
-        float val_range = f_range[fid][1] - f_range[fid][0];
-        float val_step = val_range / max_num_bins;
-        //todo: compress the cut points if distance is small
-        for(int i = 0; i < max_num_bins; i ++) {
-            cut_fid_data[fid * max_num_bins + i] = fid;
-            cut_points_val_data[fid * max_num_bins + i] = f_range[fid][1] - i * val_step;
+        float_type val_range = f_range[fid][1] - f_range[fid][0];
+        float_type val_step = val_range / max_num_bins;
+        int n_bin = max_num_bins;
+        if(val_step == 0){
+            n_bin = 1;
+        }
+        else {
+            while (val_step < 1e-6) {
+                val_step *= 2;
+                n_bin /= 2;
+            }
+            if(n_bin == 0)
+                n_bin == 1;
+        }
+        cut_col_ptr_data[fid + 1] = n_bin;
+        n_bin_per_features[fid] = n_bin;
+    }
+    for(int i = 1; i < cut_col_ptr.size(); i++) {
+        cut_col_ptr_data[i] += cut_col_ptr_data[i-1];
+    }
+    int n_total_bins = cut_col_ptr_data[n_features];
+    cut_points_val.resize(n_total_bins);
+    cut_fid.resize(n_total_bins);
+    auto cut_points_val_data = cut_points_val.host_data();
+    auto cut_fid_data = cut_fid.host_data();
+    #pragma omp parallel for
+    for(int fid = 0; fid < n_features; fid++){
+        float_type val_range = f_range[fid][1] - f_range[fid][0];
+        int n_bin = n_bin_per_features[fid];
+        float_type val_step = val_range / n_bin;
+        for(int i = 0; i < n_bin; i ++) {
+            cut_fid_data[cut_col_ptr_data[fid] + i] = fid;
+            cut_points_val_data[cut_col_ptr_data[fid]+ i] = f_range[fid][1] - i * val_step;
         }
     }
-    cut_col_ptr_data[n_features] = n_features * max_num_bins;
+
+
+
 }

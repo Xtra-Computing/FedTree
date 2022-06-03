@@ -14,19 +14,24 @@ using namespace std;
 //TODO: code clean on compare() and atoi()
 void Parser::parse_param(FLParam &fl_param, int argc, char **argv) {
     // setup default value
-    fl_param.n_parties = 2; // TODO: validate the default fl values
+    fl_param.n_parties = 2;
     fl_param.mode = "horizontal";
     fl_param.partition_mode = fl_param.mode;
     fl_param.privacy_tech = "he";
-    fl_param.partition= true;
+    fl_param.partition= false;
     fl_param.alpha = 100;
-    fl_param.n_hori = 2;
-    fl_param.n_verti = 2;
+    fl_param.n_hori = -1;
+    fl_param.n_verti = -1;
 
     fl_param.propose_split = "server";
     fl_param.merge_histogram = "server";
     fl_param.privacy_budget = 10;
     fl_param.variance = 200;
+    fl_param.ip_address = "localhost";
+    fl_param.ins_bagging_fraction = 1.0;
+    fl_param.data_format = "libsvm";
+    fl_param.seed = 42;
+    fl_param.n_features = -1;
 
     GBDTParam *gbdt_param = &fl_param.gbdt_param;
 
@@ -37,7 +42,7 @@ void Parser::parse_param(FLParam &fl_param, int argc, char **argv) {
     gbdt_param->lambda = 1;
     gbdt_param->gamma = 1;
     gbdt_param->rt_eps = 1e-6;
-    gbdt_param->max_num_bin = 255;
+    gbdt_param->max_num_bin = 32;
     gbdt_param->verbose = 1;
     gbdt_param->profiling = false;
     gbdt_param->column_sampling_rate = 1;
@@ -50,6 +55,8 @@ void Parser::parse_param(FLParam &fl_param, int argc, char **argv) {
     gbdt_param->tree_method = "hist";
     gbdt_param->tree_per_rounds = 1; // # tree of each round, depends on # class
     gbdt_param->metric = "default";
+    gbdt_param->constant_h = 0.0;
+    gbdt_param->reorder_label = true; // whether reorder label or not
 
     if (argc < 2) {
         printf("Usage: <config>\n");
@@ -61,7 +68,6 @@ void Parser::parse_param(FLParam &fl_param, int argc, char **argv) {
         char name[256], val[256];
         if (sscanf(name_val, "%[^=]=%s", name, val) == 2) {
             string str_name(name);
-
             // FL params
             if ((str_name.compare("n_parties") == 0) || (str_name.compare("num_parties") == 0) ||
                 (str_name.compare("n_clients") == 0) || (str_name.compare("num_clients") == 0) ||
@@ -69,9 +75,10 @@ void Parser::parse_param(FLParam &fl_param, int argc, char **argv) {
                 fl_param.n_parties = atoi(val);
             else if (str_name.compare("mode") == 0)
                 fl_param.mode = val;
-            else if ((str_name.compare("privacy") == 0) || (str_name.compare("privacy_tech") == 0) || (str_name.compare("privacy_method") == 0))
+            else if ((str_name.compare("privacy") == 0) || (str_name.compare("privacy_tech") == 0) ||
+                    (str_name.compare("privacy_method") == 0) || (str_name.compare("security_tech") == 0))
                 fl_param.privacy_tech = val;
-            else if (str_name.compare("partition") == 0)
+            else if ((str_name.compare("partition") == 0))
                 fl_param.partition = atoi(val);
             else if (str_name.compare("partition_mode") == 0)
                 fl_param.partition_mode = val;
@@ -83,10 +90,20 @@ void Parser::parse_param(FLParam &fl_param, int argc, char **argv) {
                 fl_param.n_verti = atoi(val);
             else if (str_name.compare("privacy_budget") == 0)
                 fl_param.privacy_budget = atof(val);
+            else if ((str_name.compare("ip_address") == 0) || (str_name.compare("server_ip_address") == 0))
+                fl_param.ip_address = val;
+            else if (str_name.compare("ins_bagging_fraction") == 0)
+                fl_param.ins_bagging_fraction = atof(val);
+            else if (str_name.compare("seed") == 0)
+                fl_param.ip_address = atoi(val);
             else if (str_name.compare("merge_histogram") == 0)
                 fl_param.merge_histogram = val;
             else if (str_name.compare("propose_split") == 0)
                 fl_param.propose_split = val;
+            else if (str_name.compare("data_format") == 0)
+                fl_param.data_format = val;
+            else if (str_name.compare("n_features") == 0)
+                fl_param.n_features = atoi(val);
             // GBDT params
             else if ((str_name.compare("max_depth") == 0) || (str_name.compare("depth") == 0))
                 gbdt_param->depth = atoi(val);
@@ -102,8 +119,13 @@ void Parser::parse_param(FLParam &fl_param, int argc, char **argv) {
                 gbdt_param->path = val;
             else if (str_name.compare("test_data") == 0)
                 gbdt_param->test_path = val;
-            else if ((str_name.compare("max_bin") == 0) || (str_name.compare("max_num_bin") == 0))
+            else if ((str_name.compare("max_bin") == 0) || (str_name.compare("max_num_bin") == 0)) {
                 gbdt_param->max_num_bin = atoi(val);
+                if(gbdt_param->max_num_bin > 255){
+                    LOG(INFO)<<"max_num_bin should not be larger than 255";
+                    exit(1);
+                }
+            }
             else if ((str_name.compare("colsample") == 0) || (str_name.compare("column_sampling_rate") == 0))
                 gbdt_param->column_sampling_rate = atof(val);
             else if (str_name.compare("bagging") == 0)
@@ -127,6 +149,10 @@ void Parser::parse_param(FLParam &fl_param, int argc, char **argv) {
                 gbdt_param->tree_method = val;
             else if (str_name.compare("metric") == 0)
                 gbdt_param->metric = val;
+            else if (str_name.compare("constant_h") == 0)
+                gbdt_param->constant_h = atof(val);
+            else if (str_name.compare("reorder_label") == 0)
+                gbdt_param->reorder_label = atoi(val);
             else
                 LOG(INFO) << "\"" << name << "\" is unknown option!";
         } else {
@@ -139,6 +165,11 @@ void Parser::parse_param(FLParam &fl_param, int argc, char **argv) {
 
     };
 
+//    if ((fl_param.partitioning == 0) && fl_param.reorder_label){
+//        LOG(INFO)<<"Ignoring reorder_label option in distributed setting. Please ensure that the labels are 0, 1, 2, ... if you are conducting classification tasks.";
+//        fl_param.reorder_label = false;
+//    }
+
     //read configuration file
     std::ifstream conf_file(argv[1]);
     std::string line;
@@ -148,10 +179,24 @@ void Parser::parse_param(FLParam &fl_param, int argc, char **argv) {
         parse_value(line.c_str());
     }
 
-    //TODO: confirm handling spaces around "="
-    for (int i = 0; i < argc; ++i) {
-        parse_value(argv[i]);
-    }//end parsing parameters
+    if (fl_param.privacy_tech == "dp" && gbdt_param->constant_h == 0)
+        gbdt_param->constant_h = 1.0;
+
+    if (fl_param.n_hori == -1){
+        if(fl_param.mode == "horizontal"){
+            fl_param.n_hori == fl_param.n_parties;
+        }
+        else
+            fl_param.n_hori = 1;
+    }
+    if (fl_param.n_verti == -1){
+        if(fl_param.mode == "vertical"){
+            fl_param.n_verti == fl_param.n_parties;
+        }
+        else
+            fl_param.n_verti = 1;
+    }
+
 }
 
 // TODO: implement Tree and DataSet; check data structure compatibility

@@ -7,11 +7,14 @@
 
 #include "tree_builder.h"
 #include "hist_cut.h"
+#include <thrust/copy.h>
+#include <thrust/execution_policy.h>
 
 class HistTreeBuilder : public TreeBuilder {
 public:
 
     HistCut cut;
+    vector<HistCut> parties_cut;
 
     void init(DataSet &dataset, const GBDTParam &param) override;
 
@@ -29,7 +32,7 @@ public:
     void compute_histogram_in_a_node(SyncArray<GHPair> &gradients, HistCut &cut, SyncArray<unsigned char> &dense_bin_id);
 
     void compute_gain_in_a_level(SyncArray<float_type> &gain, int n_nodes_in_level, int n_bins, int* hist_fid_data,
-                                 SyncArray<GHPair> &missing_gh, SyncArray<GHPair> &hist, int n_columns = 0) override;
+                                 SyncArray<GHPair> &missing_gh, SyncArray<GHPair> &hist) override;
 
     void get_best_gain_in_a_level(SyncArray<float_type> &gain, SyncArray<int_float> &best_idx_gain, int n_nodes_in_level, int n_bins) override;
 
@@ -45,14 +48,14 @@ public:
 
     void update_ins2node_id() override;
 
-    void update_ins2node_id_in_a_node(int node_id) override;
+    bool update_ins2node_id_in_a_node(int node_id);
 
 //support equal division or weighted division
     void propose_split_candidates();
 
     void merge_histograms_server_propose(SyncArray<GHPair> &hist, SyncArray<GHPair> &missing_gh);
 
-    void merge_histograms_client_propose(SyncArray<GHPair> &hist, SyncArray<GHPair> &missing_gh, int max_splits);
+    void merge_histograms_client_propose(SyncArray<GHPair> &hist, SyncArray<GHPair> &missing_gh, vector<vector<vector<float_type>>> feature_range, int max_splits);
 
     void concat_histograms() override;
 
@@ -75,7 +78,6 @@ public:
         parties_missing_gh.resize(party_size);
         parties_cut = vector<HistCut>(party_size);
         this->party_size = party_size;
-        party_idx = 0;
     }
 
     void append_hist(SyncArray<GHPair> &hist) override {
@@ -85,9 +87,21 @@ public:
         party_idx += 1;
     }
 
+    MSyncArray<GHPair> parties_hist;
+    MSyncArray<GHPair> parties_missing_gh;
+    MSyncArray<int> parties_hist_fid;
+
+    void party_containers_init(int party_size) {
+        parties_hist = MSyncArray<GHPair>(party_size, 1);
+        parties_missing_gh = MSyncArray<GHPair>(party_size, 1);
+        parties_hist_fid = MSyncArray<int>(party_size, 1);
+        parties_cut = vector<HistCut>(party_size);
+        this->party_size = party_size;
+    }
 
     void append_hist(SyncArray<GHPair> &hist, SyncArray<GHPair> &missing_gh,int n_partition, int n_max_splits, int party_idx) override{
         parties_missing_gh[party_idx].resize(n_partition);
+        //thrust::copy(thrust::host, missing_gh.host_data(), missing_gh.host_end(), parties_missing_gh[party_idx].host_data());
         parties_missing_gh[party_idx].copy_from(missing_gh);
         parties_hist[party_idx].resize(n_max_splits);
         parties_hist[party_idx].copy_from(hist);
@@ -125,10 +139,12 @@ public:
     }
 
     void append_to_parties_cut(HistCut &cut, int index) {
-        parties_cut[index].cut_col_ptr = SyncArray<int>(cut.cut_col_ptr.size());
+        parties_cut[index].cut_col_ptr.resize(cut.cut_col_ptr.size());
         parties_cut[index].cut_col_ptr.copy_from(cut.cut_col_ptr);
-        parties_cut[index].cut_points_val = SyncArray<float_type>(cut.cut_points_val.size());
+        parties_cut[index].cut_points_val.resize(cut.cut_points_val.size());
         parties_cut[index].cut_points_val.copy_from(cut.cut_points_val);
+        parties_cut[index].cut_fid.resize(cut.cut_fid.size());
+        parties_cut[index].cut_fid.copy_from(cut.cut_fid);
     }
 
 //    void decrypt_histogram(AdditivelyHE::PaillierPrivateKey privateKey) {
@@ -141,13 +157,12 @@ public:
 
 
 private:
-    vector<HistCut> parties_cut;
     // MSyncArray<unsigned char> char_dense_bin_id;
     SyncArray<unsigned char> dense_bin_id;
     SyncArray<GHPair> last_hist;
     SyncArray<GHPair> last_missing_gh;
-    MSyncArray<GHPair> parties_hist;
-    MSyncArray<GHPair> parties_missing_gh;
+    // MSyncArray<GHPair> parties_hist;
+    // MSyncArray<GHPair> parties_missing_gh;
 
     int party_idx = 0;
     int party_size = 0;

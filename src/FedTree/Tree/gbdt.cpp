@@ -27,11 +27,6 @@ void GBDT::train(GBDTParam &param, DataSet &dataset) {
         param.num_class = 1;
     }
 
-//    std::map<int, vector<int>> batch_idxs;
-//    Partition partition;
-//    vector<DataSet> subsets(3);
-//    partition.homo_partition(dataset, 3, true, subsets, batch_idxs);
-//
     Booster booster;
     booster.init(dataset, param);
     std::chrono::high_resolution_clock timer;
@@ -138,20 +133,13 @@ void GBDT::predict_raw(const GBDTParam &model_param, const DataSet &dataSet, Syn
     }
 
     PERFORMANCE_CHECKPOINT_WITH_ID(timerObj, "init trees");
-    //copy instances from to GPU
-    SyncArray<int> csr_col_idx(dataSet.csr_col_idx.size());
-    SyncArray<float_type> csr_val(dataSet.csr_val.size());
-    SyncArray<int> csr_row_ptr(dataSet.csr_row_ptr.size());
-    csr_col_idx.copy_from(dataSet.csr_col_idx.data(), dataSet.csr_col_idx.size());
-    csr_val.copy_from(dataSet.csr_val.data(), dataSet.csr_val.size());
-    csr_row_ptr.copy_from(dataSet.csr_row_ptr.data(), dataSet.csr_row_ptr.size());
 
     //do prediction
     auto model_host_data = model.host_data();
     auto predict_data = y_predict.host_data();
-    auto csr_col_idx_data = csr_col_idx.host_data();
-    auto csr_val_data = csr_val.host_data();
-    auto csr_row_ptr_data = csr_row_ptr.host_data();
+    auto csr_col_idx_data = dataSet.csr_col_idx.data();
+    auto csr_val_data = dataSet.csr_val.data();
+    auto csr_row_ptr_data = dataSet.csr_row_ptr.data();
     auto lr = model_param.learning_rate;
     PERFORMANCE_CHECKPOINT_WITH_ID(timerObj, "copy data");
 
@@ -165,7 +153,8 @@ void GBDT::predict_raw(const GBDTParam &model_param, const DataSet &dataSet, Syn
 #pragma omp parallel for
     for (int iid = 0; iid < n_instances; iid++) {
         auto get_next_child = [&](Tree::TreeNode node, float_type feaValue) {
-            return feaValue < node.split_value ? node.lch_index : node.rch_index;
+            //return feaValue < node.split_value ? node.lch_index : node.rch_index;
+            return (feaValue - node.split_value) >= -1e-6 ? node.rch_index : node.lch_index;
         };
         auto get_val = [&](const int *row_idx, const float_type *row_val, int row_len, int idx,
                            bool *is_missing) -> float_type {
@@ -186,8 +175,8 @@ void GBDT::predict_raw(const GBDTParam &model_param, const DataSet &dataSet, Syn
             *is_missing = true;
             return 0;
         };
-        int *col_idx = csr_col_idx_data + csr_row_ptr_data[iid];
-        float_type *row_val = csr_val_data + csr_row_ptr_data[iid];
+        const int *col_idx = csr_col_idx_data + csr_row_ptr_data[iid];
+        const float_type *row_val = csr_val_data + csr_row_ptr_data[iid];
         int row_len = csr_row_ptr_data[iid + 1] - csr_row_ptr_data[iid];
         for (int t = 0; t < num_class; t++) {
             auto predict_data_class = predict_data + t * n_instances;
@@ -209,6 +198,8 @@ void GBDT::predict_raw(const GBDTParam &model_param, const DataSet &dataSet, Syn
                     curNode = node_data[cur_nid];
                 }
                 sum += lr * node_data[cur_nid].base_weight;
+                if (model_param.bagging)
+                    sum /= num_iter;
             }
             predict_data_class[iid] += sum;
         }//end all tree prediction
@@ -248,20 +239,13 @@ void GBDT::predict_raw_vertical(const GBDTParam &model_param, const DataSet &dat
     }
 
     PERFORMANCE_CHECKPOINT_WITH_ID(timerObj, "init trees");
-    //copy instances from to GPU
-    SyncArray<int> csr_col_idx(dataSet.csr_col_idx.size());
-    SyncArray<float_type> csr_val(dataSet.csr_val.size());
-    SyncArray<int> csr_row_ptr(dataSet.csr_row_ptr.size());
-    csr_col_idx.copy_from(dataSet.csr_col_idx.data(), dataSet.csr_col_idx.size());
-    csr_val.copy_from(dataSet.csr_val.data(), dataSet.csr_val.size());
-    csr_row_ptr.copy_from(dataSet.csr_row_ptr.data(), dataSet.csr_row_ptr.size());
 
     //do prediction
     auto model_host_data = model.host_data();
     auto predict_data = y_predict.host_data();
-    auto csr_col_idx_data = csr_col_idx.host_data();
-    auto csr_val_data = csr_val.host_data();
-    auto csr_row_ptr_data = csr_row_ptr.host_data();
+    auto csr_col_idx_data = dataSet.csr_col_idx.data();
+    auto csr_val_data = dataSet.csr_val.data();
+    auto csr_row_ptr_data = dataSet.csr_row_ptr.data();
     auto lr = model_param.learning_rate;
     PERFORMANCE_CHECKPOINT_WITH_ID(timerObj, "copy data");
 
@@ -275,7 +259,8 @@ void GBDT::predict_raw_vertical(const GBDTParam &model_param, const DataSet &dat
 #pragma omp parallel for
     for (int iid = 0; iid < n_instances; iid++) {
         auto get_next_child = [&](Tree::TreeNode node, float_type feaValue) {
-            return feaValue < node.split_value ? node.lch_index : node.rch_index;
+            //return feaValue < node.split_value ? node.lch_index : node.rch_index;
+            return (feaValue - node.split_value) >= -1e-6 ? node.rch_index : node.lch_index;
         };
         auto get_val = [&](const int *row_idx, const float_type *row_val, int row_len, int idx,
                            bool *is_missing) -> float_type {
@@ -296,8 +281,8 @@ void GBDT::predict_raw_vertical(const GBDTParam &model_param, const DataSet &dat
             *is_missing = true;
             return 0;
         };
-        int *col_idx = csr_col_idx_data + csr_row_ptr_data[iid];
-        float_type *row_val = csr_val_data + csr_row_ptr_data[iid];
+        const int *col_idx = csr_col_idx_data + csr_row_ptr_data[iid];
+        const float_type *row_val = csr_val_data + csr_row_ptr_data[iid];
         int row_len = csr_row_ptr_data[iid + 1] - csr_row_ptr_data[iid];
         for (int t = 0; t < num_class; t++) {
             auto predict_data_class = predict_data + t * n_instances;
@@ -319,7 +304,12 @@ void GBDT::predict_raw_vertical(const GBDTParam &model_param, const DataSet &dat
                     curNode = node_data[cur_nid];
                 }
                 sum += lr * node_data[cur_nid].base_weight;
+                if (model_param.bagging)
+                    sum /= num_iter;
             }
+            predict_data_class[iid] += sum;
         }//end all tree prediction
     }
 }
+
+

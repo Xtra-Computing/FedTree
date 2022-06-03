@@ -22,6 +22,14 @@ void Partition::homo_partition(const DataSet &dataset, const int n_parties, cons
         }
         if (!is_horizontal) {
             subsets[i].y = dataset.y;
+            if(i == 0)
+                subsets[i].has_label = false;
+            else
+                subsets[i].has_label = true;
+        }
+        if(dataset.is_classification) {
+            subsets[i].label = dataset.label;
+            subsets[i].is_classification = true;
         }
     }
 
@@ -37,17 +45,16 @@ void Partition::homo_partition(const DataSet &dataset, const int n_parties, cons
 //    std::map<int, vector<int>> batch_idxs;
 
     int stride = n / n_parties;
-    for (int i = 0; i < n_parties; i++) {
+    for (int i = 0; i < n_parties - 1; i++) {
         batch_idxs[i] = vector<int>(idxs.begin() + i * stride, idxs.begin() + (i + 1) * stride);
+        thrust::sort(thrust::host, batch_idxs[i].begin(), batch_idxs[i].begin() + batch_idxs[i].size());
     }
-    if (stride * n_parties < n) {
-        for (int i = stride * n_parties; i < n; i++) {
-            batch_idxs[n_parties - 1].push_back(i);
-        }
+    //LOG(INFO)<<"batch_idxs:"<<batch_idxs;
+
+    for (int i = stride * (n_parties - 1); i < n; i++) {
+        batch_idxs[n_parties - 1].push_back(idxs[i]);
     }
-//    for (int i = 0; i < n % n_parties; i++) {
-//        batch_idxs[i].push_back(idxs[n_parties * stride + i]);
-//    }
+    thrust::sort(thrust::host, batch_idxs[n_parties - 1].begin(), batch_idxs[n_parties - 1].begin() + batch_idxs[n_parties - 1].size());
 
     vector<int> part2party(n);
     for (int i = 0; i < n_parties; i++) {
@@ -69,6 +76,7 @@ void Partition::homo_partition(const DataSet &dataset, const int n_parties, cons
             int part_id = i;
             int party_id = part2party[part_id];
             subsets[party_id].y.push_back(dataset.y[i]);
+//            subsets[party_id].label.push_back(dataset.label[i]);
 
             for(int j = dataset.csr_row_ptr[i]; j < dataset.csr_row_ptr[i+1]; j ++) { // for each element in the row
                 float_type value = dataset.csr_val[j];
@@ -90,10 +98,7 @@ void Partition::homo_partition(const DataSet &dataset, const int n_parties, cons
         }
 
         assert(dataset.has_csc);
-        // TODO: check the reason why dataset is a const param
-//        if(!dataset.has_csc) {
-//            dataset.csr_to_csc();
-//        }
+
         for (int i = 0; i < dataset.csc_col_ptr.size() - 1; i++) {
             int csc_col_sub = 0;
             int party_id = part2party[i];
@@ -119,8 +124,7 @@ void Partition::homo_partition(const DataSet &dataset, const int n_parties, cons
 
 //Todo add hetero partition according to the labels
 void Partition::hetero_partition(const DataSet &dataset, const int n_parties, const bool is_horizontal,
-                                 vector<DataSet> &subsets,
-                                 vector<float> alpha) {
+                                 vector<DataSet> &subsets, vector<float> alpha, int seed) {
     int n;
     if (is_horizontal)
         n = dataset.n_instances();
@@ -146,11 +150,12 @@ void Partition::hetero_partition(const DataSet &dataset, const int n_parties, co
     else
         assert(alpha.size() == n_parties);
 
-    std::random_device rd;
-    std::mt19937 gen(rd());
-    dirichlet_distribution<std::mt19937> d(alpha);
+//    std::random_device rd;
+//    std::mt19937 gen(rd());
+    std::default_random_engine e(seed);
+    dirichlet_distribution<std::default_random_engine> d(alpha);
     vector<float> dirichlet_samples;
-    for (float x : d(gen)) dirichlet_samples.push_back(x);
+    for (float x : d(e)) dirichlet_samples.push_back(x);
     std::transform(dirichlet_samples.begin(), dirichlet_samples.end(), dirichlet_samples.begin(),
                    [&n](float &c) { return c * n; });
     std::partial_sum(dirichlet_samples.begin(), dirichlet_samples.end(), dirichlet_samples.begin());

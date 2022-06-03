@@ -32,7 +32,7 @@ public:
 
     virtual void compute_gain_in_a_level(SyncArray<float_type> &gain, int n_nodes_in_level, int n_bins,
                                          int *hist_fid_data, SyncArray<GHPair> &missing_gh,
-                                         SyncArray<GHPair> &hist, int n_column) = 0;
+                                         SyncArray<GHPair> &hist) = 0;
 
     virtual void get_best_gain_in_a_level(SyncArray<float_type> &gain, SyncArray<int_float> &best_idx_gain,
                                           int n_nodes_in_level, int n_bins) = 0;
@@ -40,8 +40,6 @@ public:
     virtual void get_split_points_in_a_node(int node_id, int best_idx, float best_gain, int n_nodes_in_level,
                                             int *hist_fid, SyncArray<GHPair> &missing_gh,
                                             SyncArray<GHPair> &hist) = 0;
-
-    virtual void update_ins2node_id_in_a_node(int node_id) = 0;
 
     virtual HistCut get_cut() = 0;
 
@@ -63,14 +61,16 @@ public:
         this->param = param;
     }
 
-    virtual const SyncArray<float_type> &get_y_predict() { return y_predict; };
+    virtual SyncArray<float_type> &get_y_predict() { return y_predict; };
 
     virtual ~FunctionBuilder() {};
 
     static FunctionBuilder *create(std::string name);
 
-protected:
     SyncArray<float_type> y_predict;
+
+protected:
+
     GBDTParam param;
 };
 

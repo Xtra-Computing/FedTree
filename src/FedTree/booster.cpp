@@ -17,13 +17,7 @@
 //}
 
 void Booster::init(DataSet &dataSet, const GBDTParam &param, bool get_cut_points) {
-//    int n_available_device;
-//    cudaGetDeviceCount(&n_available_device);
-//    CHECK_GE(n_available_device, param.n_device) << "only " << n_available_device
-//                                                 << " GPUs available; please set correct number of GPUs to use";
     this->param = param;
-
-//    fbuilder.reset(FunctionBuilder::create(param.tree_method));
     fbuilder.reset(new HistTreeBuilder);
     if(get_cut_points)
         fbuilder->init(dataSet, param);
@@ -32,16 +26,25 @@ void Booster::init(DataSet &dataSet, const GBDTParam &param, bool get_cut_points
     }
     obj.reset(ObjectiveFunction::create(param.objective));
     obj->configure(param, dataSet);
-    if (param.metric == "default")
+    if (param.metric == "default") {
         metric.reset(Metric::create(obj->default_metric_name()));
-    else
+    }else {
         metric.reset(Metric::create(param.metric));
+    }
     metric->configure(param, dataSet);
-
     n_devices = param.n_device;
     int n_outputs = param.num_class * dataSet.n_instances();
-    gradients = SyncArray<GHPair>(n_outputs);
+    gradients.resize(n_outputs);
     y = SyncArray<float_type>(dataSet.n_instances());
+    y.copy_from(dataSet.y.data(), dataSet.n_instances());
+}
+
+void Booster::reinit(DataSet &dataSet, const GBDTParam &param){
+    //todo: horizontal does not need get_cut_points
+    fbuilder->init(dataSet, param);
+    int n_outputs = param.num_class * dataSet.n_instances();
+    gradients.resize(n_outputs);
+    y.resize(dataSet.n_instances());
     y.copy_from(dataSet.y.data(), dataSet.n_instances());
 }
 
@@ -54,6 +57,11 @@ SyncArray<GHPair> Booster::get_gradients() {
 
 void Booster::set_gradients(SyncArray<GHPair> &gh) {
     gradients.resize(gh.size());
+
+//    auto gradients_data = gradients.host_data();
+//    auto gh_data = gh.host_data();
+//    for(int i = 0; i < gh.size(); i++)
+//        gradients_data[i] = gh_data[i];
     gradients.copy_from(gh);
 }
 
@@ -72,8 +80,8 @@ void Booster::set_gradients(SyncArray<GHPair> &gh) {
 void Booster::add_noise_to_gradients(float variance) {
     auto gradients_data = gradients.host_data();
     for (int i = 0; i < gradients.size(); i++) {
-        DPnoises<float>::add_gaussian_noise(gradients_data[i].g, variance);
-        DPnoises<float>::add_gaussian_noise(gradients_data[i].h, variance);
+        DPnoises<float_type>::add_gaussian_noise(gradients_data[i].g, variance);
+        DPnoises<float_type>::add_gaussian_noise(gradients_data[i].h, variance);
     }
 }
 
