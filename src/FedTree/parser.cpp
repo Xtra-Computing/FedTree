@@ -11,7 +11,21 @@
 #include <FedTree/Tree/tree.h>
 using namespace std;
 
-//TODO: code clean on compare() and atoi()
+
+vector<string> split_string_by_delimiter (const string& s, const string& delimiter) {
+    size_t pos_start = 0, pos_end, delim_len = delimiter.length();
+    string token;
+    vector<string> res;
+
+    while ((pos_end = s.find (delimiter, pos_start)) != string::npos) {
+        token = s.substr (pos_start, pos_end - pos_start);
+        pos_start = pos_end + delim_len;
+        res.push_back (token);
+    }
+    res.push_back (s.substr(pos_start));
+    return res;
+}
+
 void Parser::parse_param(FLParam &fl_param, int argc, char **argv) {
     // setup default value
     fl_param.n_parties = 2;
@@ -115,8 +129,10 @@ void Parser::parse_param(FLParam &fl_param, int argc, char **argv) {
                 gbdt_param->verbose = atoi(val);
             else if (str_name.compare("profiling") == 0)
                 gbdt_param->profiling = atoi(val);
-            else if (str_name.compare("data") == 0)
+            else if (str_name.compare("data") == 0) {
                 gbdt_param->path = val;
+                gbdt_param->paths = split_string_by_delimiter(val, ",");
+            }
             else if (str_name.compare("test_data") == 0)
                 gbdt_param->test_path = val;
             else if ((str_name.compare("max_bin") == 0) || (str_name.compare("max_num_bin") == 0)) {

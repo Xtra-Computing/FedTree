@@ -37,13 +37,12 @@ int main(int argc, char** argv){
         el::Loggers::reconfigureAllLoggers(el::ConfigurationType::PerformanceTracking, "false");
     }
     int n_parties = fl_param.n_parties;
-    Partition partition;
-    vector<string> paths = partition.split_string_by_delimiter(model_param.path, ",");
 
-    if (!fl_param.partition || paths.size() > 1) {
-        CHECK_EQ(n_parties, paths.size());
+    if (!fl_param.partition || model_param.paths.size() > 1) {
+        CHECK_EQ(n_parties, model_param.paths.size());
         fl_param.partition = false;
     }
+
     vector<DataSet> train_subsets(n_parties);
     vector<DataSet> test_subsets(n_parties);
     vector<DataSet> subsets(n_parties);
@@ -91,11 +90,11 @@ int main(int argc, char** argv){
         }
     }
     else if(fl_param.mode != "centralized"){
-        dataset.load_from_files(paths, fl_param);
         for (int i = 0; i < n_parties; i ++) {
-            subsets[i].load_from_file(paths[i], fl_param);
+            subsets[i].load_from_file(model_param.paths[i], fl_param);
         }
         if (!use_global_test_set) {
+            Partition partition;
             LOG(INFO) << "train test split";
             for (int i = 0; i < n_parties; i++) {
                 partition.train_test_split(subsets[i], train_subsets[i], test_subsets[i]);
@@ -104,9 +103,6 @@ int main(int argc, char** argv){
             for (int i = 0; i < n_parties; i++) {
                 train_subsets[i] = subsets[i];
             }
-        }
-        for(int i = 0; i < n_parties; i++) {
-            train_subsets[i].load_from_file(model_param.path+std::to_string(i), fl_param);
         }
     }
     else{
