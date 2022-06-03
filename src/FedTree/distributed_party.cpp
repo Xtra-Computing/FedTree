@@ -171,7 +171,7 @@ void DistributedParty::GetBestInfo(vector<BestInfo> &bests) {
     id.set_id(pid);
     std::unique_ptr<grpc::ClientReader<fedtree::BestInfo> > reader(stub_->GetBestInfo(&context, id));
     while (reader->Read(&best)) {
-        bests.push_back({best.pid(), best.nid(), best.idx(), best.global_fid(), static_cast<float>(best.gain())});
+        bests.push_back({best.pid(), best.nid(), best.idx(), best.global_fid(), static_cast<float_type>(best.gain())});
     }
 
     grpc::Status status = reader->Finish();
@@ -760,6 +760,7 @@ void DistributedParty::GetCutPoints() {
     std::chrono::duration<float> used_time = t_end - t_start;
     comm_time += used_time.count();
     LOG(INFO)<<"communication CutPoints end";
+    booster.fbuilder->get_bin_ids();
     if (status.ok()) {
         LOG(INFO) << "GetCutPoints from server";
     }
@@ -1739,9 +1740,9 @@ int main(int argc, char **argv) {
         if(use_global_test_set)
             party.gbdt.predict_score(fl_param.gbdt_param, test_dataset);
     }
-    else if (fl_param.mode == "ensemble"){
-
-    }
+//    else if (fl_param.mode == "ensemble"){
+//
+//    }
     
     LOG(INFO) << "encryption time:" << party.enc_time << "s";
     party.StopServer(train_time);

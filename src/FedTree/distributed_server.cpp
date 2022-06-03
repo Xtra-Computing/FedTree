@@ -265,7 +265,7 @@ grpc::Status DistributedServer::TriggerAggregate(grpc::ServerContext *context, c
         int best_idx = thrust::get<0>(best_idx_data[node]);
         int global_fid = hist_fid_data[best_idx];
         best_idx -= node * n_bins_new;
-        float best_gain = thrust::get<1>(best_idx_data[node]);
+        float_type best_gain = thrust::get<1>(best_idx_data[node]);
         int party_id = 0;
         while (best_idx >= 0) {
             best_idx -= n_bins_per_party[party_id];

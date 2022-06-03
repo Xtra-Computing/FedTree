@@ -199,8 +199,6 @@ void HistCut::get_cut_points_fast(DataSet &dataset, int max_num_bins, int n_inst
  * @param max_num_bins
  */
 void HistCut::get_cut_points_by_parties_cut_sampling(vector<HistCut> &parties_cut, int max_num_bin) {
-    LOG(INFO) << "Start get cut points by parties";
-
     // find feature range of each feature for each party
     int n_columns = parties_cut[0].cut_col_ptr.size() - 1;
     vector<vector<float_type>> ranges(n_columns);
@@ -244,8 +242,7 @@ void HistCut::get_cut_points_by_parties_cut_sampling(vector<HistCut> &parties_cu
         }
 
         // Sort the sample in descending order
-        std::sort(sample.begin(), sample.end(), std::greater<float>());
-
+        std::sort(sample.begin(), sample.end(), std::greater<float_type>());
     }
     int n_total_bins = 0;
     cut_col_ptr.resize(n_columns + 1);
