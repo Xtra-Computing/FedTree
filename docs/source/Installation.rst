@@ -18,8 +18,9 @@ Here is the guide for the installation of FedTree.
 Prerequisites
 ~~~~~~~~~~~~~
 
-* `CMake`_ 3.15 or above
-* `NTL`_ library
+* `CMake <https://cmake.org/>`_ 3.15 or above
+* `GMP <https://gmplib.org/>`_ library
+* `NTL <https://libntl.org/>`_ library
 
 You can follow the following commands to install NTL library.
 
@@ -33,18 +34,17 @@ You can follow the following commands to install NTL library.
         make check
         sudo make install
 
-If you install the NTL library at another location, please also modify the CMakeList files of FedTree accordingly (line 64 of CMakeLists.txt).
+If you install the NTL library at another location, please pass the location to the `NTL_PATH` when building the library (e.g., `cmake .. -DNTL_PATH="PATH_TO_NTL"`).
 
-Install submodules
-~~~~~~~~~~~~~~~
+Clone Install submodules
+~~~~~~~~~~~~~~~~~~~~~~~~
 
 Run the following commands:
 
     .. code::
 
         git clone https://github.com/Xtra-Computing/FedTree
-        git submodule init src/test/googletest
-        git submodule init thrust
+        git submodule init
         git submodule update
 
 Build on Linux
@@ -55,7 +55,7 @@ Run the following commands:
 
         # under the directory of FedTree
         mkdir build && cd build
-        cmake -DUSE_CUDA=OFF ..
+        cmake ..
         make -j
 
 Build on MacOS
@@ -76,8 +76,7 @@ Run the following commands:
 
         mkdir build
         cd build
-        cmake -DUSE_CUDA=OFF \
-          -DOpenMP_C_FLAGS="-Xpreprocessor -fopenmp -I/usr/local/opt/libomp/include" \
+        cmake -DOpenMP_C_FLAGS="-Xpreprocessor -fopenmp -I/usr/local/opt/libomp/include" \
           -DOpenMP_C_LIB_NAMES=omp \
           -DOpenMP_CXX_FLAGS="-Xpreprocessor -fopenmp -I/usr/local/opt/libomp/include" \
           -DOpenMP_CXX_LIB_NAMES=omp \
@@ -85,7 +84,21 @@ Run the following commands:
           ..
         make -j
 
+Building Options
+~~~~~~~~~~~~~~~~
+There are the following building options passing with cmake.
 
-.. _CMake: https://cmake.org/
-.. _NTL: https://libntl.org/
+* ``USE_CUDA`` [default = ``OFF``]: Whether using GPU to accelerate homomorphic encryption or not.
+
+* ``DISTRIBUTED`` [default = ``ON``]: Whether building distributed version of FedTree or not.
+
+* ``NTL_PATH`` [default = ``/usr/local``]: The PATH to the NTL library.
+
+For example, if you want to build a version with GPU acceleration, distributed version with NTL library under /home/NTL directory, you can use the following command.
+
+    .. code::
+
+        cmake .. -DUSE_CUDA=ON -DDISTRIBUTED=ON -DNTL_PATH="/home/NTL"
+        make -j
+
 

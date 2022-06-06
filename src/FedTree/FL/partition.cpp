@@ -22,6 +22,10 @@ void Partition::homo_partition(const DataSet &dataset, const int n_parties, cons
         }
         if (!is_horizontal) {
             subsets[i].y = dataset.y;
+            if(i == 0)
+                subsets[i].has_label = false;
+            else
+                subsets[i].has_label = true;
         }
         if(dataset.is_classification) {
             subsets[i].label = dataset.label;

@@ -19,6 +19,7 @@ struct GBDTParam {
     float column_sampling_rate;
     std::string path;
     std::string test_path;
+    vector<std::string> paths;
     int verbose;
     bool profiling;
     bool bagging;

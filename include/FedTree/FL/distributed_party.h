@@ -56,7 +56,11 @@ public:
 
     void TriggerPrintScore();
 
-    void SendRange(const vector<vector<float>>& ranges);
+    void SendRange(const vector<vector<float_type>>& ranges);
+
+    void SendCutPoints();
+
+    void GetCutPoints();
     
     void TriggerCut(int n_bins);
     

@@ -265,7 +265,7 @@ grpc::Status DistributedServer::TriggerAggregate(grpc::ServerContext *context, c
         int best_idx = thrust::get<0>(best_idx_data[node]);
         int global_fid = hist_fid_data[best_idx];
         best_idx -= node * n_bins_new;
-        float best_gain = thrust::get<1>(best_idx_data[node]);
+        float_type best_gain = thrust::get<1>(best_idx_data[node]);
         int party_id = 0;
         while (best_idx >= 0) {
             best_idx -= n_bins_per_party[party_id];
@@ -353,7 +353,6 @@ grpc::Status DistributedServer::SendNodes(grpc::ServerContext *context, const fe
     auto pid_itr = metadata.find("pid");
     int pid = std::stoi(pid_itr->second.data());
     int len = node->final_id_size();
-//    std::cout<<"len:"<<len<<std::endl;
     for (int i = 0; i < len; i++) {
         int nid = node->final_id(i);
         auto nodes_data = booster.fbuilder->trees.nodes.host_data();
@@ -536,7 +535,6 @@ grpc::Status DistributedServer::GetIns2NodeID(grpc::ServerContext *context, cons
         i2n.set_nid(ins2node_id_data[i]);
         writer->Write(i2n);
     }
-    // std::cout << "Send ins2node_id to " << id->id() << std::endl;
     LOG(DEBUG) << "Send ins2node_id to " << id->id();
     return grpc::Status::OK;
 }
@@ -632,6 +630,8 @@ void DistributedServer::HorizontalInitVectors(int n_parties) {
 
     party_DHKey_received.resize(n_parties, 0);
     party_noises_received.resize(n_parties, 0);
+
+    parties_cut_points_received.resize(n_parties, 0);
 }
 
 void RunServer(DistributedServer &service) {
@@ -690,15 +690,13 @@ grpc::Status DistributedServer::TriggerCut(grpc::ServerContext* context, const f
             }
         }
     }
-    
-    // cyz: efficiency problem
-    vector<vector<float>> temp;
+
+    vector<vector<float_type>> temp;
     for (auto e: party_feature_range[0]) {
         temp.push_back({e.g, e.h});
     }
     int n_bins = request->id();
     booster.fbuilder->cut.get_cut_points_by_feature_range(temp, n_bins);
-    // cyz: efficiency try
     range_success = true;
     
     return grpc::Status::OK;
@@ -817,7 +815,6 @@ grpc::Status DistributedServer::GetDHPubKeys(grpc::ServerContext *context, const
         stream.str("");
     }
     writer->Write(pk);
-    // std::cout << "Send ins2node_id to " << id->id() << std::endl;
     LOG(DEBUG) << "Send DHPubKeys to " << id->id();
     return grpc::Status::OK;
 }
@@ -864,6 +861,74 @@ grpc::Status DistributedServer::SendNoises(grpc::ServerContext* context, const f
     return grpc::Status::OK;
 }
 
+grpc::Status DistributedServer::SendCutPoints(grpc::ServerContext* context, const fedtree::CutPoints* request, fedtree::PID* response){
+    std::multimap<grpc::string_ref, grpc::string_ref> metadata = context->client_metadata();
+    auto pid_itr = metadata.find("pid");
+    int pid = std::stoi(pid_itr->second.data());
+    parties_cut_points_received[pid] += 1;
+    LOG(DEBUG) << "Receive CutPoints from " << pid;
+
+    std::chrono::high_resolution_clock timer;
+    auto t_start = timer.now();
+    int cut_points_val_size = request->cut_points_val_size();
+    int cut_col_ptr_size = request->cut_col_ptr_size();
+    int cut_fid_size = request->cut_fid_size();
+    booster.fbuilder->parties_cut[pid].cut_points_val.resize(cut_points_val_size);
+    booster.fbuilder->parties_cut[pid].cut_col_ptr.resize(cut_col_ptr_size);
+    booster.fbuilder->parties_cut[pid].cut_fid.resize(cut_points_val_size);
+    auto cut_points_val_data = booster.fbuilder->parties_cut[pid].cut_points_val.host_data();
+    auto cut_col_ptr_data = booster.fbuilder->parties_cut[pid].cut_col_ptr.host_data();
+    auto cut_fid_data = booster.fbuilder->parties_cut[pid].cut_fid.host_data();
+    for(int i = 0; i < cut_points_val_size; i++){
+        cut_points_val_data[i] = request->cut_points_val(i);
+        cut_fid_data[i] = request->cut_fid(i);
+    }
+    for(int i = 0; i < cut_col_ptr_size; i++){
+        cut_col_ptr_data[i] = request->cut_col_ptr(i);
+    }
+
+    unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+    std::default_random_engine generator(seed);
+    std::uniform_int_distribution<int> delay_distribution(5, 10);
+    while (true) {
+        bool cont = true;
+        for (int i = 0; i < param.n_parties; i++) {
+            if (parties_cut_points_received[i] < 1) {
+                cont = false;
+            }
+        }
+        if (cont) {
+            break;
+        }
+        std::this_thread::sleep_for(
+                std::chrono::milliseconds(delay_distribution(generator)));
+    }
+    auto t_end = timer.now();
+    std::chrono::duration<float> used_time = t_end - t_start;
+    party_wait_times[pid] += used_time.count();
+    booster.fbuilder->cut.get_cut_points_by_parties_cut_sampling(booster.fbuilder->parties_cut, param.gbdt_param.max_num_bin);
+    return grpc::Status::OK;
+}
+
+grpc::Status DistributedServer::GetCutPoints(grpc::ServerContext *context, const fedtree::PID *id,
+                                          grpc::ServerWriter<fedtree::CutPoints> *writer) {
+    int pid = id->id();
+    fedtree::CutPoints cp;
+    auto cut_val_data = booster.fbuilder->cut.cut_points_val.host_data();
+    auto cut_col_ptr_data = booster.fbuilder->cut.cut_col_ptr.host_data();
+    auto cut_fid_data = booster.fbuilder->cut.cut_fid.host_data();
+    for(int i = 0; i < booster.fbuilder->cut.cut_points_val.size(); i++){
+        cp.add_cut_points_val(cut_val_data[i]);
+        cp.add_cut_fid(cut_fid_data[i]);
+    }
+    for(int i = 0; i < booster.fbuilder->cut.cut_col_ptr.size(); i++){
+        cp.add_cut_col_ptr(cut_col_ptr_data[i]);
+    }
+    writer->Write(cp);
+    LOG(DEBUG) << "Send CutPoints to " << pid;
+    return grpc::Status::OK;
+}
+
 grpc::Status DistributedServer::GetNoises(grpc::ServerContext *context, const fedtree::PID *id,
                                              grpc::ServerWriter<fedtree::SANoises> *writer) {
     int pid = id->id();
@@ -876,7 +941,6 @@ grpc::Status DistributedServer::GetNoises(grpc::ServerContext *context, const fe
         stream.str("");
     }
     writer->Write(pk);
-    // std::cout << "Send ins2node_id to " << id->id() << std::endl;
     LOG(DEBUG) << "Send Noises to " << pid;
     return grpc::Status::OK;
 }
@@ -1197,7 +1261,6 @@ grpc::Status DistributedServer::SendHistogramBatches(grpc::ServerContext *contex
     int pid = std::stoi(pid_itr->second.data());
     auto type_itr = metadata.find("type");
     int type = std::stoi(type_itr->second.data());
-    // std::cout << pid << " " << type << std::endl;
     fedtree::GHBatch tmp;
     fedtree::GHBatch all;
     while(reader->Read(&tmp)) {

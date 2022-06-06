@@ -32,8 +32,8 @@ public:
     void get_cut_points_by_data_range(DataSet &dataset, int max_num_bins, int n_instances);
     void get_cut_points_fast(DataSet &dataset, int max_num_bins, int n_instances);
     void get_cut_points_by_n_instance(DataSet &dataset, int max_num_bins);
-    void get_cut_points_by_feature_range(vector<vector<float>> f_range, int max_num_bins);
-    void get_cut_points_by_parties_cut_sampling(vector<HistCut> parties_cut);
+    void get_cut_points_by_feature_range(vector<vector<float_type>> f_range, int max_num_bins);
+    void get_cut_points_by_parties_cut_sampling(vector<HistCut> &parties_cut, int max_num_bin);
 };
 
 

@@ -36,7 +36,8 @@ service FedTree {
   rpc GetDHPubKeys (PID) returns (stream DHPublicKeys) {}
   rpc SendNoises(SANoises) returns (PID) {}
   rpc GetNoises (PID) returns (stream SANoises) {}
-  // TODO sendGHEncrypted 
+  rpc SendCutPoints(CutPoints) returns (PID) {}
+  rpc GetCutPoints (PID) returns (stream CutPoints) {}
   rpc TriggerBuildUsingGH(PID) returns (Ready) {}
   rpc TriggerCalcTree(PID) returns (Ready) {}
   rpc GetRootNode(PID) returns (Node);
@@ -249,4 +250,10 @@ message SANoise{
 }
 message SANoises{
   repeated string noises = 1;
+}
+
+message CutPoints{
+  repeated double cut_points_val = 1 [packed=true];
+  repeated int32 cut_col_ptr = 2 [packed=true];
+  repeated int32 cut_fid = 3 [packed=true];
 }

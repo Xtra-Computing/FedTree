@@ -77,14 +77,14 @@ void DataSet::group_label() {
 }
 
 // assume that the labels are already well organized, i.e., 0, 1, 2, ...
-void DataSet::group_label_without_reorder() {
-    int max_y = 0;
-    for (int i = 0; i < y.size(); i++){
-        if(y[i] > max_y)
-            max_y = y[i];
-    }
+void DataSet::group_label_without_reorder(int n_class) {
+//    int max_y = 0;
+//    for (int i = 0; i < y.size(); i++){
+//        if(y[i] > max_y)
+//            max_y = y[i];
+//    }
     label.clear();
-    for(int i = 0; i <= max_y; i++){
+    for(int i = 0; i < n_class; i++){
         label.push_back(i);
         label_map[i] = i;
     }
@@ -293,8 +293,21 @@ void DataSet::load_from_file(string file_name, FLParam &param) {
                     line_begin = line_end;
                     continue;
                 }
-                // parse instance label
-                y_[tid].push_back(label);
+                else if (r == 1) {
+                    // parse instance label
+                    y_[tid].push_back(label);
+                    has_label = true;
+                }
+                else if (r == 2){
+                    y_[tid].push_back(-1);
+                    // there is no label; label is feature_id and temp_ is value
+                    col_idx[tid].push_back(label - 1);
+                    val_[tid].push_back(temp_);
+                    if(label > max_feature[tid])
+                        max_feature[tid] = label;
+                    row_len_[tid].back()++;
+                    has_label = false;
+                }
 
                 // parse feature id and value
                 p = q;
@@ -342,9 +355,13 @@ void DataSet::load_from_file(string file_name, FLParam &param) {
             this->label.insert(label.end(), y_[i].begin(), y_[i].end());
         }
     } // end while
-    has_label=1;
+//    has_label=1;
     ifs.close();
     free(buffer);
+    if(param.n_features != -1) {
+        CHECK_GE(param.n_features, n_features_) << "n_features is wrong!";
+        n_features_ = param.n_features;
+    }
     LOG(INFO) << "#instances = " << this->n_instances() << ", #features = " << this->n_features();
     if (ObjectiveFunction::need_load_group_file(param.gbdt_param.objective)) load_group_file(file_name + ".group");
     if (ObjectiveFunction::need_group_label(param.gbdt_param.objective) || param.gbdt_param.metric == "error") {
@@ -352,7 +369,7 @@ void DataSet::load_from_file(string file_name, FLParam &param) {
             group_label();
         }
         else{
-            group_label_without_reorder();
+            group_label_without_reorder(param.gbdt_param.num_class);
         }
         is_classification = true;
         param.gbdt_param.num_class = label.size();
@@ -552,7 +569,7 @@ void DataSet::load_from_csv(string file_name, FLParam &param) {
             group_label();
         }
         else{
-            group_label_without_reorder();
+            group_label_without_reorder(param.gbdt_param.num_class);
         }
         is_classification = true;
     }
@@ -1002,6 +1019,12 @@ void DataSet::load_from_files(vector<string> file_names, FLParam &param) {
     for(auto name: file_names) {
         DataSet next;
         next.load_from_file(name, param);
+        if (param.partition_mode == "horizontal") {
+            n_features_ = next.n_features();
+        }
+        if (param.partition_mode == "vertical") {
+            n_features_ += next.n_features();
+        }
         csr_val.insert(csr_val.end(), next.csr_val.begin(), next.csr_val.end());
         csr_col_idx.insert(csr_col_idx.end(), next.csr_col_idx.begin(), next.csr_col_idx.end());
         label.insert(label.end(), next.label.begin(), next.label.end());

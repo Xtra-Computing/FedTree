@@ -22,7 +22,7 @@ void Party::init(int pid, DataSet &dataset, FLParam &param, SyncArray<bool> &fea
         this->feature_map.resize(feature_map.size());
         this->feature_map.copy_from(feature_map.host_data(), feature_map.size());
     }
-    booster.init(dataset, param.gbdt_param, param.mode != "horizontal");
+    booster.init(dataset, param.gbdt_param, (param.mode != "horizontal") || (param.propose_split == "party"));
 
 };
 

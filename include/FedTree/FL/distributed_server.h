@@ -95,6 +95,10 @@ public:
 
     grpc::Status GetNoises(grpc::ServerContext* context, const fedtree::PID* request, grpc::ServerWriter<fedtree::SANoises>* response) override;
 
+    grpc::Status SendCutPoints(grpc::ServerContext* context, const fedtree::CutPoints* request, fedtree::PID* response) override;
+
+    grpc::Status GetCutPoints(grpc::ServerContext* context, const fedtree::PID* request, grpc::ServerWriter<fedtree::CutPoints>* response) override;
+
     grpc::Status TriggerBuildUsingGH(grpc::ServerContext* context, const fedtree::PID* request, fedtree::Ready* response) override;
     
     grpc::Status ScoreReduce(grpc::ServerContext* context, const fedtree::Score* request, fedtree::Score* response) override;
@@ -208,6 +212,7 @@ private:
     bool build_gh_success = false;
     vector<int> party_DHKey_received;
     vector<int> party_noises_received;
+    vector<int> parties_cut_points_received;
     int noise_rounds = 1;
     int noise_cnt = 0;
 

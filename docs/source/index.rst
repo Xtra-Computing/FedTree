@@ -11,8 +11,9 @@ and **secure**. It has the following features.
 
 - Parallel computing on multi-core CPUs.
 - Stand-alone simulation and distributed learning.
-- Support of homomorphic encryption and differential privacy.
+- Support of homomorphic encryption, secure aggregation, and differential privacy.
 - Federated training algorithms of gradient boosting decision trees and random forests.
+
 .. image:: ./images/fedtree_archi.png
    :align: center
    :target: ./images/fedtree_archi.png
@@ -24,6 +25,7 @@ and **secure**. It has the following features.
       Installation <Installation>
       Quick Start <Quick-Start>
       Parameters <Parameters>
+      Examples <Examples>
       Frameworks <Frameworks>
       Experiments <Experiments>
 
