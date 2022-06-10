@@ -112,6 +112,7 @@ public:
     void GetNoises();
     double comm_time = 0;
     double enc_time = 0;
+    double comm_size = 0;
     int n_parties;
     std::chrono::high_resolution_clock timer;
 
