@@ -121,7 +121,7 @@ int main(int argc, char** argv){
         }
     }
 
-    if(!fl_param.partition){
+    if(!fl_param.partition && use_global_test_set){
         int n;
         if(fl_param.mode == "vertical") {
             n = test_dataset.n_features();
