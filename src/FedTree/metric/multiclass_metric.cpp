@@ -70,7 +70,7 @@ float_type BinaryClassMetric::get_score(const SyncArray<float_type> &y_p) const 
         }
         pos_sum += sum * cnt / (right - left);
     }
-    return (pos_sum - (pos * (pos + 1) / 2)) / (pos * (n - pos));
+    return min((pos_sum - (pos * (pos + 1) / 2)) / (pos * (n - pos)), 1.0);
 }
 /*
 float_type BinaryClassMetric::get_auc(const SyncArray<float_type>& y_p) {
