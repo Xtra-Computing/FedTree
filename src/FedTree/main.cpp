@@ -168,9 +168,7 @@ int main(int argc, char** argv){
         for (int i = 0; i < n_parties; i++) {
             if(fl_param.mode == "vertical")
                 parties[i].vertical_init(i, train_subsets[i], fl_param);
-            else if(fl_param.mode == "horizontal")
-                parties[i].init(i, train_subsets[i], fl_param);
-            else if(fl_param.mode == "ensemble")
+            else if(fl_param.mode == "horizontal" || fl_param.mode == "ensemble")
                 parties[i].init(i, train_subsets[i], fl_param);
             n_instances_per_party[i] = train_subsets[i].n_instances();
         }

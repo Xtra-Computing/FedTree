@@ -1,2 +1,2 @@
-name = "FedTree"
-from .FedTree import *
+name = "fedtree"
+from .fedtree import *

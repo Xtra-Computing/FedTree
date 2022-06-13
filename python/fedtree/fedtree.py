@@ -33,7 +33,7 @@ else:
     lib_path = path.join(dirname, "../../build/lib", shared_library_name)
 
 if path.exists(lib_path):
-    FedTree = CDLL(lib_path)
+    fedtree = CDLL(lib_path)
 else:
     raise RuntimeError("Please build the library first!")
 
@@ -42,13 +42,16 @@ OBJECTIVE_TYPE = ['reg:linear', 'reg:logistic', 'binary:logistic',
 
 ESTIMATOR_TYPE = ['classifier', 'regressor']
 
-FedTreeBase = BaseEstimator
-FedTreeRegressorBase = RegressorMixin
-FedTreeClassifierBase = ClassifierMixin
+fedtreeBase = BaseEstimator
+fedtreeRegressorBase = RegressorMixin
+fedtreeClassifierBase = ClassifierMixin
 
-class FLModel(FedTreeBase):
+class FLModel(fedtreeBase):
 
-    def __init__(self, n_parties, partition, alpha, n_hori, n_verti, mode, partition_mode, privacy_tech, propose_split, merge_histogram, variance, privacy_budget, depth, n_trees, min_child_weight, lambda_ft, gamma, column_sampling_rate, verbose, n_parallel_trees, learning_rate, objective, num_class, n_device, max_num_bin, tree_method):
+    def __init__(self, n_parties, partition, alpha, n_hori, n_verti, mode, partition_mode, privacy_tech, propose_split,
+                 merge_histogram, variance, privacy_budget, max_depth, n_trees, min_child_weight, lambda_ft, gamma,
+                 column_sampling_rate, verbose, n_parallel_trees, learning_rate, objective, num_class, n_device, max_num_bin,
+                 seed, ins_bagging_fraction, reorder_label, tree_method):
         # Federated Learning related variables
         self.n_parties = n_parties;
         self.partition = partition;
@@ -62,8 +65,10 @@ class FLModel(FedTreeBase):
         self.merge_histogram = merge_histogram;
         self.variance = variance;
         self.privacy_budget = privacy_budget;
+        self.seed = seed;
+        self.ins_bagging_fraction = ins_bagging_fraction;
         # GBDT related variables
-        self.depth = depth;
+        self.max_depth = max_depth;
         self.n_trees = n_trees;
         self.min_child_weight = min_child_weight;
         self.lambda_ft = lambda_ft;
@@ -82,10 +87,11 @@ class FLModel(FedTreeBase):
         self.tree_per_iter = -1
         self.group_label = None
         self.bagging = 0
+        self.reorder_label = reorder_label
 
     def fit(self, X, y, groups=None):
         if self.model is not None:
-            FedTree.model_free(byref(self.model))
+            fedtree.model_free(byref(self.model))
             self.model = None
         sparse = sp.issparse(X)
         if sparse is False:
@@ -120,10 +126,11 @@ class FLModel(FedTreeBase):
         n_class[0] = self.num_class
         tree_per_iter_ptr = (c_int * 1)()
         self.model = (c_long * 1)()
-        FedTree.fit(self.n_parties, self.partition, c_float(self.alpha), self.n_hori, self.n_verti, self.mode.encode('utf-8'),
+        fedtree.fit(self.n_parties, self.partition, c_float(self.alpha), self.n_hori, self.n_verti, self.mode.encode('utf-8'),
                     self.partition_mode.encode('utf-8'), self.privacy_tech.encode('utf-8'), self.propose_split.encode('utf-8'), self.merge_histogram.encode('utf-8'), c_float(self.variance), c_float(self.privacy_budget),
-                    self.depth, self.n_trees, c_float(self.min_child_weight), c_float(self.lambda_ft), c_float(self.gamma), c_float(self.column_sampling_rate),
+                    self.max_depth, self.n_trees, c_float(self.min_child_weight), c_float(self.lambda_ft), c_float(self.gamma), c_float(self.column_sampling_rate),
                     self.verbose, self.bagging, self.n_parallel_trees, c_float(self.learning_rate), self.objective.encode('utf-8'), n_class, self.n_device, self.max_num_bin,
+                    self.seed, c_float(self.ins_bagging_fraction), self.reorder_label,
                     X.shape[0], data, indptr, indices, label, self.tree_method, byref(self.model), tree_per_iter_ptr, group_label,
                     in_groups, num_groups)
         self.num_class = n_class[0]
@@ -156,7 +163,7 @@ class FLModel(FedTreeBase):
         else:
             group_label = None
         in_groups, num_groups = self._construct_groups(groups)
-        FedTree.predict(
+        fedtree.predict(
             X.shape[0],
             data,
             indptr,
@@ -177,7 +184,7 @@ class FLModel(FedTreeBase):
 
     def __del__(self):
         if self.model is not None:
-            FedTree.model_free(byref(self.model))
+            fedtree.model_free(byref(self.model))
 
     # Cross Validation
     def cv(self, X, y, folds=None, nfold=5, shuffle=True, seed=0):
@@ -241,22 +248,35 @@ class FLModel(FedTreeBase):
             print("mean test RMSE:%.6f+%.6f" %(statistics.mean(test_score_list), statistics.stdev(test_score_list)))
         return self.eval_res
 
-# TODO: Fix init parameters
-class FLClassifier(FLModel, FedTreeClassifierBase):
+class FLClassifier(FLModel, fedtreeClassifierBase):
     _impl = 'classifier'
 
     def __init__(self, n_parties=2, partition=1, alpha=100, n_hori=2, n_verti=2, mode="horizontal",
                  partition_mode="horizontal", privacy_tech="none", propose_split="server", merge_histogram="server",
-                 variance=200, privacy_budget=10, depth=6, n_trees=40, min_child_weight=1, lambda_ft=1,
-                 gamma=1, column_sampling_rate=1, verbose=1, n_parallel_trees=1, learning_rate=1, objective="multi:softmax",
-                 num_class=1, n_device=1, max_num_bin=255, tree_method="auto"):
-        super().__init__(n_parties=n_parties, partition=partition, alpha=alpha, n_hori=n_hori, n_verti=n_verti, mode=mode, partition_mode=partition_mode, privacy_tech=privacy_tech, propose_split=propose_split, merge_histogram=merge_histogram, variance=variance, privacy_budget=privacy_budget, depth=depth, n_trees=n_trees, min_child_weight=min_child_weight, lambda_ft=lambda_ft, gamma=gamma, column_sampling_rate=column_sampling_rate, verbose=verbose, n_parallel_trees=n_parallel_trees, learning_rate=learning_rate, objective=objective, num_class=num_class, n_device=n_device, max_num_bin=max_num_bin, tree_method=tree_method)
+                 variance=200, privacy_budget=10, max_depth=6, n_trees=40, min_child_weight=1, lambda_ft=1,
+                 gamma=1, column_sampling_rate=1, verbose=1, n_parallel_trees=1, learning_rate=1, objective="binary:logistic",
+                 num_class=1, n_device=1, max_num_bin=255, seed=36, ins_bagging_fraction=1.0, reorder_label=1, tree_method="auto"):
+        super().__init__(n_parties=n_parties, partition=partition, alpha=alpha, n_hori=n_hori, n_verti=n_verti,
+                         mode=mode, partition_mode=partition_mode, privacy_tech=privacy_tech, propose_split=propose_split,
+                         merge_histogram=merge_histogram, variance=variance, privacy_budget=privacy_budget, max_depth=max_depth,
+                         n_trees=n_trees, min_child_weight=min_child_weight, lambda_ft=lambda_ft, gamma=gamma,
+                         column_sampling_rate=column_sampling_rate, verbose=verbose, n_parallel_trees=n_parallel_trees,
+                         learning_rate=learning_rate, objective=objective, num_class=num_class, n_device=n_device,
+                         max_num_bin=max_num_bin, seed=seed, ins_bagging_fraction=ins_bagging_fraction,
+                         reorder_label=reorder_label, tree_method=tree_method)
 
-class FLRegressor(FLModel, FedTreeRegressorBase):
+class FLRegressor(FLModel, fedtreeRegressorBase):
     _impl = 'regressor'
     def __init__(self, n_parties=2, partition=1, alpha=100, n_hori=2, n_verti=2, mode="horizontal",
-                 partition_mode="", privacy_tech="none", propose_split="server", merge_histogram="server",
-                 variance=200, privacy_budget=10, depth=6, n_trees=40, min_child_weight=1, lambda_ft=1,
+                 partition_mode="horizontal", privacy_tech="none", propose_split="server", merge_histogram="server",
+                 variance=200, privacy_budget=10, max_depth=6, n_trees=40, min_child_weight=1, lambda_ft=1,
                  gamma=1, column_sampling_rate=1, verbose=1, n_parallel_trees=1, learning_rate=1, objective="reg:linear",
-                 num_class=1, n_device=1, max_num_bin=255, tree_method="auto"):
-        super().__init__(n_parties=n_parties, partition=partition, alpha=alpha, n_hori=n_hori, n_verti=n_verti, mode=mode, partition_mode=partition_mode, privacy_tech=privacy_tech, propose_split=propose_split, merge_histogram=merge_histogram, variance=variance, privacy_budget=privacy_budget, depth=depth, n_trees=n_trees, min_child_weight=min_child_weight, lambda_ft=lambda_ft, gamma=gamma, column_sampling_rate=column_sampling_rate, verbose=verbose, n_parallel_trees=n_parallel_trees, learning_rate=learning_rate, objective=objective, num_class=num_class, n_device=n_device, max_num_bin=max_num_bin, tree_method=tree_method)
+                 num_class=1, n_device=1, max_num_bin=255, seed=36, ins_bagging_fraction=1.0, reorder_label=0, tree_method="auto"):
+        super().__init__(n_parties=n_parties, partition=partition, alpha=alpha, n_hori=n_hori, n_verti=n_verti,
+                         mode=mode, partition_mode=partition_mode, privacy_tech=privacy_tech, propose_split=propose_split,
+                         merge_histogram=merge_histogram, variance=variance, privacy_budget=privacy_budget, max_depth=max_depth,
+                         n_trees=n_trees, min_child_weight=min_child_weight, lambda_ft=lambda_ft, gamma=gamma,
+                         column_sampling_rate=column_sampling_rate, verbose=verbose, n_parallel_trees=n_parallel_trees,
+                         learning_rate=learning_rate, objective=objective, num_class=num_class, n_device=n_device,
+                         max_num_bin=max_num_bin, seed=seed, ins_bagging_fraction=ins_bagging_fraction,
+                         reorder_label=reorder_label, tree_method=tree_method)
