@@ -1663,6 +1663,14 @@ void distributed_horizontal_train(DistributedParty& party, FLParam &fl_param) {
     }
 }
 
+void distributed_ensemble_train(DistributedParty &party, FLParam &fl_param){
+    CHECK_EQ(fl_param.gbdt_param.n_trees % fl_param.n_parties, 0);
+    int n_tree_each_party = fl_param.gbdt_param.n_trees / fl_param.n_parties;
+    for (int j = 0; j < n_tree_each_party; j++)
+        party.booster.boost(party.gbdt.trees);
+//    party.SendTrees();
+}
+
 #ifdef _WIN32
 INITIALIZE_EASYLOGGINGPP
 #endif
@@ -1749,14 +1757,13 @@ int main(int argc, char **argv) {
             party.gbdt.predict_score_vertical(fl_param.gbdt_param, test_dataset, batch_idxs);
     }
     else if (fl_param.mode == "horizontal") {
-        SyncArray<bool> dummy_map;
         // horizontal does not need feature_map parameter
         if (fl_param.partition) {
             partition.homo_partition(dataset, fl_param.n_parties, true, subsets, batch_idxs);
-            party.init(pid, subsets[pid], fl_param, dummy_map);
+            party.init(pid, subsets[pid], fl_param);
         }
         else {
-            party.init(pid, dataset, fl_param, dummy_map);
+            party.init(pid, dataset, fl_param);
         }
 
         party.BeginBarrier();
@@ -1771,9 +1778,27 @@ int main(int argc, char **argv) {
         if(use_global_test_set)
             party.gbdt.predict_score(fl_param.gbdt_param, test_dataset);
     }
-//    else if (fl_param.mode == "ensemble"){
-//
-//    }
+    else if (fl_param.mode == "ensemble"){
+        if (fl_param.partition){
+            partition.homo_partition(dataset, fl_param.n_parties, fl_param.partition_mode == "horizontal", subsets, batch_idxs, fl_param.seed);
+            party.init(pid, subsets[pid], fl_param);
+        }
+        else{
+            party.init(pid, dataset, fl_param);
+        }
+        party.BeginBarrier();
+        LOG(INFO)<<"training start";
+        auto t_start = party.timer.now();
+        distributed_ensemble_train(party, fl_param);
+        auto t_end = party.timer.now();
+        std::chrono::duration<float> used_time = t_end - t_start;
+        LOG(INFO)<<"training end";
+        train_time = used_time.count();
+        LOG(INFO) << "train time: " << train_time<<"s";
+        if(use_global_test_set)
+            party.gbdt.predict_score(fl_param.gbdt_param, test_dataset);
+
+    }
     
     LOG(INFO) << "encryption time:" << party.enc_time << "s";
     party.StopServer(train_time);

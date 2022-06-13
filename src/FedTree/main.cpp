@@ -169,7 +169,9 @@ int main(int argc, char** argv){
             if(fl_param.mode == "vertical")
                 parties[i].vertical_init(i, train_subsets[i], fl_param);
             else if(fl_param.mode == "horizontal")
-                parties[i].init(i, train_subsets[i], fl_param, feature_map[i]);
+                parties[i].init(i, train_subsets[i], fl_param);
+            else if(fl_param.mode == "ensemble")
+                parties[i].init(i, train_subsets[i], fl_param);
             n_instances_per_party[i] = train_subsets[i].n_instances();
         }
         LOG(INFO) << "initialize server";
@@ -178,7 +180,7 @@ int main(int argc, char** argv){
                 server.vertical_init(fl_param, dataset.n_instances(), n_instances_per_party, dataset.y, dataset.label);
             else
                 server.vertical_init(fl_param, train_subsets[0].n_instances(), n_instances_per_party, train_subsets[0].y, train_subsets[0].label);
-        } else if (fl_param.mode == "horizontal") {
+        } else if (fl_param.mode == "horizontal" || fl_param.mode == "ensemble") {
             server.horizontal_init(fl_param);
         }
     }

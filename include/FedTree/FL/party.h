@@ -21,13 +21,15 @@
 
 class Party {
 public:
-    void init(int pid, DataSet &dataset, FLParam &param, SyncArray<bool> &feature_map);
+    void init(int pid, DataSet &dataset, FLParam &param);
 
     void bagging_init(int seed = -1);
 
     void vertical_init(int pid, DataSet &dataset, FLParam &param);
 
     void vertical_init_as_host(int pid, DataSet &dataset, FLParam &param);
+
+    void hybrid_init(int pid, DataSet &dataset, FLParam &param, SyncArray<bool> &feature_map);
 
     void send_booster_gradients(Party &party) {
         SyncArray<GHPair> gh = booster.get_gradients();

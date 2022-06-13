@@ -9,7 +9,24 @@
 #include <thrust/execution_policy.h>
 
 
-void Party::init(int pid, DataSet &dataset, FLParam &param, SyncArray<bool> &feature_map) {
+void Party::init(int pid, DataSet &dataset, FLParam &param) {
+    this->pid = pid;
+    this->dataset = dataset;
+    this->param = param;
+    this->n_total_instances = dataset.n_instances();
+    if (param.ins_bagging_fraction < 1.0){
+        this->temp_dataset = dataset;
+        this->ins_bagging_fraction = param.ins_bagging_fraction;
+    }
+//    if (param.partition_mode == "hybrid") {
+//        this->feature_map.resize(feature_map.size());
+//        this->feature_map.copy_from(feature_map.host_data(), feature_map.size());
+//    }
+    booster.init(dataset, param.gbdt_param, (param.mode != "horizontal") || (param.propose_split == "party"));
+
+};
+
+void Party::hybrid_init(int pid, DataSet &dataset, FLParam &param, SyncArray<bool> &feature_map) {
     this->pid = pid;
     this->dataset = dataset;
     this->param = param;
