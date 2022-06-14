@@ -15,9 +15,8 @@ else:
     print("OS not supported!")
     exit()
 
-if not path.exists(path.join(dirname, "fedtree", path.basename(lib_path))):
-    copyfile(lib_path, path.join(dirname, "fedtree", path.basename(lib_path)))
-print("lib_path:", lib_path)
+copyfile(lib_path, path.join(dirname, "fedtree", path.basename(lib_path)))
+
 setuptools.setup(name="fedtree",
                  version="0.1.0",
                  packages=["fedtree"],
