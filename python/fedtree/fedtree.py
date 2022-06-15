@@ -182,6 +182,57 @@ class FLModel(fedtreeBase):
         self.predict_label = np.asarray(predict_label)
         return self.predict_label
 
+    def predict_proba(self, X, groups=None):
+        if self.model is None:
+            print("Please train the model first or load model from file!")
+            raise ValueError
+        if not ("binary" in self.objective or "multi" in self.objective):
+            print("Only classification supports predict_proba!")
+            raise ValueError
+        sparse = sp.isspmatrix(X)
+        if sparse is False:
+            X = sp.csr_matrix(X)
+        X.data = np.asarray(X.data, dtype=np.float32, order='C')
+        X.sort_indices()
+        data = X.data.ctypes.data_as(POINTER(c_float))
+        indices = X.indices.ctypes.data_as(POINTER(c_int32))
+        indptr = X.indptr.ctypes.data_as(POINTER(c_int32))
+        if("multi" not in self.objective):
+            self.predict_raw = (c_float * X.shape[0])()
+        else:
+            temp_size = X.shape[0] * self.num_class
+            self.predict_raw = (c_float * temp_size)()
+        if self.group_label is not None:
+            group_label = (c_float * len(self.group_label))()
+            group_label[:] = self.group_label
+        else:
+            group_label = None
+        in_groups, num_groups = self._construct_groups(groups)
+        fedtree.predict_proba(
+            X.shape[0],
+            data,
+            indptr,
+            indices,
+            self.predict_raw,
+            byref(self.model),
+            self.n_trees,
+            self.tree_per_iter,
+            self.objective.encode('utf-8'),
+            self.num_class,
+            c_float(self.learning_rate),
+            group_label,
+            in_groups, num_groups, self.verbose, self.bagging
+        )
+
+        if "binary" in self.objective:
+            predict_raw = np.asarray([self.predict_raw[index] for index in range(0, X.shape[0])])
+            predict_proba = 1/(1+np.exp(-predict_raw))
+            self.predict_proba = np.c_[1-predict_proba, predict_proba]
+        elif self.objective == "multi:softmax":
+            predict_raw = np.asarray([self.predict_raw[index] for index in range(0, X.shape[0] * self.num_class)])
+            self.predict_proba = predict_raw.reshape(X.shape[0], self.num_class)
+        return self.predict_proba
+
     def __del__(self):
         if self.model is not None:
             fedtree.model_free(byref(self.model))
