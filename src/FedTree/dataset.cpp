@@ -379,15 +379,6 @@ void DataSet::load_from_file(string file_name, FLParam &param) {
     auto t_end = timer.now();
     std::chrono::duration<float> used_time = t_end - t_start;
     LOG(INFO) << "Load dataset using time: " << used_time.count() << " s";
-
-//    // TODO Estimate the required memory
-//    int nnz = this->csr_val.size();
-//    double mem_size = (double)nnz / 1024;
-//    mem_size /= 1024;
-//    mem_size /= 1024;
-//    mem_size *= 12;
-//    if(mem_size > (5 * param.n_device))
-//        this->use_cpu = true;
 }
 
 
