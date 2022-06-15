@@ -1,8 +1,4 @@
-import sys
-sys.path.append("../")
-
 from fedtree import FLRegressor
-from sklearn.datasets import load_digits
 from sklearn.metrics import mean_squared_error
 from sklearn.datasets import load_svmlight_file
 

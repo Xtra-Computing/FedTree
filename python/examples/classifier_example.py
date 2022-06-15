@@ -1,6 +1,3 @@
-import sys
-sys.path.append("../")
-
 from fedtree import FLClassifier
 from sklearn.datasets import load_digits
 from sklearn.metrics import accuracy_score
