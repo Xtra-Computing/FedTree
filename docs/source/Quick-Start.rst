@@ -12,6 +12,8 @@ and csv format (the first row is the header ``id,label,feature_id1,feature_id2,.
 See `here <https://github.com/Xtra-Computing/FedTree/blob/main/dataset/test_dataset.txt>`__ for an example of libsvm format dataset
 and `here <https://github.com/Xtra-Computing/FedTree/blob/main/dataset/credit/credit_vertical_p0_withlabel.csv>`__ for an example of csv format dataset.
 
+For classification task, please ensure that the labels of the dataset are organized as ``0 1 2 ...`` (e.g., use labels 0 and 1 for binary classification).
+
 Configure the Parameters
 ~~~~~~~~~~~~~~~~~~~~~~~~
 You can set the parameters in a file, e.g., ``machine.conf`` under ``dataset`` subdirectory.
@@ -36,7 +38,8 @@ After you install FedTree, you can simply run the following commands under ``Fed
 
     .. code::
 
-        ./build/bin/FedTree-train ./dataset/vertical_example.conf
+        ./build/bin/FedTree-train ./examples/vertical_example.conf
+        ./build/bin/FedTree-predict ./examples/prediction.conf
 
 
 

@@ -9,7 +9,7 @@ Baselines: Homo-SecureBoost and Hetero-SecureBoost. Both approaches are from `FA
 Standalone Simulation
 ~~~~~~~~~~~~~~~~~~~~~
 For the standalone simulation, we use a machine with 64*Intel Xeon Gold 6226R CPUs and 8*NVIDIA GeForce RTX 3090 to conduct experiments.
-We allocate each experiment with 16 threads. By default, we set the number of parties to 2, the number of trees to 40, learning rate to 0.1, the maximum depth of tree to 6, and the maximum number of bins to 255.
+We allocate each experiment with 16 threads. By default, we set the number of parties to 2, the number of trees to 50, learning rate to 0.1, the maximum depth of tree to 6, and the maximum number of bins to 255.
 The other parameters of all approaches are set to the default setting of FedTree.
 
 Effectiveness
@@ -57,7 +57,7 @@ The speedup is the improvement of FedTree-Verti + HE (CPU) over FATE. FedTree is
 
 Distributed Computing
 ~~~~~~~~~~~~~~~~~~~~~
-For distributed setting, we use a cluster with 5 machines, where each machine has 56*Intel Xeon E5-2680 CPUs.
+For distributed setting, we use a cluster with 5 machines, where each machine has two Intel Xeon E5-2680 14 core CPUs.
 We set the number of parties to 4, where each party hosts a machine. The results are shown below. Here Homo-SecureBoost (from FATE) and FedTree-Hori+SA have the same security level.
 We can observe that both horizontal and vertical FedTree are faster than FATE.
 
