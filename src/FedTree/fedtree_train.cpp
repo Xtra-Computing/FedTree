@@ -265,7 +265,6 @@ int main(int argc, char** argv){
         //    score = parties[0].gbdt.predict_score(fl_param.gbdt_param, test_subsets[0]);
         scores.push_back(score);
     }
-//        parser.save_model("global_model", fl_param.gbdt_param, server.global_trees.trees, dataset);
-//    }
+    parser.save_model(fl_param.gbdt_param.model_path, fl_param.gbdt_param, server.global_trees.trees);
     return 0;
 }

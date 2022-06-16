@@ -1801,6 +1801,7 @@ int main(int argc, char **argv) {
     }
     
     LOG(INFO) << "encryption time:" << party.enc_time << "s";
+    parser.save_model(fl_param.gbdt_param.model_path, fl_param.gbdt_param, party.gbdt.trees);
     party.StopServer(train_time);
     return 0;
 }
