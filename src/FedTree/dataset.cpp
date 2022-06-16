@@ -1074,7 +1074,7 @@ void DataSet::get_subset(vector<int> &idx, DataSet& subset){
                 subset.csr_row_ptr.push_back(n_val + subset.csr_row_ptr.back());
             }
             if(y.size())
-                subset.y.push_back(y[i]);
+                subset.y.push_back(y[idx[i]]);
         }
         subset.has_csc = false;
     }
