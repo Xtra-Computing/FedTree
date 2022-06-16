@@ -39,7 +39,9 @@ void Partition::homo_partition(const DataSet &dataset, const int n_parties, cons
     }
 
     std::default_random_engine e(seed);
-    std::shuffle(idxs.begin(), idxs.end(), e);
+    //for vertical FL, the features are not shuffled so that the feature id of the test dataset is consistent with the training dataset.
+    if(is_horizontal)
+        std::shuffle(idxs.begin(), idxs.end(), e);
 //    std::random_shuffle(idxs.begin(), idxs.end());
 
 //    std::map<int, vector<int>> batch_idxs;
