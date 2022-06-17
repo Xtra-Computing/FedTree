@@ -44,6 +44,12 @@ Parameters for Federated Setting
 Parameters for GBDTs
 --------------------
 
+* ``data`` [default=``../dataset/test_dataset.txt``, type=string, alias: ``path``]
+    - The path to the training dataset(s). In simulation, if multiple datasets need to be loaded where each dataset represents a party, specify the paths seperated with comma.
+
+* ``model_path`` [default=``fedtree.model``, type=string]
+    - The path to save/load the model.
+
 * ``verbose`` [default=1, type=int]
     - Printing information: 0 for silence, 1 for key information and 2 for more information.
 

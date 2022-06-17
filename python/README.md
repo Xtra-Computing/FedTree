@@ -22,6 +22,11 @@ Fit the FedTree model according to the given training data.
 *predict(X)*:\
 Perform prediction on samples in X.
 
+*save_model(model_path)*:\
+Save the FedTree model to model_path.
+
+*load_model(model_path)*:\
+Load the FedTree model from model_path.
 
 ## Examples
 Users can simply input parameters to these classes, call ```fit()``` and ```predict``` functions like models in scikit-learn.
