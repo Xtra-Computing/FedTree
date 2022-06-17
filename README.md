@@ -5,7 +5,7 @@
 and **secure**. It has the following features currently.
 
 - Federated training of gradient boosting decision trees.
-- Parallel computing on multi-core CPUs.
+- Parallel computing on multi-core CPUs and GPUs.
 - Supporting homomorphic encryption, secure aggregation and differential privacy.
 - Supporting classification and regression.
 
