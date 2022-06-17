@@ -233,6 +233,56 @@ class FLModel(fedtreeBase):
             self.predict_proba = predict_raw.reshape(X.shape[0], self.num_class)
         return self.predict_proba
 
+
+
+    def save_model(self, model_path):
+        if self.model is None:
+            print("Please train the model first or load model from file!")
+            raise ValueError
+        if self.group_label is not None:
+            group_label = (c_float * len(self.group_label))()
+            group_label[:] = self.group_label
+        fedtree.save_model(
+            model_path.encode('utf-8'),
+            self.objective.encode('utf-8'),
+            c_float(self.learning_rate),
+            self.num_class,
+            self.n_trees,
+            self.tree_per_iter,
+            byref(self.model),
+            group_label
+        )
+
+    def load_model(self, model_path):
+        self.model = (c_long * 1)()
+        learning_rate = (c_float * 1)()
+        n_class = (c_int * 1)()
+        n_trees = (c_int * 1)()
+        tree_per_iter = (c_int * 1)()
+        fedtree.load_model(
+            model_path.encode('utf-8'),
+            learning_rate,
+            n_class,
+            n_trees,
+            tree_per_iter,
+            self.objective.encode('utf-8'),
+            byref(self.model)
+        )
+        if self.model is None:
+            raise ValueError("Model is None.")
+        self.learning_rate = learning_rate[0]
+        self.num_class = n_class[0]
+        self.n_trees = n_trees[0]
+        self.tree_per_iter = tree_per_iter[0]
+        self.group_label = None
+        # group_label = (c_float * self.num_class)()
+        # thundergbm.load_config(
+        #     model_path.encode('utf-8'),
+        #     group_label
+        # )
+        # self.group_label = [group_label[idx] for idx in range(self.num_class)]
+
+
     def __del__(self):
         if self.model is not None:
             fedtree.model_free(byref(self.model))
