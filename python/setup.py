@@ -15,10 +15,11 @@ else:
     print("OS not supported!")
     exit()
 
-copyfile(lib_path, path.join(dirname, "fedtree", path.basename(lib_path)))
+if not path.exists(path.join(dirname, "fedtree", path.basename(lib_path))):
+    copyfile(lib_path, path.join(dirname, "fedtree", path.basename(lib_path)))
 
 setuptools.setup(name="fedtree",
-                 version="1.0.0",
+                 version="1.0.1",
                  packages=["fedtree"],
                  package_dir={"python": "fedtree"},
                  description="A federated learning library for trees",
