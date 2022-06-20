@@ -1,5 +1,10 @@
-Parameters
-==========
+APIs/Parameters
+===============
+
+We provide two kinds of APIs: command-line interface (CLI) and Python interface. For CLI, users only need to prepare a
+configuration file specifying the parameters and call FedTree in a one-line command. For Python interface, users can define
+two classes `FLClassifier` and `FLRegressor` with the parameters and use them in a scikit-learn style (see `here <https://github.com/Xtra-Computing/FedTree/tree/main/python>`__).
+The parameters are below.
 
 **Contents**
 
