@@ -203,14 +203,14 @@ void Parser::parse_param(FLParam &fl_param, int argc, char **argv) {
 
     if (fl_param.n_hori == -1){
         if(fl_param.mode == "horizontal"){
-            fl_param.n_hori == fl_param.n_parties;
+            fl_param.n_hori = fl_param.n_parties;
         }
         else
             fl_param.n_hori = 1;
     }
     if (fl_param.n_verti == -1){
         if(fl_param.mode == "vertical"){
-            fl_param.n_verti == fl_param.n_parties;
+            fl_param.n_verti = fl_param.n_parties;
         }
         else
             fl_param.n_verti = 1;
