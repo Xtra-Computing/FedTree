@@ -118,3 +118,16 @@ Here are two examples for horizontal FedTree and vertical FedTree.
 
 # Other information
 FedTree is built based on [ThunderGBM](https://github.com/Xtra-Computing/thundergbm), which is a fast GBDTs and Radom Forests training system on GPUs.
+
+# Citation
+Please cite our paper if you use FedTree in your work.
+```
+@misc{fedtree,
+  title = {FedTree: A Fast, Effective, and Secure Tree-based Federated Learning System},
+  author={Li, Qinbin and Cai, Yanzheng and Han, Yuxuan and Yung, Ching Man and Fu, Tianyuan and He, Bingsheng},
+  howpublished = {\url{https://github.com/Xtra-Computing/FedTree/blob/main/FedTree_draft_paper.pdf}},
+  year={2022}
+}
+```
+
+
