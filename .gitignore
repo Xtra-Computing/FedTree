@@ -11,6 +11,7 @@ tgbm.model
 /ntl-11.4.4/
 
 logs/*
+cut_dataset/*
 fedtree-datasets/*
 dataset/*
 dataset/breast-cancer_scale
