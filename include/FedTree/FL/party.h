@@ -16,22 +16,20 @@
 #ifdef USE_CUDA
 #include "FedTree/Encryption/paillier_gpu.h"
 #endif
-
+#include "FedTree/Encryption/diffie_hellman.h"
 
 
 class Party {
 public:
-    void init(int pid, DataSet &dataset, FLParam &param, SyncArray<bool> &feature_map);
+    void init(int pid, DataSet &dataset, FLParam &param);
 
     void bagging_init(int seed = -1);
 
-    void vertical_init(int pid, DataSet &dataset, FLParam &param) {
-        this->pid = pid;
-        this->dataset = dataset;
-        this->param = param;
-        this->n_total_instances = dataset.n_instances();
-        booster.init(dataset, param.gbdt_param);
-    };
+    void vertical_init(int pid, DataSet &dataset, FLParam &param);
+
+    void vertical_init_as_host(int pid, DataSet &dataset, FLParam &param);
+
+    void hybrid_init(int pid, DataSet &dataset, FLParam &param, SyncArray<bool> &feature_map);
 
     void send_booster_gradients(Party &party) {
         SyncArray<GHPair> gh = booster.get_gradients();
@@ -90,14 +88,14 @@ public:
         return dataset.n_features();
     }
 
-    vector<float> get_feature_range_by_feature_index (int index) {
+    vector<float_type> get_feature_range_by_feature_index (int index) {
         float inf = std::numeric_limits<float>::infinity();
 //        for(int i = 0; i < dataset.csr_val.size(); i++){
 //            std::cout<<dataset.csr_val[i]<<" ";
 //        }
         if(!dataset.has_csc)
             dataset.csr_to_csc();
-        vector<float> feature_range(2);
+        vector<float_type> feature_range(2);
         int column_start = dataset.csc_col_ptr[index];
         int column_end = dataset.csc_col_ptr[index+1];
 
@@ -143,6 +141,28 @@ public:
 #endif
     }
 
+    void add_noise_to_histogram(SyncArray<GHPair> &hist){
+        auto hist_data = hist.host_data();
+        float sum_generated_noises = 0;
+        float sum_decrypted_noises = 0;
+        for(int j = 0; j < dh.generated_noises.size(); j++) {
+            if(j!=pid) {
+                sum_generated_noises += dh.generated_noises[j];
+            }
+        }
+        for(int j = 0; j < dh.decrypted_noises.size(); j++) {
+            if(j!=pid) {
+                sum_decrypted_noises += dh.decrypted_noises[j];
+            }
+        }
+        float delta_noise = sum_generated_noises - sum_decrypted_noises;
+        #pragma omp parallel for
+        for(int i = 0; i < hist.size(); i++){
+            hist_data[i].g += delta_noise;
+            hist_data[i].h += delta_noise;
+        }
+    }
+
 //    void encrypt_gradient(GHPair &ghpair) {
 //        ghpair.homo_encrypt(paillier.paillier_cpu);
 //    }
@@ -163,6 +183,7 @@ public:
 #else
     Paillier paillier;
 #endif
+    DiffieHellman dh;
     Booster booster;
     GBDT gbdt;
     DataSet dataset;
@@ -173,6 +194,7 @@ public:
     DPnoises<double> DP;
     FLParam param;
     int n_total_instances;
+    bool has_label; //whether has label or not, for vertical FL.
 
 private:
 //    AdditivelyHE HE;

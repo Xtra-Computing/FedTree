@@ -38,8 +38,13 @@ public:
 
     void SendNode(Tree::TreeNode &node_data);
     void SendNodeEnc(Tree::TreeNode &node_data);
-    
-    void SendIns2NodeID(SyncArray<int> &ins2node_id, int nid, int l);
+
+    void OrganizeNodesEnc(fedtree::NodeEncArray &nodes, Tree::TreeNode &node_data);
+    void SendNodesEnc(fedtree::NodeEncArray &nodes);
+    void OrganizeNodes(fedtree::NodeArray &nodes, Tree::TreeNode &node_data);
+    void SendNodes(fedtree::NodeArray &nodes);
+
+    void SendIns2NodeID(SyncArray<int> &ins2node_id, int nid);
 
     void GetNodes(int l);
 
@@ -49,7 +54,13 @@ public:
 
     void TriggerPrune(int t);
 
-    void SendRange(const vector<vector<float>>& ranges);
+    void TriggerPrintScore();
+
+    void SendRange(const vector<vector<float_type>>& ranges);
+
+    void SendCutPoints();
+
+    void GetCutPoints();
     
     void TriggerCut(int n_bins);
     
@@ -70,6 +81,8 @@ public:
     float GetAvgScore(float score);
 
     void TriggerHomoInit();
+
+    void TriggerSAInit();
 
     void GetPaillier();
 
@@ -92,8 +105,15 @@ public:
     void StopServer(float tot_time);
 
     void BeginBarrier();
+
+    void SendDHPubKey();
+    void GetDHPubKey();
+    void SendNoises();
+    void GetNoises();
     double comm_time = 0;
     double enc_time = 0;
+    double comm_size = 0;
+    int n_parties;
     std::chrono::high_resolution_clock timer;
 
 private:

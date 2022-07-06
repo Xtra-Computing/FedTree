@@ -1064,12 +1064,12 @@ void HistTreeBuilder::merge_histograms_server_propose(SyncArray<GHPair> &merged_
 }
 
 
-void HistTreeBuilder::merge_histograms_client_propose(SyncArray<GHPair> &hist, SyncArray<GHPair> &missing_gh, vector<vector<vector<float>>> feature_range, int n_max_splits) {
+void HistTreeBuilder::merge_histograms_client_propose(SyncArray<GHPair> &hist, SyncArray<GHPair> &missing_gh, vector<vector<vector<float_type>>> feature_range, int n_max_splits) {
 
     float inf = std::numeric_limits<float>::infinity();
     // find feature range of each feature for each party
     int n_columns = parties_cut[0].cut_col_ptr.size() - 1;
-    vector<vector<float>> ranges(n_columns);
+    vector<vector<float_type>> ranges(n_columns);
 
     // Merging all cut points into one single cut points
     for (int n = 0; n < n_columns; n++) {
@@ -1087,7 +1087,7 @@ void HistTreeBuilder::merge_histograms_client_propose(SyncArray<GHPair> &hist, S
     }
 
     // Once we have gathered the sorted range, we can randomly sample the cut points to match with the number of bins
-    SyncArray<float> cut_points_val;
+    SyncArray<float_type> cut_points_val;
     SyncArray<int> cut_col_ptr;
     int n_features = ranges.size();
     int max_num_bins = parties_cut[0].cut_points_val.size() / n_columns + 1;
@@ -1100,7 +1100,7 @@ void HistTreeBuilder::merge_histograms_client_propose(SyncArray<GHPair> &hist, S
     int index = 0;
 
     for (int fid = 0; fid < n_features; fid++) {
-        vector<float> sample;
+        vector<float_type> sample;
         cut_col_ptr_data[fid] = index;
 
         // Always keep the maximum value
@@ -1160,7 +1160,7 @@ void HistTreeBuilder::merge_histograms_client_propose(SyncArray<GHPair> &hist, S
             int column_end = cut_col_ptr_data[fid + 1];
 
             // Get range of global cut point of the feature
-            SyncArray<float> cut_points_range(column_end - column_start);
+            SyncArray<float_type> cut_points_range(column_end - column_start);
             auto cut_points_range_data = cut_points_range.host_data();
             for (int p = column_start; p < column_end; p++) {
                 cut_points_range_data[p - column_start] = cut_points_val_data[p];
@@ -1178,7 +1178,7 @@ void HistTreeBuilder::merge_histograms_client_propose(SyncArray<GHPair> &hist, S
 
                 int party_column_start = parties_cut_col_ptr_data[fid];
                 int party_column_end = parties_cut_col_ptr_data[fid + 1];
-                SyncArray<float> party_cut_points_range(party_column_end - party_column_start);
+                SyncArray<float_type> party_cut_points_range(party_column_end - party_column_start);
                 auto party_cut_points_range_data = party_cut_points_range.host_data();
                 for (int p = party_column_start; p < party_column_end; p++) {
                     party_cut_points_range_data[p - party_column_start] = parties_cut_points_val_data[p];

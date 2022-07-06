@@ -34,7 +34,8 @@ public:
 class BinaryClassMetric: public MulticlassAccuracy{
 public:
     float_type get_score(const SyncArray<float_type> &y_p) const override;
-    string get_name() const override { return "test error";}
+    
+    string get_name() const override { return "AUC";}
 };
 
 

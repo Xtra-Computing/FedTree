@@ -11,10 +11,11 @@
 
 grpc::Status DistributedServer::TriggerUpdateGradients(::grpc::ServerContext *context, const ::fedtree::PID *request,
                                                        ::fedtree::Ready *response) {
+//    LOG(INFO)<<"computation UpdateGradients start";
     booster.update_gradients();
     LOG(DEBUG) << "gradients updated";
     if (param.privacy_tech == "he") {
-        // TIPS 这里可以直接存好字符串，一步到位
+        // TIPS: store string
         
         SyncArray<GHPair> tmp;
         tmp.resize(booster.gradients.size());
@@ -54,6 +55,7 @@ grpc::Status DistributedServer::TriggerUpdateGradients(::grpc::ServerContext *co
         booster.gradients.copy_from(tmp);
     }
     update_gradients_success = true;
+//    LOG(INFO)<<"computation UpdateGradients end";
     return grpc::Status::OK;
 }
 
@@ -194,8 +196,22 @@ grpc::Status DistributedServer::TriggerAggregate(grpc::ServerContext *context, c
     int n_nodes_in_level = std::stoi(itr->second.data());
 
     booster.fbuilder->sp.resize(n_nodes_in_level);
-    int n_bins_new = accumulate(n_bins_per_party.begin(), n_bins_per_party.end(), 0);
-    int n_column_new = accumulate(n_columns_per_party.begin(), n_columns_per_party.end(), 0);
+    int n_total_bin = 0;
+    vector<int> n_bins_per_party(param.n_parties);
+    for(int i = 0; i < booster.fbuilder->parties_hist_fid.size(); i++){
+        n_total_bin += booster.fbuilder->parties_hist_fid[i].size();
+        n_bins_per_party[i] = booster.fbuilder->parties_hist_fid[i].size()/n_nodes_in_level;
+    }
+    int n_bins_new = n_total_bin / n_nodes_in_level;
+    int n_total_column = 0;
+    vector<int> n_columns_per_party(param.n_parties);
+    for(int i = 0; i < booster.fbuilder->parties_missing_gh.size(); i++){
+        n_total_column += booster.fbuilder->parties_missing_gh[i].size();
+        n_columns_per_party[i] = booster.fbuilder->parties_missing_gh[i].size()/n_nodes_in_level;
+    }
+    int n_column_new = n_total_column / n_nodes_in_level;
+//    int n_bins_new = accumulate(n_bins_per_party.begin(), n_bins_per_party.end(), 0);
+//    int n_column_new = accumulate(n_columns_per_party.begin(), n_columns_per_party.end(), 0);
     int n_max_nodes = 2 << model_param.depth;
     int n_max_splits_new = n_max_nodes * n_bins_new;
 
@@ -211,27 +227,30 @@ grpc::Status DistributedServer::TriggerAggregate(grpc::ServerContext *context, c
         }
     }
 
-    Comm comm_helper;
-    hist_fid.copy_from(comm_helper.concat_msyncarray(booster.fbuilder->parties_hist_fid,
-                                                     n_bins_per_party, n_nodes_in_level));
-
-    missing_gh.copy_from(comm_helper.concat_msyncarray(booster.fbuilder->parties_missing_gh,
-                                                       n_columns_per_party, n_nodes_in_level));
-
-    hist.copy_from(comm_helper.concat_msyncarray(booster.fbuilder->parties_hist,
-                                                 n_bins_per_party, n_nodes_in_level));
-
-    SyncArray<float_type> gain(n_max_splits_new);
-
     if (param.privacy_tech == "he") {
         std::chrono::high_resolution_clock timer;
         auto t1 = timer.now();
-        decrypt_gh_pairs(hist);
-        decrypt_gh_pairs(missing_gh);
+        for(int i = 0; i < param.n_parties; i++){
+            if(!has_label[i]){
+                decrypt_gh_pairs(booster.fbuilder->parties_hist[i]);
+                decrypt_gh_pairs(booster.fbuilder->parties_missing_gh[i]);
+            }
+        }
         auto t2 = timer.now();
         std::chrono::duration<float> t3 = t2 - t1;
         dec_time += t3.count();
     }
+
+    Comm comm_helper;
+    hist_fid.copy_from(comm_helper.concat_msyncarray(booster.fbuilder->parties_hist_fid, n_nodes_in_level));
+
+    missing_gh.copy_from(comm_helper.concat_msyncarray(booster.fbuilder->parties_missing_gh, n_nodes_in_level));
+
+    hist.copy_from(comm_helper.concat_msyncarray(booster.fbuilder->parties_hist,n_nodes_in_level));
+
+    SyncArray<float_type> gain(n_max_splits_new);
+
+
     booster.fbuilder->compute_gain_in_a_level(gain, n_nodes_in_level, n_bins_new, hist_fid.host_data(), missing_gh,
                                               hist);
     LOG(DEBUG) << "gain: " << gain;
@@ -246,7 +265,7 @@ grpc::Status DistributedServer::TriggerAggregate(grpc::ServerContext *context, c
         int best_idx = thrust::get<0>(best_idx_data[node]);
         int global_fid = hist_fid_data[best_idx];
         best_idx -= node * n_bins_new;
-        float best_gain = thrust::get<1>(best_idx_data[node]);
+        float_type best_gain = thrust::get<1>(best_idx_data[node]);
         int party_id = 0;
         while (best_idx >= 0) {
             best_idx -= n_bins_per_party[party_id];
@@ -329,6 +348,69 @@ grpc::Status DistributedServer::SendNode(grpc::ServerContext *context, const fed
     return grpc::Status::OK;
 }
 
+grpc::Status DistributedServer::SendNodes(grpc::ServerContext *context, const fedtree::NodeArray *node, fedtree::PID *id) {
+    std::multimap<grpc::string_ref, grpc::string_ref> metadata = context->client_metadata();
+    auto pid_itr = metadata.find("pid");
+    int pid = std::stoi(pid_itr->second.data());
+    int len = node->final_id_size();
+    for (int i = 0; i < len; i++) {
+        int nid = node->final_id(i);
+        auto nodes_data = booster.fbuilder->trees.nodes.host_data();
+        nodes_data[nid].final_id = node->final_id(i);
+        nodes_data[nid].lch_index = node->lch_index(i);
+        nodes_data[nid].rch_index = node->rch_index(i);
+        nodes_data[nid].parent_index = node->parent_index(i);
+        nodes_data[nid].gain = node->gain(i);
+        nodes_data[nid].base_weight = node->base_weight(i);
+        nodes_data[nid].split_feature_id = node->split_feature_id(i);
+        nodes_data[nid].pid = node->pid(i);
+        nodes_data[nid].split_value = node->split_value(i);
+        nodes_data[nid].split_bid = node->split_bid(i);
+        nodes_data[nid].default_right = node->default_right(i);
+        nodes_data[nid].is_leaf = node->is_leaf(i);
+        nodes_data[nid].is_valid = node->is_valid(i);
+        nodes_data[nid].is_pruned = node->is_pruned(i);
+        nodes_data[nid].sum_gh_pair.g = node->sum_gh_pair_g(i);
+        nodes_data[nid].sum_gh_pair.h = node->sum_gh_pair_h(i);
+        nodes_data[nid].n_instances = node->n_instances(i);
+    }
+
+    LOG(DEBUG) << "Receive node info from " << pid;
+    return grpc::Status::OK;
+}
+
+grpc::Status DistributedServer::SendNodesEnc(grpc::ServerContext *context, const fedtree::NodeEncArray *node, fedtree::PID *id) {
+    std::multimap<grpc::string_ref, grpc::string_ref> metadata = context->client_metadata();
+    auto pid_itr = metadata.find("pid");
+    int pid = std::stoi(pid_itr->second.data());
+    int len = node->final_id_size();
+    for (int i = 0; i < len; i++) {
+        int nid = node->final_id(i);
+        auto nodes_data = booster.fbuilder->trees.nodes.host_data();
+        nodes_data[nid].final_id = node->final_id(i);
+        nodes_data[nid].lch_index = node->lch_index(i);
+        nodes_data[nid].rch_index = node->rch_index(i);
+        nodes_data[nid].parent_index = node->parent_index(i);
+        nodes_data[nid].gain = node->gain(i);
+        nodes_data[nid].base_weight = node->base_weight(i);
+        nodes_data[nid].split_feature_id = node->split_feature_id(i);
+        nodes_data[nid].pid = node->pid(i);
+        nodes_data[nid].split_value = node->split_value(i);
+        nodes_data[nid].split_bid = node->split_bid(i);
+        nodes_data[nid].default_right = node->default_right(i);
+        nodes_data[nid].is_leaf = node->is_leaf(i);
+        nodes_data[nid].is_valid = node->is_valid(i);
+        nodes_data[nid].is_pruned = node->is_pruned(i);
+        nodes_data[nid].sum_gh_pair.encrypted = true;
+        nodes_data[nid].sum_gh_pair.g_enc = NTL::to_ZZ(node->sum_gh_pair_g_enc(i).c_str());
+        nodes_data[nid].sum_gh_pair.h_enc = NTL::to_ZZ(node->sum_gh_pair_h_enc(i).c_str());
+        nodes_data[nid].sum_gh_pair.paillier = paillier;
+        nodes_data[nid].n_instances = node->n_instances(i);
+    }
+
+    LOG(DEBUG) << "Receive node info from " << pid;
+    return grpc::Status::OK;
+}
 
 grpc::Status DistributedServer::SendNodeEnc(grpc::ServerContext *context, const fedtree::NodeEnc *node, fedtree::PID *id) {
     std::multimap<grpc::string_ref, grpc::string_ref> metadata = context->client_metadata();
@@ -423,7 +505,20 @@ grpc::Status DistributedServer::GetNodes(grpc::ServerContext *context, const fed
     std::chrono::duration<float> used_time = t_end - t_start;
     party_wait_times[id->id()] += used_time.count();
     
-    
+    if (param.privacy_tech == "he") {
+        auto t1 = timer.now();
+        auto node_data = booster.fbuilder->trees.nodes.host_data();
+        #pragma omp parallel for
+        for (int nid = (1 << l) - 1; nid < (2 << (l + 1)) - 1; nid++) {
+            if(node_data[nid].sum_gh_pair.encrypted) {
+                decrypt_gh(node_data[nid].sum_gh_pair);
+                node_data[nid].calc_weight(param.gbdt_param.lambda);
+            }
+        }
+        auto t2 = timer.now();
+        std::chrono::duration<float> t3 = t2 - t1;
+        dec_time += t3.count();
+    }
     auto nodes_data = booster.fbuilder->trees.nodes.host_data();
     for (int i = (1 << l) - 1; i < (4 << l) - 1; i++) {
         // if (id->id() == 0) {
@@ -462,7 +557,6 @@ grpc::Status DistributedServer::GetIns2NodeID(grpc::ServerContext *context, cons
         i2n.set_nid(ins2node_id_data[i]);
         writer->Write(i2n);
     }
-    // std::cout << "Send ins2node_id to " << id->id() << std::endl;
     LOG(DEBUG) << "Send ins2node_id to " << id->id();
     return grpc::Status::OK;
 }
@@ -518,6 +612,12 @@ grpc::Status DistributedServer::TriggerPrune(grpc::ServerContext *context, const
     return grpc::Status::OK;
 }
 
+grpc::Status DistributedServer::TriggerPrintScore(grpc::ServerContext *context, const fedtree::PID *pid, fedtree::Ready *ready) {
+    LOG(INFO) << booster.metric->get_name() << " = "
+              << booster.metric->get_score(booster.fbuilder->get_y_predict());
+    return grpc::Status::OK;
+}
+
 void DistributedServer::VerticalInitVectors(int n_parties) {
     hists_received.resize(n_parties, 0);
     missing_gh_received.resize(n_parties, 0);
@@ -549,6 +649,11 @@ void DistributedServer::HorizontalInitVectors(int n_parties) {
     party_tot_times.resize(n_parties, 0);
     party_comm_times.resize(n_parties, 0);
     party_enc_times.resize(n_parties, 0);
+
+    party_DHKey_received.resize(n_parties, 0);
+    party_noises_received.resize(n_parties, 0);
+
+    parties_cut_points_received.resize(n_parties, 0);
 }
 
 void RunServer(DistributedServer &service) {
@@ -607,15 +712,13 @@ grpc::Status DistributedServer::TriggerCut(grpc::ServerContext* context, const f
             }
         }
     }
-    
-    // cyz: efficiency problem
-    vector<vector<float>> temp;
+
+    vector<vector<float_type>> temp;
     for (auto e: party_feature_range[0]) {
         temp.push_back({e.g, e.h});
     }
     int n_bins = request->id();
     booster.fbuilder->cut.get_cut_points_by_feature_range(temp, n_bins);
-    // cyz: efficiency try
     range_success = true;
     
     return grpc::Status::OK;
@@ -684,6 +787,183 @@ grpc::Status DistributedServer::SendGH(grpc::ServerContext* context, const fedtr
         gh_rounds += 1;
     }
     mutex.unlock();
+    return grpc::Status::OK;
+}
+
+grpc::Status DistributedServer::SendDHPubKey(grpc::ServerContext* context, const fedtree::DHPublicKey* request,
+                                       fedtree::PID* response) {
+
+    std::multimap<grpc::string_ref, grpc::string_ref> metadata = context->client_metadata();
+    auto pid_itr = metadata.find("pid");
+    int pid = std::stoi(pid_itr->second.data());
+    party_DHKey_received[pid] += 1;
+    LOG(DEBUG) << "Receive DHPubKey from " << pid;
+    if(dh.other_public_keys.length() != param.n_parties)
+        dh.other_public_keys.SetLength(param.n_parties);
+    dh.other_public_keys[pid] = NTL::to_ZZ(request->pk().c_str());
+    std::chrono::high_resolution_clock timer;
+    auto t_start = timer.now();
+
+    unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+    std::default_random_engine generator(seed);
+    std::uniform_int_distribution<int> delay_distribution(5, 10);
+    while (true) {
+        bool cont = true;
+        for (int i = 0; i < param.n_parties; i++) {
+            if (party_DHKey_received[i] < 1) {
+                cont = false;
+            }
+        }
+        if (cont) {
+            break;
+        }
+        std::this_thread::sleep_for(
+                std::chrono::milliseconds(delay_distribution(generator)));
+    }
+    auto t_end = timer.now();
+    std::chrono::duration<float> used_time = t_end - t_start;
+    party_wait_times[pid] += used_time.count();
+    return grpc::Status::OK;
+}
+
+grpc::Status DistributedServer::GetDHPubKeys(grpc::ServerContext *context, const fedtree::PID *id,
+                                              grpc::ServerWriter<fedtree::DHPublicKeys> *writer) {
+    fedtree::DHPublicKeys pk;
+    for (int i = 0; i < dh.other_public_keys.length(); i++){
+        stringstream stream;
+        stream<<dh.other_public_keys[i];
+        pk.add_pk(stream.str());
+        stream.clear();
+        stream.str("");
+    }
+    writer->Write(pk);
+    LOG(DEBUG) << "Send DHPubKeys to " << id->id();
+    return grpc::Status::OK;
+}
+
+grpc::Status DistributedServer::SendNoises(grpc::ServerContext* context, const fedtree::SANoises* request, fedtree::PID* response){
+    std::multimap<grpc::string_ref, grpc::string_ref> metadata = context->client_metadata();
+    auto pid_itr = metadata.find("pid");
+    int pid = std::stoi(pid_itr->second.data());
+    party_noises_received[pid] += 1;
+    LOG(DEBUG) << "Receive Noises from " << pid;
+    if(dh.received_encrypted_noises.length() != param.n_parties * param.n_parties)
+        dh.received_encrypted_noises.SetLength(param.n_parties * param.n_parties);
+    for(int i = 0; i < param.n_parties; i++){
+        dh.received_encrypted_noises[pid * param.n_parties + i] = NTL::to_ZZ(request->noises(i).c_str());
+    }
+    std::chrono::high_resolution_clock timer;
+    auto t_start = timer.now();
+
+    unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+    std::default_random_engine generator(seed);
+    std::uniform_int_distribution<int> delay_distribution(5, 10);
+    while (true) {
+        bool cont = true;
+        for (int i = 0; i < param.n_parties; i++) {
+            if (party_noises_received[i] < noise_rounds) {
+                cont = false;
+            }
+        }
+        if (cont) {
+            break;
+        }
+        std::this_thread::sleep_for(
+                std::chrono::milliseconds(delay_distribution(generator)));
+    }
+    auto t_end = timer.now();
+    std::chrono::duration<float> used_time = t_end - t_start;
+    party_wait_times[pid] += used_time.count();
+    mutex.lock();
+    noise_cnt = (noise_cnt + 1) % param.n_parties;
+    if (noise_cnt == 0) {
+        noise_rounds += 1;
+    }
+    mutex.unlock();
+    return grpc::Status::OK;
+}
+
+grpc::Status DistributedServer::SendCutPoints(grpc::ServerContext* context, const fedtree::CutPoints* request, fedtree::PID* response){
+    std::multimap<grpc::string_ref, grpc::string_ref> metadata = context->client_metadata();
+    auto pid_itr = metadata.find("pid");
+    int pid = std::stoi(pid_itr->second.data());
+    parties_cut_points_received[pid] += 1;
+    LOG(DEBUG) << "Receive CutPoints from " << pid;
+
+    std::chrono::high_resolution_clock timer;
+    auto t_start = timer.now();
+    int cut_points_val_size = request->cut_points_val_size();
+    int cut_col_ptr_size = request->cut_col_ptr_size();
+    int cut_fid_size = request->cut_fid_size();
+    booster.fbuilder->parties_cut[pid].cut_points_val.resize(cut_points_val_size);
+    booster.fbuilder->parties_cut[pid].cut_col_ptr.resize(cut_col_ptr_size);
+    booster.fbuilder->parties_cut[pid].cut_fid.resize(cut_points_val_size);
+    auto cut_points_val_data = booster.fbuilder->parties_cut[pid].cut_points_val.host_data();
+    auto cut_col_ptr_data = booster.fbuilder->parties_cut[pid].cut_col_ptr.host_data();
+    auto cut_fid_data = booster.fbuilder->parties_cut[pid].cut_fid.host_data();
+    for(int i = 0; i < cut_points_val_size; i++){
+        cut_points_val_data[i] = request->cut_points_val(i);
+        cut_fid_data[i] = request->cut_fid(i);
+    }
+    for(int i = 0; i < cut_col_ptr_size; i++){
+        cut_col_ptr_data[i] = request->cut_col_ptr(i);
+    }
+
+    unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+    std::default_random_engine generator(seed);
+    std::uniform_int_distribution<int> delay_distribution(5, 10);
+    while (true) {
+        bool cont = true;
+        for (int i = 0; i < param.n_parties; i++) {
+            if (parties_cut_points_received[i] < 1) {
+                cont = false;
+            }
+        }
+        if (cont) {
+            break;
+        }
+        std::this_thread::sleep_for(
+                std::chrono::milliseconds(delay_distribution(generator)));
+    }
+    auto t_end = timer.now();
+    std::chrono::duration<float> used_time = t_end - t_start;
+    party_wait_times[pid] += used_time.count();
+    booster.fbuilder->cut.get_cut_points_by_parties_cut_sampling(booster.fbuilder->parties_cut, param.gbdt_param.max_num_bin);
+    return grpc::Status::OK;
+}
+
+grpc::Status DistributedServer::GetCutPoints(grpc::ServerContext *context, const fedtree::PID *id,
+                                          grpc::ServerWriter<fedtree::CutPoints> *writer) {
+    int pid = id->id();
+    fedtree::CutPoints cp;
+    auto cut_val_data = booster.fbuilder->cut.cut_points_val.host_data();
+    auto cut_col_ptr_data = booster.fbuilder->cut.cut_col_ptr.host_data();
+    auto cut_fid_data = booster.fbuilder->cut.cut_fid.host_data();
+    for(int i = 0; i < booster.fbuilder->cut.cut_points_val.size(); i++){
+        cp.add_cut_points_val(cut_val_data[i]);
+        cp.add_cut_fid(cut_fid_data[i]);
+    }
+    for(int i = 0; i < booster.fbuilder->cut.cut_col_ptr.size(); i++){
+        cp.add_cut_col_ptr(cut_col_ptr_data[i]);
+    }
+    writer->Write(cp);
+    LOG(DEBUG) << "Send CutPoints to " << pid;
+    return grpc::Status::OK;
+}
+
+grpc::Status DistributedServer::GetNoises(grpc::ServerContext *context, const fedtree::PID *id,
+                                             grpc::ServerWriter<fedtree::SANoises> *writer) {
+    int pid = id->id();
+    fedtree::SANoises pk;
+    for (int i = 0; i < param.n_parties; i++){
+        stringstream stream;
+        stream<<dh.received_encrypted_noises[i * param.n_parties + pid];
+        pk.add_noises(stream.str());
+        stream.clear();
+        stream.str("");
+    }
+    writer->Write(pk);
+    LOG(DEBUG) << "Send Noises to " << pid;
     return grpc::Status::OK;
 }
 
@@ -912,10 +1192,18 @@ grpc::Status DistributedServer::ScoreReduce(grpc::ServerContext* context, const 
 
 grpc::Status DistributedServer::TriggerHomoInit(grpc::ServerContext *context, const fedtree::PID *request,
                                 fedtree::Ready *response) {
-    LOG(INFO) << "begin homo init";
+//    LOG(INFO) << "computation HomoInit start";
     homo_init();
     homo_init_success = true;
-    LOG(INFO) << "end homo init";
+//    LOG(INFO) << "computation HomoInit end";
+    return grpc::Status::OK;
+}
+
+grpc::Status DistributedServer::TriggerSAInit(grpc::ServerContext *context, const fedtree::PID *request,
+                                                fedtree::Ready *response) {
+//    LOG(INFO) << "computation HomoInit start";
+//    dh.primegen();
+//    LOG(INFO) << "computation HomoInit end";
     return grpc::Status::OK;
 }
 
@@ -995,14 +1283,13 @@ grpc::Status DistributedServer::SendHistogramBatches(grpc::ServerContext *contex
     int pid = std::stoi(pid_itr->second.data());
     auto type_itr = metadata.find("type");
     int type = std::stoi(type_itr->second.data());
-    // std::cout << pid << " " << type << std::endl;
     fedtree::GHBatch tmp;
     fedtree::GHBatch all;
     while(reader->Read(&tmp)) {
         all.MergeFrom(tmp);
     }
+    has_label[pid] = true;
     SyncArray<GHPair> &hists = (type == 0)? booster.fbuilder->parties_hist[pid]:booster.fbuilder->parties_missing_gh[pid];
-   
     int len = all.g_size();
     hists.resize(len);
     auto hist_data = hists.host_data();
@@ -1177,6 +1464,7 @@ grpc::Status DistributedServer::SendHistogramBatchesEnc(grpc::ServerContext *con
         all.MergeFrom(tmp);
     }
     }
+    has_label[pid] = 0;
     SyncArray<GHPair> &hists = (type == 0)? booster.fbuilder->parties_hist[pid]:booster.fbuilder->parties_missing_gh[pid];
     int len = all.g_enc_size();
     hists.resize(len);
@@ -1295,11 +1583,11 @@ INITIALIZE_EASYLOGGINGPP
 #endif
 int main(int argc, char **argv) {
     el::Loggers::reconfigureAllLoggers(el::ConfigurationType::Format, "%datetime %level %fbase:%line : %msg");
-    el::Loggers::addFlag(el::LoggingFlag::ColoredTerminalOutput);
+//    el::Loggers::addFlag(el::LoggingFlag::ColoredTerminalOutput);
     el::Loggers::addFlag(el::LoggingFlag::FixedTimeFormat);
-    el::Loggers::reconfigureAllLoggers(el::Level::Trace, el::ConfigurationType::Enabled, "false");
-    el::Loggers::reconfigureAllLoggers(el::Level::Debug, el::ConfigurationType::Enabled, "false");
-    el::Loggers::reconfigureAllLoggers(el::ConfigurationType::PerformanceTracking, "false");
+//    el::Loggers::reconfigureAllLoggers(el::Level::Trace, el::ConfigurationType::Enabled, "false");
+//    el::Loggers::reconfigureAllLoggers(el::Level::Debug, el::ConfigurationType::Enabled, "false");
+//    el::Loggers::reconfigureAllLoggers(el::ConfigurationType::PerformanceTracking, "false");
     int pid;
     FLParam fl_param;
     Parser parser;
@@ -1310,7 +1598,19 @@ int main(int argc, char **argv) {
         exit(0);
     }
     GBDTParam &model_param = fl_param.gbdt_param;
-    DataSet dataset;
+    if(model_param.verbose == 0) {
+        el::Loggers::reconfigureAllLoggers(el::Level::Debug, el::ConfigurationType::Enabled, "false");
+        el::Loggers::reconfigureAllLoggers(el::Level::Trace, el::ConfigurationType::Enabled, "false");
+        el::Loggers::reconfigureAllLoggers(el::Level::Info, el::ConfigurationType::Enabled, "false");
+    }
+    else if (model_param.verbose == 1) {
+        el::Loggers::reconfigureAllLoggers(el::Level::Debug, el::ConfigurationType::Enabled, "false");
+        el::Loggers::reconfigureAllLoggers(el::Level::Trace, el::ConfigurationType::Enabled, "false");
+    }
+    if (!model_param.profiling) {
+        el::Loggers::reconfigureAllLoggers(el::ConfigurationType::PerformanceTracking, "false");
+    }
+
 
     GBDTParam &param = fl_param.gbdt_param;
 
@@ -1318,10 +1618,10 @@ int main(int argc, char **argv) {
     
     int n_parties = fl_param.n_parties;
     if (fl_param.mode == "vertical") {
+        DataSet dataset;
         dataset.load_from_file(model_param.path, fl_param);
         server.VerticalInitVectors(n_parties);
-        vector<int> n_instances_per_party(n_parties);
-        server.distributed_vertical_init(fl_param, dataset.n_instances(), n_instances_per_party, dataset.y, dataset.label);
+        server.distributed_vertical_init(fl_param, dataset.n_instances(), dataset.y, dataset.label);
     }
     else if (fl_param.mode == "horizontal") {
         server.HorizontalInitVectors(n_parties);

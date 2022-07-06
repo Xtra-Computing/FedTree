@@ -9,7 +9,24 @@
 #include <thrust/execution_policy.h>
 
 
-void Party::init(int pid, DataSet &dataset, FLParam &param, SyncArray<bool> &feature_map) {
+void Party::init(int pid, DataSet &dataset, FLParam &param) {
+    this->pid = pid;
+    this->dataset = dataset;
+    this->param = param;
+    this->n_total_instances = dataset.n_instances();
+    if (param.ins_bagging_fraction < 1.0){
+        this->temp_dataset = dataset;
+        this->ins_bagging_fraction = param.ins_bagging_fraction;
+    }
+//    if (param.partition_mode == "hybrid") {
+//        this->feature_map.resize(feature_map.size());
+//        this->feature_map.copy_from(feature_map.host_data(), feature_map.size());
+//    }
+    booster.init(dataset, param.gbdt_param, (param.mode != "horizontal") || (param.propose_split == "party"));
+
+};
+
+void Party::hybrid_init(int pid, DataSet &dataset, FLParam &param, SyncArray<bool> &feature_map) {
     this->pid = pid;
     this->dataset = dataset;
     this->param = param;
@@ -22,7 +39,37 @@ void Party::init(int pid, DataSet &dataset, FLParam &param, SyncArray<bool> &fea
         this->feature_map.resize(feature_map.size());
         this->feature_map.copy_from(feature_map.host_data(), feature_map.size());
     }
-    booster.init(dataset, param.gbdt_param, param.mode != "horizontal");
+    booster.init(dataset, param.gbdt_param, (param.mode != "horizontal") || (param.propose_split == "party"));
+
+};
+
+void Party::vertical_init(int pid, DataSet &dataset, FLParam &param) {
+//    LOG(INFO)<<"in party "<<pid<<" initilization";
+    this->pid = pid;
+    this->dataset = dataset;
+    this->has_label = dataset.has_label;
+    this->param = param;
+    this->n_total_instances = dataset.n_instances();
+    if(has_label) {
+        booster.init(dataset, param.gbdt_param);
+    }
+    else {
+        booster.param = param.gbdt_param;
+        booster.fbuilder.reset(new HistTreeBuilder);
+        booster.fbuilder->init(dataset, param.gbdt_param); //if remove this line, cannot successfully run
+        int n_outputs = param.gbdt_param.num_class * dataset.n_instances();
+        booster.gradients.resize(n_outputs);
+    }
+//    if (param.gbdt_param.metric == "default") {
+//        booster.metric.reset(Metric::create(booster.obj->default_metric_name()));
+//    }else {
+//        booster.metric.reset(Metric::create(param.gbdt_param.metric));
+//    }
+//    booster.metric->configure(param.gbdt_param, dataset);
+//    booster.n_devices = param.gbdt_param.n_device;
+
+//    booster.y = SyncArray<float_type>(dataset.n_instances());
+//    booster.y.copy_from(dataset.y.data(), dataset.n_instances());
 
 };
 

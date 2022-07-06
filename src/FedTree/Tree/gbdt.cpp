@@ -27,11 +27,6 @@ void GBDT::train(GBDTParam &param, DataSet &dataset) {
         param.num_class = 1;
     }
 
-//    std::map<int, vector<int>> batch_idxs;
-//    Partition partition;
-//    vector<DataSet> subsets(3);
-//    partition.homo_partition(dataset, 3, true, subsets, batch_idxs);
-//
     Booster booster;
     booster.init(dataset, param);
     std::chrono::high_resolution_clock timer;
@@ -58,7 +53,6 @@ vector<float_type> GBDT::predict(const GBDTParam &model_param, const DataSet &da
     std::unique_ptr<ObjectiveFunction> obj;
     obj.reset(ObjectiveFunction::create(model_param.objective));
     obj->configure(model_param, dataSet);
-
     //compute metric
     std::unique_ptr<Metric> metric;
     metric.reset(Metric::create(obj->default_metric_name()));
@@ -203,9 +197,9 @@ void GBDT::predict_raw(const GBDTParam &model_param, const DataSet &dataSet, Syn
                     curNode = node_data[cur_nid];
                 }
                 sum += lr * node_data[cur_nid].base_weight;
-                if (model_param.bagging)
-                    sum /= num_iter;
             }
+            if (model_param.bagging)
+                sum /= num_iter;
             predict_data_class[iid] += sum;
         }//end all tree prediction
     }

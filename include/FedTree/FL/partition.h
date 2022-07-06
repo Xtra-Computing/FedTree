@@ -30,6 +30,7 @@ public:
                                            int n_hori = 2, int n_verti = 2);
 
     void train_test_split(DataSet &dataset, DataSet &train_dataset, DataSet &test_dataset, float train_portion = 0.75);
+
 };
 
 #endif //FEDTREE_PARTITION_H

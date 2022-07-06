@@ -24,9 +24,13 @@ void DataSet::load_from_sparse(int n_instances, float *csr_val, int *csr_row_ptr
     this->csr_col_idx.resize(nnz);
 
     CHECK_EQ(sizeof(float_type), sizeof(float));
-
-    if(y != NULL)
+    if(y != NULL) {
         memcpy(this->y.data(), y, sizeof(float) * n_instances);
+        has_label = true;
+    }
+    else{
+        has_label = false;
+    }
     memcpy(this->csr_val.data(), csr_val, sizeof(float) * nnz);
     memcpy(this->csr_col_idx.data(), csr_col_idx, sizeof(int) * nnz);
     memcpy(this->csr_row_ptr.data(), csr_row_ptr, sizeof(int) * (n_instances + 1));
@@ -35,22 +39,19 @@ void DataSet::load_from_sparse(int n_instances, float *csr_val, int *csr_row_ptr
     }
     n_features_++;//convert from zero-based
     LOG(INFO) << "#instances = " << this->n_instances() << ", #features = " << this->n_features();
-    if (y != NULL && ObjectiveFunction::need_group_label(param.objective)){
-        group_label();
+    if (y != NULL && (ObjectiveFunction::need_group_label(param.objective) || param.metric == "error")){
+        if(param.reorder_label)
+            group_label();
+        else
+            group_label_without_reorder(param.num_class);
+        is_classification = true;
         param.num_class = label.size();
     }
-
     if (ObjectiveFunction::need_load_group_file(param.objective)) {
         for(int i = 0; i < num_group; i++)
             this->group.emplace_back(group[i]);
         LOG(INFO) << "#groups = " << this->group.size();
     }
-
-    if (ObjectiveFunction::need_group_label(param.objective) || param.metric == "error") {
-        is_classification = true;
-    }
-
-
 }
 
 void DataSet::load_group_file(string file_name) {
@@ -77,14 +78,14 @@ void DataSet::group_label() {
 }
 
 // assume that the labels are already well organized, i.e., 0, 1, 2, ...
-void DataSet::group_label_without_reorder() {
-    int max_y = 0;
-    for (int i = 0; i < y.size(); i++){
-        if(y[i] > max_y)
-            max_y = y[i];
-    }
+void DataSet::group_label_without_reorder(int n_class) {
+//    int max_y = 0;
+//    for (int i = 0; i < y.size(); i++){
+//        if(y[i] > max_y)
+//            max_y = y[i];
+//    }
     label.clear();
-    for(int i = 0; i < max_y; i++){
+    for(int i = 0; i < n_class; i++){
         label.push_back(i);
         label_map[i] = i;
     }
@@ -211,6 +212,10 @@ void line_count(const int nthread, const int buffer_size, vector<int> &line_coun
 }
 
 void DataSet::load_from_file(string file_name, FLParam &param) {
+    if(param.data_format=="csv") {
+        load_from_csv(file_name, param);
+        return;
+    }
     LOG(INFO) << "loading LIBSVM dataset from file ## " << file_name << " ##";
     std::chrono::high_resolution_clock timer;
     auto t_start = timer.now();
@@ -289,8 +294,21 @@ void DataSet::load_from_file(string file_name, FLParam &param) {
                     line_begin = line_end;
                     continue;
                 }
-                // parse instance label
-                y_[tid].push_back(label);
+                else if (r == 1) {
+                    // parse instance label
+                    y_[tid].push_back(label);
+                    has_label = true;
+                }
+                else if (r == 2){
+                    y_[tid].push_back(-1);
+                    // there is no label; label is feature_id and temp_ is value
+                    col_idx[tid].push_back(label - 1);
+                    val_[tid].push_back(temp_);
+                    if(label > max_feature[tid])
+                        max_feature[tid] = label;
+                    row_len_[tid].back()++;
+                    has_label = false;
+                }
 
                 // parse feature id and value
                 p = q;
@@ -338,6 +356,199 @@ void DataSet::load_from_file(string file_name, FLParam &param) {
             this->label.insert(label.end(), y_[i].begin(), y_[i].end());
         }
     } // end while
+//    has_label=1;
+    ifs.close();
+    free(buffer);
+    if(param.n_features != -1) {
+        CHECK_GE(param.n_features, n_features_) << "n_features is wrong!";
+        n_features_ = param.n_features;
+    }
+    LOG(INFO) << "#instances = " << this->n_instances() << ", #features = " << this->n_features();
+    if (ObjectiveFunction::need_load_group_file(param.gbdt_param.objective)) load_group_file(file_name + ".group");
+    if (ObjectiveFunction::need_group_label(param.gbdt_param.objective) || param.gbdt_param.metric == "error") {
+        if(param.gbdt_param.reorder_label) {
+            group_label();
+        }
+        else{
+            group_label_without_reorder(param.gbdt_param.num_class);
+        }
+        is_classification = true;
+        param.gbdt_param.num_class = label.size();
+    }
+
+    auto t_end = timer.now();
+    std::chrono::duration<float> used_time = t_end - t_start;
+    LOG(INFO) << "Load dataset using time: " << used_time.count() << " s";
+}
+
+
+
+
+/* load a csv file that following format id,y,x0,x1, ... */
+void DataSet::load_from_csv(string file_name, FLParam &param) {
+    LOG(INFO) << "loading csv dataset from file ## " << file_name << " ##";
+    std::chrono::high_resolution_clock timer;
+    auto t_start = timer.now();
+
+    // initialize
+    y.clear();
+    csr_val.clear();
+    csr_col_idx.clear();
+    csr_row_ptr.resize(1, 0);
+    n_features_ = 0;
+
+    // open file stream
+    std::ifstream ifs(file_name, std::ifstream::binary);
+    CHECK(ifs.is_open()) << "file ## " << file_name << " ## not found. ";
+
+    string first_line;
+    std::getline(ifs, first_line);
+    std::istringstream iss(first_line);
+    vector<string> words;
+    string word;
+    has_label = 1;
+    while(getline(iss, word, ',')){
+        words.push_back(word);
+    }
+    if(words[0] != "id"){
+        std::cout<<"unsupported csv format"<<std::endl;
+        exit(1);
+    }
+    if(words[1]!="y") {
+        n_features_ = words.size() - 1;
+        has_label = 0;
+    }
+    else
+        n_features_ = words.size() - 2;
+
+
+
+    int buffer_size = 4 << 20;
+    char *buffer = (char *)malloc(buffer_size);
+    const int nthread = omp_get_max_threads();
+
+    auto find_last_line = [](char *ptr, const char *begin) {
+        while(ptr != begin && *ptr != '\n' && *ptr != '\r' && *ptr != '\0') --ptr;
+        return ptr;
+    };
+
+    // read and parse data
+    while(ifs) {
+        ifs.read(buffer, buffer_size);
+        char *head = buffer;
+        size_t size = ifs.gcount();
+
+        // create vectors for each thread
+        vector<vector<float_type>> y_(nthread);
+        vector<vector<float_type>> val_(nthread);
+        vector<vector<int>> col_idx(nthread);
+        vector<vector<int>> row_len_(nthread);
+        vector<int> max_feature(nthread, 0);
+        bool is_zero_base = false;
+
+#pragma omp parallel num_threads(nthread)
+        {
+            int tid = omp_get_thread_num(); // thread id
+            size_t nstep = (size + nthread - 1) / nthread;
+            size_t step_begin = (std::min)(tid * nstep, size - 1);
+            size_t step_end = (std::min)((tid + 1) * nstep, size - 1);
+
+            // a block is the data partition processed by a thread
+            char *block_begin = find_last_line((head + step_begin), head);
+            char *block_end = find_last_line((head + step_end), block_begin);
+
+            // move stream start position to the end of the last line after an epoch
+            if(tid == nthread - 1) {
+                if(ifs.eof()) {
+                    block_end = head + step_end;
+                } else {
+                    ifs.seekg(-(head + step_end - block_end), std::ios_base::cur);
+                }
+            }
+
+            // read instances line by line
+            char *line_begin = block_begin;
+            char *line_end = line_begin;
+            // to the end of the block
+            while(line_begin != block_end) {
+                line_end = line_begin + 1;
+                while(line_end != block_end && *line_end != '\n' && *line_end != '\r' && *line_end != '\0') ++line_end;
+                const char *p = line_begin;
+                const char *q = NULL;
+                row_len_[tid].push_back(0);
+
+                float_type id;
+                float_type temp_;
+                std::ptrdiff_t advanced = ignore_comment_and_blank(p, line_end);
+                p += advanced;
+                int r = parse_pair<float_type, float_type>(p, line_end, &q, id, temp_);
+                if (r < 1) {
+                    line_begin = line_end;
+                    continue;
+                }
+                p = q;
+                if(has_label) {
+                    float_type label;
+                    std::ptrdiff_t advanced = ignore_comment_and_blank(p, line_end);
+                    p += advanced;
+                    int r = parse_pair<float_type, float_type>(p, line_end, &q, label, temp_);
+                    if (r < 1) {
+                        line_begin = line_end;
+                        continue;
+                    }
+                    // parse instance label
+                    y_[tid].push_back(label);
+                    p = q;
+                }
+                else
+                    y_[tid].push_back(0);
+
+                // parse feature id and value
+                int feature_id = 1;
+                while(p != line_end) {
+                    float_type value;
+                    std::ptrdiff_t advanced = ignore_comment_and_blank(p, line_end);
+                    p += advanced;
+
+                    int r = parse_pair(p, line_end, &q, value, temp_);
+                    if(r < 1) {
+                        p = q;
+                        continue;
+                    }
+                    if(r == 1) {
+                        col_idx[tid].push_back(feature_id - 1);
+                        val_[tid].push_back(value);
+                        if(feature_id > max_feature[tid])
+                            max_feature[tid] = feature_id;
+                        row_len_[tid].back()++;
+                    }
+                    p = q;
+                    feature_id ++;
+                } // end inner while
+                line_begin = line_end;
+            } // end outer while
+        } // end num_thread
+        for (int i = 0; i < nthread; i++) {
+            if (max_feature[i] > n_features_)
+                n_features_ = max_feature[i];
+        }
+        for (int tid = 0; tid < nthread; tid++) {
+            csr_val.insert(csr_val.end(), val_[tid].begin(), val_[tid].end());
+            if(is_zero_base){
+                for (int i = 0; i < col_idx[tid].size(); ++i) {
+                    col_idx[tid][i]++;
+                }
+            }
+            csr_col_idx.insert(csr_col_idx.end(), col_idx[tid].begin(), col_idx[tid].end());
+            for (int row_len : row_len_[tid]) {
+                csr_row_ptr.push_back(csr_row_ptr.back() + row_len);
+            }
+        }
+        for (int i = 0; i < nthread; i++) {
+            this->y.insert(y.end(), y_[i].begin(), y_[i].end());
+            this->label.insert(label.end(), y_[i].begin(), y_[i].end());
+        }
+    } // end while
 
     ifs.close();
     free(buffer);
@@ -348,10 +559,9 @@ void DataSet::load_from_file(string file_name, FLParam &param) {
             group_label();
         }
         else{
-            group_label_without_reorder();
+            group_label_without_reorder(param.gbdt_param.num_class);
         }
         is_classification = true;
-        param.gbdt_param.num_class = label.size();
     }
 
     auto t_end = timer.now();
@@ -799,6 +1009,12 @@ void DataSet::load_from_files(vector<string> file_names, FLParam &param) {
     for(auto name: file_names) {
         DataSet next;
         next.load_from_file(name, param);
+        if (param.partition_mode == "horizontal") {
+            n_features_ = next.n_features();
+        }
+        if (param.partition_mode == "vertical") {
+            n_features_ += next.n_features();
+        }
         csr_val.insert(csr_val.end(), next.csr_val.begin(), next.csr_val.end());
         csr_col_idx.insert(csr_col_idx.end(), next.csr_col_idx.begin(), next.csr_col_idx.end());
         label.insert(label.end(), next.label.begin(), next.label.end());
@@ -845,12 +1061,9 @@ void DataSet::get_subset(vector<int> &idx, DataSet& subset){
         subset.csr_row_ptr.push_back(0);
         subset.n_features_ = n_features();
         subset.y.clear();
-//        std::cout << "1.1" << std::endl;
-//        std::cout << "csr_row_ptr.size:" << csr_row_ptr.size() << std::endl;
         for (int i = 0; i < idx.size(); i++) {
             int n_val = 0;
             if (n_features_ != 0) {
-//                std::cout << "1.2" << std::endl;
                 for (int j = csr_row_ptr[idx[i]]; j < csr_row_ptr[idx[i] + 1]; j++) {
                     float_type val = csr_val[j];
                     int cid = csr_col_idx[j];
@@ -860,12 +1073,9 @@ void DataSet::get_subset(vector<int> &idx, DataSet& subset){
                 }
                 subset.csr_row_ptr.push_back(n_val + subset.csr_row_ptr.back());
             }
-//            std::cout << "1.3" << std::endl;
             if(y.size())
-                subset.y.push_back(y[i]);
-//            std::cout << "1.4" << std::endl;
+                subset.y.push_back(y[idx[i]]);
         }
         subset.has_csc = false;
-//        std::cout << "subset y size:" << subset.y.size() << std::endl;
     }
 }

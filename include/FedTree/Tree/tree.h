@@ -121,8 +121,9 @@ public:
 
 
     SyncArray<Tree::TreeNode> nodes;
-    //n_nodes_level[i+1] - n_nodes_level[i] stores the number of nodes in level i
+    //n_nodes_level[i+1] - n_nodes_level[i] stores the number of nodes in level i, for hybrid trainer
     vector<int> n_nodes_level;
+    //for hybrid trainer
     int final_depth;
 
 

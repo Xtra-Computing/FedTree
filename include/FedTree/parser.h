@@ -15,8 +15,8 @@
 class Parser {
 public:
     void parse_param(FLParam &fl_param, int argc, char **argv);
-    void load_model(string model_path, GBDTParam &model_param, vector<vector<Tree>> &boosted_model, DataSet &dataSet);
-    void save_model(string model_path, GBDTParam &model_param, vector<vector<Tree>> &boosted_model, DataSet &dataSet);
+    void load_model(string model_path, GBDTParam &model_param, vector<vector<Tree>> &boosted_model);
+    void save_model(string model_path, GBDTParam &model_param, vector<vector<Tree>> &boosted_model);
 };
 
 #endif //FEDTREE_PARSER_H

@@ -11,14 +11,28 @@
 #include <FedTree/Tree/tree.h>
 using namespace std;
 
-//TODO: code clean on compare() and atoi()
+
+vector<string> split_string_by_delimiter (const string& s, const string& delimiter) {
+    size_t pos_start = 0, pos_end, delim_len = delimiter.length();
+    string token;
+    vector<string> res;
+
+    while ((pos_end = s.find (delimiter, pos_start)) != string::npos) {
+        token = s.substr (pos_start, pos_end - pos_start);
+        pos_start = pos_end + delim_len;
+        res.push_back (token);
+    }
+    res.push_back (s.substr(pos_start));
+    return res;
+}
+
 void Parser::parse_param(FLParam &fl_param, int argc, char **argv) {
     // setup default value
     fl_param.n_parties = 2;
     fl_param.mode = "horizontal";
     fl_param.partition_mode = fl_param.mode;
     fl_param.privacy_tech = "he";
-    fl_param.partition= true;
+    fl_param.partition= false;
     fl_param.alpha = 100;
     fl_param.n_hori = -1;
     fl_param.n_verti = -1;
@@ -29,8 +43,9 @@ void Parser::parse_param(FLParam &fl_param, int argc, char **argv) {
     fl_param.variance = 200;
     fl_param.ip_address = "localhost";
     fl_param.ins_bagging_fraction = 1.0;
-
+    fl_param.data_format = "libsvm";
     fl_param.seed = 42;
+    fl_param.n_features = -1;
 
     GBDTParam *gbdt_param = &fl_param.gbdt_param;
 
@@ -41,7 +56,7 @@ void Parser::parse_param(FLParam &fl_param, int argc, char **argv) {
     gbdt_param->lambda = 1;
     gbdt_param->gamma = 1;
     gbdt_param->rt_eps = 1e-6;
-    gbdt_param->max_num_bin = 255;
+    gbdt_param->max_num_bin = 32;
     gbdt_param->verbose = 1;
     gbdt_param->profiling = false;
     gbdt_param->column_sampling_rate = 1;
@@ -55,7 +70,8 @@ void Parser::parse_param(FLParam &fl_param, int argc, char **argv) {
     gbdt_param->tree_per_rounds = 1; // # tree of each round, depends on # class
     gbdt_param->metric = "default";
     gbdt_param->constant_h = 0.0;
-    gbdt_param->reorder_label = true; // whether reorder label or not
+    gbdt_param->reorder_label = false; // whether reorder label or not
+    gbdt_param->model_path = "fedtree.model";
 
     if (argc < 2) {
         printf("Usage: <config>\n");
@@ -67,7 +83,6 @@ void Parser::parse_param(FLParam &fl_param, int argc, char **argv) {
         char name[256], val[256];
         if (sscanf(name_val, "%[^=]=%s", name, val) == 2) {
             string str_name(name);
-
             // FL params
             if ((str_name.compare("n_parties") == 0) || (str_name.compare("num_parties") == 0) ||
                 (str_name.compare("n_clients") == 0) || (str_name.compare("num_clients") == 0) ||
@@ -75,9 +90,10 @@ void Parser::parse_param(FLParam &fl_param, int argc, char **argv) {
                 fl_param.n_parties = atoi(val);
             else if (str_name.compare("mode") == 0)
                 fl_param.mode = val;
-            else if ((str_name.compare("privacy") == 0) || (str_name.compare("privacy_tech") == 0) || (str_name.compare("privacy_method") == 0))
+            else if ((str_name.compare("privacy") == 0) || (str_name.compare("privacy_tech") == 0) ||
+                    (str_name.compare("privacy_method") == 0) || (str_name.compare("security_tech") == 0))
                 fl_param.privacy_tech = val;
-            else if (str_name.compare("partition") == 0)
+            else if ((str_name.compare("partition") == 0))
                 fl_param.partition = atoi(val);
             else if (str_name.compare("partition_mode") == 0)
                 fl_param.partition_mode = val;
@@ -89,7 +105,7 @@ void Parser::parse_param(FLParam &fl_param, int argc, char **argv) {
                 fl_param.n_verti = atoi(val);
             else if (str_name.compare("privacy_budget") == 0)
                 fl_param.privacy_budget = atof(val);
-            else if (str_name.compare("ip_address") == 0)
+            else if ((str_name.compare("ip_address") == 0) || (str_name.compare("server_ip_address") == 0))
                 fl_param.ip_address = val;
             else if (str_name.compare("ins_bagging_fraction") == 0)
                 fl_param.ins_bagging_fraction = atof(val);
@@ -99,6 +115,10 @@ void Parser::parse_param(FLParam &fl_param, int argc, char **argv) {
                 fl_param.merge_histogram = val;
             else if (str_name.compare("propose_split") == 0)
                 fl_param.propose_split = val;
+            else if (str_name.compare("data_format") == 0)
+                fl_param.data_format = val;
+            else if (str_name.compare("n_features") == 0)
+                fl_param.n_features = atoi(val);
             // GBDT params
             else if ((str_name.compare("max_depth") == 0) || (str_name.compare("depth") == 0))
                 gbdt_param->depth = atoi(val);
@@ -110,8 +130,10 @@ void Parser::parse_param(FLParam &fl_param, int argc, char **argv) {
                 gbdt_param->verbose = atoi(val);
             else if (str_name.compare("profiling") == 0)
                 gbdt_param->profiling = atoi(val);
-            else if (str_name.compare("data") == 0)
+            else if (str_name.compare("data") == 0) {
                 gbdt_param->path = val;
+                gbdt_param->paths = split_string_by_delimiter(val, ",");
+            }
             else if (str_name.compare("test_data") == 0)
                 gbdt_param->test_path = val;
             else if ((str_name.compare("max_bin") == 0) || (str_name.compare("max_num_bin") == 0)) {
@@ -148,6 +170,8 @@ void Parser::parse_param(FLParam &fl_param, int argc, char **argv) {
                 gbdt_param->constant_h = atof(val);
             else if (str_name.compare("reorder_label") == 0)
                 gbdt_param->reorder_label = atoi(val);
+            else if (str_name.compare("model_path") == 0)
+                gbdt_param->model_path = val;
             else
                 LOG(INFO) << "\"" << name << "\" is unknown option!";
         } else {
@@ -159,6 +183,11 @@ void Parser::parse_param(FLParam &fl_param, int argc, char **argv) {
         }
 
     };
+
+//    if ((fl_param.partitioning == 0) && fl_param.reorder_label){
+//        LOG(INFO)<<"Ignoring reorder_label option in distributed setting. Please ensure that the labels are 0, 1, 2, ... if you are conducting classification tasks.";
+//        fl_param.reorder_label = false;
+//    }
 
     //read configuration file
     std::ifstream conf_file(argv[1]);
@@ -174,14 +203,14 @@ void Parser::parse_param(FLParam &fl_param, int argc, char **argv) {
 
     if (fl_param.n_hori == -1){
         if(fl_param.mode == "horizontal"){
-            fl_param.n_hori == fl_param.n_parties;
+            fl_param.n_hori = fl_param.n_parties;
         }
         else
             fl_param.n_hori = 1;
     }
     if (fl_param.n_verti == -1){
         if(fl_param.mode == "vertical"){
-            fl_param.n_verti == fl_param.n_parties;
+            fl_param.n_verti = fl_param.n_parties;
         }
         else
             fl_param.n_verti = 1;
@@ -190,7 +219,7 @@ void Parser::parse_param(FLParam &fl_param, int argc, char **argv) {
 }
 
 // TODO: implement Tree and DataSet; check data structure compatibility
-void Parser::load_model(string model_path, GBDTParam &model_param, vector<vector<Tree>> &boosted_model, DataSet & dataset) {
+void Parser::load_model(string model_path, GBDTParam &model_param, vector<vector<Tree>> &boosted_model) {
     ifstream ifs(model_path, ios::binary);
     CHECK_EQ(ifs.is_open(), true);
     int length;
@@ -204,14 +233,15 @@ void Parser::load_model(string model_path, GBDTParam &model_param, vector<vector
     ifs.read((char*)&model_param.learning_rate, sizeof(model_param.learning_rate));
     ifs.read((char*)&model_param.num_class, sizeof(model_param.num_class));
     ifs.read((char*)&model_param.n_trees, sizeof(model_param.n_trees));
-    int label_size;
-    ifs.read((char*)&label_size, sizeof(label_size));
-    float_type f;
-    dataset.label.clear();
-    for (int i = 0; i < label_size; ++i) {
-        ifs.read((char*)&f, sizeof(float_type));
-        dataset.label.push_back(f);
-    }
+    ifs.read((char*)&model_param.bagging, sizeof(model_param.bagging));
+//    int label_size;
+//    ifs.read((char*)&label_size, sizeof(label_size));
+//    float_type f;
+//    dataset.label.clear();
+//    for (int i = 0; i < label_size; ++i) {
+//        ifs.read((char*)&f, sizeof(float_type));
+//        dataset.label.push_back(f);
+//    }
     int boosted_model_size;
     ifs.read((char*)&boosted_model_size, sizeof(boosted_model_size));
     Tree t;
@@ -236,7 +266,7 @@ void Parser::load_model(string model_path, GBDTParam &model_param, vector<vector
 
 
 
-void Parser::save_model(string model_path, GBDTParam &model_param, vector<vector<Tree>> &boosted_model, DataSet &dataset) {
+void Parser::save_model(string model_path, GBDTParam &model_param, vector<vector<Tree>> &boosted_model) {
     ofstream out_model_file(model_path, ios::binary);
     CHECK_EQ(out_model_file.is_open(), true);
     int length = model_param.objective.length();
@@ -245,9 +275,10 @@ void Parser::save_model(string model_path, GBDTParam &model_param, vector<vector
     out_model_file.write((char*)&model_param.learning_rate, sizeof(model_param.learning_rate));
     out_model_file.write((char*)&model_param.num_class, sizeof(model_param.num_class));
     out_model_file.write((char*)&model_param.n_trees, sizeof(model_param.n_trees));
-    int label_size = dataset.label.size();
-    out_model_file.write((char*)&label_size, sizeof(label_size));
-    out_model_file.write((char*)&dataset.label[0], dataset.label.size() * sizeof(float_type));
+    out_model_file.write((char*)&model_param.bagging, sizeof(model_param.bagging));
+//    int label_size = dataset.label.size();
+//    out_model_file.write((char*)&label_size, sizeof(label_size));
+//    out_model_file.write((char*)&dataset.label[0], dataset.label.size() * sizeof(float_type));
     int boosted_model_size = boosted_model.size();
     out_model_file.write((char*)&boosted_model_size, sizeof(boosted_model_size));
     for(int j = 0; j < boosted_model.size(); ++j) {

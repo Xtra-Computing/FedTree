@@ -33,6 +33,25 @@ void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FL
         }
         LOG(INFO) << "End of HE init";
     }
+    else if(params.privacy_tech == "sa"){
+        LOG(INFO)<<"Start SA init";
+//        server.dh.primegen();
+        for(int i = 0; i < n_parties; i++){
+//            parties[i].dh = server.dh;
+            parties[i].dh.generate_public_key();
+        }
+        for(int i = 0; i < n_parties; i++){
+            parties[i].dh.pid = i;
+            parties[i].dh.init_variables(n_parties);
+            for(int j = 0; j < n_parties; j++) {
+                if(j != i) {
+                    parties[i].dh.other_public_keys[j] = parties[j].dh.public_key;
+                }
+            }
+            parties[i].dh.compute_shared_keys();
+        }
+        LOG(INFO)<<"End of SA init";
+    }
     DifferentialPrivacy dp_manager = DifferentialPrivacy();
     if (params.privacy_tech == "dp"){
         LOG(INFO) << "Start DP init";
@@ -45,11 +64,11 @@ void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FL
     if (params.propose_split == "server") {
         // loop through all party to find max and min for each feature
         float inf = std::numeric_limits<float>::infinity();
-        vector<vector<float>> feature_range(parties[0].get_num_feature());
+        vector<vector<float_type>> feature_range(parties[0].get_num_feature());
         for (int n = 0; n < parties[0].get_num_feature(); n++) {
-            vector<float> min_max = {inf, -inf};
+            vector<float_type> min_max = {inf, -inf};
             for (int p = 0; p < n_parties; p++) {
-                vector<float> temp = parties[p].get_feature_range_by_feature_index(n);
+                vector<float_type> temp = parties[p].get_feature_range_by_feature_index(n);
                 if (temp[0] <= min_max[0])
                     min_max[0] = temp[0];
                 if (temp[1] >= min_max[1])
@@ -65,11 +84,16 @@ void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FL
             parties[p].booster.fbuilder->get_bin_ids();
         }
 
-    } else if (params.propose_split == "client" || params.propose_split == "client_pre" || params.propose_split == "client_post") {
+    } else if (params.propose_split == "party" || params.propose_split == "client" || params.propose_split == "client_pre" || params.propose_split == "client_post") {
         for (int p = 0; p < n_parties; p++) {
-            auto dataset = parties[p].dataset;
-            parties[p].booster.fbuilder->cut.get_cut_points_fast(dataset, n_bins, dataset.n_instances());
-            aggregator.booster.fbuilder->append_to_parties_cut(parties[p].booster.fbuilder->cut, p);
+//            auto dataset = parties[p].dataset;
+//            parties[p].booster.fbuilder->cut.get_cut_points_fast(dataset, n_bins, dataset.n_instances());
+            server.booster.fbuilder->append_to_parties_cut(parties[p].booster.fbuilder->cut, p);
+        }
+        server.booster.fbuilder->cut.get_cut_points_by_parties_cut_sampling(server.booster.fbuilder->parties_cut, n_bins);
+        for (int p = 0; p < n_parties; p++){
+            parties[p].booster.fbuilder->set_cut(server.booster.fbuilder->cut);
+            parties[p].booster.fbuilder->get_bin_ids();
         }
         if (params.propose_split == "client_pre") {
             // find feature range of each feature for each party
@@ -175,7 +199,7 @@ void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FL
     t_start = t_end;
 
     for (int i = 0; i < params.gbdt_param.n_trees; i++) {
-        LOG(DEBUG) << "ROUND " << i;
+        LOG(INFO) << "Training round " << i << " start";
         vector<Tree> trees_this_round;
         trees_this_round.resize(params.gbdt_param.tree_per_rounds);
 //        vector<Tree> trees(params.gbdt_param.tree_per_rounds);
@@ -213,7 +237,6 @@ void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FL
         }
         // for each tree per round
         for (int k = 0; k < params.gbdt_param.tree_per_rounds; k++) {
-//            LOG(INFO) << "ROUND" << k;
 //            Tree &tree = trees[k];
             // each party initialize ins2node_id, gradients, etc.
             // ask parties to send gradient and aggregate by server
@@ -236,6 +259,18 @@ void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FL
 
                 // Each Party Compute Histogram
                 // each party compute hist, send hist to server or party
+                if (params.privacy_tech == "sa"){
+                    for(int i = 0; i < n_parties; i++) {
+                        parties[i].dh.generate_noises();
+                    }
+                    for(int i = 0; i < n_parties; i++) {
+                        for(int j = 0; j < n_parties; j++) {
+                            if(j!=i)
+                                parties[i].dh.received_encrypted_noises[j] = parties[j].dh.encrypted_noises[i];
+                        }
+                        parties[i].dh.decrypt_noises();
+                    }
+                }
                 #pragma omp parallel for
                 for (int j = 0; j < n_parties; j++) {
                     int n_column = parties[j].dataset.n_features();
@@ -244,7 +279,7 @@ void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FL
                     auto cut_fid_data = parties[j].booster.fbuilder->cut.cut_fid.host_data();
                     int n_max_splits = n_max_nodes * n_bins;
                     int n_splits = n_nodes_in_level * n_bins;
-                    SyncArray<int> hist_fid(n_nodes_in_level * n_bins);
+                    SyncArray<int> hist_fid(n_splits);
                     auto hist_fid_data = hist_fid.host_data();
 
                     for (int i = 0; i < hist_fid.size(); i++)
@@ -268,11 +303,13 @@ void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FL
                         auto t1 = timer.now();
                         parties[j].encrypt_histogram(hist);
                         parties[j].encrypt_histogram(missing_gh);
-
-//                        for(int i = 0; i < )
                         auto t2 = timer.now();
                         std::chrono::duration<float> t3 = t2 - t1;
                         encryption_time[j] += t3.count();
+                    }
+                    else if(params.privacy_tech == "sa"){
+                        parties[j].add_noise_to_histogram(hist);
+                        parties[j].add_noise_to_histogram(missing_gh);
                     }
 
                     aggregator.booster.fbuilder->append_hist(hist, missing_gh, n_partition, n_splits, j);
@@ -290,7 +327,7 @@ void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FL
                 // set these parameters to fit merged histogram
                 n_bins = aggregator.booster.fbuilder->cut.cut_points_val.size();
                 int n_max_splits = n_max_nodes * n_bins;
-                if (params.propose_split == "server" || params.propose_split == "client_pre") {
+                if (params.propose_split == "server" || params.propose_split == "client_pre" || params.propose_split == "party") {
 //                    if (params.privacy_tech == "he") {
 //                        hist.resize(aggregator.booster.fbuilder->parties_hist[0].size());
 //                        missing_gh.resize(aggregator.booster.fbuilder->parties_missing_gh[0].size());
@@ -302,11 +339,11 @@ void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FL
 //                    server.booster.fbuilder->set_last_missing_gh(missing_gh);
 //                    LOG(INFO) << hist;
                 }else if (params.propose_split == "client_post") {
-                    vector<vector<vector<float>>> feature_range_for_client(parties[0].get_num_feature());
+                    vector<vector<vector<float_type>>> feature_range_for_client(parties[0].get_num_feature());
                     for (int n = 0; n < parties[0].get_num_feature(); n++) {
                         feature_range_for_client[n].resize(parties.size());
                         for (int p = 0; p < parties.size(); p++) {
-                            vector<float> temp = parties[p].get_feature_range_by_feature_index(n);
+                            vector<float_type> temp = parties[p].get_feature_range_by_feature_index(n);
                             feature_range_for_client[n][p] = temp;
                         }
                     }
@@ -424,6 +461,7 @@ void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FL
 
        LOG(INFO) << "averaged " << parties[0].booster.metric->get_name() << " = "
                   << score;
+        LOG(INFO) << "Training round " << i << " end";
     }
     auto t_stop = timer.now();
     std::chrono::duration<float> training_time = t_stop - start;
@@ -439,6 +477,7 @@ void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FL
     LOG(INFO) << "end of training";
 }
 
+// in this case, server is also a party which holds both the features and the label
 void FLtrainer::vertical_fl_trainer(vector<Party> &parties, Server &server, FLParam &params) {
     std::chrono::high_resolution_clock timer;
     auto start = timer.now();
@@ -465,6 +504,7 @@ void FLtrainer::vertical_fl_trainer(vector<Party> &parties, Server &server, FLPa
     // for each boosting round
 
     for (int round = 0; round < params.gbdt_param.n_trees; round++) {
+//        LOG(INFO) << "Training round " << round << " start";
 
         vector<Tree> trees(params.gbdt_param.tree_per_rounds);
 
@@ -488,6 +528,12 @@ void FLtrainer::vertical_fl_trainer(vector<Party> &parties, Server &server, FLPa
         }
         // Server update, encrypt and send gradients
         server.booster.update_gradients();
+        // for the parties that have labels, they can compute histograms on unencrypted gradients
+        for(int pid = 0; pid < n_parties; pid++) {
+            if(parties[pid].has_label) {
+                parties[pid].booster.set_gradients(server.booster.gradients);
+            }
+        }
 
         if (params.privacy_tech == "dp") {
             // option 1: direct add noise to gradients
@@ -511,9 +557,10 @@ void FLtrainer::vertical_fl_trainer(vector<Party> &parties, Server &server, FLPa
             std::chrono::duration<float> t3 = t2 - t1;
             encryption_time += t3.count();
         }
-        #pragma omp parallel for
+#pragma omp parallel for
         for (int j = 0; j < parties.size(); j++) {
-            server.send_booster_gradients(parties[j]);
+            if(!parties[j].has_label)
+                server.send_booster_gradients(parties[j]);
         }
         if (params.privacy_tech == "he") {
             server.booster.gradients.copy_from(temp_gradients);
@@ -521,12 +568,14 @@ void FLtrainer::vertical_fl_trainer(vector<Party> &parties, Server &server, FLPa
         // for each tree in a round
         for (int t = 0; t < params.gbdt_param.tree_per_rounds; t++) {
             Tree &tree = trees[t];
-            // each party initialize ins2node_id, gradients, etc.
+
+            // server and each party initialize ins2node_id, gradients, etc.
             server.booster.fbuilder->build_init(server.booster.gradients, t);
 
-            #pragma omp parallel for
+#pragma omp parallel for
             for (int pid = 0; pid < parties.size(); pid++)
                 parties[pid].booster.fbuilder->build_init(parties[pid].booster.gradients, t);
+
 
             // for each level
             for (int l = 0; l < params.gbdt_param.depth; l++) {
@@ -593,21 +642,29 @@ void FLtrainer::vertical_fl_trainer(vector<Party> &parties, Server &server, FLPa
                 SyncArray<GHPair> missing_gh(n_column_new * n_nodes_in_level);
                 SyncArray<GHPair> hist(n_bins_new * n_nodes_in_level);
                 global_hist_fid.copy_from(
-                        comm_helper.concat_msyncarray(parties_global_hist_fid, parties_n_bins, n_nodes_in_level));
-                missing_gh.copy_from(
-                        comm_helper.concat_msyncarray(parties_missing_gh, parties_n_columns, n_nodes_in_level));
-                hist.copy_from(comm_helper.concat_msyncarray(parties_hist, parties_n_bins, n_nodes_in_level));
+                        comm_helper.concat_msyncarray(parties_global_hist_fid, n_nodes_in_level));
 
                 // server compute gain
                 SyncArray<float_type> gain(n_max_splits_new);
                 if (params.privacy_tech == "he") {
                     auto t1 = timer.now();
-                    server.decrypt_gh_pairs(hist);
-                    server.decrypt_gh_pairs(missing_gh);
+                    for(int i = 0; i < n_parties; i++){
+                        if(!parties[i].has_label){
+                            server.decrypt_gh_pairs(parties_hist[i]);
+                            server.decrypt_gh_pairs(parties_missing_gh[i]);
+                        }
+                    }
+//                    server.decrypt_gh_pairs(hist);
+//                    server.decrypt_gh_pairs(missing_gh);
                     auto t2 = timer.now();
                     std::chrono::duration<float> t3 = t2 - t1;
                     decryption_time += t3.count();
                 }
+
+                missing_gh.copy_from(
+                        comm_helper.concat_msyncarray(parties_missing_gh, n_nodes_in_level));
+                hist.copy_from(comm_helper.concat_msyncarray(parties_hist, n_nodes_in_level));
+
                 // LOG(INFO) << "hist:"<<"\n"<<hist;
                 server.booster.fbuilder->compute_gain_in_a_level(gain, n_nodes_in_level, n_bins_new,
                                                                  global_hist_fid.host_data(),
@@ -696,24 +753,25 @@ void FLtrainer::vertical_fl_trainer(vector<Party> &parties, Server &server, FLPa
                 if (params.privacy_tech == "he") {
                     auto t1 = timer.now();
                     auto node_data = server.booster.fbuilder->trees.nodes.host_data();
-
-                    #pragma omp parallel for
+#pragma omp parallel for
                     for (int nid = (1 << l) - 1; nid < (2 << (l + 1)) - 1; nid++) {
-                        server.decrypt_gh(node_data[nid].sum_gh_pair);
-                        node_data[nid].calc_weight(params.gbdt_param.lambda);
+                        if(node_data[nid].sum_gh_pair.encrypted) {
+                            server.decrypt_gh(node_data[nid].sum_gh_pair);
+                            node_data[nid].calc_weight(params.gbdt_param.lambda);
+                        }
                     }
                     auto t2 = timer.now();
                     std::chrono::duration<float> t3 = t2 - t1;
                     decryption_time += t3.count();
                 }
 
-                #pragma omp parallel for
+#pragma omp parallel for
                 for (int pid = 0; pid < parties.size(); pid++) {
                     for (int nid = (1 << l) - 1; nid < (1 << l) - 1 + n_nodes_in_level; nid++) {
                         server.send_node(nid, n_nodes_in_level, parties[pid]);
                     }
                 }
-                
+
                 if (!split_further) {
                     // add Laplace noise to leaf node values
                     if (params.privacy_tech == "dp") {
@@ -746,14 +804,20 @@ void FLtrainer::vertical_fl_trainer(vector<Party> &parties, Server &server, FLPa
         }
 
 //        parties[0].gbdt.trees.push_back(trees);
-        #pragma omp parallel for
+#pragma omp parallel for
         for (int p = 0; p < n_parties; p++) {
 //            parties[p].gbdt.trees.push_back(parties_trees[p]);
             parties[p].gbdt.trees.push_back(trees);
         }
         server.global_trees.trees.push_back(trees);
-        LOG(INFO) << parties[0].booster.metric->get_name() << " = "
-                  << parties[0].booster.metric->get_score(parties[0].booster.fbuilder->get_y_predict());
+
+//        LOG(INFO) << parties[0].booster.metric->get_name() << " = "
+//                  << parties[0].booster.metric->get_score(parties[0].booster.fbuilder->get_y_predict());
+
+        LOG(INFO) << server.booster.metric->get_name() << " = "
+                  << server.booster.metric->get_score(server.booster.fbuilder->get_y_predict());
+
+//        LOG(INFO) << "Training round " << round << " end";
     }
 
     auto stop = timer.now();

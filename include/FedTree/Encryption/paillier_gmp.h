@@ -1,7 +1,7 @@
 #ifndef FEDTREE_PAILLIER_GMP_H
 #define FEDTREE_PAILLIER_GMP_H
 
-#include <gmp.h>
+#include <gmpxx.h>
 #include <cstdint>
 //#include "FedTree/Encryption/paillier.h"
 

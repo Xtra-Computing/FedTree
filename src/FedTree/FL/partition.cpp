@@ -22,6 +22,10 @@ void Partition::homo_partition(const DataSet &dataset, const int n_parties, cons
         }
         if (!is_horizontal) {
             subsets[i].y = dataset.y;
+            if(i == 0)
+                subsets[i].has_label = false;
+            else
+                subsets[i].has_label = true;
         }
         if(dataset.is_classification) {
             subsets[i].label = dataset.label;
@@ -35,7 +39,9 @@ void Partition::homo_partition(const DataSet &dataset, const int n_parties, cons
     }
 
     std::default_random_engine e(seed);
-    std::shuffle(idxs.begin(), idxs.end(), e);
+    //for vertical FL, the features are not shuffled so that the feature id of the test dataset is consistent with the training dataset.
+    if(is_horizontal)
+        std::shuffle(idxs.begin(), idxs.end(), e);
 //    std::random_shuffle(idxs.begin(), idxs.end());
 
 //    std::map<int, vector<int>> batch_idxs;
@@ -94,10 +100,7 @@ void Partition::homo_partition(const DataSet &dataset, const int n_parties, cons
         }
 
         assert(dataset.has_csc);
-        // TODO: check the reason why dataset is a const param
-//        if(!dataset.has_csc) {
-//            dataset.csr_to_csc();
-//        }
+
         for (int i = 0; i < dataset.csc_col_ptr.size() - 1; i++) {
             int csc_col_sub = 0;
             int party_id = part2party[i];
@@ -520,10 +523,7 @@ void Partition::train_test_split(DataSet &dataset, DataSet &train_dataset, DataS
     int n_train = n_instances * train_portion;
     int n_test = n_instances - n_train;
     vector<int> idxs(n_instances);
-    std::cout << "n_instances:" << n_instances << std::endl;
-    std::cout << "dataset.csr_row_ptr.size:" << dataset.csr_row_ptr.size() << std::endl;
     CHECK_EQ(dataset.csr_row_ptr.size() - 1, n_instances);
-    LOG(INFO) << "1";
     thrust::sequence(thrust::host, idxs.data(), idxs.data() + n_instances, 0);
     int seed = 42;
     std::mt19937 gen(seed);
@@ -533,7 +533,6 @@ void Partition::train_test_split(DataSet &dataset, DataSet &train_dataset, DataS
     for (int i = n_train; i < n_instances; i++) {
         idx2train[idxs[i]] = false;
     }
-    LOG(INFO) << "2";
     train_dataset.csr_row_ptr.push_back(0);
     test_dataset.csr_row_ptr.push_back(0);
     train_dataset.n_features_ = dataset.n_features_;
@@ -553,7 +552,6 @@ void Partition::train_test_split(DataSet &dataset, DataSet &train_dataset, DataS
     }
     CHECK_EQ(train_idx, n_train);
     CHECK_EQ(test_idx, n_test);
-    LOG(INFO) << "3";
 
     for (int i = 0; i < dataset.csr_row_ptr.size() - 1; i++) {
 //        int train_csr_row_sub = 0;

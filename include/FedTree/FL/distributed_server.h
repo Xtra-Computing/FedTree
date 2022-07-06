@@ -56,6 +56,8 @@ public:
     grpc::Status SendNode(grpc::ServerContext *context, const fedtree::Node *node,
                           fedtree::PID *id) override;
 
+    grpc::Status SendNodes(grpc::ServerContext *context, const fedtree::NodeArray *nodes, fedtree::PID *id) override;
+
     grpc::Status SendIns2NodeID(grpc::ServerContext *context, grpc::ServerReader<fedtree::Ins2NodeID> *reader,
                                 fedtree::PID *id) override;
 
@@ -71,6 +73,8 @@ public:
     grpc::Status TriggerPrune(grpc::ServerContext *context, const fedtree::PID *pid,
                               fedtree::Ready *ready) override;
 
+    grpc::Status TriggerPrintScore(grpc::ServerContext *context, const fedtree::PID *pid, fedtree::Ready *ready) override;
+
     grpc::Status SendRange(grpc::ServerContext* context, grpc::ServerReader<fedtree::GHPair>* reader,
                                 fedtree::PID* response) override;
     
@@ -82,6 +86,18 @@ public:
     
 
     grpc::Status SendGH(grpc::ServerContext* context, const fedtree::GHPair* request, fedtree::PID* response) override;
+
+    grpc::Status SendDHPubKey(grpc::ServerContext* context, const fedtree::DHPublicKey* request, fedtree::PID* response) override;
+
+    grpc::Status GetDHPubKeys(grpc::ServerContext* context, const fedtree::PID* request, grpc::ServerWriter<fedtree::DHPublicKeys>* response) override;
+
+    grpc::Status SendNoises(grpc::ServerContext* context, const fedtree::SANoises* request, fedtree::PID* response) override;
+
+    grpc::Status GetNoises(grpc::ServerContext* context, const fedtree::PID* request, grpc::ServerWriter<fedtree::SANoises>* response) override;
+
+    grpc::Status SendCutPoints(grpc::ServerContext* context, const fedtree::CutPoints* request, fedtree::PID* response) override;
+
+    grpc::Status GetCutPoints(grpc::ServerContext* context, const fedtree::PID* request, grpc::ServerWriter<fedtree::CutPoints>* response) override;
 
     grpc::Status TriggerBuildUsingGH(grpc::ServerContext* context, const fedtree::PID* request, fedtree::Ready* response) override;
     
@@ -98,6 +114,8 @@ public:
                                  fedtree::Ready *ready) override;
 
     grpc::Status TriggerHomoInit(grpc::ServerContext *context, const fedtree::PID *request, fedtree::Ready *response) override;
+
+    grpc::Status TriggerSAInit(grpc::ServerContext *context, const fedtree::PID *request, fedtree::Ready *response) override;
 
     grpc::Status GetPaillier(grpc::ServerContext *context, const fedtree::PID *request, fedtree::Paillier * response) override;
     
@@ -133,22 +151,24 @@ public:
     
     grpc::Status SendNodeEnc(grpc::ServerContext *context, const fedtree::NodeEnc *node,
                           fedtree::PID *id) override;
-    
+
+    grpc::Status SendNodesEnc(grpc::ServerContext *context, const fedtree::NodeEncArray *nodes, fedtree::PID *id) override;
+
     void VerticalInitVectors(int n_parties);
 
     void HorizontalInitVectors(int n_parties);
 
     vector<int> n_bins_per_party;
     vector<int> n_columns_per_party;
-    void distributed_vertical_init(FLParam &param, int n_total_instances, vector<int> &n_instances_per_party, vector<float_type> y, vector<float_type> label) {
+    void distributed_vertical_init(FLParam &param, int n_total_instances, vector<float_type> y, vector<float_type> label) {
         this->local_trees.resize(param.n_parties);
         this->param = param;
         this->model_param = param.gbdt_param;
         this->n_total_instances = n_total_instances;
-        this->n_instances_per_party = n_instances_per_party;
         this->n_bins_per_party.resize(param.n_parties);
         this->n_columns_per_party.resize(param.n_parties);
         this->global_trees.trees.clear();
+        this->has_label.resize(param.n_parties);
         dataset.y = y;
         dataset.n_features_ = 0;
         dataset.label = label;
@@ -190,6 +210,11 @@ private:
     vector<GHPair> party_ghs;
     int gh_rounds = 1;
     bool build_gh_success = false;
+    vector<int> party_DHKey_received;
+    vector<int> party_noises_received;
+    vector<int> parties_cut_points_received;
+    int noise_rounds = 1;
+    int noise_cnt = 0;
 
     bool calc_success = false;
     
