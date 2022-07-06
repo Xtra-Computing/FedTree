@@ -24,9 +24,13 @@ void DataSet::load_from_sparse(int n_instances, float *csr_val, int *csr_row_ptr
     this->csr_col_idx.resize(nnz);
 
     CHECK_EQ(sizeof(float_type), sizeof(float));
-
-    if(y != NULL)
+    if(y != NULL) {
         memcpy(this->y.data(), y, sizeof(float) * n_instances);
+        has_label = true;
+    }
+    else{
+        has_label = false;
+    }
     memcpy(this->csr_val.data(), csr_val, sizeof(float) * nnz);
     memcpy(this->csr_col_idx.data(), csr_col_idx, sizeof(int) * nnz);
     memcpy(this->csr_row_ptr.data(), csr_row_ptr, sizeof(int) * (n_instances + 1));
@@ -35,22 +39,19 @@ void DataSet::load_from_sparse(int n_instances, float *csr_val, int *csr_row_ptr
     }
     n_features_++;//convert from zero-based
     LOG(INFO) << "#instances = " << this->n_instances() << ", #features = " << this->n_features();
-    if (y != NULL && ObjectiveFunction::need_group_label(param.objective)){
-        group_label();
+    if (y != NULL && (ObjectiveFunction::need_group_label(param.objective) || param.metric == "error")){
+        if(param.reorder_label)
+            group_label();
+        else
+            group_label_without_reorder(param.num_class);
+        is_classification = true;
         param.num_class = label.size();
     }
-
     if (ObjectiveFunction::need_load_group_file(param.objective)) {
         for(int i = 0; i < num_group; i++)
             this->group.emplace_back(group[i]);
         LOG(INFO) << "#groups = " << this->group.size();
     }
-
-    if (ObjectiveFunction::need_group_label(param.objective) || param.metric == "error") {
-        is_classification = true;
-    }
-
-
 }
 
 void DataSet::load_group_file(string file_name) {
@@ -378,15 +379,6 @@ void DataSet::load_from_file(string file_name, FLParam &param) {
     auto t_end = timer.now();
     std::chrono::duration<float> used_time = t_end - t_start;
     LOG(INFO) << "Load dataset using time: " << used_time.count() << " s";
-
-//    // TODO Estimate the required memory
-//    int nnz = this->csr_val.size();
-//    double mem_size = (double)nnz / 1024;
-//    mem_size /= 1024;
-//    mem_size /= 1024;
-//    mem_size *= 12;
-//    if(mem_size > (5 * param.n_device))
-//        this->use_cpu = true;
 }
 
 
@@ -490,7 +482,6 @@ void DataSet::load_from_csv(string file_name, FLParam &param) {
                 std::ptrdiff_t advanced = ignore_comment_and_blank(p, line_end);
                 p += advanced;
                 int r = parse_pair<float_type, float_type>(p, line_end, &q, id, temp_);
-//                std::cout<<"id:"<<id<<std::endl;
                 if (r < 1) {
                     line_begin = line_end;
                     continue;
@@ -505,7 +496,6 @@ void DataSet::load_from_csv(string file_name, FLParam &param) {
                         line_begin = line_end;
                         continue;
                     }
-                    //std::cout<<"label:"<<label<<std::endl;
                     // parse instance label
                     y_[tid].push_back(label);
                     p = q;
@@ -1071,12 +1061,9 @@ void DataSet::get_subset(vector<int> &idx, DataSet& subset){
         subset.csr_row_ptr.push_back(0);
         subset.n_features_ = n_features();
         subset.y.clear();
-//        std::cout << "1.1" << std::endl;
-//        std::cout << "csr_row_ptr.size:" << csr_row_ptr.size() << std::endl;
         for (int i = 0; i < idx.size(); i++) {
             int n_val = 0;
             if (n_features_ != 0) {
-//                std::cout << "1.2" << std::endl;
                 for (int j = csr_row_ptr[idx[i]]; j < csr_row_ptr[idx[i] + 1]; j++) {
                     float_type val = csr_val[j];
                     int cid = csr_col_idx[j];
@@ -1086,12 +1073,9 @@ void DataSet::get_subset(vector<int> &idx, DataSet& subset){
                 }
                 subset.csr_row_ptr.push_back(n_val + subset.csr_row_ptr.back());
             }
-//            std::cout << "1.3" << std::endl;
             if(y.size())
-                subset.y.push_back(y[i]);
-//            std::cout << "1.4" << std::endl;
+                subset.y.push_back(y[idx[i]]);
         }
         subset.has_csc = false;
-//        std::cout << "subset y size:" << subset.y.size() << std::endl;
     }
 }

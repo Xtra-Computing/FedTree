@@ -15,13 +15,22 @@ else:
     print("OS not supported!")
     exit()
 
-if not path.exists(path.join(dirname, "FedTree", path.basename(lib_path))):
-    copyfile(lib_path, path.join(dirname, "FedTree", path.basename(lib_path)))
+if not path.exists(path.join(dirname, "fedtree", path.basename(lib_path))):
+    copyfile(lib_path, path.join(dirname, "fedtree", path.basename(lib_path)))
 
-setuptools.setup(name="FedTree",
-                 version="0.1.0",
+setuptools.setup(name="fedtree",
+                 version="1.0.3",
                  packages=["fedtree"],
                  package_dir={"python": "fedtree"},
+                 description="A federated learning library for trees",
+                 license='Apache-2.0',
+                 author='Qinbin Li',
+                 author_email='liqinbin1998@gmail.com',
+                 url='https://github.com/Xtra-Computing/FedTree',
                  package_data={"fedtree": [path.basename(lib_path)]},
-                 install_requires=['numpy', 'scipy', 'scikit-learn']
+                 install_requires=['numpy', 'scipy', 'scikit-learn'],
+                 classifiers=[
+                     "Programming Language :: Python :: 3",
+                     "License :: OSI Approved :: Apache Software License",
+                 ],
                  )

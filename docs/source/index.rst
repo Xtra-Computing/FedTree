@@ -9,7 +9,7 @@ Welcome to FedTree's documentation!
 **FedTree** is a federated learning system for tree-based models. It is designed to be highly **efficient**, **effective**,
 and **secure**. It has the following features.
 
-- Parallel computing on multi-core CPUs.
+- Parallel computing on multi-core CPUs and GPUs.
 - Stand-alone simulation and distributed learning.
 - Support of homomorphic encryption, secure aggregation, and differential privacy.
 - Federated training algorithms of gradient boosting decision trees and random forests.
@@ -24,7 +24,7 @@ and **secure**. It has the following features.
 
       Installation <Installation>
       Quick Start <Quick-Start>
-      Parameters <Parameters>
+      APIs/Parameters <Parameters>
       Examples <Examples>
       Frameworks <Frameworks>
       Experiments <Experiments>

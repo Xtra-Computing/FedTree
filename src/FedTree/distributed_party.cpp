@@ -52,7 +52,7 @@ void DistributedParty::GetGradients() {
     auto t_end = timer.now();
     std::chrono::duration<float> used_time = t_end - t_start;
     comm_time += used_time.count();
-
+    comm_size += i * 16 * 1e-6;
     if (status.ok()) {
         LOG(DEBUG) << "All gradients received.";
     } else {
@@ -75,6 +75,7 @@ void DistributedParty::SendDatasetInfo(int n_bins, int n_columns) {
     LOG(INFO)<<"communication MetaInfo end";
     std::chrono::duration<float> used_time = t_end - t_start;
     comm_time += used_time.count();
+    comm_size += datasetInfo.ByteSizeLong() * 1e-6;
     if (status.ok()) {
         LOG(DEBUG) << "Dataset info sent.";
     } else {
@@ -107,7 +108,7 @@ void DistributedParty::SendHistograms(const SyncArray<GHPair> &hist, int type) {
     auto t_end = timer.now();
     std::chrono::duration<float> used_time = t_end - t_start;
     comm_time += used_time.count();
-
+    comm_size += hist.size() * 16 * 1e-6;
     if (status.ok()) {
         LOG(DEBUG) << "All " << type << " sent.";
     } else {
@@ -137,7 +138,7 @@ void DistributedParty::SendHistFid(const SyncArray<int> &hist_fid) {
     auto t_end = timer.now();
     std::chrono::duration<float> used_time = t_end - t_start;
     comm_time += used_time.count();
-
+    comm_size += hist_fid.size() * 4 * 1e-6;
     if (status.ok()) {
         LOG(DEBUG) << "All hist_fid sent.";
     } else {
@@ -178,6 +179,7 @@ void DistributedParty::GetBestInfo(vector<BestInfo> &bests) {
     auto t_end = timer.now();
     std::chrono::duration<float> used_time = t_end - t_start;
     comm_time += used_time.count();
+    comm_size += bests.size() * 24 * 1e-6;
     if (status.ok()) {
         LOG(DEBUG) << "All nodes updated using best info.";
     } else {
@@ -214,6 +216,7 @@ void DistributedParty::SendNode(Tree::TreeNode &node_data) {
     std::chrono::duration<float> used_time = t_end - t_start;
     LOG(INFO)<<"communication Node end";
     comm_time += used_time.count();
+    comm_size += node.ByteSizeLong() * 1e-6;
     if (status.ok()) {
         LOG(DEBUG) << "Node sent.";
     } else {
@@ -252,6 +255,7 @@ void DistributedParty::SendNodes(fedtree::NodeArray &nodes) {
     std::chrono::duration<float> used_time = t_end - t_start;
     LOG(INFO)<<"communication Nodes end";
     comm_time += used_time.count();
+    comm_size += nodes.ByteSizeLong() * 1e-6;
     if (status.ok()) {
         LOG(DEBUG) << "Node Enc sent.";
     } else {
@@ -298,6 +302,7 @@ void DistributedParty::SendNodesEnc(fedtree::NodeEncArray &nodes) {
     std::chrono::duration<float> used_time = t_end - t_start;
     LOG(INFO)<<"communication NodeEnc end";
     comm_time += used_time.count();
+    comm_size += nodes.ByteSizeLong() * 1e-6;
     if (status.ok()) {
         LOG(DEBUG) << "Node Enc sent.";
     } else {
@@ -342,6 +347,7 @@ void DistributedParty::SendNodeEnc(Tree::TreeNode &node_data) {
     std::chrono::duration<float> used_time = t_end - t_start;
     LOG(INFO)<<"communication NodeEnc end";
     comm_time += used_time.count();
+    comm_size += node.ByteSizeLong() * 1e-6;
     if (status.ok()) {
         LOG(DEBUG) << "Node Enc sent.";
     } else {
@@ -358,11 +364,13 @@ void DistributedParty::SendIns2NodeID(SyncArray<int> &ins2node_id, int nid) {
             stub_->SendIns2NodeID(&context, &id));
 
     auto ins2node_id_data = ins2node_id.host_data();
+    long total_size = 0;
     for (int i = 0; i < ins2node_id.size(); ++i) {
         if (ins2node_id_data[i] >= 2 * nid + 1 && ins2node_id_data[i] <= 2 * nid + 2) {
             fedtree::Ins2NodeID i2n;
             i2n.set_iid(i);
             i2n.set_nid(ins2node_id_data[i]);
+            total_size += 1;
             if (!writer->Write(i2n))
                 break;
         }
@@ -372,6 +380,7 @@ void DistributedParty::SendIns2NodeID(SyncArray<int> &ins2node_id, int nid) {
     auto t_end = timer.now();
     std::chrono::duration<float> used_time = t_end - t_start;
     comm_time += used_time.count();
+    comm_size += total_size * 8e-6;
     if (status.ok()) {
         LOG(DEBUG) << "ins2node_id of the current node sent.";
     } else {
@@ -416,6 +425,7 @@ void DistributedParty::GetNodes(int l) {
     std::chrono::duration<float> used_time = t_end - t_start;
     LOG(INFO)<<"communication Node end";
     comm_time += used_time.count();
+    comm_size += i * node.ByteSizeLong() * 1e-6;
     if (status.ok()) {
         LOG(DEBUG) << "All nodes received." << i;
     } else {
@@ -432,16 +442,18 @@ void DistributedParty::GetIns2NodeID() {
     LOG(DEBUG) << "Receiving ins2node_id from the server.";// << std::endl;
     auto ins2node_id_data = booster.fbuilder->ins2node_id.host_data();
     std::unique_ptr<grpc::ClientReader<fedtree::Ins2NodeID> > reader(stub_->GetIns2NodeID(&context, id));
+    int total_size = 0;
     while (reader->Read(&i2n)) {
         int iid = i2n.iid();
         int nid = i2n.nid();
         ins2node_id_data[iid] = nid;
+        total_size++;
     }
     grpc::Status status = reader->Finish();
     auto t_end = timer.now();
     std::chrono::duration<float> used_time = t_end - t_start;
     comm_time += used_time.count();
-
+    comm_size += total_size * 8e-6;
     if (status.ok()) {
         LOG(DEBUG) << "All ins2node_id received.";
     } else {
@@ -460,7 +472,7 @@ bool DistributedParty::CheckIfContinue(bool cont) {
     auto t_end = timer.now();
     std::chrono::duration<float> used_time = t_end - t_start;
     comm_time += used_time.count();
-
+    comm_size += id.ByteSizeLong() * 1e-6;
     if (!status.ok()) {
         LOG(ERROR) << "CheckIfContinue rpc failed.";
         return false;
@@ -518,6 +530,7 @@ void DistributedParty::SendRange(const vector<vector<float_type>>& ranges) {
     std::chrono::duration<float> used_time = t_end - t_start;
     LOG(INFO)<<"communication Range end";
     comm_time += used_time.count();
+    comm_size += ranges.size() * 16e-6;
     if (status.ok()) {
         LOG(DEBUG) << "All feature range sent.";
     }
@@ -556,6 +569,7 @@ void DistributedParty::GetRangeAndSet(int n_bins) {
     std::chrono::duration<float> used_time = t_end - t_start;
     LOG(INFO)<<"communication RangeSet end";
     comm_time += used_time.count();
+    comm_size += feature_range.size() * 16e-6;
     if (status.ok()) {
         LOG(DEBUG) << "All range received.";
     } else {
@@ -579,6 +593,7 @@ void DistributedParty::SendGH(GHPair party_gh) {
     std::chrono::duration<float> used_time = t_end - t_start;
     LOG(INFO)<<"communication GH end";
     comm_time += used_time.count();
+    comm_size += pair.ByteSizeLong() * 1e-6;
     if (status.ok()) {
         LOG(DEBUG) << "party_gh sent.";
     }
@@ -603,6 +618,7 @@ void DistributedParty::SendDHPubKey() {
     std::chrono::duration<float> used_time = t_end - t_start;
     LOG(INFO)<<"communication DHPublicKey end";
     comm_time += used_time.count();
+    comm_size += pk.ByteSizeLong() * 1e-6;
     if (status.ok()) {
         LOG(DEBUG) << "DHPublicKey sent.";
     }
@@ -628,6 +644,7 @@ void DistributedParty::GetDHPubKey() {
     auto t_end = timer.now();
     std::chrono::duration<float> used_time = t_end - t_start;
     comm_time += used_time.count();
+    comm_size += pk.ByteSizeLong() * 1e-6;
     LOG(INFO)<<"communication PublicKey end";
     if (status.ok()) {
         LOG(INFO) << "Get DHPubKey from server";
@@ -656,6 +673,7 @@ void DistributedParty::SendNoises(){
     std::chrono::duration<float> used_time = t_end - t_start;
     LOG(INFO)<<"communication Noises end";
     comm_time += used_time.count();
+    comm_size += san.ByteSizeLong() * 1e-6;
     if (status.ok()) {
         LOG(DEBUG) << "Noises sent.";
     }
@@ -685,6 +703,7 @@ void DistributedParty::GetNoises() {
     auto t_end = timer.now();
     std::chrono::duration<float> used_time = t_end - t_start;
     comm_time += used_time.count();
+    comm_size += san.ByteSizeLong() * 1e-6;
     LOG(INFO)<<"communication Noises end";
     if (status.ok()) {
         LOG(INFO) << "GetNoises from server";
@@ -717,6 +736,7 @@ void DistributedParty::SendCutPoints(){
     std::chrono::duration<float> used_time = t_end - t_start;
     LOG(INFO)<<"communication CutPoints end";
     comm_time += used_time.count();
+    comm_size += cp.ByteSizeLong() * 1e-6;
     if (status.ok()) {
         LOG(DEBUG) << "CutPoints sent.";
     }
@@ -759,6 +779,7 @@ void DistributedParty::GetCutPoints() {
     auto t_end = timer.now();
     std::chrono::duration<float> used_time = t_end - t_start;
     comm_time += used_time.count();
+    comm_size += cp.ByteSizeLong() * 1e-6;
     LOG(INFO)<<"communication CutPoints end";
     booster.fbuilder->get_bin_ids();
     if (status.ok()) {
@@ -809,7 +830,7 @@ void DistributedParty::GetRootNode() {
     LOG(INFO)<<"communication RootNode end";
     std::chrono::duration<float> used_time = t_end - t_start;
     comm_time += used_time.count();
-
+    comm_size += node.ByteSizeLong() * 1e-6;
     auto & root = booster.fbuilder->trees.nodes.host_data()[0];
     root.final_id = node.final_id();
     root.lch_index = node.lch_index();
@@ -866,7 +887,7 @@ void DistributedParty::GetSplitPoints() {
     std::chrono::duration<float> used_time = t_end - t_start;
     LOG(INFO)<<"communication SplitPoints end";
     comm_time += used_time.count();
-
+    comm_size += sp_recv.ByteSizeLong() * 1e-6;
     if (status.ok()) {
         LOG(DEBUG) << "SplitPoints received.";
     } else {
@@ -893,6 +914,7 @@ bool DistributedParty::HCheckIfContinue() {
     std::chrono::duration<float> used_time = t_end - t_start;
     LOG(INFO)<<"communication IfContinue end";
     comm_time += used_time.count();
+    comm_size += 16e-6;
     if (!status.ok()) {
         LOG(ERROR) << "HCheckIfContinue rpc failed.";
         return false;
@@ -915,6 +937,7 @@ float DistributedParty::GetAvgScore(float score) {
     auto t_end = timer.now();
     std::chrono::duration<float> used_time = t_end - t_start;
     comm_time += used_time.count();
+    comm_size += 12e-6;
     if (status.ok()) {
         LOG(DEBUG) << "Average score received";
     }
@@ -963,6 +986,7 @@ void DistributedParty::GetPaillier() {
     auto t_end = timer.now();
     std::chrono::duration<float> used_time = t_end - t_start;
     comm_time += used_time.count();
+    comm_size += (pubkey.ByteSizeLong()+4) * 1e-6;
     LOG(INFO)<<"communication PublicKey end";
     if (status.ok()) {
         paillier.modulus = NTL::to_ZZ(pubkey.modulus().c_str());
@@ -1007,7 +1031,7 @@ void DistributedParty::SendHistogramsEnc(const SyncArray<GHPair> &hist, int type
     auto t_end = timer.now();
     std::chrono::duration<float> used_time = t_end - t_start;
     comm_time += used_time.count();
-
+    comm_size += hist.size() * 16e-6 + 4e-6;
     if (status.ok()) {
         LOG(DEBUG) << "All Encrypted" << type << " sent.";
     } else {
@@ -1051,7 +1075,7 @@ void DistributedParty::SendHistogramBatches(const SyncArray<GHPair> &hist, int t
     std::chrono::duration<float> used_time = t_end - t_start;
     LOG(INFO)<<"communication HistBatch end";
     comm_time += used_time.count();
-
+    comm_size += hist.size() * 16e-6 + (len + BATCH_SIZE - 1)/BATCH_SIZE*4e-6;
     if (status.ok()) {
         LOG(DEBUG) << "All " << type << " sent.";
     } else {
@@ -1092,6 +1116,7 @@ void DistributedParty::SendHistFidBatches(const SyncArray<int> &hist) {
     std::chrono::duration<float> used_time = t_end - t_start;
     LOG(INFO)<<"communication HistFidBatch end";
     comm_time += used_time.count();
+    comm_size += hist.size() * 4e-6 + tmp.size() * 4e-6;
     if (status.ok()) {
         LOG(DEBUG) << "All HistFid Batches sent";
     } else {
@@ -1109,6 +1134,7 @@ void DistributedParty::GetIns2NodeIDBatches() {
 
     auto ins2node_id_data = booster.fbuilder->ins2node_id.host_data();
     std::unique_ptr<grpc::ClientReader<fedtree::Ins2NodeIDBatch> > reader(stub_->GetIns2NodeIDBatches(&context, id));
+    int total_size = 0;
     while (reader->Read(&i2n)) {
         int len = i2n.iid_size();
         for (int i = 0; i < len; i++) {
@@ -1116,14 +1142,14 @@ void DistributedParty::GetIns2NodeIDBatches() {
             int nid = i2n.nid(i);
             ins2node_id_data[iid] = nid;
         }
-
+        total_size+=len;
     }
     grpc::Status status = reader->Finish();
     auto t_end = timer.now();
     std::chrono::duration<float> used_time = t_end - t_start;
     LOG(INFO)<<"communication Ins2NodeID end";
     comm_time += used_time.count();
-
+    comm_size += total_size * 8e-6;
     if (status.ok()) {
         LOG(DEBUG) << "All ins2node_id received.";
     } else {
@@ -1143,12 +1169,13 @@ void DistributedParty::SendIns2NodeIDBatches(SyncArray<int> &ins2node_id, int ni
     fedtree::Ins2NodeIDBatch i2n;
     const int BATCH_SIZE = 200000;
 
-    // FIXME: cannot find out failures? 
+    int total_size = 0;
     for (int i = 0; i < ins2node_id.size(); ++i) {
         if (ins2node_id_data[i] >= 2 * nid + 1 && ins2node_id_data[i] <= 2 * nid + 2) {
             // fedtree::Ins2NodeID i2n;
             i2n.add_iid(i);
             i2n.add_nid(ins2node_id_data[i]);
+            total_size ++;
             if (i2n.iid_size() >= 200000){
                 if (!writer->Write(i2n))
                     break;
@@ -1166,7 +1193,7 @@ void DistributedParty::SendIns2NodeIDBatches(SyncArray<int> &ins2node_id, int ni
     std::chrono::duration<float> used_time = t_end - t_start;
     LOG(INFO)<<"communication Ins2NodeID end";
     comm_time += used_time.count();
-
+    comm_size += total_size * 8e-6;
     if (status.ok()) {
         LOG(DEBUG) << "ins2node_id of the current node sent.";
     } else {
@@ -1197,6 +1224,8 @@ void DistributedParty::GetGradientBatches() {
     LOG(INFO)<<"communication GradientBatches end";
     comm_time += used_time.count();
     int len = booster.gradients.size();
+    comm_size += len * 16e-6;
+
     #pragma omp parallel for
     for (int i = 0; i < len; i++) {
         booster_gradients_data[i] = {static_cast<float_type>(tot.g(i)), static_cast<float_type>(tot.h(i))};
@@ -1231,7 +1260,7 @@ void DistributedParty::GetGradientBatchesEnc() {
     LOG(INFO)<<"communication GradientBatchesEnc end";
     comm_time += used_time.count();
     int len = booster.gradients.size();
-    
+    comm_size += len*16e-6;
     assert(len == tot.g_enc_size());
     assert(len == tot.h_enc_size());
     #pragma omp parallel for
@@ -1297,6 +1326,7 @@ void DistributedParty::SendHistogramBatchesEnc(const SyncArray<GHPair> &hist, in
     std::chrono::duration<float> used_time = t_end - t_start;
     LOG(INFO)<<"communication HistBatchEnc end";
     comm_time += used_time.count();
+    comm_size += hist.size()*16e-6;
     if (status.ok()) {
         LOG(DEBUG) << "All " << type << " sent.";
     } else {
@@ -1316,6 +1346,7 @@ void DistributedParty::StopServer(float tot_time) {
     LOG(INFO) << "communication time: " << comm_time << "s";
     LOG(INFO) << "wait time: " << resp.content() << "s";
     LOG(INFO) << "real communication: " << comm_time - resp.content() << "s";
+    LOG(INFO) << "communication size: " << comm_size << "MB";
     if (status.ok()) {
         LOG(DEBUG) << "StopServer rpc success.";
     } else {
@@ -1632,6 +1663,14 @@ void distributed_horizontal_train(DistributedParty& party, FLParam &fl_param) {
     }
 }
 
+void distributed_ensemble_train(DistributedParty &party, FLParam &fl_param){
+    CHECK_EQ(fl_param.gbdt_param.n_trees % fl_param.n_parties, 0);
+    int n_tree_each_party = fl_param.gbdt_param.n_trees / fl_param.n_parties;
+    for (int j = 0; j < n_tree_each_party; j++)
+        party.booster.boost(party.gbdt.trees);
+//    party.SendTrees();
+}
+
 #ifdef _WIN32
 INITIALIZE_EASYLOGGINGPP
 #endif
@@ -1718,14 +1757,13 @@ int main(int argc, char **argv) {
             party.gbdt.predict_score_vertical(fl_param.gbdt_param, test_dataset, batch_idxs);
     }
     else if (fl_param.mode == "horizontal") {
-        SyncArray<bool> dummy_map;
         // horizontal does not need feature_map parameter
         if (fl_param.partition) {
             partition.homo_partition(dataset, fl_param.n_parties, true, subsets, batch_idxs);
-            party.init(pid, subsets[pid], fl_param, dummy_map);
+            party.init(pid, subsets[pid], fl_param);
         }
         else {
-            party.init(pid, dataset, fl_param, dummy_map);
+            party.init(pid, dataset, fl_param);
         }
 
         party.BeginBarrier();
@@ -1740,11 +1778,30 @@ int main(int argc, char **argv) {
         if(use_global_test_set)
             party.gbdt.predict_score(fl_param.gbdt_param, test_dataset);
     }
-//    else if (fl_param.mode == "ensemble"){
-//
-//    }
+    else if (fl_param.mode == "ensemble"){
+        if (fl_param.partition){
+            partition.homo_partition(dataset, fl_param.n_parties, fl_param.partition_mode == "horizontal", subsets, batch_idxs, fl_param.seed);
+            party.init(pid, subsets[pid], fl_param);
+        }
+        else{
+            party.init(pid, dataset, fl_param);
+        }
+        party.BeginBarrier();
+        LOG(INFO)<<"training start";
+        auto t_start = party.timer.now();
+        distributed_ensemble_train(party, fl_param);
+        auto t_end = party.timer.now();
+        std::chrono::duration<float> used_time = t_end - t_start;
+        LOG(INFO)<<"training end";
+        train_time = used_time.count();
+        LOG(INFO) << "train time: " << train_time<<"s";
+        if(use_global_test_set)
+            party.gbdt.predict_score(fl_param.gbdt_param, test_dataset);
+
+    }
     
     LOG(INFO) << "encryption time:" << party.enc_time << "s";
+    parser.save_model(fl_param.gbdt_param.model_path, fl_param.gbdt_param, party.gbdt.trees);
     party.StopServer(train_time);
     return 0;
 }

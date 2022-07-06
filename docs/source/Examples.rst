@@ -32,6 +32,7 @@ Supposing the ip address of the server is a.b.c.d, in the party machine 1, the c
 
         data=./dataset/adult/a9a_horizontal_p0
         test_data=./dataset/adult/a9a_horizontal_test
+        model_path=p1.model
         n_parties=2
         objective=binary:logistic
         mode=horizontal
@@ -43,7 +44,7 @@ Supposing the ip address of the server is a.b.c.d, in the party machine 1, the c
         ip_address=a.b.c.d
 
 The difference between `party1.conf` and `server.conf` is that `party1.conf` needs to specify the path to the local data and the ip address of the server.
-Similarly, we can have a configuration file for each party machine by changing the `data`. Then, we can run the following commands in the corresponding machines.
+Similarly, we can have a configuration file for each party machine by changing the `data` (and `model_path` if needed). Then, we can run the following commands in the corresponding machines.
 
     .. code::
 
@@ -84,6 +85,7 @@ For each party machine, supposing the ip address of the aggregator is a.b.c.d, w
 
         data=./dataset/adult/a9a_vertical_p0
         test_data=./dataset/adult/a9a_vertical_test
+        model_path=p1.model
         n_parties=2
         mode=vertical
         partition=0

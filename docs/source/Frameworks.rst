@@ -40,6 +40,12 @@ Then, before transfering the gradient histogram, each client generates random no
 Then, the server sends back the encrypted noises to the clients. The clients decrypts the noises with the shared keys. Then, the clients add the generated noises and subtract the decrypted noises to the local histogram.
 The injected noises of each client cancel each other out and the aggregates histogram remains unchanged.
 
+The detailed algorithm is shown below.
+
+.. image:: ./images/fedtree_hori.png
+    :align: center
+    :target: ./images/fedtree_hori.png
+
 
 If adopting differential privacy, the server will train a differentially private tree in the fourth step using Laplace mechanism and exponential mechanism.
 
@@ -84,6 +90,12 @@ If homomorphic encryption is applied, the host party sends the encrypted gradien
 We provide the option to adopt `additive homomorphic encryption <https://en.wikipedia.org/wiki/Paillier_cryptosystem>`_ to protect the exchanged gradients.
 Specifically, the host party generates public and private keys before the training. Then, it uses the public key to encrypt the gradients before sending them.
 After receiving local histograms from the parties, the host party uses privacy key to decrypt the histograms before further computation.
+
+The detailed algorithm is shown below.
+
+.. image:: ./images/fedtree_verti.png
+    :align: center
+    :target: ./images/fedtree_verti.png
 
 
 If differential privacy is applied, the host party updates the tree using Laplace mechanism and exponential mechanism.

@@ -70,7 +70,8 @@ void Parser::parse_param(FLParam &fl_param, int argc, char **argv) {
     gbdt_param->tree_per_rounds = 1; // # tree of each round, depends on # class
     gbdt_param->metric = "default";
     gbdt_param->constant_h = 0.0;
-    gbdt_param->reorder_label = true; // whether reorder label or not
+    gbdt_param->reorder_label = false; // whether reorder label or not
+    gbdt_param->model_path = "fedtree.model";
 
     if (argc < 2) {
         printf("Usage: <config>\n");
@@ -169,6 +170,8 @@ void Parser::parse_param(FLParam &fl_param, int argc, char **argv) {
                 gbdt_param->constant_h = atof(val);
             else if (str_name.compare("reorder_label") == 0)
                 gbdt_param->reorder_label = atoi(val);
+            else if (str_name.compare("model_path") == 0)
+                gbdt_param->model_path = val;
             else
                 LOG(INFO) << "\"" << name << "\" is unknown option!";
         } else {
@@ -200,14 +203,14 @@ void Parser::parse_param(FLParam &fl_param, int argc, char **argv) {
 
     if (fl_param.n_hori == -1){
         if(fl_param.mode == "horizontal"){
-            fl_param.n_hori == fl_param.n_parties;
+            fl_param.n_hori = fl_param.n_parties;
         }
         else
             fl_param.n_hori = 1;
     }
     if (fl_param.n_verti == -1){
         if(fl_param.mode == "vertical"){
-            fl_param.n_verti == fl_param.n_parties;
+            fl_param.n_verti = fl_param.n_parties;
         }
         else
             fl_param.n_verti = 1;
@@ -216,7 +219,7 @@ void Parser::parse_param(FLParam &fl_param, int argc, char **argv) {
 }
 
 // TODO: implement Tree and DataSet; check data structure compatibility
-void Parser::load_model(string model_path, GBDTParam &model_param, vector<vector<Tree>> &boosted_model, DataSet & dataset) {
+void Parser::load_model(string model_path, GBDTParam &model_param, vector<vector<Tree>> &boosted_model) {
     ifstream ifs(model_path, ios::binary);
     CHECK_EQ(ifs.is_open(), true);
     int length;
@@ -230,14 +233,15 @@ void Parser::load_model(string model_path, GBDTParam &model_param, vector<vector
     ifs.read((char*)&model_param.learning_rate, sizeof(model_param.learning_rate));
     ifs.read((char*)&model_param.num_class, sizeof(model_param.num_class));
     ifs.read((char*)&model_param.n_trees, sizeof(model_param.n_trees));
-    int label_size;
-    ifs.read((char*)&label_size, sizeof(label_size));
-    float_type f;
-    dataset.label.clear();
-    for (int i = 0; i < label_size; ++i) {
-        ifs.read((char*)&f, sizeof(float_type));
-        dataset.label.push_back(f);
-    }
+    ifs.read((char*)&model_param.bagging, sizeof(model_param.bagging));
+//    int label_size;
+//    ifs.read((char*)&label_size, sizeof(label_size));
+//    float_type f;
+//    dataset.label.clear();
+//    for (int i = 0; i < label_size; ++i) {
+//        ifs.read((char*)&f, sizeof(float_type));
+//        dataset.label.push_back(f);
+//    }
     int boosted_model_size;
     ifs.read((char*)&boosted_model_size, sizeof(boosted_model_size));
     Tree t;
@@ -262,7 +266,7 @@ void Parser::load_model(string model_path, GBDTParam &model_param, vector<vector
 
 
 
-void Parser::save_model(string model_path, GBDTParam &model_param, vector<vector<Tree>> &boosted_model, DataSet &dataset) {
+void Parser::save_model(string model_path, GBDTParam &model_param, vector<vector<Tree>> &boosted_model) {
     ofstream out_model_file(model_path, ios::binary);
     CHECK_EQ(out_model_file.is_open(), true);
     int length = model_param.objective.length();
@@ -271,9 +275,10 @@ void Parser::save_model(string model_path, GBDTParam &model_param, vector<vector
     out_model_file.write((char*)&model_param.learning_rate, sizeof(model_param.learning_rate));
     out_model_file.write((char*)&model_param.num_class, sizeof(model_param.num_class));
     out_model_file.write((char*)&model_param.n_trees, sizeof(model_param.n_trees));
-    int label_size = dataset.label.size();
-    out_model_file.write((char*)&label_size, sizeof(label_size));
-    out_model_file.write((char*)&dataset.label[0], dataset.label.size() * sizeof(float_type));
+    out_model_file.write((char*)&model_param.bagging, sizeof(model_param.bagging));
+//    int label_size = dataset.label.size();
+//    out_model_file.write((char*)&label_size, sizeof(label_size));
+//    out_model_file.write((char*)&dataset.label[0], dataset.label.size() * sizeof(float_type));
     int boosted_model_size = boosted_model.size();
     out_model_file.write((char*)&boosted_model_size, sizeof(boosted_model_size));
     for(int j = 0; j < boosted_model.size(); ++j) {

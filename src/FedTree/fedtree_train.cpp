@@ -64,46 +64,46 @@ int main(int argc, char** argv){
         } else if (fl_param.partition_mode == "vertical") {
             dataset.csr_to_csc();
             partition.homo_partition(dataset, n_parties, false, subsets, batch_idxs, fl_param.seed);
-            if (!use_global_test_set) {
-                LOG(INFO) << "train test split";
-                for (int i = 0; i < n_parties; i++) {
-                    partition.train_test_split(subsets[i], train_subsets[i], test_subsets[i]);
-                }
-            }else{
-                for (int i = 0; i < n_parties; i++) {
-                    train_subsets[i] = subsets[i];
-                }
+            //if (!use_global_test_set) {
+                //LOG(INFO) << "train test split";
+                //for (int i = 0; i < n_parties; i++) {
+                //    partition.train_test_split(subsets[i], train_subsets[i], test_subsets[i]);
+                //}
+            //}else{
+            for (int i = 0; i < n_parties; i++) {
+                train_subsets[i] = subsets[i];
             }
+            //}
         }else if (fl_param.partition_mode=="horizontal") {
             dataset.csr_to_csc();
             partition.homo_partition(dataset, n_parties, true, subsets, batch_idxs, fl_param.seed);
-            if (!use_global_test_set) {
-                LOG(INFO) << "train test split";
-                for (int i = 0; i < n_parties; i++) {
-                    partition.train_test_split(subsets[i], train_subsets[i], test_subsets[i]);
-                }
-            }else{
-                for (int i = 0; i < n_parties; i++) {
-                    train_subsets[i] = subsets[i];
-                }
+            //if (!use_global_test_set) {
+                //LOG(INFO) << "train test split";
+                //for (int i = 0; i < n_parties; i++) {
+                //    partition.train_test_split(subsets[i], train_subsets[i], test_subsets[i]);
+                //}
+            //}else{
+            for (int i = 0; i < n_parties; i++) {
+                train_subsets[i] = subsets[i];
             }
+            //}
         }
     }
     else if(fl_param.mode != "centralized"){
         for (int i = 0; i < n_parties; i ++) {
             subsets[i].load_from_file(model_param.paths[i], fl_param);
         }
-        if (!use_global_test_set) {
-            Partition partition;
-            LOG(INFO) << "train test split";
-            for (int i = 0; i < n_parties; i++) {
-                partition.train_test_split(subsets[i], train_subsets[i], test_subsets[i]);
-            }
-        } else{
-            for (int i = 0; i < n_parties; i++) {
-                train_subsets[i] = subsets[i];
-            }
+        //if (!use_global_test_set) {
+            //Partition partition;
+            //LOG(INFO) << "train test split";
+            //for (int i = 0; i < n_parties; i++) {
+            //    partition.train_test_split(subsets[i], train_subsets[i], test_subsets[i]);
+            //}
+        //} else{
+        for (int i = 0; i < n_parties; i++) {
+            train_subsets[i] = subsets[i];
         }
+        //}
     }
     else{
         dataset.load_from_file(model_param.path, fl_param);
@@ -121,7 +121,7 @@ int main(int argc, char** argv){
         }
     }
 
-    if(!fl_param.partition){
+    if(!fl_param.partition && use_global_test_set){
         int n;
         if(fl_param.mode == "vertical") {
             n = test_dataset.n_features();
@@ -168,8 +168,8 @@ int main(int argc, char** argv){
         for (int i = 0; i < n_parties; i++) {
             if(fl_param.mode == "vertical")
                 parties[i].vertical_init(i, train_subsets[i], fl_param);
-            else if(fl_param.mode == "horizontal")
-                parties[i].init(i, train_subsets[i], fl_param, feature_map[i]);
+            else if(fl_param.mode == "horizontal" || fl_param.mode == "ensemble")
+                parties[i].init(i, train_subsets[i], fl_param);
             n_instances_per_party[i] = train_subsets[i].n_instances();
         }
         LOG(INFO) << "initialize server";
@@ -178,7 +178,7 @@ int main(int argc, char** argv){
                 server.vertical_init(fl_param, dataset.n_instances(), n_instances_per_party, dataset.y, dataset.label);
             else
                 server.vertical_init(fl_param, train_subsets[0].n_instances(), n_instances_per_party, train_subsets[0].y, train_subsets[0].label);
-        } else if (fl_param.mode == "horizontal") {
+        } else if (fl_param.mode == "horizontal" || fl_param.mode == "ensemble") {
             server.horizontal_init(fl_param);
         }
     }
@@ -200,8 +200,8 @@ int main(int argc, char** argv){
             float_type score;
             if(use_global_test_set)
                 score = parties[i].gbdt.predict_score(fl_param.gbdt_param, test_dataset);
-            else
-                score = parties[i].gbdt.predict_score(fl_param.gbdt_param, test_subsets[i]);
+            //else
+            //    score = parties[i].gbdt.predict_score(fl_param.gbdt_param, test_subsets[i]);
             scores.push_back(score);
         }
     }
@@ -212,11 +212,11 @@ int main(int argc, char** argv){
             score = server.global_trees.predict_score(fl_param.gbdt_param, test_dataset);
             scores.push_back(score);
         }
-        else
-            for(int i = 0; i < n_parties; i++) {
-                score = server.global_trees.predict_score(fl_param.gbdt_param, test_subsets[i]);
-                scores.push_back(score);
-            }
+        //else
+        //    for(int i = 0; i < n_parties; i++) {
+        //        score = server.global_trees.predict_score(fl_param.gbdt_param, test_subsets[i]);
+        //        scores.push_back(score);
+        //    }
     }
     else if(fl_param.mode == "solo"){
         trainer.solo_trainer(parties, fl_param);
@@ -224,8 +224,8 @@ int main(int argc, char** argv){
         for(int i = 0; i < n_parties; i++){
             if(use_global_test_set)
                 score = parties[i].gbdt.predict_score(fl_param.gbdt_param, test_dataset);
-            else
-                score = parties[i].gbdt.predict_score(fl_param.gbdt_param, test_subsets[i]);
+            //else
+            //    score = parties[i].gbdt.predict_score(fl_param.gbdt_param, test_subsets[i]);
             scores.push_back(score);
         }
         float sum = std::accumulate(scores.begin(), scores.end(), 0.0);
@@ -242,16 +242,17 @@ int main(int argc, char** argv){
             score = gbdt.predict_score(fl_param.gbdt_param, test_dataset);
             scores.push_back(score);
         }
-        else {
-            for(int i = 0; i < n_parties; i++) {
-                score = gbdt.predict_score(fl_param.gbdt_param, test_subsets[i]);
-                scores.push_back(score);
-            }
-        }
+        //else {
+        //    for(int i = 0; i < n_parties; i++) {
+        //        score = gbdt.predict_score(fl_param.gbdt_param, test_subsets[i]);
+        //        scores.push_back(score);
+        //    }
+        //}
     } else if (fl_param.mode == "vertical") {
         trainer.vertical_fl_trainer(parties, server, fl_param);
         float_type score;
-        score = parties[0].gbdt.predict_score_vertical(fl_param.gbdt_param, test_dataset, batch_idxs);
+        if(use_global_test_set)
+            score = parties[0].gbdt.predict_score_vertical(fl_param.gbdt_param, test_dataset, batch_idxs);
         scores.push_back(score);
     }else if (fl_param.mode == "horizontal") {
         LOG(INFO)<<"start horizontal training";
@@ -260,11 +261,10 @@ int main(int argc, char** argv){
         float_type score;
         if(use_global_test_set)
             score = parties[0].gbdt.predict_score(fl_param.gbdt_param, test_dataset);
-        else
-            score = parties[0].gbdt.predict_score(fl_param.gbdt_param, test_subsets[0]);
+        //else
+        //    score = parties[0].gbdt.predict_score(fl_param.gbdt_param, test_subsets[0]);
         scores.push_back(score);
     }
-//        parser.save_model("global_model", fl_param.gbdt_param, server.global_trees.trees, dataset);
-//    }
+    parser.save_model(fl_param.gbdt_param.model_path, fl_param.gbdt_param, server.global_trees.trees);
     return 0;
 }
