@@ -105,7 +105,7 @@ Parameters for Privacy Protection
     - ``none``: no additional method is used to protect the communicated messages (raw data is not transferred).
     - ``he``: use homomorphic encryption to protect the communicated messages (for vertical FedTree).
     - ``sa``: use secure aggregation to protect the communicated messages (for horizontal FedTree).
-    - ``dp``: use differential privacy to protect the communicated messages (currently only works for single machine simulation).
+    - ``dp``: use differential privacy to protect the communicated messages (currently only works for vertical FL with single machine simulation).
 
 
 * ``privacy_budget`` [default=10, type=float]
