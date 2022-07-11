@@ -234,6 +234,11 @@ extern "C" {
                 test_dataset.label.emplace_back(group_label[i]);
             }
         }
+        else{
+            for (int i = 0; i < num_class; ++i) {
+                test_dataset.label.emplace_back(i);
+            }
+        }
         // predict
         SyncArray<float_type> y_predict;
         vector<vector<Tree>> boosted_model_in_mem;
@@ -274,8 +279,16 @@ extern "C" {
         test_dataset.load_from_sparse(row_size, val, row_ptr, col_ptr, NULL, group, num_group, model_param);
         set_logger(verbose);
         test_dataset.label.clear();
-        for (int i = 0; i < num_class; ++i) {
-            test_dataset.label.emplace_back(group_label[i]);
+        if(group_label != NULL) {
+            test_dataset.label.clear();
+            for (int i = 0; i < num_class; ++i) {
+                test_dataset.label.emplace_back(group_label[i]);
+            }
+        }
+        else{
+            for (int i = 0; i < num_class; ++i) {
+                test_dataset.label.emplace_back(i);
+            }
         }
         // predict
         SyncArray<float_type> y_predict;
