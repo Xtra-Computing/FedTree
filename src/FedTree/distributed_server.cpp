@@ -92,7 +92,7 @@ grpc::Status DistributedServer::GetGradients(grpc::ServerContext *context, const
         gh.set_h(gh_data[i].h);
         writer->Write(gh);
     }
-    LOG(INFO) << "Send " <<booster.gradients.size() <<" gradients to " << pid;
+    LOG(DEBUG) << "Send " <<booster.gradients.size() <<" gradients to " << pid;
     return grpc::Status::OK;
 }
 
