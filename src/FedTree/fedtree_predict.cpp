@@ -16,7 +16,12 @@ int main(int argc, char** argv) {
 //centralized training test
     FLParam fl_param;
     Parser parser;
-    parser.parse_param(fl_param, argc, argv);
+    if (argc > 1) {
+        parser.parse_param(fl_param, argv[1]);
+    } else {
+        printf("Usage: <config file path> \n");
+        exit(0);
+    }
     GBDTParam &model_param = fl_param.gbdt_param;
     if (model_param.verbose == 0) {
         el::Loggers::reconfigureAllLoggers(el::Level::Debug, el::ConfigurationType::Enabled, "false");
@@ -31,13 +36,24 @@ int main(int argc, char** argv) {
         el::Loggers::reconfigureAllLoggers(el::ConfigurationType::PerformanceTracking, "false");
     }
 
-    DataSet dataset;
+
     vector<vector<Tree>> boosted_model;
     parser.load_model(model_param.model_path, model_param, boosted_model);
-    dataset.load_from_file(model_param.path, fl_param);
-
     GBDT gbdt(boosted_model);
-    vector<float_type> y_pred_vec = gbdt.predict(model_param, dataset);
-
+    if(model_param.paths.size() > 1){
+        CHECK_EQ(fl_param.mode, "vertical");
+        CHECK_EQ(fl_param.n_parties, model_param.paths.size());
+        vector<DataSet> datasets(fl_param.n_parties);
+        for(int i = 0; i < fl_param.n_parties; i++){
+            datasets[i].load_from_file(model_param.paths[i], fl_param);
+        }
+        vector<float_type> y_pred_vec = gbdt.predict(model_param, datasets);
+    }
+    else {
+        DataSet dataset;
+        dataset.load_from_file(model_param.path, fl_param);
+        vector<float_type> y_pred_vec = gbdt.predict(model_param, dataset);
+    }
+    
     return 0;
 }
