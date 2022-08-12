@@ -43,4 +43,4 @@ rmse = mean_squared_error(y, y_pred, squared=False)
 print("rmse:", rmse)
 ```
 
-Under ```examples``` directory, you can find two examples on how to use FedTree with Python.
+Under ```examples``` directory, you can find three examples on how to use FedTree with Python.
