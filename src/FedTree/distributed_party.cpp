@@ -1685,7 +1685,7 @@ int main(int argc, char **argv) {
     Parser parser;
     if (argc > 2) {
         pid = std::stoi(argv[2]);
-        parser.parse_param(fl_param, argc, argv);
+        parser.parse_param(fl_param, argv[1]);
     } else {
         printf("Usage: <config file path> <pid>\n");
         exit(0);
@@ -1708,26 +1708,26 @@ int main(int argc, char **argv) {
     party.n_parties = fl_param.n_parties;
     GBDTParam &param = fl_param.gbdt_param;
     DataSet dataset;
-    dataset.load_from_file(param.path, fl_param);
+    dataset.load_from_file(model_param.path, fl_param);
     DataSet test_dataset;
-    bool use_global_test_set = !param.test_path.empty();
+    bool use_global_test_set = !model_param.test_path.empty();
     if(use_global_test_set)
-        test_dataset.load_from_file(param.test_path, fl_param);
+        test_dataset.load_from_file(model_param.test_path, fl_param);
     Partition partition;
     vector<DataSet> subsets(fl_param.n_parties);
     std::map<int, vector<int>> batch_idxs;
 
-    if(param.objective.find("multi:") != std::string::npos || param.objective.find("binary:") != std::string::npos) {
+    if(model_param.objective.find("multi:") != std::string::npos || model_param.objective.find("binary:") != std::string::npos) {
         int num_class = dataset.label.size();
-        if ((param.num_class == 1) && (param.num_class != num_class)) {
-            LOG(INFO) << "updating number of classes from " << param.num_class << " to " << num_class;
-            param.num_class = num_class;
+        if ((model_param.num_class == 1) && (model_param.num_class != num_class)) {
+            LOG(INFO) << "updating number of classes from " << model_param.num_class << " to " << num_class;
+            model_param.num_class = num_class;
         }
-        if(param.num_class > 2)
-            param.tree_per_rounds = param.num_class;
+        if(model_param.num_class > 2)
+            model_param.tree_per_rounds = model_param.num_class;
     }
-    else if(param.objective.find("reg:") != std::string::npos){
-        param.num_class = 1;
+    else if(model_param.objective.find("reg:") != std::string::npos){
+        model_param.num_class = 1;
     }
     float train_time = 0;
     if (fl_param.mode == "vertical") {

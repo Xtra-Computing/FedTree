@@ -20,6 +20,7 @@ struct GBDTParam {
     std::string path;
     std::string test_path;
     vector<std::string> paths;
+    vector<std::string> test_paths;
     string model_path;
     int verbose;
     bool profiling;

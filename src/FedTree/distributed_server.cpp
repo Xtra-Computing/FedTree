@@ -1,5 +1,5 @@
 //
-// Created by 韩雨萱 on 11/4/21.
+// Created by Yuxuan Han on 11/4/21.
 //
 
 #include "FedTree/FL/distributed_server.h"
@@ -1516,7 +1516,6 @@ grpc::Status DistributedServer::StopServer(grpc::ServerContext *context, const f
         LOG(INFO) << "real comm time stddev: " << sqrt(sum4/param.n_parties) << "s";
         LOG(INFO) << "avg enc_dec time: " <<(sum5 / param.n_parties + dec_time + enc_time)<< "s";
     }
-    
     return grpc::Status::OK;
 }
 
@@ -1546,16 +1545,11 @@ INITIALIZE_EASYLOGGINGPP
 #endif
 int main(int argc, char **argv) {
     el::Loggers::reconfigureAllLoggers(el::ConfigurationType::Format, "%datetime %level %fbase:%line : %msg");
-//    el::Loggers::addFlag(el::LoggingFlag::ColoredTerminalOutput);
     el::Loggers::addFlag(el::LoggingFlag::FixedTimeFormat);
-//    el::Loggers::reconfigureAllLoggers(el::Level::Trace, el::ConfigurationType::Enabled, "false");
-//    el::Loggers::reconfigureAllLoggers(el::Level::Debug, el::ConfigurationType::Enabled, "false");
-//    el::Loggers::reconfigureAllLoggers(el::ConfigurationType::PerformanceTracking, "false");
-    int pid;
     FLParam fl_param;
     Parser parser;
     if (argc > 1) {
-        parser.parse_param(fl_param, argc, argv);
+        parser.parse_param(fl_param, argv[1]);
     } else {
         printf("Usage: <config file path> \n");
         exit(0);

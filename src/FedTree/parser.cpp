@@ -26,7 +26,7 @@ vector<string> split_string_by_delimiter (const string& s, const string& delimit
     return res;
 }
 
-void Parser::parse_param(FLParam &fl_param, int argc, char **argv) {
+void Parser::parse_param(FLParam &fl_param, char *file_path) {
     // setup default value
     fl_param.n_parties = 2;
     fl_param.mode = "horizontal";
@@ -46,6 +46,7 @@ void Parser::parse_param(FLParam &fl_param, int argc, char **argv) {
     fl_param.data_format = "libsvm";
     fl_param.seed = 42;
     fl_param.n_features = -1;
+    fl_param.joint_prediction = true;
 
     GBDTParam *gbdt_param = &fl_param.gbdt_param;
 
@@ -72,11 +73,6 @@ void Parser::parse_param(FLParam &fl_param, int argc, char **argv) {
     gbdt_param->constant_h = 0.0;
     gbdt_param->reorder_label = false; // whether reorder label or not
     gbdt_param->model_path = "fedtree.model";
-
-    if (argc < 2) {
-        printf("Usage: <config>\n");
-        exit(0);
-    }
 
     //parsing parameter values from configuration file or command line
     auto parse_value = [&](const char *name_val) {
@@ -119,6 +115,8 @@ void Parser::parse_param(FLParam &fl_param, int argc, char **argv) {
                 fl_param.data_format = val;
             else if (str_name.compare("n_features") == 0)
                 fl_param.n_features = atoi(val);
+            else if ((str_name.compare("joint_prediction") == 0))
+                fl_param.joint_prediction = atoi(val);
             // GBDT params
             else if ((str_name.compare("max_depth") == 0) || (str_name.compare("depth") == 0))
                 gbdt_param->depth = atoi(val);
@@ -134,8 +132,10 @@ void Parser::parse_param(FLParam &fl_param, int argc, char **argv) {
                 gbdt_param->path = val;
                 gbdt_param->paths = split_string_by_delimiter(val, ",");
             }
-            else if (str_name.compare("test_data") == 0)
+            else if (str_name.compare("test_data") == 0) {
                 gbdt_param->test_path = val;
+                gbdt_param->test_paths = split_string_by_delimiter(val, ",");
+            }
             else if ((str_name.compare("max_bin") == 0) || (str_name.compare("max_num_bin") == 0)) {
                 gbdt_param->max_num_bin = atoi(val);
                 if(gbdt_param->max_num_bin > 255){
@@ -190,7 +190,7 @@ void Parser::parse_param(FLParam &fl_param, int argc, char **argv) {
 //    }
 
     //read configuration file
-    std::ifstream conf_file(argv[1]);
+    std::ifstream conf_file(file_path);
     std::string line;
     while (std::getline(conf_file, line))
     {
