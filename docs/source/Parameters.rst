@@ -28,9 +28,9 @@ Parameters for Federated Setting
     - ``0``: each party has a prepared local dataset
     - ``1``: there is a global dataset and users require FedTree to partition it to multiple subsets to simulate federated setting.
 
-* ``partition_mode`` [default=``iid``, type=string]
-    - ``iid``: IID data partitioning
-    - ``noniid``: non-IID data partitioning
+* ``partition_mode`` [default=``horizontal``, type=string]
+    - ``horizontal``: horizontal data partitioning
+    - ``vertical``: vertical data partitioning
 
 * ``ip_address`` [default=``localhost``, type=string, alias: ``server_ip_address``]
     - The ip address of the server in distributed FedTree.
