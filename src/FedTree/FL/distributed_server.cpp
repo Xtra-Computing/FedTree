@@ -634,17 +634,6 @@ void DistributedServer::HorizontalInitVectors(int n_parties) {
     parties_cut_points_received.resize(n_parties, 0);
 }
 
-void RunServer(DistributedServer &service) {
-    std::string server_address("0.0.0.0:50051");
-
-    grpc::ServerBuilder builder;
-    builder.AddListeningPort(server_address, grpc::InsecureServerCredentials());
-    builder.RegisterService(&service);
-    std::unique_ptr<grpc::Server> server(builder.BuildAndStart());
-    LOG(DEBUG) << "Server listening on " << server_address;
-    server->Wait();
-}
-
 grpc::Status DistributedServer::SendRange(grpc::ServerContext* context, grpc::ServerReader<fedtree::GHPair>* reader,
                                           fedtree::PID* response) {
     fedtree::GHPair frange;

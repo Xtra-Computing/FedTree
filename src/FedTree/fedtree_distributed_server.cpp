@@ -78,6 +78,14 @@ int main(int argc, char **argv) {
 //    }
 
     LOG(INFO) << "server init completed.";
-    RunServer(server);
+
+    std::string server_address("0.0.0.0:50051");
+
+    grpc::ServerBuilder builder;
+    builder.AddListeningPort(server_address, grpc::InsecureServerCredentials());
+    builder.RegisterService(&server);
+    std::unique_ptr<grpc::Server> grpc_server(builder.BuildAndStart());
+    LOG(DEBUG) << "Server listening on " << server_address;
+    grpc_server->Wait();
     return 0;
 }
