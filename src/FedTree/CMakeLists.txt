@@ -11,7 +11,7 @@ endif()
 
 list(REMOVE_ITEM DIST_SRC "${CMAKE_CURRENT_LIST_DIR}/fedtree_train.cpp" "${CMAKE_CURRENT_LIST_DIR}/fedtree_predict.cpp" "${CMAKE_CURRENT_LIST_DIR}/fedtree_distributed_party.cpp" "${CMAKE_CURRENT_LIST_DIR}/fedtree_distributed_server.cpp")
 # SIM_SRC for simulation
-set(SIM_SRC ${SRC})
+set(SIM_SRC ${DIST_SRC})
 list(REMOVE_ITEM SIM_SRC "${CMAKE_CURRENT_LIST_DIR}/FL/distributed_party.cpp" "${CMAKE_CURRENT_LIST_DIR}/FL/distributed_server.cpp")
 find_library(NTL_LIB ntl ${NTL_PATH}/lib)
 if(NOT NTL_LIB)
