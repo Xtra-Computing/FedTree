@@ -46,6 +46,8 @@ else ()
 endif ()
 
 # Require the users to install gRPC in prior.
+find_package(gRPC CONFIG REQUIRED)
+
 #if (DISTRIBUTED)
 #    include(FetchContent)
 #    FetchContent_Declare(

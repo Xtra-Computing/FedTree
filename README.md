@@ -16,15 +16,16 @@ The overall architecture of FedTree is shown below.
 You can refer to our primary documentation [here](https://fedtree.readthedocs.io/en/latest/index.html).
 ## Prerequisites
 * [CMake](https://cmake.org/) 3.15 or above
-* [GMP](https://gmplib.org/) library
+* [GMP](https://gmplib.org/)
 * [NTL](https://libntl.org/)
+* [gRPC](https://grpc.io/docs/languages/cpp/quickstart/)
 
 You can follow the following commands to install NTL library.
 
 ```
-wget https://libntl.org/ntl-11.4.4.tar.gz
-tar -xvf ntl-11.4.4.tar.gz
-cd ntl-11.4.4/src
+wget https://libntl.org/ntl-11.5.1.tar.gz
+tar -xvf ntl-11.5.1.tar.gz
+cd ntl-11.5.1/src
 ./configure SHARED=on
 make
 make check
