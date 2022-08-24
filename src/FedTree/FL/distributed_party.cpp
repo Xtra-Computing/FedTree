@@ -1,5 +1,5 @@
 //
-// Created by yuxuan on 11/4/21.
+// Created by liqinbin on 8/22/22.
 //
 
 #include "FedTree/FL/distributed_party.h"
@@ -8,6 +8,7 @@
 #include "FedTree/DP/differential_privacy.h"
 
 #include <sstream>
+
 void DistributedParty::TriggerUpdateGradients() {
     fedtree::PID id;
     fedtree::Ready ready;
@@ -868,31 +869,31 @@ void DistributedParty::GetSplitPoints() {
     fedtree::SplitPoint sp_recv;
     {
         TIMED_SCOPE(timerObj, "GetSPsTime");
-    while(reader->Read(&sp_recv)) {
-        SplitPoint sp_point;
-        sp_point.gain = sp_recv.gain();
-        sp_point.fea_missing_gh = {sp_recv.fea_missing_g(), sp_recv.fea_missing_h()};
-        sp_point.rch_sum_gh = {sp_recv.rch_sum_g(), sp_recv.rch_sum_h()};
-        sp_point.default_right = sp_recv.default_right();
-        sp_point.nid = sp_recv.nid();
-        sp_point.split_fea_id = sp_recv.split_fea_id();
-        sp_point.fval = sp_recv.fval();
-        sp_point.split_bid = sp_recv.split_bid();
-        sp_point.no_split_value_update = sp_recv.no_split_value_update();
-        sp_points.push_back(sp_point);
-    }
+        while(reader->Read(&sp_recv)) {
+            SplitPoint sp_point;
+            sp_point.gain = sp_recv.gain();
+            sp_point.fea_missing_gh = {sp_recv.fea_missing_g(), sp_recv.fea_missing_h()};
+            sp_point.rch_sum_gh = {sp_recv.rch_sum_g(), sp_recv.rch_sum_h()};
+            sp_point.default_right = sp_recv.default_right();
+            sp_point.nid = sp_recv.nid();
+            sp_point.split_fea_id = sp_recv.split_fea_id();
+            sp_point.fval = sp_recv.fval();
+            sp_point.split_bid = sp_recv.split_bid();
+            sp_point.no_split_value_update = sp_recv.no_split_value_update();
+            sp_points.push_back(sp_point);
+        }
 
-    grpc::Status status = reader->Finish();
-    auto t_end = timer.now();
-    std::chrono::duration<float> used_time = t_end - t_start;
-    LOG(DEBUG)<<"communication SplitPoints end";
-    comm_time += used_time.count();
-    comm_size += sp_recv.ByteSizeLong() * 1e-6;
-    if (status.ok()) {
-        LOG(DEBUG) << "SplitPoints received.";
-    } else {
-        LOG(ERROR) << "GetSplitPoints rpc failed.";
-    }
+        grpc::Status status = reader->Finish();
+        auto t_end = timer.now();
+        std::chrono::duration<float> used_time = t_end - t_start;
+        LOG(DEBUG)<<"communication SplitPoints end";
+        comm_time += used_time.count();
+        comm_size += sp_recv.ByteSizeLong() * 1e-6;
+        if (status.ok()) {
+            LOG(DEBUG) << "SplitPoints received.";
+        } else {
+            LOG(ERROR) << "GetSplitPoints rpc failed.";
+        }
     }
     booster.fbuilder->sp.resize(sp_points.size());
     auto sp_data = booster.fbuilder->sp.host_data();
@@ -1004,11 +1005,11 @@ void DistributedParty::SendHistogramsEnc(const SyncArray<GHPair> &hist, int type
     auto t_start = timer.now();
     context.AddMetadata("pid", std::to_string(pid));
     context.AddMetadata("type", std::to_string(type));
-    
+
     TIMED_SCOPE(timerObj, "SendHistogramsEncTime");
     std::unique_ptr<grpc::ClientWriter<fedtree::GHPairEnc> > writer(
             stub_->SendHistogramsEnc(&context, &id));
-    
+
     auto hist_data = hist.host_data();
     stringstream stream;
     for (int i = 0; i < hist.size(); ++i) {
@@ -1026,7 +1027,7 @@ void DistributedParty::SendHistogramsEnc(const SyncArray<GHPair> &hist, int type
         }
     }
     writer->WritesDone();
-    
+
     grpc::Status status = writer->Finish();
     auto t_end = timer.now();
     std::chrono::duration<float> used_time = t_end - t_start;
@@ -1053,7 +1054,7 @@ void DistributedParty::SendHistogramBatches(const SyncArray<GHPair> &hist, int t
     vector<fedtree::GHBatch> tmp;
     int len = hist.size();
     tmp.resize((len + BATCH_SIZE - 1)/BATCH_SIZE);
-    
+
     for (int beg = 0; beg < len; beg += BATCH_SIZE) {
         int end = min(len, beg+BATCH_SIZE);
         for (int i = beg; i < end; i++) {
@@ -1068,7 +1069,7 @@ void DistributedParty::SendHistogramBatches(const SyncArray<GHPair> &hist, int t
             break;
         }
     }
-    
+
     writer->WritesDone();
     grpc::Status status = writer->Finish();
     auto t_end = timer.now();
@@ -1095,7 +1096,7 @@ void DistributedParty::SendHistFidBatches(const SyncArray<int> &hist) {
 
     auto hist_data = hist.host_data();
     const int BATCH_SIZE = 200000;
-    
+
     vector<fedtree::FIDBatch> tmp;
     for (int beg = 0; beg < hist.size(); beg += BATCH_SIZE) {
         int end = min((int)hist.size(), beg+BATCH_SIZE);
@@ -1109,7 +1110,7 @@ void DistributedParty::SendHistFidBatches(const SyncArray<int> &hist) {
             break;
         }
     }
-    
+
     writer->WritesDone();
     grpc::Status status = writer->Finish();
     auto t_end = timer.now();
@@ -1181,7 +1182,7 @@ void DistributedParty::SendIns2NodeIDBatches(SyncArray<int> &ins2node_id, int ni
                     break;
                 i2n.clear_iid();
                 i2n.clear_nid();
-        }   }
+            }   }
     }
     if (i2n.iid_size() > 0) {
         writer->Write(i2n);
@@ -1214,7 +1215,7 @@ void DistributedParty::GetGradientBatches() {
     std::unique_ptr<grpc::ClientReader<fedtree::GHBatch> > reader(stub_->GetGradientBatches(&context, id));
 
     auto booster_gradients_data = booster.gradients.host_data();
-    
+
     while (reader->Read(&gh)) {
         tot.MergeFrom(gh);
     }
@@ -1226,7 +1227,7 @@ void DistributedParty::GetGradientBatches() {
     int len = booster.gradients.size();
     comm_size += len * 16e-6;
 
-    #pragma omp parallel for
+#pragma omp parallel for
     for (int i = 0; i < len; i++) {
         booster_gradients_data[i] = {static_cast<float_type>(tot.g(i)), static_cast<float_type>(tot.h(i))};
     }
@@ -1250,7 +1251,7 @@ void DistributedParty::GetGradientBatchesEnc() {
     std::unique_ptr<grpc::ClientReader<fedtree::GHEncBatch>> reader(stub_->GetGradientBatchesEnc(&context, id));
 
     auto booster_gradients_data = booster.gradients.host_data();
-    
+
     while (reader->Read(&gh)) {
         tot.MergeFrom(gh);
     }
@@ -1263,13 +1264,13 @@ void DistributedParty::GetGradientBatchesEnc() {
     comm_size += len*16e-6;
     assert(len == tot.g_enc_size());
     assert(len == tot.h_enc_size());
-    #pragma omp parallel for
+#pragma omp parallel for
     for (int i = 0; i < len; i++) {
         booster_gradients_data[i].encrypted = true;
         booster_gradients_data[i].paillier = paillier;
         booster_gradients_data[i].g_enc = NTL::to_ZZ(tot.g_enc(i).c_str());
         booster_gradients_data[i].h_enc = NTL::to_ZZ(tot.h_enc(i).c_str());
-        
+
     }
     if (status.ok()) {
         LOG(DEBUG) << "All gradients received.";
@@ -1285,27 +1286,27 @@ void DistributedParty::SendHistogramBatchesEnc(const SyncArray<GHPair> &hist, in
     auto hist_data = hist.host_data();
     vector<fedtree::GHEncBatch> tmp;
     {
-    TIMED_SCOPE(timerObj, "encodeTime");
-    
-    const int BATCH_SIZE = 5000;
-    
-    int len = hist.size();
-    tmp.resize((len+BATCH_SIZE-1)/BATCH_SIZE);
-    #pragma omp parallel for
-    for (int beg = 0; beg < len; beg += BATCH_SIZE) {
-        stringstream stream;
-        int end = min((int)hist.size(), beg+BATCH_SIZE);
-        for (int i = beg; i < end; i++) {
-            stream << hist_data[i].g_enc;
-            tmp[beg/BATCH_SIZE].add_g_enc(stream.str());
-            stream.clear();
-            stream.str("");
-            stream << hist_data[i].h_enc;
-            tmp[beg/BATCH_SIZE].add_h_enc(stream.str());
-            stream.clear();
-            stream.str("");
+        TIMED_SCOPE(timerObj, "encodeTime");
+
+        const int BATCH_SIZE = 5000;
+
+        int len = hist.size();
+        tmp.resize((len+BATCH_SIZE-1)/BATCH_SIZE);
+#pragma omp parallel for
+        for (int beg = 0; beg < len; beg += BATCH_SIZE) {
+            stringstream stream;
+            int end = min((int)hist.size(), beg+BATCH_SIZE);
+            for (int i = beg; i < end; i++) {
+                stream << hist_data[i].g_enc;
+                tmp[beg/BATCH_SIZE].add_g_enc(stream.str());
+                stream.clear();
+                stream.str("");
+                stream << hist_data[i].h_enc;
+                tmp[beg/BATCH_SIZE].add_h_enc(stream.str());
+                stream.clear();
+                stream.str("");
+            }
         }
-    }
     }
     LOG(DEBUG)<<"communication HistBatchEnc start";
     auto t_start = timer.now();
@@ -1320,7 +1321,7 @@ void DistributedParty::SendHistogramBatchesEnc(const SyncArray<GHPair> &hist, in
         }
     }
     writer->WritesDone();
-    
+
     grpc::Status status = writer->Finish();
     auto t_end = timer.now();
     std::chrono::duration<float> used_time = t_end - t_start;
@@ -1365,7 +1366,7 @@ void DistributedParty::BeginBarrier() {
     } else {
         LOG(ERROR) << "BeginBarrier rpc failed.";
     }
-} 
+}
 
 void distributed_vertical_train(DistributedParty& party, FLParam &fl_param) {
     if (fl_param.privacy_tech == "he") {
@@ -1465,7 +1466,7 @@ void distributed_vertical_train(DistributedParty& party, FLParam &fl_param) {
                         party.OrganizeNodes(nodes, nodes_data[rch]);
                         party.SendNodes(nodes);
                     }
-                    
+
                     party.SendIns2NodeIDBatches(party.booster.fbuilder->ins2node_id, node_shifted);
                 }
 
@@ -1579,20 +1580,20 @@ void distributed_horizontal_train(DistributedParty& party, FLParam &fl_param) {
                 int n_max_nodes = 2 << fl_param.gbdt_param.depth;
                 int n_column = party.dataset.n_features();
                 int n_partition = n_column * n_nodes_in_level;
-                int n_bins = party.booster.fbuilder->cut.cut_points_val.size();      
+                int n_bins = party.booster.fbuilder->cut.cut_points_val.size();
                 auto cut_fid_data = party.booster.fbuilder->cut.cut_fid.host_data();
                 int n_max_splits = n_max_nodes * n_bins;
                 SyncArray<int> hist_fid(n_nodes_in_level * n_bins);
-                auto hist_fid_data = hist_fid.host_data();                    
+                auto hist_fid_data = hist_fid.host_data();
                 for (int i = 0; i < hist_fid.size(); i++)
                     hist_fid_data[i] = cut_fid_data[i % n_bins];
 
-                
+
                 SyncArray <GHPair> missing_gh(n_partition);
                 SyncArray <GHPair> hist(n_nodes_in_level * n_bins);
                 party.booster.fbuilder->compute_histogram_in_a_level(d, n_max_splits, n_bins,
-                                                                              n_nodes_in_level,
-                                                                              hist_fid_data, missing_gh, hist);
+                                                                     n_nodes_in_level,
+                                                                     hist_fid_data, missing_gh, hist);
                 // TODO encrypt the histogram
                 // if (fl_param.privacy_tech == "he") {
 
@@ -1627,7 +1628,7 @@ void distributed_horizontal_train(DistributedParty& party, FLParam &fl_param) {
                     // send current d
                     party.TriggerCalcTree(d);
                 }
-                // get split points 
+                // get split points
                 party.GetSplitPoints();
                 if (d == 0) {
                     party.GetRootNode();
@@ -1647,13 +1648,13 @@ void distributed_horizontal_train(DistributedParty& party, FLParam &fl_param) {
             tree = party.booster.fbuilder->get_tree();
             party.booster.fbuilder->trees.prune_self(fl_param.gbdt_param.gamma);
             party.booster.fbuilder->predict_in_training(k);
-            
-            
+
+
             tree.nodes.resize(party.booster.fbuilder->trees.nodes.size());
             tree.nodes.copy_from(party.booster.fbuilder->trees.nodes);
             // trigger prune
         }
-        
+
         party.gbdt.trees.push_back(trees);
         float score = party.booster.metric->get_score(party.booster.fbuilder->get_y_predict());
         float avg_score = party.GetAvgScore(score);
@@ -1669,139 +1670,4 @@ void distributed_ensemble_train(DistributedParty &party, FLParam &fl_param){
     for (int j = 0; j < n_tree_each_party; j++)
         party.booster.boost(party.gbdt.trees);
 //    party.SendTrees();
-}
-
-#ifdef _WIN32
-INITIALIZE_EASYLOGGINGPP
-#endif
-
-int main(int argc, char **argv) {
-    el::Loggers::reconfigureAllLoggers(el::ConfigurationType::Format, "%datetime %level %fbase:%line : %msg");
-//    el::Loggers::addFlag(el::LoggingFlag::ColoredTerminalOutput);
-    el::Loggers::addFlag(el::LoggingFlag::FixedTimeFormat);
-    
-    int pid;
-    FLParam fl_param;
-    Parser parser;
-    if (argc > 2) {
-        pid = std::stoi(argv[2]);
-        parser.parse_param(fl_param, argv[1]);
-    } else {
-        printf("Usage: <config file path> <pid>\n");
-        exit(0);
-    }
-    GBDTParam &model_param = fl_param.gbdt_param;
-    if(model_param.verbose == 0) {
-        el::Loggers::reconfigureAllLoggers(el::Level::Debug, el::ConfigurationType::Enabled, "false");
-        el::Loggers::reconfigureAllLoggers(el::Level::Trace, el::ConfigurationType::Enabled, "false");
-        el::Loggers::reconfigureAllLoggers(el::Level::Info, el::ConfigurationType::Enabled, "false");
-    }
-    else if (model_param.verbose == 1) {
-        el::Loggers::reconfigureAllLoggers(el::Level::Debug, el::ConfigurationType::Enabled, "false");
-        el::Loggers::reconfigureAllLoggers(el::Level::Trace, el::ConfigurationType::Enabled, "false");
-    }
-    if (!model_param.profiling) {
-        el::Loggers::reconfigureAllLoggers(el::ConfigurationType::PerformanceTracking, "false");
-    }
-    DistributedParty party(grpc::CreateChannel(fl_param.ip_address + ":50051",
-                                               grpc::InsecureChannelCredentials()));
-    party.n_parties = fl_param.n_parties;
-    GBDTParam &param = fl_param.gbdt_param;
-    DataSet dataset;
-    dataset.load_from_file(model_param.path, fl_param);
-    DataSet test_dataset;
-    bool use_global_test_set = !model_param.test_path.empty();
-    if(use_global_test_set)
-        test_dataset.load_from_file(model_param.test_path, fl_param);
-    Partition partition;
-    vector<DataSet> subsets(fl_param.n_parties);
-    std::map<int, vector<int>> batch_idxs;
-
-    if(model_param.objective.find("multi:") != std::string::npos || model_param.objective.find("binary:") != std::string::npos) {
-        int num_class = dataset.label.size();
-        if ((model_param.num_class == 1) && (model_param.num_class != num_class)) {
-            LOG(INFO) << "updating number of classes from " << model_param.num_class << " to " << num_class;
-            model_param.num_class = num_class;
-        }
-        if(model_param.num_class > 2)
-            model_param.tree_per_rounds = model_param.num_class;
-    }
-    else if(model_param.objective.find("reg:") != std::string::npos){
-        model_param.num_class = 1;
-    }
-    float train_time = 0;
-    if (fl_param.mode == "vertical") {
-//        LOG(INFO) << "vertical dir";
-        dataset.csr_to_csc();
-        if (fl_param.partition) {
-            partition.homo_partition(dataset, fl_param.n_parties, false, subsets, batch_idxs);
-            party.vertical_init(pid, subsets[pid], fl_param);
-        }
-        else {
-            // calculate batch idxs
-            if(use_global_test_set)
-                for(int i = 0; i < test_dataset.n_features(); i++)
-                    batch_idxs[0].push_back(i);
-            party.vertical_init(pid, dataset, fl_param);
-        }
-        party.BeginBarrier();
-        LOG(INFO)<<"training start";
-        auto t_start = party.timer.now();
-        distributed_vertical_train(party, fl_param);
-        auto t_end = party.timer.now();
-        std::chrono::duration<float> used_time = t_end - t_start;
-        LOG(INFO)<<"training end";
-        train_time = used_time.count();
-        LOG(INFO) << "train time: " << train_time<<"s";
-        if(use_global_test_set)
-            party.gbdt.predict_score_vertical(fl_param.gbdt_param, test_dataset, batch_idxs);
-    }
-    else if (fl_param.mode == "horizontal") {
-        // horizontal does not need feature_map parameter
-        if (fl_param.partition) {
-            partition.homo_partition(dataset, fl_param.n_parties, true, subsets, batch_idxs);
-            party.init(pid, subsets[pid], fl_param);
-        }
-        else {
-            party.init(pid, dataset, fl_param);
-        }
-
-        party.BeginBarrier();
-        LOG(INFO)<<"training start";
-        auto t_start = party.timer.now();
-        distributed_horizontal_train(party, fl_param);
-        auto t_end = party.timer.now();
-        std::chrono::duration<float> used_time = t_end - t_start;
-        LOG(INFO)<<"training end";
-        train_time = used_time.count();
-        LOG(INFO) << "train time: " << train_time<<"s";
-        if(use_global_test_set)
-            party.gbdt.predict_score(fl_param.gbdt_param, test_dataset);
-    }
-    else if (fl_param.mode == "ensemble"){
-        if (fl_param.partition){
-            partition.homo_partition(dataset, fl_param.n_parties, fl_param.partition_mode == "horizontal", subsets, batch_idxs, fl_param.seed);
-            party.init(pid, subsets[pid], fl_param);
-        }
-        else{
-            party.init(pid, dataset, fl_param);
-        }
-        party.BeginBarrier();
-        LOG(INFO)<<"training start";
-        auto t_start = party.timer.now();
-        distributed_ensemble_train(party, fl_param);
-        auto t_end = party.timer.now();
-        std::chrono::duration<float> used_time = t_end - t_start;
-        LOG(INFO)<<"training end";
-        train_time = used_time.count();
-        LOG(INFO) << "train time: " << train_time<<"s";
-        if(use_global_test_set)
-            party.gbdt.predict_score(fl_param.gbdt_param, test_dataset);
-
-    }
-    
-    LOG(INFO) << "encryption time:" << party.enc_time << "s";
-    parser.save_model(fl_param.gbdt_param.model_path, fl_param.gbdt_param, party.gbdt.trees);
-    party.StopServer(train_time);
-    return 0;
 }

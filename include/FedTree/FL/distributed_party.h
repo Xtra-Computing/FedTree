@@ -120,4 +120,7 @@ private:
     std::unique_ptr<fedtree::FedTree::Stub> stub_;
 };
 
+void distributed_vertical_train(DistributedParty& party, FLParam &fl_param);
+void distributed_horizontal_train(DistributedParty& party, FLParam &fl_param);
+void distributed_ensemble_train(DistributedParty &party, FLParam &fl_param);
 #endif //FEDTREE_DISTRIBUTED_PARTY_H
