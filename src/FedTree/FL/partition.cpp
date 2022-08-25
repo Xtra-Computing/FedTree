@@ -21,11 +21,14 @@ void Partition::homo_partition(const DataSet &dataset, const int n_parties, cons
             subsets[i].n_features_ = dataset.n_features();
         }
         if (!is_horizontal) {
-            subsets[i].y = dataset.y;
-            if(i == 0)
-                subsets[i].has_label = false;
-            else
+            if(i == 0) {
                 subsets[i].has_label = true;
+                subsets[i].y = dataset.y;
+            }
+            else {
+                subsets[i].has_label = false;
+                subsets[i].y.resize(dataset.y.size());
+            }
         }
         if(dataset.is_classification) {
             subsets[i].label = dataset.label;
