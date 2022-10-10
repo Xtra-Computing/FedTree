@@ -194,6 +194,48 @@ struct GHPair {
         return res;
     }
 
+    void operator+=(const GHPair &rhs) {
+        GHPair res;
+        if (!encrypted && !rhs.encrypted) {
+            this->g += rhs.g;
+            this->h += rhs.h;
+            res.encrypted = false;
+        } else {
+            if (!encrypted) {
+                this->homo_encrypt(rhs.paillier);
+                #ifdef USE_CUDA
+                rhs.paillier.add(g_enc, g_enc, rhs.g_enc);
+                rhs.paillier.add(h_enc, h_enc, rhs.h_enc);
+                //first transform g_enc to ntl::zz, use nlt::zz operations, then transform back to mpz_t
+//                rhs.paillier.paillier_ntl.add(res.g_enc, tmp_lhs.g_enc, rhs.g_enc);
+//                rhs.paillier.add(res.h_enc, tmp_lhs.h_enc, rhs.h_enc);
+                #else
+                g_enc = rhs.paillier.add(g_enc, rhs.g_enc);
+                h_enc = rhs.paillier.add(h_enc, rhs.h_enc);
+                #endif
+                paillier = rhs.paillier;
+            } else if (!rhs.encrypted) {
+                GHPair tmp_rhs = rhs;
+                tmp_rhs.homo_encrypt(paillier);
+                #ifdef USE_CUDA
+                paillier.add(g_enc, g_enc, tmp_rhs.g_enc);
+                paillier.add(h_enc, h_enc, tmp_rhs.h_enc);
+                #else
+                g_enc = paillier.add(g_enc, tmp_rhs.g_enc);
+                h_enc = paillier.add(h_enc, tmp_rhs.h_enc);
+                #endif
+            } else {
+                #ifdef USE_CUDA
+                paillier.add(g_enc, g_enc, rhs.g_enc);
+                paillier.add(h_enc, h_enc, rhs.h_enc);
+                #else
+                g_enc = paillier.add(g_enc, rhs.g_enc);
+                h_enc = paillier.add(h_enc, rhs.h_enc);
+                #endif
+            }
+            encrypted = true;
+        }
+    }
 
 //#ifdef USE_CUDA
 //    GHPair operator-(const GHPair &rhs) const {

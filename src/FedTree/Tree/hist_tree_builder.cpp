@@ -257,7 +257,6 @@ void HistTreeBuilder::find_split_by_predefined_features(int level) {
             auto n_instances = this->n_instances;
             int split_feature_id = nodes_data[0].split_feature_id;
             CHECK_NE(split_feature_id, -1);
-            //has bug if using openmp here. don't know why.
 //            #pragma omp parallel for
             for (int i = n_instances * split_feature_id; i < n_instances * (split_feature_id + 1); i++) {
 //                int iid = i / n_column;
@@ -337,8 +336,7 @@ void HistTreeBuilder::find_split_by_predefined_features(int level) {
                     int split_fid = nodes_data[nid_offset + nid0].split_feature_id;
                     //                ThunderGBM: check size of histogram.
                     // todo: zero instance in a node, idx_end - idx_begin = 0. because some previous nodes have no bin, then one child tree have no instance.
-                    //has bug if using openmp
-//#pragma omp parallel for
+                    //#pragma omp parallel for
                     for (int i = 0; i < idx_end - idx_begin; i++) {
                         int iid = node_idx_data[i + idx_begin];
                         int fid = split_fid;
@@ -554,13 +552,9 @@ void HistTreeBuilder::compute_histogram_in_a_level(int level, int n_max_splits, 
     auto &last_hist = this->last_hist;
 
     TIMED_FUNC(timerObj);
-//    int n_nodes_in_level = static_cast<int>(pow(2, level));
     int nid_offset = static_cast<int>(pow(2, level) - 1);
     int n_column = sorted_dataset.n_features();
     int n_partition = n_column * n_nodes_in_level;
-//    int n_bins = cut.cut_points_val.size();
-//    int n_max_nodes = 2 << param.depth;
-//    int n_max_splits = n_max_nodes * n_bins;
     int n_split = n_nodes_in_level * n_bins;
 
     LOG(TRACE) << "start finding split";
@@ -574,28 +568,28 @@ void HistTreeBuilder::compute_histogram_in_a_level(int level, int n_max_splits, 
             auto dense_bin_id_data = dense_bin_id.host_data();
             auto max_num_bin = param.max_num_bin;
             auto n_instances = this->n_instances;
-//                ThunderGBM: check size of histogram.
-            //has bug if using openmp
-//            #pragma omp parallel for
-            for (int i = 0; i < n_instances * n_column; i++) {
-                int iid = i / n_column;
-                int fid = i % n_column;
-                unsigned char bid = dense_bin_id_data[iid * n_column + fid];
-                if (bid != max_num_bin) {
-                    int feature_offset = cut_col_ptr_data[fid];
-                    const GHPair src = gh_data[iid];
-                    GHPair &dest = hist_data[feature_offset + bid];
-                    dest = dest + src;
-//                    g and h values are 0 if after HE encryption
-//                    if (src.h != 0) {
-////                        #pragma omp atomic
-//                        dest.h += src.h;
-//                    }
-//                    if (src.g != 0) {
-////                        #pragma omp atomic
-//                        dest.g += src.g;
-//                    }
 
+
+            #pragma omp parallel for
+            for(int fid = 0; fid < n_column; fid++){
+                for(int iid = 0; iid < n_instances; iid++) {
+                    unsigned char bid = dense_bin_id_data[iid * n_column + fid];
+                    if (bid != max_num_bin) {
+                        int feature_offset = cut_col_ptr_data[fid];
+                        const GHPair src = gh_data[iid];
+                        GHPair &dest = hist_data[feature_offset + bid];
+                        if (!src.encrypted && !dest.encrypted){
+                            if (src.h != 0){
+                                dest.h += src.h;
+                            }
+                            if (src.g != 0){
+                                dest.g += src.g;
+                            }
+                        }
+                        else {
+                            dest += src;
+                        }
+                    }
                 }
             }
         } else {
@@ -647,27 +641,27 @@ void HistTreeBuilder::compute_histogram_in_a_level(int level, int n_max_splits, 
                     auto idx_end = node_ptr.host_data()[nid0 + 1];
                     auto hist_data = hist.host_data() + nid0 * n_bins;
                     this->total_hist_num++;
-                    //                ThunderGBM: check size of histogram.
-                    //has bug if using openmp
-//#pragma omp parallel for
-                    for (int i = 0; i < (idx_end - idx_begin) * n_column; i++) {
-
-                        int iid = node_idx_data[i / n_column + idx_begin];
-                        int fid = i % n_column;
-                        unsigned char bid = dense_bin_id_data[iid * n_column + fid];
-                        if (bid != max_num_bin) {
-                            int feature_offset = cut_col_ptr_data[fid];
-                            const GHPair src = gh_data[iid];
-                            GHPair &dest = hist_data[feature_offset + bid];
-//                            if (src.h != 0) {
-////                                #pragma omp atomic
-//                                dest.h += src.h;
-//                            }
-//                            if (src.g != 0) {
-////                                #pragma omp atomic
-//                                dest.g += src.g;
-//                            }
-                            dest = dest + src;
+                    #pragma omp parallel for
+                    for(int fid = 0; fid < n_column; fid++){
+                        for(int rid = 0; rid < (idx_end - idx_begin); rid++){
+                            int iid = node_idx_data[rid + idx_begin];
+                            unsigned char bid = dense_bin_id_data[iid * n_column + fid];
+                            if (bid != max_num_bin){
+                                int feature_offset = cut_col_ptr_data[fid];
+                                const GHPair src = gh_data[iid];
+                                GHPair &dest = hist_data[feature_offset + bid];
+                                if (!src.encrypted && !dest.encrypted){
+                                    if (src.h != 0){
+                                        dest.h += src.h;
+                                    }
+                                    if (src.g != 0){
+                                        dest.g += src.g;
+                                    }
+                                }
+                                else {
+                                    dest += src;
+                                }
+                            }
                         }
                     }
                 }
@@ -678,7 +672,7 @@ void HistTreeBuilder::compute_histogram_in_a_level(int level, int n_max_splits, 
                     auto hist_data_computed = hist.host_data() + nid0_to_compute * n_bins;
                     auto hist_data_to_compute = hist.host_data() + nid0_to_substract * n_bins;
                     auto father_hist_data = last_hist.host_data() + (nid0_to_substract / 2) * n_bins;
-//#pragma omp parallel for
+                    #pragma omp parallel for
                     for (int i = 0; i < n_bins; i++) {
                         hist_data_to_compute[i] = father_hist_data[i] - hist_data_computed[i];
                     }
@@ -686,7 +680,6 @@ void HistTreeBuilder::compute_histogram_in_a_level(int level, int n_max_splits, 
                 auto t_copy_end = timer.now();
                 std::chrono::duration<double> cp_used_time = t_copy_end - t_copy_start;
                 this->total_copy_time += cp_used_time.count();
-//                            PERFORMANCE_CHECKPOINT(timerObj);
             }  // end for each node
         }
         last_hist.resize(n_nodes_in_level * n_bins);
@@ -718,7 +711,7 @@ void HistTreeBuilder::compute_histogram_in_a_level(int level, int n_max_splits, 
     auto missing_gh_data = missing_gh.host_data();
     auto cut_col_ptr = cut.cut_col_ptr.host_data();
     auto hist_data = hist.host_data();
-//#pragma omp parallel for
+    #pragma omp parallel for
     for (int pid = 0; pid < n_partition; pid++) {
         int nid0 = pid / n_column;
         int nid = nid0 + nid_offset;
@@ -760,7 +753,7 @@ HistTreeBuilder::compute_gain_in_a_level(SyncArray<float_type> &gain, int n_node
     float_type mcw = param.min_child_weight;
     float_type l = param.lambda;
 
-//#pragma omp parallel for
+    #pragma omp parallel for
     for (int i = 0; i < n_split; i++) {
         int nid0 = i / n_bins;
         int nid = nid0 + nid_offset;
@@ -910,7 +903,7 @@ void HistTreeBuilder::update_ins2node_id() {
         int n_column = sorted_dataset.n_features();
         auto dense_bin_id_data = dense_bin_id.host_data();
         int max_num_bin = param.max_num_bin;
-//#pragma omp parallel for
+        #pragma omp parallel for
         for (int iid = 0; iid < n_instances; iid++) {
             int nid = nid_data[iid];
             const Tree::TreeNode &node = nodes_data[nid];
@@ -926,12 +919,12 @@ void HistTreeBuilder::update_ins2node_id() {
                     //goes to left child
                     nid_data[iid] = node.lch_index;
 //                    #pragma omp atomic
-                    nodes_data[node.lch_index].n_instances += 1;
+//                    nodes_data[node.lch_index].n_instances += 1;
                 } else {
                     //right child
                     nid_data[iid] = node.rch_index;
 //                    #pragma omp atomic
-                    nodes_data[node.rch_index].n_instances += 1;
+//                    nodes_data[node.rch_index].n_instances += 1;
                 }
             }
         }
@@ -999,7 +992,7 @@ void HistTreeBuilder::compute_histogram_in_a_node(SyncArray<GHPair> &gradients, 
 
     SyncArray<GHPair> hist(n_bins);
     auto hist_data = hist.host_data();
-
+    // todo: parallelize
     for (int i = 0; i < n_instances * n_columns; i++) {
         int iid = i / n_columns;
         int fid = i % n_columns;
