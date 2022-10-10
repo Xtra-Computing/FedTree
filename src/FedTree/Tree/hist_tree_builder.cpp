@@ -587,7 +587,7 @@ void HistTreeBuilder::compute_histogram_in_a_level(int level, int n_max_splits, 
                             }
                         }
                         else {
-                            dest += src;
+                            dest = dest + src;
                         }
                     }
                 }
@@ -659,7 +659,7 @@ void HistTreeBuilder::compute_histogram_in_a_level(int level, int n_max_splits, 
                                     }
                                 }
                                 else {
-                                    dest += src;
+                                    dest = dest + src;
                                 }
                             }
                         }
