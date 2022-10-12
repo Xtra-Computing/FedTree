@@ -366,6 +366,13 @@ void DataSet::load_from_file(string file_name, FLParam &param) {
     LOG(INFO) << "#instances = " << this->n_instances() << ", #features = " << this->n_features();
     if (ObjectiveFunction::need_load_group_file(param.gbdt_param.objective)) load_group_file(file_name + ".group");
     if (ObjectiveFunction::need_group_label(param.gbdt_param.objective) || param.gbdt_param.metric == "error") {
+        for(int i = 0; i < label.size(); i++){
+            float_type value = label[i];
+            if(value < 0 || ceilf(value) != value){
+                LOG(ERROR)<<"The label should start from 0 and be integer for classification task";
+                exit(1);
+            }
+        }
         if(param.gbdt_param.reorder_label) {
             group_label();
         }
