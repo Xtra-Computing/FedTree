@@ -18,6 +18,7 @@ You can refer to our primary documentation [here](https://fedtree.readthedocs.io
 * [CMake](https://cmake.org/) 3.15 or above
 * [GMP](https://gmplib.org/)
 * [NTL](https://libntl.org/)
+* [gRPC](https://grpc.io/docs/languages/cpp/quickstart/) 1.50.0
 
 You can follow the following commands to install NTL library.
 
@@ -34,6 +35,11 @@ sudo make install
 
 If you install the NTL library at another location, please pass the location to the `NTL_PATH` when building the library (e.g., `cmake .. -DNTL_PATH="PATH_TO_NTL"`).
 
+For gPRC, please remember to add the local bin folder to your path variable, e.g.,
+
+```
+export PATH="$gRPC_INSTALL_DIR/bin:$PATH"
+```
 
 ## Clone and Install submodules
 ```
