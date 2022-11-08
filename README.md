@@ -35,10 +35,16 @@ sudo make install
 
 If you install the NTL library at another location, please pass the location to the `NTL_PATH` when building the library (e.g., `cmake .. -DNTL_PATH="PATH_TO_NTL"`).
 
-For gPRC, please remember to add the local bin folder to your path variable, e.g.,
+For gRPC, please remember to add the local bin folder to your path variable after installation, e.g.,
 
 ```
 export PATH="$gRPC_INSTALL_DIR/bin:$PATH"
+```
+
+If your gRPC version is not 1.50.0, you need to go to `src/FedTree/grpc` directory and run
+```
+protoc -I ./ --grpc_out=. --plugin=protoc-gen-grpc=`which grpc_cpp_plugin` ./fedtree.proto
+protoc -I ./ --cpp_out=. ./fedtree.proto
 ```
 
 ## Clone and Install submodules
