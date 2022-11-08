@@ -7,9 +7,10 @@
 #include "fedtree.pb.h"
 
 #include <functional>
-#include <grpcpp/generic/async_generic_service.h>
-#include <grpcpp/support/async_stream.h>
-#include <grpcpp/support/async_unary_call.h>
+#include <grpc/impl/codegen/port_platform.h>
+#include <grpcpp/impl/codegen/async_generic_service.h>
+#include <grpcpp/impl/codegen/async_stream.h>
+#include <grpcpp/impl/codegen/async_unary_call.h>
 #include <grpcpp/impl/codegen/client_callback.h>
 #include <grpcpp/impl/codegen/client_context.h>
 #include <grpcpp/impl/codegen/completion_queue.h>
@@ -422,90 +423,286 @@ class FedTree final {
     std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::fedtree::Ready>> PrepareAsyncBeginBarrier(::grpc::ClientContext* context, const ::fedtree::PID& request, ::grpc::CompletionQueue* cq) {
       return std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::fedtree::Ready>>(PrepareAsyncBeginBarrierRaw(context, request, cq));
     }
-    class async_interface {
+    class experimental_async_interface {
      public:
-      virtual ~async_interface() {}
+      virtual ~experimental_async_interface() {}
       // Provides a value for each key request
       virtual void TriggerUpdateGradients(::grpc::ClientContext* context, const ::fedtree::PID* request, ::fedtree::Ready* response, std::function<void(::grpc::Status)>) = 0;
+      #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
       virtual void TriggerUpdateGradients(::grpc::ClientContext* context, const ::fedtree::PID* request, ::fedtree::Ready* response, ::grpc::ClientUnaryReactor* reactor) = 0;
+      #else
+      virtual void TriggerUpdateGradients(::grpc::ClientContext* context, const ::fedtree::PID* request, ::fedtree::Ready* response, ::grpc::experimental::ClientUnaryReactor* reactor) = 0;
+      #endif
       virtual void TriggerBuildInit(::grpc::ClientContext* context, const ::fedtree::PID* request, ::fedtree::Ready* response, std::function<void(::grpc::Status)>) = 0;
+      #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
       virtual void TriggerBuildInit(::grpc::ClientContext* context, const ::fedtree::PID* request, ::fedtree::Ready* response, ::grpc::ClientUnaryReactor* reactor) = 0;
-      virtual void GetGradients(::grpc::ClientContext* context, const ::fedtree::PID* request, ::grpc::ClientReadReactor< ::fedtree::GHPair>* reactor) = 0;
+      #else
+      virtual void TriggerBuildInit(::grpc::ClientContext* context, const ::fedtree::PID* request, ::fedtree::Ready* response, ::grpc::experimental::ClientUnaryReactor* reactor) = 0;
+      #endif
+      #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+      virtual void GetGradients(::grpc::ClientContext* context, ::fedtree::PID* request, ::grpc::ClientReadReactor< ::fedtree::GHPair>* reactor) = 0;
+      #else
+      virtual void GetGradients(::grpc::ClientContext* context, ::fedtree::PID* request, ::grpc::experimental::ClientReadReactor< ::fedtree::GHPair>* reactor) = 0;
+      #endif
       virtual void SendDatasetInfo(::grpc::ClientContext* context, const ::fedtree::DatasetInfo* request, ::fedtree::PID* response, std::function<void(::grpc::Status)>) = 0;
+      #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
       virtual void SendDatasetInfo(::grpc::ClientContext* context, const ::fedtree::DatasetInfo* request, ::fedtree::PID* response, ::grpc::ClientUnaryReactor* reactor) = 0;
+      #else
+      virtual void SendDatasetInfo(::grpc::ClientContext* context, const ::fedtree::DatasetInfo* request, ::fedtree::PID* response, ::grpc::experimental::ClientUnaryReactor* reactor) = 0;
+      #endif
+      #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
       virtual void SendHistograms(::grpc::ClientContext* context, ::fedtree::PID* response, ::grpc::ClientWriteReactor< ::fedtree::GHPair>* reactor) = 0;
+      #else
+      virtual void SendHistograms(::grpc::ClientContext* context, ::fedtree::PID* response, ::grpc::experimental::ClientWriteReactor< ::fedtree::GHPair>* reactor) = 0;
+      #endif
+      #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
       virtual void SendHistFid(::grpc::ClientContext* context, ::fedtree::PID* response, ::grpc::ClientWriteReactor< ::fedtree::FID>* reactor) = 0;
+      #else
+      virtual void SendHistFid(::grpc::ClientContext* context, ::fedtree::PID* response, ::grpc::experimental::ClientWriteReactor< ::fedtree::FID>* reactor) = 0;
+      #endif
       virtual void TriggerAggregate(::grpc::ClientContext* context, const ::fedtree::PID* request, ::fedtree::Ready* response, std::function<void(::grpc::Status)>) = 0;
+      #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
       virtual void TriggerAggregate(::grpc::ClientContext* context, const ::fedtree::PID* request, ::fedtree::Ready* response, ::grpc::ClientUnaryReactor* reactor) = 0;
-      virtual void GetBestInfo(::grpc::ClientContext* context, const ::fedtree::PID* request, ::grpc::ClientReadReactor< ::fedtree::BestInfo>* reactor) = 0;
+      #else
+      virtual void TriggerAggregate(::grpc::ClientContext* context, const ::fedtree::PID* request, ::fedtree::Ready* response, ::grpc::experimental::ClientUnaryReactor* reactor) = 0;
+      #endif
+      #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+      virtual void GetBestInfo(::grpc::ClientContext* context, ::fedtree::PID* request, ::grpc::ClientReadReactor< ::fedtree::BestInfo>* reactor) = 0;
+      #else
+      virtual void GetBestInfo(::grpc::ClientContext* context, ::fedtree::PID* request, ::grpc::experimental::ClientReadReactor< ::fedtree::BestInfo>* reactor) = 0;
+      #endif
       virtual void SendNode(::grpc::ClientContext* context, const ::fedtree::Node* request, ::fedtree::PID* response, std::function<void(::grpc::Status)>) = 0;
+      #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
       virtual void SendNode(::grpc::ClientContext* context, const ::fedtree::Node* request, ::fedtree::PID* response, ::grpc::ClientUnaryReactor* reactor) = 0;
+      #else
+      virtual void SendNode(::grpc::ClientContext* context, const ::fedtree::Node* request, ::fedtree::PID* response, ::grpc::experimental::ClientUnaryReactor* reactor) = 0;
+      #endif
+      #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
       virtual void SendIns2NodeID(::grpc::ClientContext* context, ::fedtree::PID* response, ::grpc::ClientWriteReactor< ::fedtree::Ins2NodeID>* reactor) = 0;
-      virtual void GetNodes(::grpc::ClientContext* context, const ::fedtree::PID* request, ::grpc::ClientReadReactor< ::fedtree::Node>* reactor) = 0;
-      virtual void GetIns2NodeID(::grpc::ClientContext* context, const ::fedtree::PID* request, ::grpc::ClientReadReactor< ::fedtree::Ins2NodeID>* reactor) = 0;
+      #else
+      virtual void SendIns2NodeID(::grpc::ClientContext* context, ::fedtree::PID* response, ::grpc::experimental::ClientWriteReactor< ::fedtree::Ins2NodeID>* reactor) = 0;
+      #endif
+      #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+      virtual void GetNodes(::grpc::ClientContext* context, ::fedtree::PID* request, ::grpc::ClientReadReactor< ::fedtree::Node>* reactor) = 0;
+      #else
+      virtual void GetNodes(::grpc::ClientContext* context, ::fedtree::PID* request, ::grpc::experimental::ClientReadReactor< ::fedtree::Node>* reactor) = 0;
+      #endif
+      #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+      virtual void GetIns2NodeID(::grpc::ClientContext* context, ::fedtree::PID* request, ::grpc::ClientReadReactor< ::fedtree::Ins2NodeID>* reactor) = 0;
+      #else
+      virtual void GetIns2NodeID(::grpc::ClientContext* context, ::fedtree::PID* request, ::grpc::experimental::ClientReadReactor< ::fedtree::Ins2NodeID>* reactor) = 0;
+      #endif
       virtual void CheckIfContinue(::grpc::ClientContext* context, const ::fedtree::PID* request, ::fedtree::Ready* response, std::function<void(::grpc::Status)>) = 0;
+      #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
       virtual void CheckIfContinue(::grpc::ClientContext* context, const ::fedtree::PID* request, ::fedtree::Ready* response, ::grpc::ClientUnaryReactor* reactor) = 0;
+      #else
+      virtual void CheckIfContinue(::grpc::ClientContext* context, const ::fedtree::PID* request, ::fedtree::Ready* response, ::grpc::experimental::ClientUnaryReactor* reactor) = 0;
+      #endif
       virtual void TriggerPrune(::grpc::ClientContext* context, const ::fedtree::PID* request, ::fedtree::Ready* response, std::function<void(::grpc::Status)>) = 0;
+      #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
       virtual void TriggerPrune(::grpc::ClientContext* context, const ::fedtree::PID* request, ::fedtree::Ready* response, ::grpc::ClientUnaryReactor* reactor) = 0;
+      #else
+      virtual void TriggerPrune(::grpc::ClientContext* context, const ::fedtree::PID* request, ::fedtree::Ready* response, ::grpc::experimental::ClientUnaryReactor* reactor) = 0;
+      #endif
       virtual void TriggerPrintScore(::grpc::ClientContext* context, const ::fedtree::PID* request, ::fedtree::Ready* response, std::function<void(::grpc::Status)>) = 0;
+      #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
       virtual void TriggerPrintScore(::grpc::ClientContext* context, const ::fedtree::PID* request, ::fedtree::Ready* response, ::grpc::ClientUnaryReactor* reactor) = 0;
+      #else
+      virtual void TriggerPrintScore(::grpc::ClientContext* context, const ::fedtree::PID* request, ::fedtree::Ready* response, ::grpc::experimental::ClientUnaryReactor* reactor) = 0;
+      #endif
+      #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
       virtual void SendRange(::grpc::ClientContext* context, ::fedtree::PID* response, ::grpc::ClientWriteReactor< ::fedtree::GHPair>* reactor) = 0;
+      #else
+      virtual void SendRange(::grpc::ClientContext* context, ::fedtree::PID* response, ::grpc::experimental::ClientWriteReactor< ::fedtree::GHPair>* reactor) = 0;
+      #endif
       virtual void TriggerCut(::grpc::ClientContext* context, const ::fedtree::PID* request, ::fedtree::Ready* response, std::function<void(::grpc::Status)>) = 0;
+      #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
       virtual void TriggerCut(::grpc::ClientContext* context, const ::fedtree::PID* request, ::fedtree::Ready* response, ::grpc::ClientUnaryReactor* reactor) = 0;
-      virtual void GetRange(::grpc::ClientContext* context, const ::fedtree::PID* request, ::grpc::ClientReadReactor< ::fedtree::GHPair>* reactor) = 0;
+      #else
+      virtual void TriggerCut(::grpc::ClientContext* context, const ::fedtree::PID* request, ::fedtree::Ready* response, ::grpc::experimental::ClientUnaryReactor* reactor) = 0;
+      #endif
+      #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+      virtual void GetRange(::grpc::ClientContext* context, ::fedtree::PID* request, ::grpc::ClientReadReactor< ::fedtree::GHPair>* reactor) = 0;
+      #else
+      virtual void GetRange(::grpc::ClientContext* context, ::fedtree::PID* request, ::grpc::experimental::ClientReadReactor< ::fedtree::GHPair>* reactor) = 0;
+      #endif
       virtual void SendGH(::grpc::ClientContext* context, const ::fedtree::GHPair* request, ::fedtree::PID* response, std::function<void(::grpc::Status)>) = 0;
+      #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
       virtual void SendGH(::grpc::ClientContext* context, const ::fedtree::GHPair* request, ::fedtree::PID* response, ::grpc::ClientUnaryReactor* reactor) = 0;
+      #else
+      virtual void SendGH(::grpc::ClientContext* context, const ::fedtree::GHPair* request, ::fedtree::PID* response, ::grpc::experimental::ClientUnaryReactor* reactor) = 0;
+      #endif
       virtual void SendDHPubKey(::grpc::ClientContext* context, const ::fedtree::DHPublicKey* request, ::fedtree::PID* response, std::function<void(::grpc::Status)>) = 0;
+      #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
       virtual void SendDHPubKey(::grpc::ClientContext* context, const ::fedtree::DHPublicKey* request, ::fedtree::PID* response, ::grpc::ClientUnaryReactor* reactor) = 0;
-      virtual void GetDHPubKeys(::grpc::ClientContext* context, const ::fedtree::PID* request, ::grpc::ClientReadReactor< ::fedtree::DHPublicKeys>* reactor) = 0;
+      #else
+      virtual void SendDHPubKey(::grpc::ClientContext* context, const ::fedtree::DHPublicKey* request, ::fedtree::PID* response, ::grpc::experimental::ClientUnaryReactor* reactor) = 0;
+      #endif
+      #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+      virtual void GetDHPubKeys(::grpc::ClientContext* context, ::fedtree::PID* request, ::grpc::ClientReadReactor< ::fedtree::DHPublicKeys>* reactor) = 0;
+      #else
+      virtual void GetDHPubKeys(::grpc::ClientContext* context, ::fedtree::PID* request, ::grpc::experimental::ClientReadReactor< ::fedtree::DHPublicKeys>* reactor) = 0;
+      #endif
       virtual void SendNoises(::grpc::ClientContext* context, const ::fedtree::SANoises* request, ::fedtree::PID* response, std::function<void(::grpc::Status)>) = 0;
+      #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
       virtual void SendNoises(::grpc::ClientContext* context, const ::fedtree::SANoises* request, ::fedtree::PID* response, ::grpc::ClientUnaryReactor* reactor) = 0;
-      virtual void GetNoises(::grpc::ClientContext* context, const ::fedtree::PID* request, ::grpc::ClientReadReactor< ::fedtree::SANoises>* reactor) = 0;
+      #else
+      virtual void SendNoises(::grpc::ClientContext* context, const ::fedtree::SANoises* request, ::fedtree::PID* response, ::grpc::experimental::ClientUnaryReactor* reactor) = 0;
+      #endif
+      #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+      virtual void GetNoises(::grpc::ClientContext* context, ::fedtree::PID* request, ::grpc::ClientReadReactor< ::fedtree::SANoises>* reactor) = 0;
+      #else
+      virtual void GetNoises(::grpc::ClientContext* context, ::fedtree::PID* request, ::grpc::experimental::ClientReadReactor< ::fedtree::SANoises>* reactor) = 0;
+      #endif
       virtual void SendCutPoints(::grpc::ClientContext* context, const ::fedtree::CutPoints* request, ::fedtree::PID* response, std::function<void(::grpc::Status)>) = 0;
+      #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
       virtual void SendCutPoints(::grpc::ClientContext* context, const ::fedtree::CutPoints* request, ::fedtree::PID* response, ::grpc::ClientUnaryReactor* reactor) = 0;
-      virtual void GetCutPoints(::grpc::ClientContext* context, const ::fedtree::PID* request, ::grpc::ClientReadReactor< ::fedtree::CutPoints>* reactor) = 0;
+      #else
+      virtual void SendCutPoints(::grpc::ClientContext* context, const ::fedtree::CutPoints* request, ::fedtree::PID* response, ::grpc::experimental::ClientUnaryReactor* reactor) = 0;
+      #endif
+      #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+      virtual void GetCutPoints(::grpc::ClientContext* context, ::fedtree::PID* request, ::grpc::ClientReadReactor< ::fedtree::CutPoints>* reactor) = 0;
+      #else
+      virtual void GetCutPoints(::grpc::ClientContext* context, ::fedtree::PID* request, ::grpc::experimental::ClientReadReactor< ::fedtree::CutPoints>* reactor) = 0;
+      #endif
       virtual void TriggerBuildUsingGH(::grpc::ClientContext* context, const ::fedtree::PID* request, ::fedtree::Ready* response, std::function<void(::grpc::Status)>) = 0;
+      #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
       virtual void TriggerBuildUsingGH(::grpc::ClientContext* context, const ::fedtree::PID* request, ::fedtree::Ready* response, ::grpc::ClientUnaryReactor* reactor) = 0;
+      #else
+      virtual void TriggerBuildUsingGH(::grpc::ClientContext* context, const ::fedtree::PID* request, ::fedtree::Ready* response, ::grpc::experimental::ClientUnaryReactor* reactor) = 0;
+      #endif
       virtual void TriggerCalcTree(::grpc::ClientContext* context, const ::fedtree::PID* request, ::fedtree::Ready* response, std::function<void(::grpc::Status)>) = 0;
+      #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
       virtual void TriggerCalcTree(::grpc::ClientContext* context, const ::fedtree::PID* request, ::fedtree::Ready* response, ::grpc::ClientUnaryReactor* reactor) = 0;
+      #else
+      virtual void TriggerCalcTree(::grpc::ClientContext* context, const ::fedtree::PID* request, ::fedtree::Ready* response, ::grpc::experimental::ClientUnaryReactor* reactor) = 0;
+      #endif
       virtual void GetRootNode(::grpc::ClientContext* context, const ::fedtree::PID* request, ::fedtree::Node* response, std::function<void(::grpc::Status)>) = 0;
+      #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
       virtual void GetRootNode(::grpc::ClientContext* context, const ::fedtree::PID* request, ::fedtree::Node* response, ::grpc::ClientUnaryReactor* reactor) = 0;
-      virtual void GetSplitPoints(::grpc::ClientContext* context, const ::fedtree::PID* request, ::grpc::ClientReadReactor< ::fedtree::SplitPoint>* reactor) = 0;
+      #else
+      virtual void GetRootNode(::grpc::ClientContext* context, const ::fedtree::PID* request, ::fedtree::Node* response, ::grpc::experimental::ClientUnaryReactor* reactor) = 0;
+      #endif
+      #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+      virtual void GetSplitPoints(::grpc::ClientContext* context, ::fedtree::PID* request, ::grpc::ClientReadReactor< ::fedtree::SplitPoint>* reactor) = 0;
+      #else
+      virtual void GetSplitPoints(::grpc::ClientContext* context, ::fedtree::PID* request, ::grpc::experimental::ClientReadReactor< ::fedtree::SplitPoint>* reactor) = 0;
+      #endif
       virtual void HCheckIfContinue(::grpc::ClientContext* context, const ::fedtree::PID* request, ::fedtree::Ready* response, std::function<void(::grpc::Status)>) = 0;
+      #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
       virtual void HCheckIfContinue(::grpc::ClientContext* context, const ::fedtree::PID* request, ::fedtree::Ready* response, ::grpc::ClientUnaryReactor* reactor) = 0;
+      #else
+      virtual void HCheckIfContinue(::grpc::ClientContext* context, const ::fedtree::PID* request, ::fedtree::Ready* response, ::grpc::experimental::ClientUnaryReactor* reactor) = 0;
+      #endif
       virtual void ScoreReduce(::grpc::ClientContext* context, const ::fedtree::Score* request, ::fedtree::Score* response, std::function<void(::grpc::Status)>) = 0;
+      #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
       virtual void ScoreReduce(::grpc::ClientContext* context, const ::fedtree::Score* request, ::fedtree::Score* response, ::grpc::ClientUnaryReactor* reactor) = 0;
+      #else
+      virtual void ScoreReduce(::grpc::ClientContext* context, const ::fedtree::Score* request, ::fedtree::Score* response, ::grpc::experimental::ClientUnaryReactor* reactor) = 0;
+      #endif
       virtual void TriggerHomoInit(::grpc::ClientContext* context, const ::fedtree::PID* request, ::fedtree::Ready* response, std::function<void(::grpc::Status)>) = 0;
+      #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
       virtual void TriggerHomoInit(::grpc::ClientContext* context, const ::fedtree::PID* request, ::fedtree::Ready* response, ::grpc::ClientUnaryReactor* reactor) = 0;
+      #else
+      virtual void TriggerHomoInit(::grpc::ClientContext* context, const ::fedtree::PID* request, ::fedtree::Ready* response, ::grpc::experimental::ClientUnaryReactor* reactor) = 0;
+      #endif
       virtual void TriggerSAInit(::grpc::ClientContext* context, const ::fedtree::PID* request, ::fedtree::Ready* response, std::function<void(::grpc::Status)>) = 0;
+      #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
       virtual void TriggerSAInit(::grpc::ClientContext* context, const ::fedtree::PID* request, ::fedtree::Ready* response, ::grpc::ClientUnaryReactor* reactor) = 0;
+      #else
+      virtual void TriggerSAInit(::grpc::ClientContext* context, const ::fedtree::PID* request, ::fedtree::Ready* response, ::grpc::experimental::ClientUnaryReactor* reactor) = 0;
+      #endif
       virtual void GetPaillier(::grpc::ClientContext* context, const ::fedtree::PID* request, ::fedtree::Paillier* response, std::function<void(::grpc::Status)>) = 0;
+      #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
       virtual void GetPaillier(::grpc::ClientContext* context, const ::fedtree::PID* request, ::fedtree::Paillier* response, ::grpc::ClientUnaryReactor* reactor) = 0;
+      #else
+      virtual void GetPaillier(::grpc::ClientContext* context, const ::fedtree::PID* request, ::fedtree::Paillier* response, ::grpc::experimental::ClientUnaryReactor* reactor) = 0;
+      #endif
+      #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
       virtual void SendHistogramsEnc(::grpc::ClientContext* context, ::fedtree::PID* response, ::grpc::ClientWriteReactor< ::fedtree::GHPairEnc>* reactor) = 0;
+      #else
+      virtual void SendHistogramsEnc(::grpc::ClientContext* context, ::fedtree::PID* response, ::grpc::experimental::ClientWriteReactor< ::fedtree::GHPairEnc>* reactor) = 0;
+      #endif
       virtual void SendBatchedHistograms(::grpc::ClientContext* context, const ::fedtree::GHArray* request, ::fedtree::PID* response, std::function<void(::grpc::Status)>) = 0;
+      #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
       virtual void SendBatchedHistograms(::grpc::ClientContext* context, const ::fedtree::GHArray* request, ::fedtree::PID* response, ::grpc::ClientUnaryReactor* reactor) = 0;
+      #else
+      virtual void SendBatchedHistograms(::grpc::ClientContext* context, const ::fedtree::GHArray* request, ::fedtree::PID* response, ::grpc::experimental::ClientUnaryReactor* reactor) = 0;
+      #endif
+      #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
       virtual void SendHistogramBatches(::grpc::ClientContext* context, ::fedtree::PID* response, ::grpc::ClientWriteReactor< ::fedtree::GHBatch>* reactor) = 0;
+      #else
+      virtual void SendHistogramBatches(::grpc::ClientContext* context, ::fedtree::PID* response, ::grpc::experimental::ClientWriteReactor< ::fedtree::GHBatch>* reactor) = 0;
+      #endif
+      #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
       virtual void SendHistFidBatches(::grpc::ClientContext* context, ::fedtree::PID* response, ::grpc::ClientWriteReactor< ::fedtree::FIDBatch>* reactor) = 0;
-      virtual void GetIns2NodeIDBatches(::grpc::ClientContext* context, const ::fedtree::PID* request, ::grpc::ClientReadReactor< ::fedtree::Ins2NodeIDBatch>* reactor) = 0;
+      #else
+      virtual void SendHistFidBatches(::grpc::ClientContext* context, ::fedtree::PID* response, ::grpc::experimental::ClientWriteReactor< ::fedtree::FIDBatch>* reactor) = 0;
+      #endif
+      #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+      virtual void GetIns2NodeIDBatches(::grpc::ClientContext* context, ::fedtree::PID* request, ::grpc::ClientReadReactor< ::fedtree::Ins2NodeIDBatch>* reactor) = 0;
+      #else
+      virtual void GetIns2NodeIDBatches(::grpc::ClientContext* context, ::fedtree::PID* request, ::grpc::experimental::ClientReadReactor< ::fedtree::Ins2NodeIDBatch>* reactor) = 0;
+      #endif
+      #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
       virtual void SendIns2NodeIDBatches(::grpc::ClientContext* context, ::fedtree::PID* response, ::grpc::ClientWriteReactor< ::fedtree::Ins2NodeIDBatch>* reactor) = 0;
-      virtual void GetGradientBatches(::grpc::ClientContext* context, const ::fedtree::PID* request, ::grpc::ClientReadReactor< ::fedtree::GHBatch>* reactor) = 0;
-      virtual void GetGradientBatchesEnc(::grpc::ClientContext* context, const ::fedtree::PID* request, ::grpc::ClientReadReactor< ::fedtree::GHEncBatch>* reactor) = 0;
+      #else
+      virtual void SendIns2NodeIDBatches(::grpc::ClientContext* context, ::fedtree::PID* response, ::grpc::experimental::ClientWriteReactor< ::fedtree::Ins2NodeIDBatch>* reactor) = 0;
+      #endif
+      #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+      virtual void GetGradientBatches(::grpc::ClientContext* context, ::fedtree::PID* request, ::grpc::ClientReadReactor< ::fedtree::GHBatch>* reactor) = 0;
+      #else
+      virtual void GetGradientBatches(::grpc::ClientContext* context, ::fedtree::PID* request, ::grpc::experimental::ClientReadReactor< ::fedtree::GHBatch>* reactor) = 0;
+      #endif
+      #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+      virtual void GetGradientBatchesEnc(::grpc::ClientContext* context, ::fedtree::PID* request, ::grpc::ClientReadReactor< ::fedtree::GHEncBatch>* reactor) = 0;
+      #else
+      virtual void GetGradientBatchesEnc(::grpc::ClientContext* context, ::fedtree::PID* request, ::grpc::experimental::ClientReadReactor< ::fedtree::GHEncBatch>* reactor) = 0;
+      #endif
       virtual void SendNodeEnc(::grpc::ClientContext* context, const ::fedtree::NodeEnc* request, ::fedtree::PID* response, std::function<void(::grpc::Status)>) = 0;
+      #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
       virtual void SendNodeEnc(::grpc::ClientContext* context, const ::fedtree::NodeEnc* request, ::fedtree::PID* response, ::grpc::ClientUnaryReactor* reactor) = 0;
+      #else
+      virtual void SendNodeEnc(::grpc::ClientContext* context, const ::fedtree::NodeEnc* request, ::fedtree::PID* response, ::grpc::experimental::ClientUnaryReactor* reactor) = 0;
+      #endif
       virtual void SendNodes(::grpc::ClientContext* context, const ::fedtree::NodeArray* request, ::fedtree::PID* response, std::function<void(::grpc::Status)>) = 0;
+      #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
       virtual void SendNodes(::grpc::ClientContext* context, const ::fedtree::NodeArray* request, ::fedtree::PID* response, ::grpc::ClientUnaryReactor* reactor) = 0;
+      #else
+      virtual void SendNodes(::grpc::ClientContext* context, const ::fedtree::NodeArray* request, ::fedtree::PID* response, ::grpc::experimental::ClientUnaryReactor* reactor) = 0;
+      #endif
       virtual void SendNodesEnc(::grpc::ClientContext* context, const ::fedtree::NodeEncArray* request, ::fedtree::PID* response, std::function<void(::grpc::Status)>) = 0;
+      #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
       virtual void SendNodesEnc(::grpc::ClientContext* context, const ::fedtree::NodeEncArray* request, ::fedtree::PID* response, ::grpc::ClientUnaryReactor* reactor) = 0;
+      #else
+      virtual void SendNodesEnc(::grpc::ClientContext* context, const ::fedtree::NodeEncArray* request, ::fedtree::PID* response, ::grpc::experimental::ClientUnaryReactor* reactor) = 0;
+      #endif
+      #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
       virtual void SendHistogramBatchesEnc(::grpc::ClientContext* context, ::fedtree::PID* response, ::grpc::ClientWriteReactor< ::fedtree::GHEncBatch>* reactor) = 0;
+      #else
+      virtual void SendHistogramBatchesEnc(::grpc::ClientContext* context, ::fedtree::PID* response, ::grpc::experimental::ClientWriteReactor< ::fedtree::GHEncBatch>* reactor) = 0;
+      #endif
       virtual void StopServer(::grpc::ClientContext* context, const ::fedtree::PID* request, ::fedtree::Score* response, std::function<void(::grpc::Status)>) = 0;
+      #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
       virtual void StopServer(::grpc::ClientContext* context, const ::fedtree::PID* request, ::fedtree::Score* response, ::grpc::ClientUnaryReactor* reactor) = 0;
+      #else
+      virtual void StopServer(::grpc::ClientContext* context, const ::fedtree::PID* request, ::fedtree::Score* response, ::grpc::experimental::ClientUnaryReactor* reactor) = 0;
+      #endif
       virtual void BeginBarrier(::grpc::ClientContext* context, const ::fedtree::PID* request, ::fedtree::Ready* response, std::function<void(::grpc::Status)>) = 0;
+      #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
       virtual void BeginBarrier(::grpc::ClientContext* context, const ::fedtree::PID* request, ::fedtree::Ready* response, ::grpc::ClientUnaryReactor* reactor) = 0;
+      #else
+      virtual void BeginBarrier(::grpc::ClientContext* context, const ::fedtree::PID* request, ::fedtree::Ready* response, ::grpc::experimental::ClientUnaryReactor* reactor) = 0;
+      #endif
     };
-    typedef class async_interface experimental_async_interface;
-    virtual class async_interface* async() { return nullptr; }
-    class async_interface* experimental_async() { return async(); }
-   private:
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+    typedef class experimental_async_interface async_interface;
+    #endif
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+    async_interface* async() { return experimental_async(); }
+    #endif
+    virtual class experimental_async_interface* experimental_async() { return nullptr; }
+  private:
     virtual ::grpc::ClientAsyncResponseReaderInterface< ::fedtree::Ready>* AsyncTriggerUpdateGradientsRaw(::grpc::ClientContext* context, const ::fedtree::PID& request, ::grpc::CompletionQueue* cq) = 0;
     virtual ::grpc::ClientAsyncResponseReaderInterface< ::fedtree::Ready>* PrepareAsyncTriggerUpdateGradientsRaw(::grpc::ClientContext* context, const ::fedtree::PID& request, ::grpc::CompletionQueue* cq) = 0;
     virtual ::grpc::ClientAsyncResponseReaderInterface< ::fedtree::Ready>* AsyncTriggerBuildInitRaw(::grpc::ClientContext* context, const ::fedtree::PID& request, ::grpc::CompletionQueue* cq) = 0;
@@ -626,7 +823,7 @@ class FedTree final {
   };
   class Stub final : public StubInterface {
    public:
-    Stub(const std::shared_ptr< ::grpc::ChannelInterface>& channel, const ::grpc::StubOptions& options = ::grpc::StubOptions());
+    Stub(const std::shared_ptr< ::grpc::ChannelInterface>& channel);
     ::grpc::Status TriggerUpdateGradients(::grpc::ClientContext* context, const ::fedtree::PID& request, ::fedtree::Ready* response) override;
     std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::fedtree::Ready>> AsyncTriggerUpdateGradients(::grpc::ClientContext* context, const ::fedtree::PID& request, ::grpc::CompletionQueue* cq) {
       return std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::fedtree::Ready>>(AsyncTriggerUpdateGradientsRaw(context, request, cq));
@@ -1005,95 +1202,287 @@ class FedTree final {
     std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::fedtree::Ready>> PrepareAsyncBeginBarrier(::grpc::ClientContext* context, const ::fedtree::PID& request, ::grpc::CompletionQueue* cq) {
       return std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::fedtree::Ready>>(PrepareAsyncBeginBarrierRaw(context, request, cq));
     }
-    class async final :
-      public StubInterface::async_interface {
+    class experimental_async final :
+      public StubInterface::experimental_async_interface {
      public:
       void TriggerUpdateGradients(::grpc::ClientContext* context, const ::fedtree::PID* request, ::fedtree::Ready* response, std::function<void(::grpc::Status)>) override;
+      #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
       void TriggerUpdateGradients(::grpc::ClientContext* context, const ::fedtree::PID* request, ::fedtree::Ready* response, ::grpc::ClientUnaryReactor* reactor) override;
+      #else
+      void TriggerUpdateGradients(::grpc::ClientContext* context, const ::fedtree::PID* request, ::fedtree::Ready* response, ::grpc::experimental::ClientUnaryReactor* reactor) override;
+      #endif
       void TriggerBuildInit(::grpc::ClientContext* context, const ::fedtree::PID* request, ::fedtree::Ready* response, std::function<void(::grpc::Status)>) override;
+      #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
       void TriggerBuildInit(::grpc::ClientContext* context, const ::fedtree::PID* request, ::fedtree::Ready* response, ::grpc::ClientUnaryReactor* reactor) override;
-      void GetGradients(::grpc::ClientContext* context, const ::fedtree::PID* request, ::grpc::ClientReadReactor< ::fedtree::GHPair>* reactor) override;
+      #else
+      void TriggerBuildInit(::grpc::ClientContext* context, const ::fedtree::PID* request, ::fedtree::Ready* response, ::grpc::experimental::ClientUnaryReactor* reactor) override;
+      #endif
+      #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+      void GetGradients(::grpc::ClientContext* context, ::fedtree::PID* request, ::grpc::ClientReadReactor< ::fedtree::GHPair>* reactor) override;
+      #else
+      void GetGradients(::grpc::ClientContext* context, ::fedtree::PID* request, ::grpc::experimental::ClientReadReactor< ::fedtree::GHPair>* reactor) override;
+      #endif
       void SendDatasetInfo(::grpc::ClientContext* context, const ::fedtree::DatasetInfo* request, ::fedtree::PID* response, std::function<void(::grpc::Status)>) override;
+      #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
       void SendDatasetInfo(::grpc::ClientContext* context, const ::fedtree::DatasetInfo* request, ::fedtree::PID* response, ::grpc::ClientUnaryReactor* reactor) override;
+      #else
+      void SendDatasetInfo(::grpc::ClientContext* context, const ::fedtree::DatasetInfo* request, ::fedtree::PID* response, ::grpc::experimental::ClientUnaryReactor* reactor) override;
+      #endif
+      #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
       void SendHistograms(::grpc::ClientContext* context, ::fedtree::PID* response, ::grpc::ClientWriteReactor< ::fedtree::GHPair>* reactor) override;
+      #else
+      void SendHistograms(::grpc::ClientContext* context, ::fedtree::PID* response, ::grpc::experimental::ClientWriteReactor< ::fedtree::GHPair>* reactor) override;
+      #endif
+      #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
       void SendHistFid(::grpc::ClientContext* context, ::fedtree::PID* response, ::grpc::ClientWriteReactor< ::fedtree::FID>* reactor) override;
+      #else
+      void SendHistFid(::grpc::ClientContext* context, ::fedtree::PID* response, ::grpc::experimental::ClientWriteReactor< ::fedtree::FID>* reactor) override;
+      #endif
       void TriggerAggregate(::grpc::ClientContext* context, const ::fedtree::PID* request, ::fedtree::Ready* response, std::function<void(::grpc::Status)>) override;
+      #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
       void TriggerAggregate(::grpc::ClientContext* context, const ::fedtree::PID* request, ::fedtree::Ready* response, ::grpc::ClientUnaryReactor* reactor) override;
-      void GetBestInfo(::grpc::ClientContext* context, const ::fedtree::PID* request, ::grpc::ClientReadReactor< ::fedtree::BestInfo>* reactor) override;
+      #else
+      void TriggerAggregate(::grpc::ClientContext* context, const ::fedtree::PID* request, ::fedtree::Ready* response, ::grpc::experimental::ClientUnaryReactor* reactor) override;
+      #endif
+      #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+      void GetBestInfo(::grpc::ClientContext* context, ::fedtree::PID* request, ::grpc::ClientReadReactor< ::fedtree::BestInfo>* reactor) override;
+      #else
+      void GetBestInfo(::grpc::ClientContext* context, ::fedtree::PID* request, ::grpc::experimental::ClientReadReactor< ::fedtree::BestInfo>* reactor) override;
+      #endif
       void SendNode(::grpc::ClientContext* context, const ::fedtree::Node* request, ::fedtree::PID* response, std::function<void(::grpc::Status)>) override;
+      #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
       void SendNode(::grpc::ClientContext* context, const ::fedtree::Node* request, ::fedtree::PID* response, ::grpc::ClientUnaryReactor* reactor) override;
+      #else
+      void SendNode(::grpc::ClientContext* context, const ::fedtree::Node* request, ::fedtree::PID* response, ::grpc::experimental::ClientUnaryReactor* reactor) override;
+      #endif
+      #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
       void SendIns2NodeID(::grpc::ClientContext* context, ::fedtree::PID* response, ::grpc::ClientWriteReactor< ::fedtree::Ins2NodeID>* reactor) override;
-      void GetNodes(::grpc::ClientContext* context, const ::fedtree::PID* request, ::grpc::ClientReadReactor< ::fedtree::Node>* reactor) override;
-      void GetIns2NodeID(::grpc::ClientContext* context, const ::fedtree::PID* request, ::grpc::ClientReadReactor< ::fedtree::Ins2NodeID>* reactor) override;
+      #else
+      void SendIns2NodeID(::grpc::ClientContext* context, ::fedtree::PID* response, ::grpc::experimental::ClientWriteReactor< ::fedtree::Ins2NodeID>* reactor) override;
+      #endif
+      #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+      void GetNodes(::grpc::ClientContext* context, ::fedtree::PID* request, ::grpc::ClientReadReactor< ::fedtree::Node>* reactor) override;
+      #else
+      void GetNodes(::grpc::ClientContext* context, ::fedtree::PID* request, ::grpc::experimental::ClientReadReactor< ::fedtree::Node>* reactor) override;
+      #endif
+      #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+      void GetIns2NodeID(::grpc::ClientContext* context, ::fedtree::PID* request, ::grpc::ClientReadReactor< ::fedtree::Ins2NodeID>* reactor) override;
+      #else
+      void GetIns2NodeID(::grpc::ClientContext* context, ::fedtree::PID* request, ::grpc::experimental::ClientReadReactor< ::fedtree::Ins2NodeID>* reactor) override;
+      #endif
       void CheckIfContinue(::grpc::ClientContext* context, const ::fedtree::PID* request, ::fedtree::Ready* response, std::function<void(::grpc::Status)>) override;
+      #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
       void CheckIfContinue(::grpc::ClientContext* context, const ::fedtree::PID* request, ::fedtree::Ready* response, ::grpc::ClientUnaryReactor* reactor) override;
+      #else
+      void CheckIfContinue(::grpc::ClientContext* context, const ::fedtree::PID* request, ::fedtree::Ready* response, ::grpc::experimental::ClientUnaryReactor* reactor) override;
+      #endif
       void TriggerPrune(::grpc::ClientContext* context, const ::fedtree::PID* request, ::fedtree::Ready* response, std::function<void(::grpc::Status)>) override;
+      #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
       void TriggerPrune(::grpc::ClientContext* context, const ::fedtree::PID* request, ::fedtree::Ready* response, ::grpc::ClientUnaryReactor* reactor) override;
+      #else
+      void TriggerPrune(::grpc::ClientContext* context, const ::fedtree::PID* request, ::fedtree::Ready* response, ::grpc::experimental::ClientUnaryReactor* reactor) override;
+      #endif
       void TriggerPrintScore(::grpc::ClientContext* context, const ::fedtree::PID* request, ::fedtree::Ready* response, std::function<void(::grpc::Status)>) override;
+      #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
       void TriggerPrintScore(::grpc::ClientContext* context, const ::fedtree::PID* request, ::fedtree::Ready* response, ::grpc::ClientUnaryReactor* reactor) override;
+      #else
+      void TriggerPrintScore(::grpc::ClientContext* context, const ::fedtree::PID* request, ::fedtree::Ready* response, ::grpc::experimental::ClientUnaryReactor* reactor) override;
+      #endif
+      #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
       void SendRange(::grpc::ClientContext* context, ::fedtree::PID* response, ::grpc::ClientWriteReactor< ::fedtree::GHPair>* reactor) override;
+      #else
+      void SendRange(::grpc::ClientContext* context, ::fedtree::PID* response, ::grpc::experimental::ClientWriteReactor< ::fedtree::GHPair>* reactor) override;
+      #endif
       void TriggerCut(::grpc::ClientContext* context, const ::fedtree::PID* request, ::fedtree::Ready* response, std::function<void(::grpc::Status)>) override;
+      #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
       void TriggerCut(::grpc::ClientContext* context, const ::fedtree::PID* request, ::fedtree::Ready* response, ::grpc::ClientUnaryReactor* reactor) override;
-      void GetRange(::grpc::ClientContext* context, const ::fedtree::PID* request, ::grpc::ClientReadReactor< ::fedtree::GHPair>* reactor) override;
+      #else
+      void TriggerCut(::grpc::ClientContext* context, const ::fedtree::PID* request, ::fedtree::Ready* response, ::grpc::experimental::ClientUnaryReactor* reactor) override;
+      #endif
+      #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+      void GetRange(::grpc::ClientContext* context, ::fedtree::PID* request, ::grpc::ClientReadReactor< ::fedtree::GHPair>* reactor) override;
+      #else
+      void GetRange(::grpc::ClientContext* context, ::fedtree::PID* request, ::grpc::experimental::ClientReadReactor< ::fedtree::GHPair>* reactor) override;
+      #endif
       void SendGH(::grpc::ClientContext* context, const ::fedtree::GHPair* request, ::fedtree::PID* response, std::function<void(::grpc::Status)>) override;
+      #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
       void SendGH(::grpc::ClientContext* context, const ::fedtree::GHPair* request, ::fedtree::PID* response, ::grpc::ClientUnaryReactor* reactor) override;
+      #else
+      void SendGH(::grpc::ClientContext* context, const ::fedtree::GHPair* request, ::fedtree::PID* response, ::grpc::experimental::ClientUnaryReactor* reactor) override;
+      #endif
       void SendDHPubKey(::grpc::ClientContext* context, const ::fedtree::DHPublicKey* request, ::fedtree::PID* response, std::function<void(::grpc::Status)>) override;
+      #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
       void SendDHPubKey(::grpc::ClientContext* context, const ::fedtree::DHPublicKey* request, ::fedtree::PID* response, ::grpc::ClientUnaryReactor* reactor) override;
-      void GetDHPubKeys(::grpc::ClientContext* context, const ::fedtree::PID* request, ::grpc::ClientReadReactor< ::fedtree::DHPublicKeys>* reactor) override;
+      #else
+      void SendDHPubKey(::grpc::ClientContext* context, const ::fedtree::DHPublicKey* request, ::fedtree::PID* response, ::grpc::experimental::ClientUnaryReactor* reactor) override;
+      #endif
+      #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+      void GetDHPubKeys(::grpc::ClientContext* context, ::fedtree::PID* request, ::grpc::ClientReadReactor< ::fedtree::DHPublicKeys>* reactor) override;
+      #else
+      void GetDHPubKeys(::grpc::ClientContext* context, ::fedtree::PID* request, ::grpc::experimental::ClientReadReactor< ::fedtree::DHPublicKeys>* reactor) override;
+      #endif
       void SendNoises(::grpc::ClientContext* context, const ::fedtree::SANoises* request, ::fedtree::PID* response, std::function<void(::grpc::Status)>) override;
+      #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
       void SendNoises(::grpc::ClientContext* context, const ::fedtree::SANoises* request, ::fedtree::PID* response, ::grpc::ClientUnaryReactor* reactor) override;
-      void GetNoises(::grpc::ClientContext* context, const ::fedtree::PID* request, ::grpc::ClientReadReactor< ::fedtree::SANoises>* reactor) override;
+      #else
+      void SendNoises(::grpc::ClientContext* context, const ::fedtree::SANoises* request, ::fedtree::PID* response, ::grpc::experimental::ClientUnaryReactor* reactor) override;
+      #endif
+      #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+      void GetNoises(::grpc::ClientContext* context, ::fedtree::PID* request, ::grpc::ClientReadReactor< ::fedtree::SANoises>* reactor) override;
+      #else
+      void GetNoises(::grpc::ClientContext* context, ::fedtree::PID* request, ::grpc::experimental::ClientReadReactor< ::fedtree::SANoises>* reactor) override;
+      #endif
       void SendCutPoints(::grpc::ClientContext* context, const ::fedtree::CutPoints* request, ::fedtree::PID* response, std::function<void(::grpc::Status)>) override;
+      #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
       void SendCutPoints(::grpc::ClientContext* context, const ::fedtree::CutPoints* request, ::fedtree::PID* response, ::grpc::ClientUnaryReactor* reactor) override;
-      void GetCutPoints(::grpc::ClientContext* context, const ::fedtree::PID* request, ::grpc::ClientReadReactor< ::fedtree::CutPoints>* reactor) override;
+      #else
+      void SendCutPoints(::grpc::ClientContext* context, const ::fedtree::CutPoints* request, ::fedtree::PID* response, ::grpc::experimental::ClientUnaryReactor* reactor) override;
+      #endif
+      #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+      void GetCutPoints(::grpc::ClientContext* context, ::fedtree::PID* request, ::grpc::ClientReadReactor< ::fedtree::CutPoints>* reactor) override;
+      #else
+      void GetCutPoints(::grpc::ClientContext* context, ::fedtree::PID* request, ::grpc::experimental::ClientReadReactor< ::fedtree::CutPoints>* reactor) override;
+      #endif
       void TriggerBuildUsingGH(::grpc::ClientContext* context, const ::fedtree::PID* request, ::fedtree::Ready* response, std::function<void(::grpc::Status)>) override;
+      #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
       void TriggerBuildUsingGH(::grpc::ClientContext* context, const ::fedtree::PID* request, ::fedtree::Ready* response, ::grpc::ClientUnaryReactor* reactor) override;
+      #else
+      void TriggerBuildUsingGH(::grpc::ClientContext* context, const ::fedtree::PID* request, ::fedtree::Ready* response, ::grpc::experimental::ClientUnaryReactor* reactor) override;
+      #endif
       void TriggerCalcTree(::grpc::ClientContext* context, const ::fedtree::PID* request, ::fedtree::Ready* response, std::function<void(::grpc::Status)>) override;
+      #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
       void TriggerCalcTree(::grpc::ClientContext* context, const ::fedtree::PID* request, ::fedtree::Ready* response, ::grpc::ClientUnaryReactor* reactor) override;
+      #else
+      void TriggerCalcTree(::grpc::ClientContext* context, const ::fedtree::PID* request, ::fedtree::Ready* response, ::grpc::experimental::ClientUnaryReactor* reactor) override;
+      #endif
       void GetRootNode(::grpc::ClientContext* context, const ::fedtree::PID* request, ::fedtree::Node* response, std::function<void(::grpc::Status)>) override;
+      #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
       void GetRootNode(::grpc::ClientContext* context, const ::fedtree::PID* request, ::fedtree::Node* response, ::grpc::ClientUnaryReactor* reactor) override;
-      void GetSplitPoints(::grpc::ClientContext* context, const ::fedtree::PID* request, ::grpc::ClientReadReactor< ::fedtree::SplitPoint>* reactor) override;
+      #else
+      void GetRootNode(::grpc::ClientContext* context, const ::fedtree::PID* request, ::fedtree::Node* response, ::grpc::experimental::ClientUnaryReactor* reactor) override;
+      #endif
+      #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+      void GetSplitPoints(::grpc::ClientContext* context, ::fedtree::PID* request, ::grpc::ClientReadReactor< ::fedtree::SplitPoint>* reactor) override;
+      #else
+      void GetSplitPoints(::grpc::ClientContext* context, ::fedtree::PID* request, ::grpc::experimental::ClientReadReactor< ::fedtree::SplitPoint>* reactor) override;
+      #endif
       void HCheckIfContinue(::grpc::ClientContext* context, const ::fedtree::PID* request, ::fedtree::Ready* response, std::function<void(::grpc::Status)>) override;
+      #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
       void HCheckIfContinue(::grpc::ClientContext* context, const ::fedtree::PID* request, ::fedtree::Ready* response, ::grpc::ClientUnaryReactor* reactor) override;
+      #else
+      void HCheckIfContinue(::grpc::ClientContext* context, const ::fedtree::PID* request, ::fedtree::Ready* response, ::grpc::experimental::ClientUnaryReactor* reactor) override;
+      #endif
       void ScoreReduce(::grpc::ClientContext* context, const ::fedtree::Score* request, ::fedtree::Score* response, std::function<void(::grpc::Status)>) override;
+      #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
       void ScoreReduce(::grpc::ClientContext* context, const ::fedtree::Score* request, ::fedtree::Score* response, ::grpc::ClientUnaryReactor* reactor) override;
+      #else
+      void ScoreReduce(::grpc::ClientContext* context, const ::fedtree::Score* request, ::fedtree::Score* response, ::grpc::experimental::ClientUnaryReactor* reactor) override;
+      #endif
       void TriggerHomoInit(::grpc::ClientContext* context, const ::fedtree::PID* request, ::fedtree::Ready* response, std::function<void(::grpc::Status)>) override;
+      #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
       void TriggerHomoInit(::grpc::ClientContext* context, const ::fedtree::PID* request, ::fedtree::Ready* response, ::grpc::ClientUnaryReactor* reactor) override;
+      #else
+      void TriggerHomoInit(::grpc::ClientContext* context, const ::fedtree::PID* request, ::fedtree::Ready* response, ::grpc::experimental::ClientUnaryReactor* reactor) override;
+      #endif
       void TriggerSAInit(::grpc::ClientContext* context, const ::fedtree::PID* request, ::fedtree::Ready* response, std::function<void(::grpc::Status)>) override;
+      #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
       void TriggerSAInit(::grpc::ClientContext* context, const ::fedtree::PID* request, ::fedtree::Ready* response, ::grpc::ClientUnaryReactor* reactor) override;
+      #else
+      void TriggerSAInit(::grpc::ClientContext* context, const ::fedtree::PID* request, ::fedtree::Ready* response, ::grpc::experimental::ClientUnaryReactor* reactor) override;
+      #endif
       void GetPaillier(::grpc::ClientContext* context, const ::fedtree::PID* request, ::fedtree::Paillier* response, std::function<void(::grpc::Status)>) override;
+      #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
       void GetPaillier(::grpc::ClientContext* context, const ::fedtree::PID* request, ::fedtree::Paillier* response, ::grpc::ClientUnaryReactor* reactor) override;
+      #else
+      void GetPaillier(::grpc::ClientContext* context, const ::fedtree::PID* request, ::fedtree::Paillier* response, ::grpc::experimental::ClientUnaryReactor* reactor) override;
+      #endif
+      #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
       void SendHistogramsEnc(::grpc::ClientContext* context, ::fedtree::PID* response, ::grpc::ClientWriteReactor< ::fedtree::GHPairEnc>* reactor) override;
+      #else
+      void SendHistogramsEnc(::grpc::ClientContext* context, ::fedtree::PID* response, ::grpc::experimental::ClientWriteReactor< ::fedtree::GHPairEnc>* reactor) override;
+      #endif
       void SendBatchedHistograms(::grpc::ClientContext* context, const ::fedtree::GHArray* request, ::fedtree::PID* response, std::function<void(::grpc::Status)>) override;
+      #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
       void SendBatchedHistograms(::grpc::ClientContext* context, const ::fedtree::GHArray* request, ::fedtree::PID* response, ::grpc::ClientUnaryReactor* reactor) override;
+      #else
+      void SendBatchedHistograms(::grpc::ClientContext* context, const ::fedtree::GHArray* request, ::fedtree::PID* response, ::grpc::experimental::ClientUnaryReactor* reactor) override;
+      #endif
+      #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
       void SendHistogramBatches(::grpc::ClientContext* context, ::fedtree::PID* response, ::grpc::ClientWriteReactor< ::fedtree::GHBatch>* reactor) override;
+      #else
+      void SendHistogramBatches(::grpc::ClientContext* context, ::fedtree::PID* response, ::grpc::experimental::ClientWriteReactor< ::fedtree::GHBatch>* reactor) override;
+      #endif
+      #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
       void SendHistFidBatches(::grpc::ClientContext* context, ::fedtree::PID* response, ::grpc::ClientWriteReactor< ::fedtree::FIDBatch>* reactor) override;
-      void GetIns2NodeIDBatches(::grpc::ClientContext* context, const ::fedtree::PID* request, ::grpc::ClientReadReactor< ::fedtree::Ins2NodeIDBatch>* reactor) override;
+      #else
+      void SendHistFidBatches(::grpc::ClientContext* context, ::fedtree::PID* response, ::grpc::experimental::ClientWriteReactor< ::fedtree::FIDBatch>* reactor) override;
+      #endif
+      #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+      void GetIns2NodeIDBatches(::grpc::ClientContext* context, ::fedtree::PID* request, ::grpc::ClientReadReactor< ::fedtree::Ins2NodeIDBatch>* reactor) override;
+      #else
+      void GetIns2NodeIDBatches(::grpc::ClientContext* context, ::fedtree::PID* request, ::grpc::experimental::ClientReadReactor< ::fedtree::Ins2NodeIDBatch>* reactor) override;
+      #endif
+      #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
       void SendIns2NodeIDBatches(::grpc::ClientContext* context, ::fedtree::PID* response, ::grpc::ClientWriteReactor< ::fedtree::Ins2NodeIDBatch>* reactor) override;
-      void GetGradientBatches(::grpc::ClientContext* context, const ::fedtree::PID* request, ::grpc::ClientReadReactor< ::fedtree::GHBatch>* reactor) override;
-      void GetGradientBatchesEnc(::grpc::ClientContext* context, const ::fedtree::PID* request, ::grpc::ClientReadReactor< ::fedtree::GHEncBatch>* reactor) override;
+      #else
+      void SendIns2NodeIDBatches(::grpc::ClientContext* context, ::fedtree::PID* response, ::grpc::experimental::ClientWriteReactor< ::fedtree::Ins2NodeIDBatch>* reactor) override;
+      #endif
+      #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+      void GetGradientBatches(::grpc::ClientContext* context, ::fedtree::PID* request, ::grpc::ClientReadReactor< ::fedtree::GHBatch>* reactor) override;
+      #else
+      void GetGradientBatches(::grpc::ClientContext* context, ::fedtree::PID* request, ::grpc::experimental::ClientReadReactor< ::fedtree::GHBatch>* reactor) override;
+      #endif
+      #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+      void GetGradientBatchesEnc(::grpc::ClientContext* context, ::fedtree::PID* request, ::grpc::ClientReadReactor< ::fedtree::GHEncBatch>* reactor) override;
+      #else
+      void GetGradientBatchesEnc(::grpc::ClientContext* context, ::fedtree::PID* request, ::grpc::experimental::ClientReadReactor< ::fedtree::GHEncBatch>* reactor) override;
+      #endif
       void SendNodeEnc(::grpc::ClientContext* context, const ::fedtree::NodeEnc* request, ::fedtree::PID* response, std::function<void(::grpc::Status)>) override;
+      #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
       void SendNodeEnc(::grpc::ClientContext* context, const ::fedtree::NodeEnc* request, ::fedtree::PID* response, ::grpc::ClientUnaryReactor* reactor) override;
+      #else
+      void SendNodeEnc(::grpc::ClientContext* context, const ::fedtree::NodeEnc* request, ::fedtree::PID* response, ::grpc::experimental::ClientUnaryReactor* reactor) override;
+      #endif
       void SendNodes(::grpc::ClientContext* context, const ::fedtree::NodeArray* request, ::fedtree::PID* response, std::function<void(::grpc::Status)>) override;
+      #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
       void SendNodes(::grpc::ClientContext* context, const ::fedtree::NodeArray* request, ::fedtree::PID* response, ::grpc::ClientUnaryReactor* reactor) override;
+      #else
+      void SendNodes(::grpc::ClientContext* context, const ::fedtree::NodeArray* request, ::fedtree::PID* response, ::grpc::experimental::ClientUnaryReactor* reactor) override;
+      #endif
       void SendNodesEnc(::grpc::ClientContext* context, const ::fedtree::NodeEncArray* request, ::fedtree::PID* response, std::function<void(::grpc::Status)>) override;
+      #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
       void SendNodesEnc(::grpc::ClientContext* context, const ::fedtree::NodeEncArray* request, ::fedtree::PID* response, ::grpc::ClientUnaryReactor* reactor) override;
+      #else
+      void SendNodesEnc(::grpc::ClientContext* context, const ::fedtree::NodeEncArray* request, ::fedtree::PID* response, ::grpc::experimental::ClientUnaryReactor* reactor) override;
+      #endif
+      #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
       void SendHistogramBatchesEnc(::grpc::ClientContext* context, ::fedtree::PID* response, ::grpc::ClientWriteReactor< ::fedtree::GHEncBatch>* reactor) override;
+      #else
+      void SendHistogramBatchesEnc(::grpc::ClientContext* context, ::fedtree::PID* response, ::grpc::experimental::ClientWriteReactor< ::fedtree::GHEncBatch>* reactor) override;
+      #endif
       void StopServer(::grpc::ClientContext* context, const ::fedtree::PID* request, ::fedtree::Score* response, std::function<void(::grpc::Status)>) override;
+      #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
       void StopServer(::grpc::ClientContext* context, const ::fedtree::PID* request, ::fedtree::Score* response, ::grpc::ClientUnaryReactor* reactor) override;
+      #else
+      void StopServer(::grpc::ClientContext* context, const ::fedtree::PID* request, ::fedtree::Score* response, ::grpc::experimental::ClientUnaryReactor* reactor) override;
+      #endif
       void BeginBarrier(::grpc::ClientContext* context, const ::fedtree::PID* request, ::fedtree::Ready* response, std::function<void(::grpc::Status)>) override;
+      #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
       void BeginBarrier(::grpc::ClientContext* context, const ::fedtree::PID* request, ::fedtree::Ready* response, ::grpc::ClientUnaryReactor* reactor) override;
+      #else
+      void BeginBarrier(::grpc::ClientContext* context, const ::fedtree::PID* request, ::fedtree::Ready* response, ::grpc::experimental::ClientUnaryReactor* reactor) override;
+      #endif
      private:
       friend class Stub;
-      explicit async(Stub* stub): stub_(stub) { }
+      explicit experimental_async(Stub* stub): stub_(stub) { }
       Stub* stub() { return stub_; }
       Stub* stub_;
     };
-    class async* async() override { return &async_stub_; }
+    class experimental_async_interface* experimental_async() override { return &async_stub_; }
 
    private:
     std::shared_ptr< ::grpc::ChannelInterface> channel_;
-    class async async_stub_{this};
+    class experimental_async async_stub_{this};
     ::grpc::ClientAsyncResponseReader< ::fedtree::Ready>* AsyncTriggerUpdateGradientsRaw(::grpc::ClientContext* context, const ::fedtree::PID& request, ::grpc::CompletionQueue* cq) override;
     ::grpc::ClientAsyncResponseReader< ::fedtree::Ready>* PrepareAsyncTriggerUpdateGradientsRaw(::grpc::ClientContext* context, const ::fedtree::PID& request, ::grpc::CompletionQueue* cq) override;
     ::grpc::ClientAsyncResponseReader< ::fedtree::Ready>* AsyncTriggerBuildInitRaw(::grpc::ClientContext* context, const ::fedtree::PID& request, ::grpc::CompletionQueue* cq) override;
@@ -2278,22 +2667,36 @@ class FedTree final {
   };
   typedef WithAsyncMethod_TriggerUpdateGradients<WithAsyncMethod_TriggerBuildInit<WithAsyncMethod_GetGradients<WithAsyncMethod_SendDatasetInfo<WithAsyncMethod_SendHistograms<WithAsyncMethod_SendHistFid<WithAsyncMethod_TriggerAggregate<WithAsyncMethod_GetBestInfo<WithAsyncMethod_SendNode<WithAsyncMethod_SendIns2NodeID<WithAsyncMethod_GetNodes<WithAsyncMethod_GetIns2NodeID<WithAsyncMethod_CheckIfContinue<WithAsyncMethod_TriggerPrune<WithAsyncMethod_TriggerPrintScore<WithAsyncMethod_SendRange<WithAsyncMethod_TriggerCut<WithAsyncMethod_GetRange<WithAsyncMethod_SendGH<WithAsyncMethod_SendDHPubKey<WithAsyncMethod_GetDHPubKeys<WithAsyncMethod_SendNoises<WithAsyncMethod_GetNoises<WithAsyncMethod_SendCutPoints<WithAsyncMethod_GetCutPoints<WithAsyncMethod_TriggerBuildUsingGH<WithAsyncMethod_TriggerCalcTree<WithAsyncMethod_GetRootNode<WithAsyncMethod_GetSplitPoints<WithAsyncMethod_HCheckIfContinue<WithAsyncMethod_ScoreReduce<WithAsyncMethod_TriggerHomoInit<WithAsyncMethod_TriggerSAInit<WithAsyncMethod_GetPaillier<WithAsyncMethod_SendHistogramsEnc<WithAsyncMethod_SendBatchedHistograms<WithAsyncMethod_SendHistogramBatches<WithAsyncMethod_SendHistFidBatches<WithAsyncMethod_GetIns2NodeIDBatches<WithAsyncMethod_SendIns2NodeIDBatches<WithAsyncMethod_GetGradientBatches<WithAsyncMethod_GetGradientBatchesEnc<WithAsyncMethod_SendNodeEnc<WithAsyncMethod_SendNodes<WithAsyncMethod_SendNodesEnc<WithAsyncMethod_SendHistogramBatchesEnc<WithAsyncMethod_StopServer<WithAsyncMethod_BeginBarrier<Service > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > AsyncService;
   template <class BaseClass>
-  class WithCallbackMethod_TriggerUpdateGradients : public BaseClass {
+  class ExperimentalWithCallbackMethod_TriggerUpdateGradients : public BaseClass {
    private:
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
-    WithCallbackMethod_TriggerUpdateGradients() {
-      ::grpc::Service::MarkMethodCallback(0,
+    ExperimentalWithCallbackMethod_TriggerUpdateGradients() {
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+      ::grpc::Service::
+    #else
+      ::grpc::Service::experimental().
+    #endif
+        MarkMethodCallback(0,
           new ::grpc::internal::CallbackUnaryHandler< ::fedtree::PID, ::fedtree::Ready>(
             [this](
-                   ::grpc::CallbackServerContext* context, const ::fedtree::PID* request, ::fedtree::Ready* response) { return this->TriggerUpdateGradients(context, request, response); }));}
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+                   ::grpc::CallbackServerContext*
+    #else
+                   ::grpc::experimental::CallbackServerContext*
+    #endif
+                     context, const ::fedtree::PID* request, ::fedtree::Ready* response) { return this->TriggerUpdateGradients(context, request, response); }));}
     void SetMessageAllocatorFor_TriggerUpdateGradients(
-        ::grpc::MessageAllocator< ::fedtree::PID, ::fedtree::Ready>* allocator) {
+        ::grpc::experimental::MessageAllocator< ::fedtree::PID, ::fedtree::Ready>* allocator) {
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
       ::grpc::internal::MethodHandler* const handler = ::grpc::Service::GetHandler(0);
+    #else
+      ::grpc::internal::MethodHandler* const handler = ::grpc::Service::experimental().GetHandler(0);
+    #endif
       static_cast<::grpc::internal::CallbackUnaryHandler< ::fedtree::PID, ::fedtree::Ready>*>(handler)
               ->SetMessageAllocator(allocator);
     }
-    ~WithCallbackMethod_TriggerUpdateGradients() override {
+    ~ExperimentalWithCallbackMethod_TriggerUpdateGradients() override {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
@@ -2301,26 +2704,46 @@ class FedTree final {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
     virtual ::grpc::ServerUnaryReactor* TriggerUpdateGradients(
-      ::grpc::CallbackServerContext* /*context*/, const ::fedtree::PID* /*request*/, ::fedtree::Ready* /*response*/)  { return nullptr; }
+      ::grpc::CallbackServerContext* /*context*/, const ::fedtree::PID* /*request*/, ::fedtree::Ready* /*response*/)
+    #else
+    virtual ::grpc::experimental::ServerUnaryReactor* TriggerUpdateGradients(
+      ::grpc::experimental::CallbackServerContext* /*context*/, const ::fedtree::PID* /*request*/, ::fedtree::Ready* /*response*/)
+    #endif
+      { return nullptr; }
   };
   template <class BaseClass>
-  class WithCallbackMethod_TriggerBuildInit : public BaseClass {
+  class ExperimentalWithCallbackMethod_TriggerBuildInit : public BaseClass {
    private:
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
-    WithCallbackMethod_TriggerBuildInit() {
-      ::grpc::Service::MarkMethodCallback(1,
+    ExperimentalWithCallbackMethod_TriggerBuildInit() {
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+      ::grpc::Service::
+    #else
+      ::grpc::Service::experimental().
+    #endif
+        MarkMethodCallback(1,
           new ::grpc::internal::CallbackUnaryHandler< ::fedtree::PID, ::fedtree::Ready>(
             [this](
-                   ::grpc::CallbackServerContext* context, const ::fedtree::PID* request, ::fedtree::Ready* response) { return this->TriggerBuildInit(context, request, response); }));}
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+                   ::grpc::CallbackServerContext*
+    #else
+                   ::grpc::experimental::CallbackServerContext*
+    #endif
+                     context, const ::fedtree::PID* request, ::fedtree::Ready* response) { return this->TriggerBuildInit(context, request, response); }));}
     void SetMessageAllocatorFor_TriggerBuildInit(
-        ::grpc::MessageAllocator< ::fedtree::PID, ::fedtree::Ready>* allocator) {
+        ::grpc::experimental::MessageAllocator< ::fedtree::PID, ::fedtree::Ready>* allocator) {
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
       ::grpc::internal::MethodHandler* const handler = ::grpc::Service::GetHandler(1);
+    #else
+      ::grpc::internal::MethodHandler* const handler = ::grpc::Service::experimental().GetHandler(1);
+    #endif
       static_cast<::grpc::internal::CallbackUnaryHandler< ::fedtree::PID, ::fedtree::Ready>*>(handler)
               ->SetMessageAllocator(allocator);
     }
-    ~WithCallbackMethod_TriggerBuildInit() override {
+    ~ExperimentalWithCallbackMethod_TriggerBuildInit() override {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
@@ -2328,21 +2751,37 @@ class FedTree final {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
     virtual ::grpc::ServerUnaryReactor* TriggerBuildInit(
-      ::grpc::CallbackServerContext* /*context*/, const ::fedtree::PID* /*request*/, ::fedtree::Ready* /*response*/)  { return nullptr; }
+      ::grpc::CallbackServerContext* /*context*/, const ::fedtree::PID* /*request*/, ::fedtree::Ready* /*response*/)
+    #else
+    virtual ::grpc::experimental::ServerUnaryReactor* TriggerBuildInit(
+      ::grpc::experimental::CallbackServerContext* /*context*/, const ::fedtree::PID* /*request*/, ::fedtree::Ready* /*response*/)
+    #endif
+      { return nullptr; }
   };
   template <class BaseClass>
-  class WithCallbackMethod_GetGradients : public BaseClass {
+  class ExperimentalWithCallbackMethod_GetGradients : public BaseClass {
    private:
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
-    WithCallbackMethod_GetGradients() {
-      ::grpc::Service::MarkMethodCallback(2,
+    ExperimentalWithCallbackMethod_GetGradients() {
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+      ::grpc::Service::
+    #else
+      ::grpc::Service::experimental().
+    #endif
+        MarkMethodCallback(2,
           new ::grpc::internal::CallbackServerStreamingHandler< ::fedtree::PID, ::fedtree::GHPair>(
             [this](
-                   ::grpc::CallbackServerContext* context, const ::fedtree::PID* request) { return this->GetGradients(context, request); }));
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+                   ::grpc::CallbackServerContext*
+    #else
+                   ::grpc::experimental::CallbackServerContext*
+    #endif
+                     context, const ::fedtree::PID* request) { return this->GetGradients(context, request); }));
     }
-    ~WithCallbackMethod_GetGradients() override {
+    ~ExperimentalWithCallbackMethod_GetGradients() override {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
@@ -2350,26 +2789,46 @@ class FedTree final {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
     virtual ::grpc::ServerWriteReactor< ::fedtree::GHPair>* GetGradients(
-      ::grpc::CallbackServerContext* /*context*/, const ::fedtree::PID* /*request*/)  { return nullptr; }
+      ::grpc::CallbackServerContext* /*context*/, const ::fedtree::PID* /*request*/)
+    #else
+    virtual ::grpc::experimental::ServerWriteReactor< ::fedtree::GHPair>* GetGradients(
+      ::grpc::experimental::CallbackServerContext* /*context*/, const ::fedtree::PID* /*request*/)
+    #endif
+      { return nullptr; }
   };
   template <class BaseClass>
-  class WithCallbackMethod_SendDatasetInfo : public BaseClass {
+  class ExperimentalWithCallbackMethod_SendDatasetInfo : public BaseClass {
    private:
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
-    WithCallbackMethod_SendDatasetInfo() {
-      ::grpc::Service::MarkMethodCallback(3,
+    ExperimentalWithCallbackMethod_SendDatasetInfo() {
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+      ::grpc::Service::
+    #else
+      ::grpc::Service::experimental().
+    #endif
+        MarkMethodCallback(3,
           new ::grpc::internal::CallbackUnaryHandler< ::fedtree::DatasetInfo, ::fedtree::PID>(
             [this](
-                   ::grpc::CallbackServerContext* context, const ::fedtree::DatasetInfo* request, ::fedtree::PID* response) { return this->SendDatasetInfo(context, request, response); }));}
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+                   ::grpc::CallbackServerContext*
+    #else
+                   ::grpc::experimental::CallbackServerContext*
+    #endif
+                     context, const ::fedtree::DatasetInfo* request, ::fedtree::PID* response) { return this->SendDatasetInfo(context, request, response); }));}
     void SetMessageAllocatorFor_SendDatasetInfo(
-        ::grpc::MessageAllocator< ::fedtree::DatasetInfo, ::fedtree::PID>* allocator) {
+        ::grpc::experimental::MessageAllocator< ::fedtree::DatasetInfo, ::fedtree::PID>* allocator) {
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
       ::grpc::internal::MethodHandler* const handler = ::grpc::Service::GetHandler(3);
+    #else
+      ::grpc::internal::MethodHandler* const handler = ::grpc::Service::experimental().GetHandler(3);
+    #endif
       static_cast<::grpc::internal::CallbackUnaryHandler< ::fedtree::DatasetInfo, ::fedtree::PID>*>(handler)
               ->SetMessageAllocator(allocator);
     }
-    ~WithCallbackMethod_SendDatasetInfo() override {
+    ~ExperimentalWithCallbackMethod_SendDatasetInfo() override {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
@@ -2377,21 +2836,37 @@ class FedTree final {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
     virtual ::grpc::ServerUnaryReactor* SendDatasetInfo(
-      ::grpc::CallbackServerContext* /*context*/, const ::fedtree::DatasetInfo* /*request*/, ::fedtree::PID* /*response*/)  { return nullptr; }
+      ::grpc::CallbackServerContext* /*context*/, const ::fedtree::DatasetInfo* /*request*/, ::fedtree::PID* /*response*/)
+    #else
+    virtual ::grpc::experimental::ServerUnaryReactor* SendDatasetInfo(
+      ::grpc::experimental::CallbackServerContext* /*context*/, const ::fedtree::DatasetInfo* /*request*/, ::fedtree::PID* /*response*/)
+    #endif
+      { return nullptr; }
   };
   template <class BaseClass>
-  class WithCallbackMethod_SendHistograms : public BaseClass {
+  class ExperimentalWithCallbackMethod_SendHistograms : public BaseClass {
    private:
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
-    WithCallbackMethod_SendHistograms() {
-      ::grpc::Service::MarkMethodCallback(4,
+    ExperimentalWithCallbackMethod_SendHistograms() {
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+      ::grpc::Service::
+    #else
+      ::grpc::Service::experimental().
+    #endif
+        MarkMethodCallback(4,
           new ::grpc::internal::CallbackClientStreamingHandler< ::fedtree::GHPair, ::fedtree::PID>(
             [this](
-                   ::grpc::CallbackServerContext* context, ::fedtree::PID* response) { return this->SendHistograms(context, response); }));
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+                   ::grpc::CallbackServerContext*
+    #else
+                   ::grpc::experimental::CallbackServerContext*
+    #endif
+                     context, ::fedtree::PID* response) { return this->SendHistograms(context, response); }));
     }
-    ~WithCallbackMethod_SendHistograms() override {
+    ~ExperimentalWithCallbackMethod_SendHistograms() override {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
@@ -2399,21 +2874,37 @@ class FedTree final {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
     virtual ::grpc::ServerReadReactor< ::fedtree::GHPair>* SendHistograms(
-      ::grpc::CallbackServerContext* /*context*/, ::fedtree::PID* /*response*/)  { return nullptr; }
+      ::grpc::CallbackServerContext* /*context*/, ::fedtree::PID* /*response*/)
+    #else
+    virtual ::grpc::experimental::ServerReadReactor< ::fedtree::GHPair>* SendHistograms(
+      ::grpc::experimental::CallbackServerContext* /*context*/, ::fedtree::PID* /*response*/)
+    #endif
+      { return nullptr; }
   };
   template <class BaseClass>
-  class WithCallbackMethod_SendHistFid : public BaseClass {
+  class ExperimentalWithCallbackMethod_SendHistFid : public BaseClass {
    private:
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
-    WithCallbackMethod_SendHistFid() {
-      ::grpc::Service::MarkMethodCallback(5,
+    ExperimentalWithCallbackMethod_SendHistFid() {
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+      ::grpc::Service::
+    #else
+      ::grpc::Service::experimental().
+    #endif
+        MarkMethodCallback(5,
           new ::grpc::internal::CallbackClientStreamingHandler< ::fedtree::FID, ::fedtree::PID>(
             [this](
-                   ::grpc::CallbackServerContext* context, ::fedtree::PID* response) { return this->SendHistFid(context, response); }));
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+                   ::grpc::CallbackServerContext*
+    #else
+                   ::grpc::experimental::CallbackServerContext*
+    #endif
+                     context, ::fedtree::PID* response) { return this->SendHistFid(context, response); }));
     }
-    ~WithCallbackMethod_SendHistFid() override {
+    ~ExperimentalWithCallbackMethod_SendHistFid() override {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
@@ -2421,26 +2912,46 @@ class FedTree final {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
     virtual ::grpc::ServerReadReactor< ::fedtree::FID>* SendHistFid(
-      ::grpc::CallbackServerContext* /*context*/, ::fedtree::PID* /*response*/)  { return nullptr; }
+      ::grpc::CallbackServerContext* /*context*/, ::fedtree::PID* /*response*/)
+    #else
+    virtual ::grpc::experimental::ServerReadReactor< ::fedtree::FID>* SendHistFid(
+      ::grpc::experimental::CallbackServerContext* /*context*/, ::fedtree::PID* /*response*/)
+    #endif
+      { return nullptr; }
   };
   template <class BaseClass>
-  class WithCallbackMethod_TriggerAggregate : public BaseClass {
+  class ExperimentalWithCallbackMethod_TriggerAggregate : public BaseClass {
    private:
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
-    WithCallbackMethod_TriggerAggregate() {
-      ::grpc::Service::MarkMethodCallback(6,
+    ExperimentalWithCallbackMethod_TriggerAggregate() {
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+      ::grpc::Service::
+    #else
+      ::grpc::Service::experimental().
+    #endif
+        MarkMethodCallback(6,
           new ::grpc::internal::CallbackUnaryHandler< ::fedtree::PID, ::fedtree::Ready>(
             [this](
-                   ::grpc::CallbackServerContext* context, const ::fedtree::PID* request, ::fedtree::Ready* response) { return this->TriggerAggregate(context, request, response); }));}
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+                   ::grpc::CallbackServerContext*
+    #else
+                   ::grpc::experimental::CallbackServerContext*
+    #endif
+                     context, const ::fedtree::PID* request, ::fedtree::Ready* response) { return this->TriggerAggregate(context, request, response); }));}
     void SetMessageAllocatorFor_TriggerAggregate(
-        ::grpc::MessageAllocator< ::fedtree::PID, ::fedtree::Ready>* allocator) {
+        ::grpc::experimental::MessageAllocator< ::fedtree::PID, ::fedtree::Ready>* allocator) {
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
       ::grpc::internal::MethodHandler* const handler = ::grpc::Service::GetHandler(6);
+    #else
+      ::grpc::internal::MethodHandler* const handler = ::grpc::Service::experimental().GetHandler(6);
+    #endif
       static_cast<::grpc::internal::CallbackUnaryHandler< ::fedtree::PID, ::fedtree::Ready>*>(handler)
               ->SetMessageAllocator(allocator);
     }
-    ~WithCallbackMethod_TriggerAggregate() override {
+    ~ExperimentalWithCallbackMethod_TriggerAggregate() override {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
@@ -2448,21 +2959,37 @@ class FedTree final {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
     virtual ::grpc::ServerUnaryReactor* TriggerAggregate(
-      ::grpc::CallbackServerContext* /*context*/, const ::fedtree::PID* /*request*/, ::fedtree::Ready* /*response*/)  { return nullptr; }
+      ::grpc::CallbackServerContext* /*context*/, const ::fedtree::PID* /*request*/, ::fedtree::Ready* /*response*/)
+    #else
+    virtual ::grpc::experimental::ServerUnaryReactor* TriggerAggregate(
+      ::grpc::experimental::CallbackServerContext* /*context*/, const ::fedtree::PID* /*request*/, ::fedtree::Ready* /*response*/)
+    #endif
+      { return nullptr; }
   };
   template <class BaseClass>
-  class WithCallbackMethod_GetBestInfo : public BaseClass {
+  class ExperimentalWithCallbackMethod_GetBestInfo : public BaseClass {
    private:
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
-    WithCallbackMethod_GetBestInfo() {
-      ::grpc::Service::MarkMethodCallback(7,
+    ExperimentalWithCallbackMethod_GetBestInfo() {
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+      ::grpc::Service::
+    #else
+      ::grpc::Service::experimental().
+    #endif
+        MarkMethodCallback(7,
           new ::grpc::internal::CallbackServerStreamingHandler< ::fedtree::PID, ::fedtree::BestInfo>(
             [this](
-                   ::grpc::CallbackServerContext* context, const ::fedtree::PID* request) { return this->GetBestInfo(context, request); }));
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+                   ::grpc::CallbackServerContext*
+    #else
+                   ::grpc::experimental::CallbackServerContext*
+    #endif
+                     context, const ::fedtree::PID* request) { return this->GetBestInfo(context, request); }));
     }
-    ~WithCallbackMethod_GetBestInfo() override {
+    ~ExperimentalWithCallbackMethod_GetBestInfo() override {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
@@ -2470,26 +2997,46 @@ class FedTree final {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
     virtual ::grpc::ServerWriteReactor< ::fedtree::BestInfo>* GetBestInfo(
-      ::grpc::CallbackServerContext* /*context*/, const ::fedtree::PID* /*request*/)  { return nullptr; }
+      ::grpc::CallbackServerContext* /*context*/, const ::fedtree::PID* /*request*/)
+    #else
+    virtual ::grpc::experimental::ServerWriteReactor< ::fedtree::BestInfo>* GetBestInfo(
+      ::grpc::experimental::CallbackServerContext* /*context*/, const ::fedtree::PID* /*request*/)
+    #endif
+      { return nullptr; }
   };
   template <class BaseClass>
-  class WithCallbackMethod_SendNode : public BaseClass {
+  class ExperimentalWithCallbackMethod_SendNode : public BaseClass {
    private:
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
-    WithCallbackMethod_SendNode() {
-      ::grpc::Service::MarkMethodCallback(8,
+    ExperimentalWithCallbackMethod_SendNode() {
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+      ::grpc::Service::
+    #else
+      ::grpc::Service::experimental().
+    #endif
+        MarkMethodCallback(8,
           new ::grpc::internal::CallbackUnaryHandler< ::fedtree::Node, ::fedtree::PID>(
             [this](
-                   ::grpc::CallbackServerContext* context, const ::fedtree::Node* request, ::fedtree::PID* response) { return this->SendNode(context, request, response); }));}
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+                   ::grpc::CallbackServerContext*
+    #else
+                   ::grpc::experimental::CallbackServerContext*
+    #endif
+                     context, const ::fedtree::Node* request, ::fedtree::PID* response) { return this->SendNode(context, request, response); }));}
     void SetMessageAllocatorFor_SendNode(
-        ::grpc::MessageAllocator< ::fedtree::Node, ::fedtree::PID>* allocator) {
+        ::grpc::experimental::MessageAllocator< ::fedtree::Node, ::fedtree::PID>* allocator) {
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
       ::grpc::internal::MethodHandler* const handler = ::grpc::Service::GetHandler(8);
+    #else
+      ::grpc::internal::MethodHandler* const handler = ::grpc::Service::experimental().GetHandler(8);
+    #endif
       static_cast<::grpc::internal::CallbackUnaryHandler< ::fedtree::Node, ::fedtree::PID>*>(handler)
               ->SetMessageAllocator(allocator);
     }
-    ~WithCallbackMethod_SendNode() override {
+    ~ExperimentalWithCallbackMethod_SendNode() override {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
@@ -2497,21 +3044,37 @@ class FedTree final {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
     virtual ::grpc::ServerUnaryReactor* SendNode(
-      ::grpc::CallbackServerContext* /*context*/, const ::fedtree::Node* /*request*/, ::fedtree::PID* /*response*/)  { return nullptr; }
+      ::grpc::CallbackServerContext* /*context*/, const ::fedtree::Node* /*request*/, ::fedtree::PID* /*response*/)
+    #else
+    virtual ::grpc::experimental::ServerUnaryReactor* SendNode(
+      ::grpc::experimental::CallbackServerContext* /*context*/, const ::fedtree::Node* /*request*/, ::fedtree::PID* /*response*/)
+    #endif
+      { return nullptr; }
   };
   template <class BaseClass>
-  class WithCallbackMethod_SendIns2NodeID : public BaseClass {
+  class ExperimentalWithCallbackMethod_SendIns2NodeID : public BaseClass {
    private:
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
-    WithCallbackMethod_SendIns2NodeID() {
-      ::grpc::Service::MarkMethodCallback(9,
+    ExperimentalWithCallbackMethod_SendIns2NodeID() {
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+      ::grpc::Service::
+    #else
+      ::grpc::Service::experimental().
+    #endif
+        MarkMethodCallback(9,
           new ::grpc::internal::CallbackClientStreamingHandler< ::fedtree::Ins2NodeID, ::fedtree::PID>(
             [this](
-                   ::grpc::CallbackServerContext* context, ::fedtree::PID* response) { return this->SendIns2NodeID(context, response); }));
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+                   ::grpc::CallbackServerContext*
+    #else
+                   ::grpc::experimental::CallbackServerContext*
+    #endif
+                     context, ::fedtree::PID* response) { return this->SendIns2NodeID(context, response); }));
     }
-    ~WithCallbackMethod_SendIns2NodeID() override {
+    ~ExperimentalWithCallbackMethod_SendIns2NodeID() override {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
@@ -2519,21 +3082,37 @@ class FedTree final {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
     virtual ::grpc::ServerReadReactor< ::fedtree::Ins2NodeID>* SendIns2NodeID(
-      ::grpc::CallbackServerContext* /*context*/, ::fedtree::PID* /*response*/)  { return nullptr; }
+      ::grpc::CallbackServerContext* /*context*/, ::fedtree::PID* /*response*/)
+    #else
+    virtual ::grpc::experimental::ServerReadReactor< ::fedtree::Ins2NodeID>* SendIns2NodeID(
+      ::grpc::experimental::CallbackServerContext* /*context*/, ::fedtree::PID* /*response*/)
+    #endif
+      { return nullptr; }
   };
   template <class BaseClass>
-  class WithCallbackMethod_GetNodes : public BaseClass {
+  class ExperimentalWithCallbackMethod_GetNodes : public BaseClass {
    private:
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
-    WithCallbackMethod_GetNodes() {
-      ::grpc::Service::MarkMethodCallback(10,
+    ExperimentalWithCallbackMethod_GetNodes() {
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+      ::grpc::Service::
+    #else
+      ::grpc::Service::experimental().
+    #endif
+        MarkMethodCallback(10,
           new ::grpc::internal::CallbackServerStreamingHandler< ::fedtree::PID, ::fedtree::Node>(
             [this](
-                   ::grpc::CallbackServerContext* context, const ::fedtree::PID* request) { return this->GetNodes(context, request); }));
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+                   ::grpc::CallbackServerContext*
+    #else
+                   ::grpc::experimental::CallbackServerContext*
+    #endif
+                     context, const ::fedtree::PID* request) { return this->GetNodes(context, request); }));
     }
-    ~WithCallbackMethod_GetNodes() override {
+    ~ExperimentalWithCallbackMethod_GetNodes() override {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
@@ -2541,21 +3120,37 @@ class FedTree final {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
     virtual ::grpc::ServerWriteReactor< ::fedtree::Node>* GetNodes(
-      ::grpc::CallbackServerContext* /*context*/, const ::fedtree::PID* /*request*/)  { return nullptr; }
+      ::grpc::CallbackServerContext* /*context*/, const ::fedtree::PID* /*request*/)
+    #else
+    virtual ::grpc::experimental::ServerWriteReactor< ::fedtree::Node>* GetNodes(
+      ::grpc::experimental::CallbackServerContext* /*context*/, const ::fedtree::PID* /*request*/)
+    #endif
+      { return nullptr; }
   };
   template <class BaseClass>
-  class WithCallbackMethod_GetIns2NodeID : public BaseClass {
+  class ExperimentalWithCallbackMethod_GetIns2NodeID : public BaseClass {
    private:
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
-    WithCallbackMethod_GetIns2NodeID() {
-      ::grpc::Service::MarkMethodCallback(11,
+    ExperimentalWithCallbackMethod_GetIns2NodeID() {
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+      ::grpc::Service::
+    #else
+      ::grpc::Service::experimental().
+    #endif
+        MarkMethodCallback(11,
           new ::grpc::internal::CallbackServerStreamingHandler< ::fedtree::PID, ::fedtree::Ins2NodeID>(
             [this](
-                   ::grpc::CallbackServerContext* context, const ::fedtree::PID* request) { return this->GetIns2NodeID(context, request); }));
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+                   ::grpc::CallbackServerContext*
+    #else
+                   ::grpc::experimental::CallbackServerContext*
+    #endif
+                     context, const ::fedtree::PID* request) { return this->GetIns2NodeID(context, request); }));
     }
-    ~WithCallbackMethod_GetIns2NodeID() override {
+    ~ExperimentalWithCallbackMethod_GetIns2NodeID() override {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
@@ -2563,26 +3158,46 @@ class FedTree final {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
     virtual ::grpc::ServerWriteReactor< ::fedtree::Ins2NodeID>* GetIns2NodeID(
-      ::grpc::CallbackServerContext* /*context*/, const ::fedtree::PID* /*request*/)  { return nullptr; }
+      ::grpc::CallbackServerContext* /*context*/, const ::fedtree::PID* /*request*/)
+    #else
+    virtual ::grpc::experimental::ServerWriteReactor< ::fedtree::Ins2NodeID>* GetIns2NodeID(
+      ::grpc::experimental::CallbackServerContext* /*context*/, const ::fedtree::PID* /*request*/)
+    #endif
+      { return nullptr; }
   };
   template <class BaseClass>
-  class WithCallbackMethod_CheckIfContinue : public BaseClass {
+  class ExperimentalWithCallbackMethod_CheckIfContinue : public BaseClass {
    private:
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
-    WithCallbackMethod_CheckIfContinue() {
-      ::grpc::Service::MarkMethodCallback(12,
+    ExperimentalWithCallbackMethod_CheckIfContinue() {
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+      ::grpc::Service::
+    #else
+      ::grpc::Service::experimental().
+    #endif
+        MarkMethodCallback(12,
           new ::grpc::internal::CallbackUnaryHandler< ::fedtree::PID, ::fedtree::Ready>(
             [this](
-                   ::grpc::CallbackServerContext* context, const ::fedtree::PID* request, ::fedtree::Ready* response) { return this->CheckIfContinue(context, request, response); }));}
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+                   ::grpc::CallbackServerContext*
+    #else
+                   ::grpc::experimental::CallbackServerContext*
+    #endif
+                     context, const ::fedtree::PID* request, ::fedtree::Ready* response) { return this->CheckIfContinue(context, request, response); }));}
     void SetMessageAllocatorFor_CheckIfContinue(
-        ::grpc::MessageAllocator< ::fedtree::PID, ::fedtree::Ready>* allocator) {
+        ::grpc::experimental::MessageAllocator< ::fedtree::PID, ::fedtree::Ready>* allocator) {
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
       ::grpc::internal::MethodHandler* const handler = ::grpc::Service::GetHandler(12);
+    #else
+      ::grpc::internal::MethodHandler* const handler = ::grpc::Service::experimental().GetHandler(12);
+    #endif
       static_cast<::grpc::internal::CallbackUnaryHandler< ::fedtree::PID, ::fedtree::Ready>*>(handler)
               ->SetMessageAllocator(allocator);
     }
-    ~WithCallbackMethod_CheckIfContinue() override {
+    ~ExperimentalWithCallbackMethod_CheckIfContinue() override {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
@@ -2590,26 +3205,46 @@ class FedTree final {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
     virtual ::grpc::ServerUnaryReactor* CheckIfContinue(
-      ::grpc::CallbackServerContext* /*context*/, const ::fedtree::PID* /*request*/, ::fedtree::Ready* /*response*/)  { return nullptr; }
+      ::grpc::CallbackServerContext* /*context*/, const ::fedtree::PID* /*request*/, ::fedtree::Ready* /*response*/)
+    #else
+    virtual ::grpc::experimental::ServerUnaryReactor* CheckIfContinue(
+      ::grpc::experimental::CallbackServerContext* /*context*/, const ::fedtree::PID* /*request*/, ::fedtree::Ready* /*response*/)
+    #endif
+      { return nullptr; }
   };
   template <class BaseClass>
-  class WithCallbackMethod_TriggerPrune : public BaseClass {
+  class ExperimentalWithCallbackMethod_TriggerPrune : public BaseClass {
    private:
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
-    WithCallbackMethod_TriggerPrune() {
-      ::grpc::Service::MarkMethodCallback(13,
+    ExperimentalWithCallbackMethod_TriggerPrune() {
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+      ::grpc::Service::
+    #else
+      ::grpc::Service::experimental().
+    #endif
+        MarkMethodCallback(13,
           new ::grpc::internal::CallbackUnaryHandler< ::fedtree::PID, ::fedtree::Ready>(
             [this](
-                   ::grpc::CallbackServerContext* context, const ::fedtree::PID* request, ::fedtree::Ready* response) { return this->TriggerPrune(context, request, response); }));}
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+                   ::grpc::CallbackServerContext*
+    #else
+                   ::grpc::experimental::CallbackServerContext*
+    #endif
+                     context, const ::fedtree::PID* request, ::fedtree::Ready* response) { return this->TriggerPrune(context, request, response); }));}
     void SetMessageAllocatorFor_TriggerPrune(
-        ::grpc::MessageAllocator< ::fedtree::PID, ::fedtree::Ready>* allocator) {
+        ::grpc::experimental::MessageAllocator< ::fedtree::PID, ::fedtree::Ready>* allocator) {
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
       ::grpc::internal::MethodHandler* const handler = ::grpc::Service::GetHandler(13);
+    #else
+      ::grpc::internal::MethodHandler* const handler = ::grpc::Service::experimental().GetHandler(13);
+    #endif
       static_cast<::grpc::internal::CallbackUnaryHandler< ::fedtree::PID, ::fedtree::Ready>*>(handler)
               ->SetMessageAllocator(allocator);
     }
-    ~WithCallbackMethod_TriggerPrune() override {
+    ~ExperimentalWithCallbackMethod_TriggerPrune() override {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
@@ -2617,26 +3252,46 @@ class FedTree final {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
     virtual ::grpc::ServerUnaryReactor* TriggerPrune(
-      ::grpc::CallbackServerContext* /*context*/, const ::fedtree::PID* /*request*/, ::fedtree::Ready* /*response*/)  { return nullptr; }
+      ::grpc::CallbackServerContext* /*context*/, const ::fedtree::PID* /*request*/, ::fedtree::Ready* /*response*/)
+    #else
+    virtual ::grpc::experimental::ServerUnaryReactor* TriggerPrune(
+      ::grpc::experimental::CallbackServerContext* /*context*/, const ::fedtree::PID* /*request*/, ::fedtree::Ready* /*response*/)
+    #endif
+      { return nullptr; }
   };
   template <class BaseClass>
-  class WithCallbackMethod_TriggerPrintScore : public BaseClass {
+  class ExperimentalWithCallbackMethod_TriggerPrintScore : public BaseClass {
    private:
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
-    WithCallbackMethod_TriggerPrintScore() {
-      ::grpc::Service::MarkMethodCallback(14,
+    ExperimentalWithCallbackMethod_TriggerPrintScore() {
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+      ::grpc::Service::
+    #else
+      ::grpc::Service::experimental().
+    #endif
+        MarkMethodCallback(14,
           new ::grpc::internal::CallbackUnaryHandler< ::fedtree::PID, ::fedtree::Ready>(
             [this](
-                   ::grpc::CallbackServerContext* context, const ::fedtree::PID* request, ::fedtree::Ready* response) { return this->TriggerPrintScore(context, request, response); }));}
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+                   ::grpc::CallbackServerContext*
+    #else
+                   ::grpc::experimental::CallbackServerContext*
+    #endif
+                     context, const ::fedtree::PID* request, ::fedtree::Ready* response) { return this->TriggerPrintScore(context, request, response); }));}
     void SetMessageAllocatorFor_TriggerPrintScore(
-        ::grpc::MessageAllocator< ::fedtree::PID, ::fedtree::Ready>* allocator) {
+        ::grpc::experimental::MessageAllocator< ::fedtree::PID, ::fedtree::Ready>* allocator) {
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
       ::grpc::internal::MethodHandler* const handler = ::grpc::Service::GetHandler(14);
+    #else
+      ::grpc::internal::MethodHandler* const handler = ::grpc::Service::experimental().GetHandler(14);
+    #endif
       static_cast<::grpc::internal::CallbackUnaryHandler< ::fedtree::PID, ::fedtree::Ready>*>(handler)
               ->SetMessageAllocator(allocator);
     }
-    ~WithCallbackMethod_TriggerPrintScore() override {
+    ~ExperimentalWithCallbackMethod_TriggerPrintScore() override {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
@@ -2644,21 +3299,37 @@ class FedTree final {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
     virtual ::grpc::ServerUnaryReactor* TriggerPrintScore(
-      ::grpc::CallbackServerContext* /*context*/, const ::fedtree::PID* /*request*/, ::fedtree::Ready* /*response*/)  { return nullptr; }
+      ::grpc::CallbackServerContext* /*context*/, const ::fedtree::PID* /*request*/, ::fedtree::Ready* /*response*/)
+    #else
+    virtual ::grpc::experimental::ServerUnaryReactor* TriggerPrintScore(
+      ::grpc::experimental::CallbackServerContext* /*context*/, const ::fedtree::PID* /*request*/, ::fedtree::Ready* /*response*/)
+    #endif
+      { return nullptr; }
   };
   template <class BaseClass>
-  class WithCallbackMethod_SendRange : public BaseClass {
+  class ExperimentalWithCallbackMethod_SendRange : public BaseClass {
    private:
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
-    WithCallbackMethod_SendRange() {
-      ::grpc::Service::MarkMethodCallback(15,
+    ExperimentalWithCallbackMethod_SendRange() {
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+      ::grpc::Service::
+    #else
+      ::grpc::Service::experimental().
+    #endif
+        MarkMethodCallback(15,
           new ::grpc::internal::CallbackClientStreamingHandler< ::fedtree::GHPair, ::fedtree::PID>(
             [this](
-                   ::grpc::CallbackServerContext* context, ::fedtree::PID* response) { return this->SendRange(context, response); }));
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+                   ::grpc::CallbackServerContext*
+    #else
+                   ::grpc::experimental::CallbackServerContext*
+    #endif
+                     context, ::fedtree::PID* response) { return this->SendRange(context, response); }));
     }
-    ~WithCallbackMethod_SendRange() override {
+    ~ExperimentalWithCallbackMethod_SendRange() override {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
@@ -2666,26 +3337,46 @@ class FedTree final {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
     virtual ::grpc::ServerReadReactor< ::fedtree::GHPair>* SendRange(
-      ::grpc::CallbackServerContext* /*context*/, ::fedtree::PID* /*response*/)  { return nullptr; }
+      ::grpc::CallbackServerContext* /*context*/, ::fedtree::PID* /*response*/)
+    #else
+    virtual ::grpc::experimental::ServerReadReactor< ::fedtree::GHPair>* SendRange(
+      ::grpc::experimental::CallbackServerContext* /*context*/, ::fedtree::PID* /*response*/)
+    #endif
+      { return nullptr; }
   };
   template <class BaseClass>
-  class WithCallbackMethod_TriggerCut : public BaseClass {
+  class ExperimentalWithCallbackMethod_TriggerCut : public BaseClass {
    private:
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
-    WithCallbackMethod_TriggerCut() {
-      ::grpc::Service::MarkMethodCallback(16,
+    ExperimentalWithCallbackMethod_TriggerCut() {
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+      ::grpc::Service::
+    #else
+      ::grpc::Service::experimental().
+    #endif
+        MarkMethodCallback(16,
           new ::grpc::internal::CallbackUnaryHandler< ::fedtree::PID, ::fedtree::Ready>(
             [this](
-                   ::grpc::CallbackServerContext* context, const ::fedtree::PID* request, ::fedtree::Ready* response) { return this->TriggerCut(context, request, response); }));}
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+                   ::grpc::CallbackServerContext*
+    #else
+                   ::grpc::experimental::CallbackServerContext*
+    #endif
+                     context, const ::fedtree::PID* request, ::fedtree::Ready* response) { return this->TriggerCut(context, request, response); }));}
     void SetMessageAllocatorFor_TriggerCut(
-        ::grpc::MessageAllocator< ::fedtree::PID, ::fedtree::Ready>* allocator) {
+        ::grpc::experimental::MessageAllocator< ::fedtree::PID, ::fedtree::Ready>* allocator) {
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
       ::grpc::internal::MethodHandler* const handler = ::grpc::Service::GetHandler(16);
+    #else
+      ::grpc::internal::MethodHandler* const handler = ::grpc::Service::experimental().GetHandler(16);
+    #endif
       static_cast<::grpc::internal::CallbackUnaryHandler< ::fedtree::PID, ::fedtree::Ready>*>(handler)
               ->SetMessageAllocator(allocator);
     }
-    ~WithCallbackMethod_TriggerCut() override {
+    ~ExperimentalWithCallbackMethod_TriggerCut() override {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
@@ -2693,21 +3384,37 @@ class FedTree final {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
     virtual ::grpc::ServerUnaryReactor* TriggerCut(
-      ::grpc::CallbackServerContext* /*context*/, const ::fedtree::PID* /*request*/, ::fedtree::Ready* /*response*/)  { return nullptr; }
+      ::grpc::CallbackServerContext* /*context*/, const ::fedtree::PID* /*request*/, ::fedtree::Ready* /*response*/)
+    #else
+    virtual ::grpc::experimental::ServerUnaryReactor* TriggerCut(
+      ::grpc::experimental::CallbackServerContext* /*context*/, const ::fedtree::PID* /*request*/, ::fedtree::Ready* /*response*/)
+    #endif
+      { return nullptr; }
   };
   template <class BaseClass>
-  class WithCallbackMethod_GetRange : public BaseClass {
+  class ExperimentalWithCallbackMethod_GetRange : public BaseClass {
    private:
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
-    WithCallbackMethod_GetRange() {
-      ::grpc::Service::MarkMethodCallback(17,
+    ExperimentalWithCallbackMethod_GetRange() {
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+      ::grpc::Service::
+    #else
+      ::grpc::Service::experimental().
+    #endif
+        MarkMethodCallback(17,
           new ::grpc::internal::CallbackServerStreamingHandler< ::fedtree::PID, ::fedtree::GHPair>(
             [this](
-                   ::grpc::CallbackServerContext* context, const ::fedtree::PID* request) { return this->GetRange(context, request); }));
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+                   ::grpc::CallbackServerContext*
+    #else
+                   ::grpc::experimental::CallbackServerContext*
+    #endif
+                     context, const ::fedtree::PID* request) { return this->GetRange(context, request); }));
     }
-    ~WithCallbackMethod_GetRange() override {
+    ~ExperimentalWithCallbackMethod_GetRange() override {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
@@ -2715,26 +3422,46 @@ class FedTree final {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
     virtual ::grpc::ServerWriteReactor< ::fedtree::GHPair>* GetRange(
-      ::grpc::CallbackServerContext* /*context*/, const ::fedtree::PID* /*request*/)  { return nullptr; }
+      ::grpc::CallbackServerContext* /*context*/, const ::fedtree::PID* /*request*/)
+    #else
+    virtual ::grpc::experimental::ServerWriteReactor< ::fedtree::GHPair>* GetRange(
+      ::grpc::experimental::CallbackServerContext* /*context*/, const ::fedtree::PID* /*request*/)
+    #endif
+      { return nullptr; }
   };
   template <class BaseClass>
-  class WithCallbackMethod_SendGH : public BaseClass {
+  class ExperimentalWithCallbackMethod_SendGH : public BaseClass {
    private:
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
-    WithCallbackMethod_SendGH() {
-      ::grpc::Service::MarkMethodCallback(18,
+    ExperimentalWithCallbackMethod_SendGH() {
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+      ::grpc::Service::
+    #else
+      ::grpc::Service::experimental().
+    #endif
+        MarkMethodCallback(18,
           new ::grpc::internal::CallbackUnaryHandler< ::fedtree::GHPair, ::fedtree::PID>(
             [this](
-                   ::grpc::CallbackServerContext* context, const ::fedtree::GHPair* request, ::fedtree::PID* response) { return this->SendGH(context, request, response); }));}
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+                   ::grpc::CallbackServerContext*
+    #else
+                   ::grpc::experimental::CallbackServerContext*
+    #endif
+                     context, const ::fedtree::GHPair* request, ::fedtree::PID* response) { return this->SendGH(context, request, response); }));}
     void SetMessageAllocatorFor_SendGH(
-        ::grpc::MessageAllocator< ::fedtree::GHPair, ::fedtree::PID>* allocator) {
+        ::grpc::experimental::MessageAllocator< ::fedtree::GHPair, ::fedtree::PID>* allocator) {
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
       ::grpc::internal::MethodHandler* const handler = ::grpc::Service::GetHandler(18);
+    #else
+      ::grpc::internal::MethodHandler* const handler = ::grpc::Service::experimental().GetHandler(18);
+    #endif
       static_cast<::grpc::internal::CallbackUnaryHandler< ::fedtree::GHPair, ::fedtree::PID>*>(handler)
               ->SetMessageAllocator(allocator);
     }
-    ~WithCallbackMethod_SendGH() override {
+    ~ExperimentalWithCallbackMethod_SendGH() override {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
@@ -2742,26 +3469,46 @@ class FedTree final {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
     virtual ::grpc::ServerUnaryReactor* SendGH(
-      ::grpc::CallbackServerContext* /*context*/, const ::fedtree::GHPair* /*request*/, ::fedtree::PID* /*response*/)  { return nullptr; }
+      ::grpc::CallbackServerContext* /*context*/, const ::fedtree::GHPair* /*request*/, ::fedtree::PID* /*response*/)
+    #else
+    virtual ::grpc::experimental::ServerUnaryReactor* SendGH(
+      ::grpc::experimental::CallbackServerContext* /*context*/, const ::fedtree::GHPair* /*request*/, ::fedtree::PID* /*response*/)
+    #endif
+      { return nullptr; }
   };
   template <class BaseClass>
-  class WithCallbackMethod_SendDHPubKey : public BaseClass {
+  class ExperimentalWithCallbackMethod_SendDHPubKey : public BaseClass {
    private:
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
-    WithCallbackMethod_SendDHPubKey() {
-      ::grpc::Service::MarkMethodCallback(19,
+    ExperimentalWithCallbackMethod_SendDHPubKey() {
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+      ::grpc::Service::
+    #else
+      ::grpc::Service::experimental().
+    #endif
+        MarkMethodCallback(19,
           new ::grpc::internal::CallbackUnaryHandler< ::fedtree::DHPublicKey, ::fedtree::PID>(
             [this](
-                   ::grpc::CallbackServerContext* context, const ::fedtree::DHPublicKey* request, ::fedtree::PID* response) { return this->SendDHPubKey(context, request, response); }));}
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+                   ::grpc::CallbackServerContext*
+    #else
+                   ::grpc::experimental::CallbackServerContext*
+    #endif
+                     context, const ::fedtree::DHPublicKey* request, ::fedtree::PID* response) { return this->SendDHPubKey(context, request, response); }));}
     void SetMessageAllocatorFor_SendDHPubKey(
-        ::grpc::MessageAllocator< ::fedtree::DHPublicKey, ::fedtree::PID>* allocator) {
+        ::grpc::experimental::MessageAllocator< ::fedtree::DHPublicKey, ::fedtree::PID>* allocator) {
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
       ::grpc::internal::MethodHandler* const handler = ::grpc::Service::GetHandler(19);
+    #else
+      ::grpc::internal::MethodHandler* const handler = ::grpc::Service::experimental().GetHandler(19);
+    #endif
       static_cast<::grpc::internal::CallbackUnaryHandler< ::fedtree::DHPublicKey, ::fedtree::PID>*>(handler)
               ->SetMessageAllocator(allocator);
     }
-    ~WithCallbackMethod_SendDHPubKey() override {
+    ~ExperimentalWithCallbackMethod_SendDHPubKey() override {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
@@ -2769,21 +3516,37 @@ class FedTree final {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
     virtual ::grpc::ServerUnaryReactor* SendDHPubKey(
-      ::grpc::CallbackServerContext* /*context*/, const ::fedtree::DHPublicKey* /*request*/, ::fedtree::PID* /*response*/)  { return nullptr; }
+      ::grpc::CallbackServerContext* /*context*/, const ::fedtree::DHPublicKey* /*request*/, ::fedtree::PID* /*response*/)
+    #else
+    virtual ::grpc::experimental::ServerUnaryReactor* SendDHPubKey(
+      ::grpc::experimental::CallbackServerContext* /*context*/, const ::fedtree::DHPublicKey* /*request*/, ::fedtree::PID* /*response*/)
+    #endif
+      { return nullptr; }
   };
   template <class BaseClass>
-  class WithCallbackMethod_GetDHPubKeys : public BaseClass {
+  class ExperimentalWithCallbackMethod_GetDHPubKeys : public BaseClass {
    private:
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
-    WithCallbackMethod_GetDHPubKeys() {
-      ::grpc::Service::MarkMethodCallback(20,
+    ExperimentalWithCallbackMethod_GetDHPubKeys() {
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+      ::grpc::Service::
+    #else
+      ::grpc::Service::experimental().
+    #endif
+        MarkMethodCallback(20,
           new ::grpc::internal::CallbackServerStreamingHandler< ::fedtree::PID, ::fedtree::DHPublicKeys>(
             [this](
-                   ::grpc::CallbackServerContext* context, const ::fedtree::PID* request) { return this->GetDHPubKeys(context, request); }));
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+                   ::grpc::CallbackServerContext*
+    #else
+                   ::grpc::experimental::CallbackServerContext*
+    #endif
+                     context, const ::fedtree::PID* request) { return this->GetDHPubKeys(context, request); }));
     }
-    ~WithCallbackMethod_GetDHPubKeys() override {
+    ~ExperimentalWithCallbackMethod_GetDHPubKeys() override {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
@@ -2791,26 +3554,46 @@ class FedTree final {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
     virtual ::grpc::ServerWriteReactor< ::fedtree::DHPublicKeys>* GetDHPubKeys(
-      ::grpc::CallbackServerContext* /*context*/, const ::fedtree::PID* /*request*/)  { return nullptr; }
+      ::grpc::CallbackServerContext* /*context*/, const ::fedtree::PID* /*request*/)
+    #else
+    virtual ::grpc::experimental::ServerWriteReactor< ::fedtree::DHPublicKeys>* GetDHPubKeys(
+      ::grpc::experimental::CallbackServerContext* /*context*/, const ::fedtree::PID* /*request*/)
+    #endif
+      { return nullptr; }
   };
   template <class BaseClass>
-  class WithCallbackMethod_SendNoises : public BaseClass {
+  class ExperimentalWithCallbackMethod_SendNoises : public BaseClass {
    private:
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
-    WithCallbackMethod_SendNoises() {
-      ::grpc::Service::MarkMethodCallback(21,
+    ExperimentalWithCallbackMethod_SendNoises() {
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+      ::grpc::Service::
+    #else
+      ::grpc::Service::experimental().
+    #endif
+        MarkMethodCallback(21,
           new ::grpc::internal::CallbackUnaryHandler< ::fedtree::SANoises, ::fedtree::PID>(
             [this](
-                   ::grpc::CallbackServerContext* context, const ::fedtree::SANoises* request, ::fedtree::PID* response) { return this->SendNoises(context, request, response); }));}
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+                   ::grpc::CallbackServerContext*
+    #else
+                   ::grpc::experimental::CallbackServerContext*
+    #endif
+                     context, const ::fedtree::SANoises* request, ::fedtree::PID* response) { return this->SendNoises(context, request, response); }));}
     void SetMessageAllocatorFor_SendNoises(
-        ::grpc::MessageAllocator< ::fedtree::SANoises, ::fedtree::PID>* allocator) {
+        ::grpc::experimental::MessageAllocator< ::fedtree::SANoises, ::fedtree::PID>* allocator) {
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
       ::grpc::internal::MethodHandler* const handler = ::grpc::Service::GetHandler(21);
+    #else
+      ::grpc::internal::MethodHandler* const handler = ::grpc::Service::experimental().GetHandler(21);
+    #endif
       static_cast<::grpc::internal::CallbackUnaryHandler< ::fedtree::SANoises, ::fedtree::PID>*>(handler)
               ->SetMessageAllocator(allocator);
     }
-    ~WithCallbackMethod_SendNoises() override {
+    ~ExperimentalWithCallbackMethod_SendNoises() override {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
@@ -2818,21 +3601,37 @@ class FedTree final {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
     virtual ::grpc::ServerUnaryReactor* SendNoises(
-      ::grpc::CallbackServerContext* /*context*/, const ::fedtree::SANoises* /*request*/, ::fedtree::PID* /*response*/)  { return nullptr; }
+      ::grpc::CallbackServerContext* /*context*/, const ::fedtree::SANoises* /*request*/, ::fedtree::PID* /*response*/)
+    #else
+    virtual ::grpc::experimental::ServerUnaryReactor* SendNoises(
+      ::grpc::experimental::CallbackServerContext* /*context*/, const ::fedtree::SANoises* /*request*/, ::fedtree::PID* /*response*/)
+    #endif
+      { return nullptr; }
   };
   template <class BaseClass>
-  class WithCallbackMethod_GetNoises : public BaseClass {
+  class ExperimentalWithCallbackMethod_GetNoises : public BaseClass {
    private:
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
-    WithCallbackMethod_GetNoises() {
-      ::grpc::Service::MarkMethodCallback(22,
+    ExperimentalWithCallbackMethod_GetNoises() {
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+      ::grpc::Service::
+    #else
+      ::grpc::Service::experimental().
+    #endif
+        MarkMethodCallback(22,
           new ::grpc::internal::CallbackServerStreamingHandler< ::fedtree::PID, ::fedtree::SANoises>(
             [this](
-                   ::grpc::CallbackServerContext* context, const ::fedtree::PID* request) { return this->GetNoises(context, request); }));
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+                   ::grpc::CallbackServerContext*
+    #else
+                   ::grpc::experimental::CallbackServerContext*
+    #endif
+                     context, const ::fedtree::PID* request) { return this->GetNoises(context, request); }));
     }
-    ~WithCallbackMethod_GetNoises() override {
+    ~ExperimentalWithCallbackMethod_GetNoises() override {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
@@ -2840,26 +3639,46 @@ class FedTree final {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
     virtual ::grpc::ServerWriteReactor< ::fedtree::SANoises>* GetNoises(
-      ::grpc::CallbackServerContext* /*context*/, const ::fedtree::PID* /*request*/)  { return nullptr; }
+      ::grpc::CallbackServerContext* /*context*/, const ::fedtree::PID* /*request*/)
+    #else
+    virtual ::grpc::experimental::ServerWriteReactor< ::fedtree::SANoises>* GetNoises(
+      ::grpc::experimental::CallbackServerContext* /*context*/, const ::fedtree::PID* /*request*/)
+    #endif
+      { return nullptr; }
   };
   template <class BaseClass>
-  class WithCallbackMethod_SendCutPoints : public BaseClass {
+  class ExperimentalWithCallbackMethod_SendCutPoints : public BaseClass {
    private:
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
-    WithCallbackMethod_SendCutPoints() {
-      ::grpc::Service::MarkMethodCallback(23,
+    ExperimentalWithCallbackMethod_SendCutPoints() {
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+      ::grpc::Service::
+    #else
+      ::grpc::Service::experimental().
+    #endif
+        MarkMethodCallback(23,
           new ::grpc::internal::CallbackUnaryHandler< ::fedtree::CutPoints, ::fedtree::PID>(
             [this](
-                   ::grpc::CallbackServerContext* context, const ::fedtree::CutPoints* request, ::fedtree::PID* response) { return this->SendCutPoints(context, request, response); }));}
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+                   ::grpc::CallbackServerContext*
+    #else
+                   ::grpc::experimental::CallbackServerContext*
+    #endif
+                     context, const ::fedtree::CutPoints* request, ::fedtree::PID* response) { return this->SendCutPoints(context, request, response); }));}
     void SetMessageAllocatorFor_SendCutPoints(
-        ::grpc::MessageAllocator< ::fedtree::CutPoints, ::fedtree::PID>* allocator) {
+        ::grpc::experimental::MessageAllocator< ::fedtree::CutPoints, ::fedtree::PID>* allocator) {
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
       ::grpc::internal::MethodHandler* const handler = ::grpc::Service::GetHandler(23);
+    #else
+      ::grpc::internal::MethodHandler* const handler = ::grpc::Service::experimental().GetHandler(23);
+    #endif
       static_cast<::grpc::internal::CallbackUnaryHandler< ::fedtree::CutPoints, ::fedtree::PID>*>(handler)
               ->SetMessageAllocator(allocator);
     }
-    ~WithCallbackMethod_SendCutPoints() override {
+    ~ExperimentalWithCallbackMethod_SendCutPoints() override {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
@@ -2867,21 +3686,37 @@ class FedTree final {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
     virtual ::grpc::ServerUnaryReactor* SendCutPoints(
-      ::grpc::CallbackServerContext* /*context*/, const ::fedtree::CutPoints* /*request*/, ::fedtree::PID* /*response*/)  { return nullptr; }
+      ::grpc::CallbackServerContext* /*context*/, const ::fedtree::CutPoints* /*request*/, ::fedtree::PID* /*response*/)
+    #else
+    virtual ::grpc::experimental::ServerUnaryReactor* SendCutPoints(
+      ::grpc::experimental::CallbackServerContext* /*context*/, const ::fedtree::CutPoints* /*request*/, ::fedtree::PID* /*response*/)
+    #endif
+      { return nullptr; }
   };
   template <class BaseClass>
-  class WithCallbackMethod_GetCutPoints : public BaseClass {
+  class ExperimentalWithCallbackMethod_GetCutPoints : public BaseClass {
    private:
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
-    WithCallbackMethod_GetCutPoints() {
-      ::grpc::Service::MarkMethodCallback(24,
+    ExperimentalWithCallbackMethod_GetCutPoints() {
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+      ::grpc::Service::
+    #else
+      ::grpc::Service::experimental().
+    #endif
+        MarkMethodCallback(24,
           new ::grpc::internal::CallbackServerStreamingHandler< ::fedtree::PID, ::fedtree::CutPoints>(
             [this](
-                   ::grpc::CallbackServerContext* context, const ::fedtree::PID* request) { return this->GetCutPoints(context, request); }));
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+                   ::grpc::CallbackServerContext*
+    #else
+                   ::grpc::experimental::CallbackServerContext*
+    #endif
+                     context, const ::fedtree::PID* request) { return this->GetCutPoints(context, request); }));
     }
-    ~WithCallbackMethod_GetCutPoints() override {
+    ~ExperimentalWithCallbackMethod_GetCutPoints() override {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
@@ -2889,26 +3724,46 @@ class FedTree final {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
     virtual ::grpc::ServerWriteReactor< ::fedtree::CutPoints>* GetCutPoints(
-      ::grpc::CallbackServerContext* /*context*/, const ::fedtree::PID* /*request*/)  { return nullptr; }
+      ::grpc::CallbackServerContext* /*context*/, const ::fedtree::PID* /*request*/)
+    #else
+    virtual ::grpc::experimental::ServerWriteReactor< ::fedtree::CutPoints>* GetCutPoints(
+      ::grpc::experimental::CallbackServerContext* /*context*/, const ::fedtree::PID* /*request*/)
+    #endif
+      { return nullptr; }
   };
   template <class BaseClass>
-  class WithCallbackMethod_TriggerBuildUsingGH : public BaseClass {
+  class ExperimentalWithCallbackMethod_TriggerBuildUsingGH : public BaseClass {
    private:
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
-    WithCallbackMethod_TriggerBuildUsingGH() {
-      ::grpc::Service::MarkMethodCallback(25,
+    ExperimentalWithCallbackMethod_TriggerBuildUsingGH() {
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+      ::grpc::Service::
+    #else
+      ::grpc::Service::experimental().
+    #endif
+        MarkMethodCallback(25,
           new ::grpc::internal::CallbackUnaryHandler< ::fedtree::PID, ::fedtree::Ready>(
             [this](
-                   ::grpc::CallbackServerContext* context, const ::fedtree::PID* request, ::fedtree::Ready* response) { return this->TriggerBuildUsingGH(context, request, response); }));}
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+                   ::grpc::CallbackServerContext*
+    #else
+                   ::grpc::experimental::CallbackServerContext*
+    #endif
+                     context, const ::fedtree::PID* request, ::fedtree::Ready* response) { return this->TriggerBuildUsingGH(context, request, response); }));}
     void SetMessageAllocatorFor_TriggerBuildUsingGH(
-        ::grpc::MessageAllocator< ::fedtree::PID, ::fedtree::Ready>* allocator) {
+        ::grpc::experimental::MessageAllocator< ::fedtree::PID, ::fedtree::Ready>* allocator) {
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
       ::grpc::internal::MethodHandler* const handler = ::grpc::Service::GetHandler(25);
+    #else
+      ::grpc::internal::MethodHandler* const handler = ::grpc::Service::experimental().GetHandler(25);
+    #endif
       static_cast<::grpc::internal::CallbackUnaryHandler< ::fedtree::PID, ::fedtree::Ready>*>(handler)
               ->SetMessageAllocator(allocator);
     }
-    ~WithCallbackMethod_TriggerBuildUsingGH() override {
+    ~ExperimentalWithCallbackMethod_TriggerBuildUsingGH() override {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
@@ -2916,26 +3771,46 @@ class FedTree final {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
     virtual ::grpc::ServerUnaryReactor* TriggerBuildUsingGH(
-      ::grpc::CallbackServerContext* /*context*/, const ::fedtree::PID* /*request*/, ::fedtree::Ready* /*response*/)  { return nullptr; }
+      ::grpc::CallbackServerContext* /*context*/, const ::fedtree::PID* /*request*/, ::fedtree::Ready* /*response*/)
+    #else
+    virtual ::grpc::experimental::ServerUnaryReactor* TriggerBuildUsingGH(
+      ::grpc::experimental::CallbackServerContext* /*context*/, const ::fedtree::PID* /*request*/, ::fedtree::Ready* /*response*/)
+    #endif
+      { return nullptr; }
   };
   template <class BaseClass>
-  class WithCallbackMethod_TriggerCalcTree : public BaseClass {
+  class ExperimentalWithCallbackMethod_TriggerCalcTree : public BaseClass {
    private:
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
-    WithCallbackMethod_TriggerCalcTree() {
-      ::grpc::Service::MarkMethodCallback(26,
+    ExperimentalWithCallbackMethod_TriggerCalcTree() {
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+      ::grpc::Service::
+    #else
+      ::grpc::Service::experimental().
+    #endif
+        MarkMethodCallback(26,
           new ::grpc::internal::CallbackUnaryHandler< ::fedtree::PID, ::fedtree::Ready>(
             [this](
-                   ::grpc::CallbackServerContext* context, const ::fedtree::PID* request, ::fedtree::Ready* response) { return this->TriggerCalcTree(context, request, response); }));}
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+                   ::grpc::CallbackServerContext*
+    #else
+                   ::grpc::experimental::CallbackServerContext*
+    #endif
+                     context, const ::fedtree::PID* request, ::fedtree::Ready* response) { return this->TriggerCalcTree(context, request, response); }));}
     void SetMessageAllocatorFor_TriggerCalcTree(
-        ::grpc::MessageAllocator< ::fedtree::PID, ::fedtree::Ready>* allocator) {
+        ::grpc::experimental::MessageAllocator< ::fedtree::PID, ::fedtree::Ready>* allocator) {
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
       ::grpc::internal::MethodHandler* const handler = ::grpc::Service::GetHandler(26);
+    #else
+      ::grpc::internal::MethodHandler* const handler = ::grpc::Service::experimental().GetHandler(26);
+    #endif
       static_cast<::grpc::internal::CallbackUnaryHandler< ::fedtree::PID, ::fedtree::Ready>*>(handler)
               ->SetMessageAllocator(allocator);
     }
-    ~WithCallbackMethod_TriggerCalcTree() override {
+    ~ExperimentalWithCallbackMethod_TriggerCalcTree() override {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
@@ -2943,26 +3818,46 @@ class FedTree final {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
     virtual ::grpc::ServerUnaryReactor* TriggerCalcTree(
-      ::grpc::CallbackServerContext* /*context*/, const ::fedtree::PID* /*request*/, ::fedtree::Ready* /*response*/)  { return nullptr; }
+      ::grpc::CallbackServerContext* /*context*/, const ::fedtree::PID* /*request*/, ::fedtree::Ready* /*response*/)
+    #else
+    virtual ::grpc::experimental::ServerUnaryReactor* TriggerCalcTree(
+      ::grpc::experimental::CallbackServerContext* /*context*/, const ::fedtree::PID* /*request*/, ::fedtree::Ready* /*response*/)
+    #endif
+      { return nullptr; }
   };
   template <class BaseClass>
-  class WithCallbackMethod_GetRootNode : public BaseClass {
+  class ExperimentalWithCallbackMethod_GetRootNode : public BaseClass {
    private:
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
-    WithCallbackMethod_GetRootNode() {
-      ::grpc::Service::MarkMethodCallback(27,
+    ExperimentalWithCallbackMethod_GetRootNode() {
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+      ::grpc::Service::
+    #else
+      ::grpc::Service::experimental().
+    #endif
+        MarkMethodCallback(27,
           new ::grpc::internal::CallbackUnaryHandler< ::fedtree::PID, ::fedtree::Node>(
             [this](
-                   ::grpc::CallbackServerContext* context, const ::fedtree::PID* request, ::fedtree::Node* response) { return this->GetRootNode(context, request, response); }));}
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+                   ::grpc::CallbackServerContext*
+    #else
+                   ::grpc::experimental::CallbackServerContext*
+    #endif
+                     context, const ::fedtree::PID* request, ::fedtree::Node* response) { return this->GetRootNode(context, request, response); }));}
     void SetMessageAllocatorFor_GetRootNode(
-        ::grpc::MessageAllocator< ::fedtree::PID, ::fedtree::Node>* allocator) {
+        ::grpc::experimental::MessageAllocator< ::fedtree::PID, ::fedtree::Node>* allocator) {
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
       ::grpc::internal::MethodHandler* const handler = ::grpc::Service::GetHandler(27);
+    #else
+      ::grpc::internal::MethodHandler* const handler = ::grpc::Service::experimental().GetHandler(27);
+    #endif
       static_cast<::grpc::internal::CallbackUnaryHandler< ::fedtree::PID, ::fedtree::Node>*>(handler)
               ->SetMessageAllocator(allocator);
     }
-    ~WithCallbackMethod_GetRootNode() override {
+    ~ExperimentalWithCallbackMethod_GetRootNode() override {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
@@ -2970,21 +3865,37 @@ class FedTree final {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
     virtual ::grpc::ServerUnaryReactor* GetRootNode(
-      ::grpc::CallbackServerContext* /*context*/, const ::fedtree::PID* /*request*/, ::fedtree::Node* /*response*/)  { return nullptr; }
+      ::grpc::CallbackServerContext* /*context*/, const ::fedtree::PID* /*request*/, ::fedtree::Node* /*response*/)
+    #else
+    virtual ::grpc::experimental::ServerUnaryReactor* GetRootNode(
+      ::grpc::experimental::CallbackServerContext* /*context*/, const ::fedtree::PID* /*request*/, ::fedtree::Node* /*response*/)
+    #endif
+      { return nullptr; }
   };
   template <class BaseClass>
-  class WithCallbackMethod_GetSplitPoints : public BaseClass {
+  class ExperimentalWithCallbackMethod_GetSplitPoints : public BaseClass {
    private:
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
-    WithCallbackMethod_GetSplitPoints() {
-      ::grpc::Service::MarkMethodCallback(28,
+    ExperimentalWithCallbackMethod_GetSplitPoints() {
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+      ::grpc::Service::
+    #else
+      ::grpc::Service::experimental().
+    #endif
+        MarkMethodCallback(28,
           new ::grpc::internal::CallbackServerStreamingHandler< ::fedtree::PID, ::fedtree::SplitPoint>(
             [this](
-                   ::grpc::CallbackServerContext* context, const ::fedtree::PID* request) { return this->GetSplitPoints(context, request); }));
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+                   ::grpc::CallbackServerContext*
+    #else
+                   ::grpc::experimental::CallbackServerContext*
+    #endif
+                     context, const ::fedtree::PID* request) { return this->GetSplitPoints(context, request); }));
     }
-    ~WithCallbackMethod_GetSplitPoints() override {
+    ~ExperimentalWithCallbackMethod_GetSplitPoints() override {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
@@ -2992,26 +3903,46 @@ class FedTree final {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
     virtual ::grpc::ServerWriteReactor< ::fedtree::SplitPoint>* GetSplitPoints(
-      ::grpc::CallbackServerContext* /*context*/, const ::fedtree::PID* /*request*/)  { return nullptr; }
+      ::grpc::CallbackServerContext* /*context*/, const ::fedtree::PID* /*request*/)
+    #else
+    virtual ::grpc::experimental::ServerWriteReactor< ::fedtree::SplitPoint>* GetSplitPoints(
+      ::grpc::experimental::CallbackServerContext* /*context*/, const ::fedtree::PID* /*request*/)
+    #endif
+      { return nullptr; }
   };
   template <class BaseClass>
-  class WithCallbackMethod_HCheckIfContinue : public BaseClass {
+  class ExperimentalWithCallbackMethod_HCheckIfContinue : public BaseClass {
    private:
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
-    WithCallbackMethod_HCheckIfContinue() {
-      ::grpc::Service::MarkMethodCallback(29,
+    ExperimentalWithCallbackMethod_HCheckIfContinue() {
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+      ::grpc::Service::
+    #else
+      ::grpc::Service::experimental().
+    #endif
+        MarkMethodCallback(29,
           new ::grpc::internal::CallbackUnaryHandler< ::fedtree::PID, ::fedtree::Ready>(
             [this](
-                   ::grpc::CallbackServerContext* context, const ::fedtree::PID* request, ::fedtree::Ready* response) { return this->HCheckIfContinue(context, request, response); }));}
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+                   ::grpc::CallbackServerContext*
+    #else
+                   ::grpc::experimental::CallbackServerContext*
+    #endif
+                     context, const ::fedtree::PID* request, ::fedtree::Ready* response) { return this->HCheckIfContinue(context, request, response); }));}
     void SetMessageAllocatorFor_HCheckIfContinue(
-        ::grpc::MessageAllocator< ::fedtree::PID, ::fedtree::Ready>* allocator) {
+        ::grpc::experimental::MessageAllocator< ::fedtree::PID, ::fedtree::Ready>* allocator) {
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
       ::grpc::internal::MethodHandler* const handler = ::grpc::Service::GetHandler(29);
+    #else
+      ::grpc::internal::MethodHandler* const handler = ::grpc::Service::experimental().GetHandler(29);
+    #endif
       static_cast<::grpc::internal::CallbackUnaryHandler< ::fedtree::PID, ::fedtree::Ready>*>(handler)
               ->SetMessageAllocator(allocator);
     }
-    ~WithCallbackMethod_HCheckIfContinue() override {
+    ~ExperimentalWithCallbackMethod_HCheckIfContinue() override {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
@@ -3019,26 +3950,46 @@ class FedTree final {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
     virtual ::grpc::ServerUnaryReactor* HCheckIfContinue(
-      ::grpc::CallbackServerContext* /*context*/, const ::fedtree::PID* /*request*/, ::fedtree::Ready* /*response*/)  { return nullptr; }
+      ::grpc::CallbackServerContext* /*context*/, const ::fedtree::PID* /*request*/, ::fedtree::Ready* /*response*/)
+    #else
+    virtual ::grpc::experimental::ServerUnaryReactor* HCheckIfContinue(
+      ::grpc::experimental::CallbackServerContext* /*context*/, const ::fedtree::PID* /*request*/, ::fedtree::Ready* /*response*/)
+    #endif
+      { return nullptr; }
   };
   template <class BaseClass>
-  class WithCallbackMethod_ScoreReduce : public BaseClass {
+  class ExperimentalWithCallbackMethod_ScoreReduce : public BaseClass {
    private:
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
-    WithCallbackMethod_ScoreReduce() {
-      ::grpc::Service::MarkMethodCallback(30,
+    ExperimentalWithCallbackMethod_ScoreReduce() {
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+      ::grpc::Service::
+    #else
+      ::grpc::Service::experimental().
+    #endif
+        MarkMethodCallback(30,
           new ::grpc::internal::CallbackUnaryHandler< ::fedtree::Score, ::fedtree::Score>(
             [this](
-                   ::grpc::CallbackServerContext* context, const ::fedtree::Score* request, ::fedtree::Score* response) { return this->ScoreReduce(context, request, response); }));}
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+                   ::grpc::CallbackServerContext*
+    #else
+                   ::grpc::experimental::CallbackServerContext*
+    #endif
+                     context, const ::fedtree::Score* request, ::fedtree::Score* response) { return this->ScoreReduce(context, request, response); }));}
     void SetMessageAllocatorFor_ScoreReduce(
-        ::grpc::MessageAllocator< ::fedtree::Score, ::fedtree::Score>* allocator) {
+        ::grpc::experimental::MessageAllocator< ::fedtree::Score, ::fedtree::Score>* allocator) {
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
       ::grpc::internal::MethodHandler* const handler = ::grpc::Service::GetHandler(30);
+    #else
+      ::grpc::internal::MethodHandler* const handler = ::grpc::Service::experimental().GetHandler(30);
+    #endif
       static_cast<::grpc::internal::CallbackUnaryHandler< ::fedtree::Score, ::fedtree::Score>*>(handler)
               ->SetMessageAllocator(allocator);
     }
-    ~WithCallbackMethod_ScoreReduce() override {
+    ~ExperimentalWithCallbackMethod_ScoreReduce() override {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
@@ -3046,26 +3997,46 @@ class FedTree final {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
     virtual ::grpc::ServerUnaryReactor* ScoreReduce(
-      ::grpc::CallbackServerContext* /*context*/, const ::fedtree::Score* /*request*/, ::fedtree::Score* /*response*/)  { return nullptr; }
+      ::grpc::CallbackServerContext* /*context*/, const ::fedtree::Score* /*request*/, ::fedtree::Score* /*response*/)
+    #else
+    virtual ::grpc::experimental::ServerUnaryReactor* ScoreReduce(
+      ::grpc::experimental::CallbackServerContext* /*context*/, const ::fedtree::Score* /*request*/, ::fedtree::Score* /*response*/)
+    #endif
+      { return nullptr; }
   };
   template <class BaseClass>
-  class WithCallbackMethod_TriggerHomoInit : public BaseClass {
+  class ExperimentalWithCallbackMethod_TriggerHomoInit : public BaseClass {
    private:
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
-    WithCallbackMethod_TriggerHomoInit() {
-      ::grpc::Service::MarkMethodCallback(31,
+    ExperimentalWithCallbackMethod_TriggerHomoInit() {
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+      ::grpc::Service::
+    #else
+      ::grpc::Service::experimental().
+    #endif
+        MarkMethodCallback(31,
           new ::grpc::internal::CallbackUnaryHandler< ::fedtree::PID, ::fedtree::Ready>(
             [this](
-                   ::grpc::CallbackServerContext* context, const ::fedtree::PID* request, ::fedtree::Ready* response) { return this->TriggerHomoInit(context, request, response); }));}
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+                   ::grpc::CallbackServerContext*
+    #else
+                   ::grpc::experimental::CallbackServerContext*
+    #endif
+                     context, const ::fedtree::PID* request, ::fedtree::Ready* response) { return this->TriggerHomoInit(context, request, response); }));}
     void SetMessageAllocatorFor_TriggerHomoInit(
-        ::grpc::MessageAllocator< ::fedtree::PID, ::fedtree::Ready>* allocator) {
+        ::grpc::experimental::MessageAllocator< ::fedtree::PID, ::fedtree::Ready>* allocator) {
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
       ::grpc::internal::MethodHandler* const handler = ::grpc::Service::GetHandler(31);
+    #else
+      ::grpc::internal::MethodHandler* const handler = ::grpc::Service::experimental().GetHandler(31);
+    #endif
       static_cast<::grpc::internal::CallbackUnaryHandler< ::fedtree::PID, ::fedtree::Ready>*>(handler)
               ->SetMessageAllocator(allocator);
     }
-    ~WithCallbackMethod_TriggerHomoInit() override {
+    ~ExperimentalWithCallbackMethod_TriggerHomoInit() override {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
@@ -3073,26 +4044,46 @@ class FedTree final {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
     virtual ::grpc::ServerUnaryReactor* TriggerHomoInit(
-      ::grpc::CallbackServerContext* /*context*/, const ::fedtree::PID* /*request*/, ::fedtree::Ready* /*response*/)  { return nullptr; }
+      ::grpc::CallbackServerContext* /*context*/, const ::fedtree::PID* /*request*/, ::fedtree::Ready* /*response*/)
+    #else
+    virtual ::grpc::experimental::ServerUnaryReactor* TriggerHomoInit(
+      ::grpc::experimental::CallbackServerContext* /*context*/, const ::fedtree::PID* /*request*/, ::fedtree::Ready* /*response*/)
+    #endif
+      { return nullptr; }
   };
   template <class BaseClass>
-  class WithCallbackMethod_TriggerSAInit : public BaseClass {
+  class ExperimentalWithCallbackMethod_TriggerSAInit : public BaseClass {
    private:
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
-    WithCallbackMethod_TriggerSAInit() {
-      ::grpc::Service::MarkMethodCallback(32,
+    ExperimentalWithCallbackMethod_TriggerSAInit() {
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+      ::grpc::Service::
+    #else
+      ::grpc::Service::experimental().
+    #endif
+        MarkMethodCallback(32,
           new ::grpc::internal::CallbackUnaryHandler< ::fedtree::PID, ::fedtree::Ready>(
             [this](
-                   ::grpc::CallbackServerContext* context, const ::fedtree::PID* request, ::fedtree::Ready* response) { return this->TriggerSAInit(context, request, response); }));}
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+                   ::grpc::CallbackServerContext*
+    #else
+                   ::grpc::experimental::CallbackServerContext*
+    #endif
+                     context, const ::fedtree::PID* request, ::fedtree::Ready* response) { return this->TriggerSAInit(context, request, response); }));}
     void SetMessageAllocatorFor_TriggerSAInit(
-        ::grpc::MessageAllocator< ::fedtree::PID, ::fedtree::Ready>* allocator) {
+        ::grpc::experimental::MessageAllocator< ::fedtree::PID, ::fedtree::Ready>* allocator) {
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
       ::grpc::internal::MethodHandler* const handler = ::grpc::Service::GetHandler(32);
+    #else
+      ::grpc::internal::MethodHandler* const handler = ::grpc::Service::experimental().GetHandler(32);
+    #endif
       static_cast<::grpc::internal::CallbackUnaryHandler< ::fedtree::PID, ::fedtree::Ready>*>(handler)
               ->SetMessageAllocator(allocator);
     }
-    ~WithCallbackMethod_TriggerSAInit() override {
+    ~ExperimentalWithCallbackMethod_TriggerSAInit() override {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
@@ -3100,26 +4091,46 @@ class FedTree final {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
     virtual ::grpc::ServerUnaryReactor* TriggerSAInit(
-      ::grpc::CallbackServerContext* /*context*/, const ::fedtree::PID* /*request*/, ::fedtree::Ready* /*response*/)  { return nullptr; }
+      ::grpc::CallbackServerContext* /*context*/, const ::fedtree::PID* /*request*/, ::fedtree::Ready* /*response*/)
+    #else
+    virtual ::grpc::experimental::ServerUnaryReactor* TriggerSAInit(
+      ::grpc::experimental::CallbackServerContext* /*context*/, const ::fedtree::PID* /*request*/, ::fedtree::Ready* /*response*/)
+    #endif
+      { return nullptr; }
   };
   template <class BaseClass>
-  class WithCallbackMethod_GetPaillier : public BaseClass {
+  class ExperimentalWithCallbackMethod_GetPaillier : public BaseClass {
    private:
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
-    WithCallbackMethod_GetPaillier() {
-      ::grpc::Service::MarkMethodCallback(33,
+    ExperimentalWithCallbackMethod_GetPaillier() {
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+      ::grpc::Service::
+    #else
+      ::grpc::Service::experimental().
+    #endif
+        MarkMethodCallback(33,
           new ::grpc::internal::CallbackUnaryHandler< ::fedtree::PID, ::fedtree::Paillier>(
             [this](
-                   ::grpc::CallbackServerContext* context, const ::fedtree::PID* request, ::fedtree::Paillier* response) { return this->GetPaillier(context, request, response); }));}
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+                   ::grpc::CallbackServerContext*
+    #else
+                   ::grpc::experimental::CallbackServerContext*
+    #endif
+                     context, const ::fedtree::PID* request, ::fedtree::Paillier* response) { return this->GetPaillier(context, request, response); }));}
     void SetMessageAllocatorFor_GetPaillier(
-        ::grpc::MessageAllocator< ::fedtree::PID, ::fedtree::Paillier>* allocator) {
+        ::grpc::experimental::MessageAllocator< ::fedtree::PID, ::fedtree::Paillier>* allocator) {
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
       ::grpc::internal::MethodHandler* const handler = ::grpc::Service::GetHandler(33);
+    #else
+      ::grpc::internal::MethodHandler* const handler = ::grpc::Service::experimental().GetHandler(33);
+    #endif
       static_cast<::grpc::internal::CallbackUnaryHandler< ::fedtree::PID, ::fedtree::Paillier>*>(handler)
               ->SetMessageAllocator(allocator);
     }
-    ~WithCallbackMethod_GetPaillier() override {
+    ~ExperimentalWithCallbackMethod_GetPaillier() override {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
@@ -3127,21 +4138,37 @@ class FedTree final {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
     virtual ::grpc::ServerUnaryReactor* GetPaillier(
-      ::grpc::CallbackServerContext* /*context*/, const ::fedtree::PID* /*request*/, ::fedtree::Paillier* /*response*/)  { return nullptr; }
+      ::grpc::CallbackServerContext* /*context*/, const ::fedtree::PID* /*request*/, ::fedtree::Paillier* /*response*/)
+    #else
+    virtual ::grpc::experimental::ServerUnaryReactor* GetPaillier(
+      ::grpc::experimental::CallbackServerContext* /*context*/, const ::fedtree::PID* /*request*/, ::fedtree::Paillier* /*response*/)
+    #endif
+      { return nullptr; }
   };
   template <class BaseClass>
-  class WithCallbackMethod_SendHistogramsEnc : public BaseClass {
+  class ExperimentalWithCallbackMethod_SendHistogramsEnc : public BaseClass {
    private:
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
-    WithCallbackMethod_SendHistogramsEnc() {
-      ::grpc::Service::MarkMethodCallback(34,
+    ExperimentalWithCallbackMethod_SendHistogramsEnc() {
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+      ::grpc::Service::
+    #else
+      ::grpc::Service::experimental().
+    #endif
+        MarkMethodCallback(34,
           new ::grpc::internal::CallbackClientStreamingHandler< ::fedtree::GHPairEnc, ::fedtree::PID>(
             [this](
-                   ::grpc::CallbackServerContext* context, ::fedtree::PID* response) { return this->SendHistogramsEnc(context, response); }));
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+                   ::grpc::CallbackServerContext*
+    #else
+                   ::grpc::experimental::CallbackServerContext*
+    #endif
+                     context, ::fedtree::PID* response) { return this->SendHistogramsEnc(context, response); }));
     }
-    ~WithCallbackMethod_SendHistogramsEnc() override {
+    ~ExperimentalWithCallbackMethod_SendHistogramsEnc() override {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
@@ -3149,26 +4176,46 @@ class FedTree final {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
     virtual ::grpc::ServerReadReactor< ::fedtree::GHPairEnc>* SendHistogramsEnc(
-      ::grpc::CallbackServerContext* /*context*/, ::fedtree::PID* /*response*/)  { return nullptr; }
+      ::grpc::CallbackServerContext* /*context*/, ::fedtree::PID* /*response*/)
+    #else
+    virtual ::grpc::experimental::ServerReadReactor< ::fedtree::GHPairEnc>* SendHistogramsEnc(
+      ::grpc::experimental::CallbackServerContext* /*context*/, ::fedtree::PID* /*response*/)
+    #endif
+      { return nullptr; }
   };
   template <class BaseClass>
-  class WithCallbackMethod_SendBatchedHistograms : public BaseClass {
+  class ExperimentalWithCallbackMethod_SendBatchedHistograms : public BaseClass {
    private:
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
-    WithCallbackMethod_SendBatchedHistograms() {
-      ::grpc::Service::MarkMethodCallback(35,
+    ExperimentalWithCallbackMethod_SendBatchedHistograms() {
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+      ::grpc::Service::
+    #else
+      ::grpc::Service::experimental().
+    #endif
+        MarkMethodCallback(35,
           new ::grpc::internal::CallbackUnaryHandler< ::fedtree::GHArray, ::fedtree::PID>(
             [this](
-                   ::grpc::CallbackServerContext* context, const ::fedtree::GHArray* request, ::fedtree::PID* response) { return this->SendBatchedHistograms(context, request, response); }));}
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+                   ::grpc::CallbackServerContext*
+    #else
+                   ::grpc::experimental::CallbackServerContext*
+    #endif
+                     context, const ::fedtree::GHArray* request, ::fedtree::PID* response) { return this->SendBatchedHistograms(context, request, response); }));}
     void SetMessageAllocatorFor_SendBatchedHistograms(
-        ::grpc::MessageAllocator< ::fedtree::GHArray, ::fedtree::PID>* allocator) {
+        ::grpc::experimental::MessageAllocator< ::fedtree::GHArray, ::fedtree::PID>* allocator) {
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
       ::grpc::internal::MethodHandler* const handler = ::grpc::Service::GetHandler(35);
+    #else
+      ::grpc::internal::MethodHandler* const handler = ::grpc::Service::experimental().GetHandler(35);
+    #endif
       static_cast<::grpc::internal::CallbackUnaryHandler< ::fedtree::GHArray, ::fedtree::PID>*>(handler)
               ->SetMessageAllocator(allocator);
     }
-    ~WithCallbackMethod_SendBatchedHistograms() override {
+    ~ExperimentalWithCallbackMethod_SendBatchedHistograms() override {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
@@ -3176,21 +4223,37 @@ class FedTree final {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
     virtual ::grpc::ServerUnaryReactor* SendBatchedHistograms(
-      ::grpc::CallbackServerContext* /*context*/, const ::fedtree::GHArray* /*request*/, ::fedtree::PID* /*response*/)  { return nullptr; }
+      ::grpc::CallbackServerContext* /*context*/, const ::fedtree::GHArray* /*request*/, ::fedtree::PID* /*response*/)
+    #else
+    virtual ::grpc::experimental::ServerUnaryReactor* SendBatchedHistograms(
+      ::grpc::experimental::CallbackServerContext* /*context*/, const ::fedtree::GHArray* /*request*/, ::fedtree::PID* /*response*/)
+    #endif
+      { return nullptr; }
   };
   template <class BaseClass>
-  class WithCallbackMethod_SendHistogramBatches : public BaseClass {
+  class ExperimentalWithCallbackMethod_SendHistogramBatches : public BaseClass {
    private:
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
-    WithCallbackMethod_SendHistogramBatches() {
-      ::grpc::Service::MarkMethodCallback(36,
+    ExperimentalWithCallbackMethod_SendHistogramBatches() {
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+      ::grpc::Service::
+    #else
+      ::grpc::Service::experimental().
+    #endif
+        MarkMethodCallback(36,
           new ::grpc::internal::CallbackClientStreamingHandler< ::fedtree::GHBatch, ::fedtree::PID>(
             [this](
-                   ::grpc::CallbackServerContext* context, ::fedtree::PID* response) { return this->SendHistogramBatches(context, response); }));
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+                   ::grpc::CallbackServerContext*
+    #else
+                   ::grpc::experimental::CallbackServerContext*
+    #endif
+                     context, ::fedtree::PID* response) { return this->SendHistogramBatches(context, response); }));
     }
-    ~WithCallbackMethod_SendHistogramBatches() override {
+    ~ExperimentalWithCallbackMethod_SendHistogramBatches() override {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
@@ -3198,21 +4261,37 @@ class FedTree final {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
     virtual ::grpc::ServerReadReactor< ::fedtree::GHBatch>* SendHistogramBatches(
-      ::grpc::CallbackServerContext* /*context*/, ::fedtree::PID* /*response*/)  { return nullptr; }
+      ::grpc::CallbackServerContext* /*context*/, ::fedtree::PID* /*response*/)
+    #else
+    virtual ::grpc::experimental::ServerReadReactor< ::fedtree::GHBatch>* SendHistogramBatches(
+      ::grpc::experimental::CallbackServerContext* /*context*/, ::fedtree::PID* /*response*/)
+    #endif
+      { return nullptr; }
   };
   template <class BaseClass>
-  class WithCallbackMethod_SendHistFidBatches : public BaseClass {
+  class ExperimentalWithCallbackMethod_SendHistFidBatches : public BaseClass {
    private:
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
-    WithCallbackMethod_SendHistFidBatches() {
-      ::grpc::Service::MarkMethodCallback(37,
+    ExperimentalWithCallbackMethod_SendHistFidBatches() {
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+      ::grpc::Service::
+    #else
+      ::grpc::Service::experimental().
+    #endif
+        MarkMethodCallback(37,
           new ::grpc::internal::CallbackClientStreamingHandler< ::fedtree::FIDBatch, ::fedtree::PID>(
             [this](
-                   ::grpc::CallbackServerContext* context, ::fedtree::PID* response) { return this->SendHistFidBatches(context, response); }));
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+                   ::grpc::CallbackServerContext*
+    #else
+                   ::grpc::experimental::CallbackServerContext*
+    #endif
+                     context, ::fedtree::PID* response) { return this->SendHistFidBatches(context, response); }));
     }
-    ~WithCallbackMethod_SendHistFidBatches() override {
+    ~ExperimentalWithCallbackMethod_SendHistFidBatches() override {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
@@ -3220,21 +4299,37 @@ class FedTree final {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
     virtual ::grpc::ServerReadReactor< ::fedtree::FIDBatch>* SendHistFidBatches(
-      ::grpc::CallbackServerContext* /*context*/, ::fedtree::PID* /*response*/)  { return nullptr; }
+      ::grpc::CallbackServerContext* /*context*/, ::fedtree::PID* /*response*/)
+    #else
+    virtual ::grpc::experimental::ServerReadReactor< ::fedtree::FIDBatch>* SendHistFidBatches(
+      ::grpc::experimental::CallbackServerContext* /*context*/, ::fedtree::PID* /*response*/)
+    #endif
+      { return nullptr; }
   };
   template <class BaseClass>
-  class WithCallbackMethod_GetIns2NodeIDBatches : public BaseClass {
+  class ExperimentalWithCallbackMethod_GetIns2NodeIDBatches : public BaseClass {
    private:
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
-    WithCallbackMethod_GetIns2NodeIDBatches() {
-      ::grpc::Service::MarkMethodCallback(38,
+    ExperimentalWithCallbackMethod_GetIns2NodeIDBatches() {
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+      ::grpc::Service::
+    #else
+      ::grpc::Service::experimental().
+    #endif
+        MarkMethodCallback(38,
           new ::grpc::internal::CallbackServerStreamingHandler< ::fedtree::PID, ::fedtree::Ins2NodeIDBatch>(
             [this](
-                   ::grpc::CallbackServerContext* context, const ::fedtree::PID* request) { return this->GetIns2NodeIDBatches(context, request); }));
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+                   ::grpc::CallbackServerContext*
+    #else
+                   ::grpc::experimental::CallbackServerContext*
+    #endif
+                     context, const ::fedtree::PID* request) { return this->GetIns2NodeIDBatches(context, request); }));
     }
-    ~WithCallbackMethod_GetIns2NodeIDBatches() override {
+    ~ExperimentalWithCallbackMethod_GetIns2NodeIDBatches() override {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
@@ -3242,21 +4337,37 @@ class FedTree final {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
     virtual ::grpc::ServerWriteReactor< ::fedtree::Ins2NodeIDBatch>* GetIns2NodeIDBatches(
-      ::grpc::CallbackServerContext* /*context*/, const ::fedtree::PID* /*request*/)  { return nullptr; }
+      ::grpc::CallbackServerContext* /*context*/, const ::fedtree::PID* /*request*/)
+    #else
+    virtual ::grpc::experimental::ServerWriteReactor< ::fedtree::Ins2NodeIDBatch>* GetIns2NodeIDBatches(
+      ::grpc::experimental::CallbackServerContext* /*context*/, const ::fedtree::PID* /*request*/)
+    #endif
+      { return nullptr; }
   };
   template <class BaseClass>
-  class WithCallbackMethod_SendIns2NodeIDBatches : public BaseClass {
+  class ExperimentalWithCallbackMethod_SendIns2NodeIDBatches : public BaseClass {
    private:
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
-    WithCallbackMethod_SendIns2NodeIDBatches() {
-      ::grpc::Service::MarkMethodCallback(39,
+    ExperimentalWithCallbackMethod_SendIns2NodeIDBatches() {
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+      ::grpc::Service::
+    #else
+      ::grpc::Service::experimental().
+    #endif
+        MarkMethodCallback(39,
           new ::grpc::internal::CallbackClientStreamingHandler< ::fedtree::Ins2NodeIDBatch, ::fedtree::PID>(
             [this](
-                   ::grpc::CallbackServerContext* context, ::fedtree::PID* response) { return this->SendIns2NodeIDBatches(context, response); }));
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+                   ::grpc::CallbackServerContext*
+    #else
+                   ::grpc::experimental::CallbackServerContext*
+    #endif
+                     context, ::fedtree::PID* response) { return this->SendIns2NodeIDBatches(context, response); }));
     }
-    ~WithCallbackMethod_SendIns2NodeIDBatches() override {
+    ~ExperimentalWithCallbackMethod_SendIns2NodeIDBatches() override {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
@@ -3264,21 +4375,37 @@ class FedTree final {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
     virtual ::grpc::ServerReadReactor< ::fedtree::Ins2NodeIDBatch>* SendIns2NodeIDBatches(
-      ::grpc::CallbackServerContext* /*context*/, ::fedtree::PID* /*response*/)  { return nullptr; }
+      ::grpc::CallbackServerContext* /*context*/, ::fedtree::PID* /*response*/)
+    #else
+    virtual ::grpc::experimental::ServerReadReactor< ::fedtree::Ins2NodeIDBatch>* SendIns2NodeIDBatches(
+      ::grpc::experimental::CallbackServerContext* /*context*/, ::fedtree::PID* /*response*/)
+    #endif
+      { return nullptr; }
   };
   template <class BaseClass>
-  class WithCallbackMethod_GetGradientBatches : public BaseClass {
+  class ExperimentalWithCallbackMethod_GetGradientBatches : public BaseClass {
    private:
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
-    WithCallbackMethod_GetGradientBatches() {
-      ::grpc::Service::MarkMethodCallback(40,
+    ExperimentalWithCallbackMethod_GetGradientBatches() {
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+      ::grpc::Service::
+    #else
+      ::grpc::Service::experimental().
+    #endif
+        MarkMethodCallback(40,
           new ::grpc::internal::CallbackServerStreamingHandler< ::fedtree::PID, ::fedtree::GHBatch>(
             [this](
-                   ::grpc::CallbackServerContext* context, const ::fedtree::PID* request) { return this->GetGradientBatches(context, request); }));
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+                   ::grpc::CallbackServerContext*
+    #else
+                   ::grpc::experimental::CallbackServerContext*
+    #endif
+                     context, const ::fedtree::PID* request) { return this->GetGradientBatches(context, request); }));
     }
-    ~WithCallbackMethod_GetGradientBatches() override {
+    ~ExperimentalWithCallbackMethod_GetGradientBatches() override {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
@@ -3286,21 +4413,37 @@ class FedTree final {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
     virtual ::grpc::ServerWriteReactor< ::fedtree::GHBatch>* GetGradientBatches(
-      ::grpc::CallbackServerContext* /*context*/, const ::fedtree::PID* /*request*/)  { return nullptr; }
+      ::grpc::CallbackServerContext* /*context*/, const ::fedtree::PID* /*request*/)
+    #else
+    virtual ::grpc::experimental::ServerWriteReactor< ::fedtree::GHBatch>* GetGradientBatches(
+      ::grpc::experimental::CallbackServerContext* /*context*/, const ::fedtree::PID* /*request*/)
+    #endif
+      { return nullptr; }
   };
   template <class BaseClass>
-  class WithCallbackMethod_GetGradientBatchesEnc : public BaseClass {
+  class ExperimentalWithCallbackMethod_GetGradientBatchesEnc : public BaseClass {
    private:
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
-    WithCallbackMethod_GetGradientBatchesEnc() {
-      ::grpc::Service::MarkMethodCallback(41,
+    ExperimentalWithCallbackMethod_GetGradientBatchesEnc() {
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+      ::grpc::Service::
+    #else
+      ::grpc::Service::experimental().
+    #endif
+        MarkMethodCallback(41,
           new ::grpc::internal::CallbackServerStreamingHandler< ::fedtree::PID, ::fedtree::GHEncBatch>(
             [this](
-                   ::grpc::CallbackServerContext* context, const ::fedtree::PID* request) { return this->GetGradientBatchesEnc(context, request); }));
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+                   ::grpc::CallbackServerContext*
+    #else
+                   ::grpc::experimental::CallbackServerContext*
+    #endif
+                     context, const ::fedtree::PID* request) { return this->GetGradientBatchesEnc(context, request); }));
     }
-    ~WithCallbackMethod_GetGradientBatchesEnc() override {
+    ~ExperimentalWithCallbackMethod_GetGradientBatchesEnc() override {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
@@ -3308,26 +4451,46 @@ class FedTree final {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
     virtual ::grpc::ServerWriteReactor< ::fedtree::GHEncBatch>* GetGradientBatchesEnc(
-      ::grpc::CallbackServerContext* /*context*/, const ::fedtree::PID* /*request*/)  { return nullptr; }
+      ::grpc::CallbackServerContext* /*context*/, const ::fedtree::PID* /*request*/)
+    #else
+    virtual ::grpc::experimental::ServerWriteReactor< ::fedtree::GHEncBatch>* GetGradientBatchesEnc(
+      ::grpc::experimental::CallbackServerContext* /*context*/, const ::fedtree::PID* /*request*/)
+    #endif
+      { return nullptr; }
   };
   template <class BaseClass>
-  class WithCallbackMethod_SendNodeEnc : public BaseClass {
+  class ExperimentalWithCallbackMethod_SendNodeEnc : public BaseClass {
    private:
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
-    WithCallbackMethod_SendNodeEnc() {
-      ::grpc::Service::MarkMethodCallback(42,
+    ExperimentalWithCallbackMethod_SendNodeEnc() {
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+      ::grpc::Service::
+    #else
+      ::grpc::Service::experimental().
+    #endif
+        MarkMethodCallback(42,
           new ::grpc::internal::CallbackUnaryHandler< ::fedtree::NodeEnc, ::fedtree::PID>(
             [this](
-                   ::grpc::CallbackServerContext* context, const ::fedtree::NodeEnc* request, ::fedtree::PID* response) { return this->SendNodeEnc(context, request, response); }));}
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+                   ::grpc::CallbackServerContext*
+    #else
+                   ::grpc::experimental::CallbackServerContext*
+    #endif
+                     context, const ::fedtree::NodeEnc* request, ::fedtree::PID* response) { return this->SendNodeEnc(context, request, response); }));}
     void SetMessageAllocatorFor_SendNodeEnc(
-        ::grpc::MessageAllocator< ::fedtree::NodeEnc, ::fedtree::PID>* allocator) {
+        ::grpc::experimental::MessageAllocator< ::fedtree::NodeEnc, ::fedtree::PID>* allocator) {
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
       ::grpc::internal::MethodHandler* const handler = ::grpc::Service::GetHandler(42);
+    #else
+      ::grpc::internal::MethodHandler* const handler = ::grpc::Service::experimental().GetHandler(42);
+    #endif
       static_cast<::grpc::internal::CallbackUnaryHandler< ::fedtree::NodeEnc, ::fedtree::PID>*>(handler)
               ->SetMessageAllocator(allocator);
     }
-    ~WithCallbackMethod_SendNodeEnc() override {
+    ~ExperimentalWithCallbackMethod_SendNodeEnc() override {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
@@ -3335,26 +4498,46 @@ class FedTree final {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
     virtual ::grpc::ServerUnaryReactor* SendNodeEnc(
-      ::grpc::CallbackServerContext* /*context*/, const ::fedtree::NodeEnc* /*request*/, ::fedtree::PID* /*response*/)  { return nullptr; }
+      ::grpc::CallbackServerContext* /*context*/, const ::fedtree::NodeEnc* /*request*/, ::fedtree::PID* /*response*/)
+    #else
+    virtual ::grpc::experimental::ServerUnaryReactor* SendNodeEnc(
+      ::grpc::experimental::CallbackServerContext* /*context*/, const ::fedtree::NodeEnc* /*request*/, ::fedtree::PID* /*response*/)
+    #endif
+      { return nullptr; }
   };
   template <class BaseClass>
-  class WithCallbackMethod_SendNodes : public BaseClass {
+  class ExperimentalWithCallbackMethod_SendNodes : public BaseClass {
    private:
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
-    WithCallbackMethod_SendNodes() {
-      ::grpc::Service::MarkMethodCallback(43,
+    ExperimentalWithCallbackMethod_SendNodes() {
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+      ::grpc::Service::
+    #else
+      ::grpc::Service::experimental().
+    #endif
+        MarkMethodCallback(43,
           new ::grpc::internal::CallbackUnaryHandler< ::fedtree::NodeArray, ::fedtree::PID>(
             [this](
-                   ::grpc::CallbackServerContext* context, const ::fedtree::NodeArray* request, ::fedtree::PID* response) { return this->SendNodes(context, request, response); }));}
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+                   ::grpc::CallbackServerContext*
+    #else
+                   ::grpc::experimental::CallbackServerContext*
+    #endif
+                     context, const ::fedtree::NodeArray* request, ::fedtree::PID* response) { return this->SendNodes(context, request, response); }));}
     void SetMessageAllocatorFor_SendNodes(
-        ::grpc::MessageAllocator< ::fedtree::NodeArray, ::fedtree::PID>* allocator) {
+        ::grpc::experimental::MessageAllocator< ::fedtree::NodeArray, ::fedtree::PID>* allocator) {
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
       ::grpc::internal::MethodHandler* const handler = ::grpc::Service::GetHandler(43);
+    #else
+      ::grpc::internal::MethodHandler* const handler = ::grpc::Service::experimental().GetHandler(43);
+    #endif
       static_cast<::grpc::internal::CallbackUnaryHandler< ::fedtree::NodeArray, ::fedtree::PID>*>(handler)
               ->SetMessageAllocator(allocator);
     }
-    ~WithCallbackMethod_SendNodes() override {
+    ~ExperimentalWithCallbackMethod_SendNodes() override {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
@@ -3362,26 +4545,46 @@ class FedTree final {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
     virtual ::grpc::ServerUnaryReactor* SendNodes(
-      ::grpc::CallbackServerContext* /*context*/, const ::fedtree::NodeArray* /*request*/, ::fedtree::PID* /*response*/)  { return nullptr; }
+      ::grpc::CallbackServerContext* /*context*/, const ::fedtree::NodeArray* /*request*/, ::fedtree::PID* /*response*/)
+    #else
+    virtual ::grpc::experimental::ServerUnaryReactor* SendNodes(
+      ::grpc::experimental::CallbackServerContext* /*context*/, const ::fedtree::NodeArray* /*request*/, ::fedtree::PID* /*response*/)
+    #endif
+      { return nullptr; }
   };
   template <class BaseClass>
-  class WithCallbackMethod_SendNodesEnc : public BaseClass {
+  class ExperimentalWithCallbackMethod_SendNodesEnc : public BaseClass {
    private:
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
-    WithCallbackMethod_SendNodesEnc() {
-      ::grpc::Service::MarkMethodCallback(44,
+    ExperimentalWithCallbackMethod_SendNodesEnc() {
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+      ::grpc::Service::
+    #else
+      ::grpc::Service::experimental().
+    #endif
+        MarkMethodCallback(44,
           new ::grpc::internal::CallbackUnaryHandler< ::fedtree::NodeEncArray, ::fedtree::PID>(
             [this](
-                   ::grpc::CallbackServerContext* context, const ::fedtree::NodeEncArray* request, ::fedtree::PID* response) { return this->SendNodesEnc(context, request, response); }));}
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+                   ::grpc::CallbackServerContext*
+    #else
+                   ::grpc::experimental::CallbackServerContext*
+    #endif
+                     context, const ::fedtree::NodeEncArray* request, ::fedtree::PID* response) { return this->SendNodesEnc(context, request, response); }));}
     void SetMessageAllocatorFor_SendNodesEnc(
-        ::grpc::MessageAllocator< ::fedtree::NodeEncArray, ::fedtree::PID>* allocator) {
+        ::grpc::experimental::MessageAllocator< ::fedtree::NodeEncArray, ::fedtree::PID>* allocator) {
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
       ::grpc::internal::MethodHandler* const handler = ::grpc::Service::GetHandler(44);
+    #else
+      ::grpc::internal::MethodHandler* const handler = ::grpc::Service::experimental().GetHandler(44);
+    #endif
       static_cast<::grpc::internal::CallbackUnaryHandler< ::fedtree::NodeEncArray, ::fedtree::PID>*>(handler)
               ->SetMessageAllocator(allocator);
     }
-    ~WithCallbackMethod_SendNodesEnc() override {
+    ~ExperimentalWithCallbackMethod_SendNodesEnc() override {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
@@ -3389,21 +4592,37 @@ class FedTree final {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
     virtual ::grpc::ServerUnaryReactor* SendNodesEnc(
-      ::grpc::CallbackServerContext* /*context*/, const ::fedtree::NodeEncArray* /*request*/, ::fedtree::PID* /*response*/)  { return nullptr; }
+      ::grpc::CallbackServerContext* /*context*/, const ::fedtree::NodeEncArray* /*request*/, ::fedtree::PID* /*response*/)
+    #else
+    virtual ::grpc::experimental::ServerUnaryReactor* SendNodesEnc(
+      ::grpc::experimental::CallbackServerContext* /*context*/, const ::fedtree::NodeEncArray* /*request*/, ::fedtree::PID* /*response*/)
+    #endif
+      { return nullptr; }
   };
   template <class BaseClass>
-  class WithCallbackMethod_SendHistogramBatchesEnc : public BaseClass {
+  class ExperimentalWithCallbackMethod_SendHistogramBatchesEnc : public BaseClass {
    private:
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
-    WithCallbackMethod_SendHistogramBatchesEnc() {
-      ::grpc::Service::MarkMethodCallback(45,
+    ExperimentalWithCallbackMethod_SendHistogramBatchesEnc() {
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+      ::grpc::Service::
+    #else
+      ::grpc::Service::experimental().
+    #endif
+        MarkMethodCallback(45,
           new ::grpc::internal::CallbackClientStreamingHandler< ::fedtree::GHEncBatch, ::fedtree::PID>(
             [this](
-                   ::grpc::CallbackServerContext* context, ::fedtree::PID* response) { return this->SendHistogramBatchesEnc(context, response); }));
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+                   ::grpc::CallbackServerContext*
+    #else
+                   ::grpc::experimental::CallbackServerContext*
+    #endif
+                     context, ::fedtree::PID* response) { return this->SendHistogramBatchesEnc(context, response); }));
     }
-    ~WithCallbackMethod_SendHistogramBatchesEnc() override {
+    ~ExperimentalWithCallbackMethod_SendHistogramBatchesEnc() override {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
@@ -3411,26 +4630,46 @@ class FedTree final {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
     virtual ::grpc::ServerReadReactor< ::fedtree::GHEncBatch>* SendHistogramBatchesEnc(
-      ::grpc::CallbackServerContext* /*context*/, ::fedtree::PID* /*response*/)  { return nullptr; }
+      ::grpc::CallbackServerContext* /*context*/, ::fedtree::PID* /*response*/)
+    #else
+    virtual ::grpc::experimental::ServerReadReactor< ::fedtree::GHEncBatch>* SendHistogramBatchesEnc(
+      ::grpc::experimental::CallbackServerContext* /*context*/, ::fedtree::PID* /*response*/)
+    #endif
+      { return nullptr; }
   };
   template <class BaseClass>
-  class WithCallbackMethod_StopServer : public BaseClass {
+  class ExperimentalWithCallbackMethod_StopServer : public BaseClass {
    private:
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
-    WithCallbackMethod_StopServer() {
-      ::grpc::Service::MarkMethodCallback(46,
+    ExperimentalWithCallbackMethod_StopServer() {
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+      ::grpc::Service::
+    #else
+      ::grpc::Service::experimental().
+    #endif
+        MarkMethodCallback(46,
           new ::grpc::internal::CallbackUnaryHandler< ::fedtree::PID, ::fedtree::Score>(
             [this](
-                   ::grpc::CallbackServerContext* context, const ::fedtree::PID* request, ::fedtree::Score* response) { return this->StopServer(context, request, response); }));}
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+                   ::grpc::CallbackServerContext*
+    #else
+                   ::grpc::experimental::CallbackServerContext*
+    #endif
+                     context, const ::fedtree::PID* request, ::fedtree::Score* response) { return this->StopServer(context, request, response); }));}
     void SetMessageAllocatorFor_StopServer(
-        ::grpc::MessageAllocator< ::fedtree::PID, ::fedtree::Score>* allocator) {
+        ::grpc::experimental::MessageAllocator< ::fedtree::PID, ::fedtree::Score>* allocator) {
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
       ::grpc::internal::MethodHandler* const handler = ::grpc::Service::GetHandler(46);
+    #else
+      ::grpc::internal::MethodHandler* const handler = ::grpc::Service::experimental().GetHandler(46);
+    #endif
       static_cast<::grpc::internal::CallbackUnaryHandler< ::fedtree::PID, ::fedtree::Score>*>(handler)
               ->SetMessageAllocator(allocator);
     }
-    ~WithCallbackMethod_StopServer() override {
+    ~ExperimentalWithCallbackMethod_StopServer() override {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
@@ -3438,26 +4677,46 @@ class FedTree final {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
     virtual ::grpc::ServerUnaryReactor* StopServer(
-      ::grpc::CallbackServerContext* /*context*/, const ::fedtree::PID* /*request*/, ::fedtree::Score* /*response*/)  { return nullptr; }
+      ::grpc::CallbackServerContext* /*context*/, const ::fedtree::PID* /*request*/, ::fedtree::Score* /*response*/)
+    #else
+    virtual ::grpc::experimental::ServerUnaryReactor* StopServer(
+      ::grpc::experimental::CallbackServerContext* /*context*/, const ::fedtree::PID* /*request*/, ::fedtree::Score* /*response*/)
+    #endif
+      { return nullptr; }
   };
   template <class BaseClass>
-  class WithCallbackMethod_BeginBarrier : public BaseClass {
+  class ExperimentalWithCallbackMethod_BeginBarrier : public BaseClass {
    private:
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
-    WithCallbackMethod_BeginBarrier() {
-      ::grpc::Service::MarkMethodCallback(47,
+    ExperimentalWithCallbackMethod_BeginBarrier() {
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+      ::grpc::Service::
+    #else
+      ::grpc::Service::experimental().
+    #endif
+        MarkMethodCallback(47,
           new ::grpc::internal::CallbackUnaryHandler< ::fedtree::PID, ::fedtree::Ready>(
             [this](
-                   ::grpc::CallbackServerContext* context, const ::fedtree::PID* request, ::fedtree::Ready* response) { return this->BeginBarrier(context, request, response); }));}
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+                   ::grpc::CallbackServerContext*
+    #else
+                   ::grpc::experimental::CallbackServerContext*
+    #endif
+                     context, const ::fedtree::PID* request, ::fedtree::Ready* response) { return this->BeginBarrier(context, request, response); }));}
     void SetMessageAllocatorFor_BeginBarrier(
-        ::grpc::MessageAllocator< ::fedtree::PID, ::fedtree::Ready>* allocator) {
+        ::grpc::experimental::MessageAllocator< ::fedtree::PID, ::fedtree::Ready>* allocator) {
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
       ::grpc::internal::MethodHandler* const handler = ::grpc::Service::GetHandler(47);
+    #else
+      ::grpc::internal::MethodHandler* const handler = ::grpc::Service::experimental().GetHandler(47);
+    #endif
       static_cast<::grpc::internal::CallbackUnaryHandler< ::fedtree::PID, ::fedtree::Ready>*>(handler)
               ->SetMessageAllocator(allocator);
     }
-    ~WithCallbackMethod_BeginBarrier() override {
+    ~ExperimentalWithCallbackMethod_BeginBarrier() override {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
@@ -3465,11 +4724,20 @@ class FedTree final {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
     virtual ::grpc::ServerUnaryReactor* BeginBarrier(
-      ::grpc::CallbackServerContext* /*context*/, const ::fedtree::PID* /*request*/, ::fedtree::Ready* /*response*/)  { return nullptr; }
+      ::grpc::CallbackServerContext* /*context*/, const ::fedtree::PID* /*request*/, ::fedtree::Ready* /*response*/)
+    #else
+    virtual ::grpc::experimental::ServerUnaryReactor* BeginBarrier(
+      ::grpc::experimental::CallbackServerContext* /*context*/, const ::fedtree::PID* /*request*/, ::fedtree::Ready* /*response*/)
+    #endif
+      { return nullptr; }
   };
-  typedef WithCallbackMethod_TriggerUpdateGradients<WithCallbackMethod_TriggerBuildInit<WithCallbackMethod_GetGradients<WithCallbackMethod_SendDatasetInfo<WithCallbackMethod_SendHistograms<WithCallbackMethod_SendHistFid<WithCallbackMethod_TriggerAggregate<WithCallbackMethod_GetBestInfo<WithCallbackMethod_SendNode<WithCallbackMethod_SendIns2NodeID<WithCallbackMethod_GetNodes<WithCallbackMethod_GetIns2NodeID<WithCallbackMethod_CheckIfContinue<WithCallbackMethod_TriggerPrune<WithCallbackMethod_TriggerPrintScore<WithCallbackMethod_SendRange<WithCallbackMethod_TriggerCut<WithCallbackMethod_GetRange<WithCallbackMethod_SendGH<WithCallbackMethod_SendDHPubKey<WithCallbackMethod_GetDHPubKeys<WithCallbackMethod_SendNoises<WithCallbackMethod_GetNoises<WithCallbackMethod_SendCutPoints<WithCallbackMethod_GetCutPoints<WithCallbackMethod_TriggerBuildUsingGH<WithCallbackMethod_TriggerCalcTree<WithCallbackMethod_GetRootNode<WithCallbackMethod_GetSplitPoints<WithCallbackMethod_HCheckIfContinue<WithCallbackMethod_ScoreReduce<WithCallbackMethod_TriggerHomoInit<WithCallbackMethod_TriggerSAInit<WithCallbackMethod_GetPaillier<WithCallbackMethod_SendHistogramsEnc<WithCallbackMethod_SendBatchedHistograms<WithCallbackMethod_SendHistogramBatches<WithCallbackMethod_SendHistFidBatches<WithCallbackMethod_GetIns2NodeIDBatches<WithCallbackMethod_SendIns2NodeIDBatches<WithCallbackMethod_GetGradientBatches<WithCallbackMethod_GetGradientBatchesEnc<WithCallbackMethod_SendNodeEnc<WithCallbackMethod_SendNodes<WithCallbackMethod_SendNodesEnc<WithCallbackMethod_SendHistogramBatchesEnc<WithCallbackMethod_StopServer<WithCallbackMethod_BeginBarrier<Service > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > CallbackService;
-  typedef CallbackService ExperimentalCallbackService;
+  #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+  typedef ExperimentalWithCallbackMethod_TriggerUpdateGradients<ExperimentalWithCallbackMethod_TriggerBuildInit<ExperimentalWithCallbackMethod_GetGradients<ExperimentalWithCallbackMethod_SendDatasetInfo<ExperimentalWithCallbackMethod_SendHistograms<ExperimentalWithCallbackMethod_SendHistFid<ExperimentalWithCallbackMethod_TriggerAggregate<ExperimentalWithCallbackMethod_GetBestInfo<ExperimentalWithCallbackMethod_SendNode<ExperimentalWithCallbackMethod_SendIns2NodeID<ExperimentalWithCallbackMethod_GetNodes<ExperimentalWithCallbackMethod_GetIns2NodeID<ExperimentalWithCallbackMethod_CheckIfContinue<ExperimentalWithCallbackMethod_TriggerPrune<ExperimentalWithCallbackMethod_TriggerPrintScore<ExperimentalWithCallbackMethod_SendRange<ExperimentalWithCallbackMethod_TriggerCut<ExperimentalWithCallbackMethod_GetRange<ExperimentalWithCallbackMethod_SendGH<ExperimentalWithCallbackMethod_SendDHPubKey<ExperimentalWithCallbackMethod_GetDHPubKeys<ExperimentalWithCallbackMethod_SendNoises<ExperimentalWithCallbackMethod_GetNoises<ExperimentalWithCallbackMethod_SendCutPoints<ExperimentalWithCallbackMethod_GetCutPoints<ExperimentalWithCallbackMethod_TriggerBuildUsingGH<ExperimentalWithCallbackMethod_TriggerCalcTree<ExperimentalWithCallbackMethod_GetRootNode<ExperimentalWithCallbackMethod_GetSplitPoints<ExperimentalWithCallbackMethod_HCheckIfContinue<ExperimentalWithCallbackMethod_ScoreReduce<ExperimentalWithCallbackMethod_TriggerHomoInit<ExperimentalWithCallbackMethod_TriggerSAInit<ExperimentalWithCallbackMethod_GetPaillier<ExperimentalWithCallbackMethod_SendHistogramsEnc<ExperimentalWithCallbackMethod_SendBatchedHistograms<ExperimentalWithCallbackMethod_SendHistogramBatches<ExperimentalWithCallbackMethod_SendHistFidBatches<ExperimentalWithCallbackMethod_GetIns2NodeIDBatches<ExperimentalWithCallbackMethod_SendIns2NodeIDBatches<ExperimentalWithCallbackMethod_GetGradientBatches<ExperimentalWithCallbackMethod_GetGradientBatchesEnc<ExperimentalWithCallbackMethod_SendNodeEnc<ExperimentalWithCallbackMethod_SendNodes<ExperimentalWithCallbackMethod_SendNodesEnc<ExperimentalWithCallbackMethod_SendHistogramBatchesEnc<ExperimentalWithCallbackMethod_StopServer<ExperimentalWithCallbackMethod_BeginBarrier<Service > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > CallbackService;
+  #endif
+
+  typedef ExperimentalWithCallbackMethod_TriggerUpdateGradients<ExperimentalWithCallbackMethod_TriggerBuildInit<ExperimentalWithCallbackMethod_GetGradients<ExperimentalWithCallbackMethod_SendDatasetInfo<ExperimentalWithCallbackMethod_SendHistograms<ExperimentalWithCallbackMethod_SendHistFid<ExperimentalWithCallbackMethod_TriggerAggregate<ExperimentalWithCallbackMethod_GetBestInfo<ExperimentalWithCallbackMethod_SendNode<ExperimentalWithCallbackMethod_SendIns2NodeID<ExperimentalWithCallbackMethod_GetNodes<ExperimentalWithCallbackMethod_GetIns2NodeID<ExperimentalWithCallbackMethod_CheckIfContinue<ExperimentalWithCallbackMethod_TriggerPrune<ExperimentalWithCallbackMethod_TriggerPrintScore<ExperimentalWithCallbackMethod_SendRange<ExperimentalWithCallbackMethod_TriggerCut<ExperimentalWithCallbackMethod_GetRange<ExperimentalWithCallbackMethod_SendGH<ExperimentalWithCallbackMethod_SendDHPubKey<ExperimentalWithCallbackMethod_GetDHPubKeys<ExperimentalWithCallbackMethod_SendNoises<ExperimentalWithCallbackMethod_GetNoises<ExperimentalWithCallbackMethod_SendCutPoints<ExperimentalWithCallbackMethod_GetCutPoints<ExperimentalWithCallbackMethod_TriggerBuildUsingGH<ExperimentalWithCallbackMethod_TriggerCalcTree<ExperimentalWithCallbackMethod_GetRootNode<ExperimentalWithCallbackMethod_GetSplitPoints<ExperimentalWithCallbackMethod_HCheckIfContinue<ExperimentalWithCallbackMethod_ScoreReduce<ExperimentalWithCallbackMethod_TriggerHomoInit<ExperimentalWithCallbackMethod_TriggerSAInit<ExperimentalWithCallbackMethod_GetPaillier<ExperimentalWithCallbackMethod_SendHistogramsEnc<ExperimentalWithCallbackMethod_SendBatchedHistograms<ExperimentalWithCallbackMethod_SendHistogramBatches<ExperimentalWithCallbackMethod_SendHistFidBatches<ExperimentalWithCallbackMethod_GetIns2NodeIDBatches<ExperimentalWithCallbackMethod_SendIns2NodeIDBatches<ExperimentalWithCallbackMethod_GetGradientBatches<ExperimentalWithCallbackMethod_GetGradientBatchesEnc<ExperimentalWithCallbackMethod_SendNodeEnc<ExperimentalWithCallbackMethod_SendNodes<ExperimentalWithCallbackMethod_SendNodesEnc<ExperimentalWithCallbackMethod_SendHistogramBatchesEnc<ExperimentalWithCallbackMethod_StopServer<ExperimentalWithCallbackMethod_BeginBarrier<Service > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > ExperimentalCallbackService;
   template <class BaseClass>
   class WithGenericMethod_TriggerUpdateGradients : public BaseClass {
    private:
@@ -5247,17 +6515,27 @@ class FedTree final {
     }
   };
   template <class BaseClass>
-  class WithRawCallbackMethod_TriggerUpdateGradients : public BaseClass {
+  class ExperimentalWithRawCallbackMethod_TriggerUpdateGradients : public BaseClass {
    private:
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
-    WithRawCallbackMethod_TriggerUpdateGradients() {
-      ::grpc::Service::MarkMethodRawCallback(0,
+    ExperimentalWithRawCallbackMethod_TriggerUpdateGradients() {
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+      ::grpc::Service::
+    #else
+      ::grpc::Service::experimental().
+    #endif
+        MarkMethodRawCallback(0,
           new ::grpc::internal::CallbackUnaryHandler< ::grpc::ByteBuffer, ::grpc::ByteBuffer>(
             [this](
-                   ::grpc::CallbackServerContext* context, const ::grpc::ByteBuffer* request, ::grpc::ByteBuffer* response) { return this->TriggerUpdateGradients(context, request, response); }));
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+                   ::grpc::CallbackServerContext*
+    #else
+                   ::grpc::experimental::CallbackServerContext*
+    #endif
+                     context, const ::grpc::ByteBuffer* request, ::grpc::ByteBuffer* response) { return this->TriggerUpdateGradients(context, request, response); }));
     }
-    ~WithRawCallbackMethod_TriggerUpdateGradients() override {
+    ~ExperimentalWithRawCallbackMethod_TriggerUpdateGradients() override {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
@@ -5265,21 +6543,37 @@ class FedTree final {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
     virtual ::grpc::ServerUnaryReactor* TriggerUpdateGradients(
-      ::grpc::CallbackServerContext* /*context*/, const ::grpc::ByteBuffer* /*request*/, ::grpc::ByteBuffer* /*response*/)  { return nullptr; }
+      ::grpc::CallbackServerContext* /*context*/, const ::grpc::ByteBuffer* /*request*/, ::grpc::ByteBuffer* /*response*/)
+    #else
+    virtual ::grpc::experimental::ServerUnaryReactor* TriggerUpdateGradients(
+      ::grpc::experimental::CallbackServerContext* /*context*/, const ::grpc::ByteBuffer* /*request*/, ::grpc::ByteBuffer* /*response*/)
+    #endif
+      { return nullptr; }
   };
   template <class BaseClass>
-  class WithRawCallbackMethod_TriggerBuildInit : public BaseClass {
+  class ExperimentalWithRawCallbackMethod_TriggerBuildInit : public BaseClass {
    private:
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
-    WithRawCallbackMethod_TriggerBuildInit() {
-      ::grpc::Service::MarkMethodRawCallback(1,
+    ExperimentalWithRawCallbackMethod_TriggerBuildInit() {
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+      ::grpc::Service::
+    #else
+      ::grpc::Service::experimental().
+    #endif
+        MarkMethodRawCallback(1,
           new ::grpc::internal::CallbackUnaryHandler< ::grpc::ByteBuffer, ::grpc::ByteBuffer>(
             [this](
-                   ::grpc::CallbackServerContext* context, const ::grpc::ByteBuffer* request, ::grpc::ByteBuffer* response) { return this->TriggerBuildInit(context, request, response); }));
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+                   ::grpc::CallbackServerContext*
+    #else
+                   ::grpc::experimental::CallbackServerContext*
+    #endif
+                     context, const ::grpc::ByteBuffer* request, ::grpc::ByteBuffer* response) { return this->TriggerBuildInit(context, request, response); }));
     }
-    ~WithRawCallbackMethod_TriggerBuildInit() override {
+    ~ExperimentalWithRawCallbackMethod_TriggerBuildInit() override {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
@@ -5287,21 +6581,37 @@ class FedTree final {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
     virtual ::grpc::ServerUnaryReactor* TriggerBuildInit(
-      ::grpc::CallbackServerContext* /*context*/, const ::grpc::ByteBuffer* /*request*/, ::grpc::ByteBuffer* /*response*/)  { return nullptr; }
+      ::grpc::CallbackServerContext* /*context*/, const ::grpc::ByteBuffer* /*request*/, ::grpc::ByteBuffer* /*response*/)
+    #else
+    virtual ::grpc::experimental::ServerUnaryReactor* TriggerBuildInit(
+      ::grpc::experimental::CallbackServerContext* /*context*/, const ::grpc::ByteBuffer* /*request*/, ::grpc::ByteBuffer* /*response*/)
+    #endif
+      { return nullptr; }
   };
   template <class BaseClass>
-  class WithRawCallbackMethod_GetGradients : public BaseClass {
+  class ExperimentalWithRawCallbackMethod_GetGradients : public BaseClass {
    private:
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
-    WithRawCallbackMethod_GetGradients() {
-      ::grpc::Service::MarkMethodRawCallback(2,
+    ExperimentalWithRawCallbackMethod_GetGradients() {
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+      ::grpc::Service::
+    #else
+      ::grpc::Service::experimental().
+    #endif
+        MarkMethodRawCallback(2,
           new ::grpc::internal::CallbackServerStreamingHandler< ::grpc::ByteBuffer, ::grpc::ByteBuffer>(
             [this](
-                   ::grpc::CallbackServerContext* context, const::grpc::ByteBuffer* request) { return this->GetGradients(context, request); }));
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+                   ::grpc::CallbackServerContext*
+    #else
+                   ::grpc::experimental::CallbackServerContext*
+    #endif
+                     context, const::grpc::ByteBuffer* request) { return this->GetGradients(context, request); }));
     }
-    ~WithRawCallbackMethod_GetGradients() override {
+    ~ExperimentalWithRawCallbackMethod_GetGradients() override {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
@@ -5309,21 +6619,37 @@ class FedTree final {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
     virtual ::grpc::ServerWriteReactor< ::grpc::ByteBuffer>* GetGradients(
-      ::grpc::CallbackServerContext* /*context*/, const ::grpc::ByteBuffer* /*request*/)  { return nullptr; }
+      ::grpc::CallbackServerContext* /*context*/, const ::grpc::ByteBuffer* /*request*/)
+    #else
+    virtual ::grpc::experimental::ServerWriteReactor< ::grpc::ByteBuffer>* GetGradients(
+      ::grpc::experimental::CallbackServerContext* /*context*/, const ::grpc::ByteBuffer* /*request*/)
+    #endif
+      { return nullptr; }
   };
   template <class BaseClass>
-  class WithRawCallbackMethod_SendDatasetInfo : public BaseClass {
+  class ExperimentalWithRawCallbackMethod_SendDatasetInfo : public BaseClass {
    private:
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
-    WithRawCallbackMethod_SendDatasetInfo() {
-      ::grpc::Service::MarkMethodRawCallback(3,
+    ExperimentalWithRawCallbackMethod_SendDatasetInfo() {
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+      ::grpc::Service::
+    #else
+      ::grpc::Service::experimental().
+    #endif
+        MarkMethodRawCallback(3,
           new ::grpc::internal::CallbackUnaryHandler< ::grpc::ByteBuffer, ::grpc::ByteBuffer>(
             [this](
-                   ::grpc::CallbackServerContext* context, const ::grpc::ByteBuffer* request, ::grpc::ByteBuffer* response) { return this->SendDatasetInfo(context, request, response); }));
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+                   ::grpc::CallbackServerContext*
+    #else
+                   ::grpc::experimental::CallbackServerContext*
+    #endif
+                     context, const ::grpc::ByteBuffer* request, ::grpc::ByteBuffer* response) { return this->SendDatasetInfo(context, request, response); }));
     }
-    ~WithRawCallbackMethod_SendDatasetInfo() override {
+    ~ExperimentalWithRawCallbackMethod_SendDatasetInfo() override {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
@@ -5331,21 +6657,37 @@ class FedTree final {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
     virtual ::grpc::ServerUnaryReactor* SendDatasetInfo(
-      ::grpc::CallbackServerContext* /*context*/, const ::grpc::ByteBuffer* /*request*/, ::grpc::ByteBuffer* /*response*/)  { return nullptr; }
+      ::grpc::CallbackServerContext* /*context*/, const ::grpc::ByteBuffer* /*request*/, ::grpc::ByteBuffer* /*response*/)
+    #else
+    virtual ::grpc::experimental::ServerUnaryReactor* SendDatasetInfo(
+      ::grpc::experimental::CallbackServerContext* /*context*/, const ::grpc::ByteBuffer* /*request*/, ::grpc::ByteBuffer* /*response*/)
+    #endif
+      { return nullptr; }
   };
   template <class BaseClass>
-  class WithRawCallbackMethod_SendHistograms : public BaseClass {
+  class ExperimentalWithRawCallbackMethod_SendHistograms : public BaseClass {
    private:
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
-    WithRawCallbackMethod_SendHistograms() {
-      ::grpc::Service::MarkMethodRawCallback(4,
+    ExperimentalWithRawCallbackMethod_SendHistograms() {
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+      ::grpc::Service::
+    #else
+      ::grpc::Service::experimental().
+    #endif
+        MarkMethodRawCallback(4,
           new ::grpc::internal::CallbackClientStreamingHandler< ::grpc::ByteBuffer, ::grpc::ByteBuffer>(
             [this](
-                   ::grpc::CallbackServerContext* context, ::grpc::ByteBuffer* response) { return this->SendHistograms(context, response); }));
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+                   ::grpc::CallbackServerContext*
+    #else
+                   ::grpc::experimental::CallbackServerContext*
+    #endif
+                     context, ::grpc::ByteBuffer* response) { return this->SendHistograms(context, response); }));
     }
-    ~WithRawCallbackMethod_SendHistograms() override {
+    ~ExperimentalWithRawCallbackMethod_SendHistograms() override {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
@@ -5353,21 +6695,37 @@ class FedTree final {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
     virtual ::grpc::ServerReadReactor< ::grpc::ByteBuffer>* SendHistograms(
-      ::grpc::CallbackServerContext* /*context*/, ::grpc::ByteBuffer* /*response*/)  { return nullptr; }
+      ::grpc::CallbackServerContext* /*context*/, ::grpc::ByteBuffer* /*response*/)
+    #else
+    virtual ::grpc::experimental::ServerReadReactor< ::grpc::ByteBuffer>* SendHistograms(
+      ::grpc::experimental::CallbackServerContext* /*context*/, ::grpc::ByteBuffer* /*response*/)
+    #endif
+      { return nullptr; }
   };
   template <class BaseClass>
-  class WithRawCallbackMethod_SendHistFid : public BaseClass {
+  class ExperimentalWithRawCallbackMethod_SendHistFid : public BaseClass {
    private:
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
-    WithRawCallbackMethod_SendHistFid() {
-      ::grpc::Service::MarkMethodRawCallback(5,
+    ExperimentalWithRawCallbackMethod_SendHistFid() {
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+      ::grpc::Service::
+    #else
+      ::grpc::Service::experimental().
+    #endif
+        MarkMethodRawCallback(5,
           new ::grpc::internal::CallbackClientStreamingHandler< ::grpc::ByteBuffer, ::grpc::ByteBuffer>(
             [this](
-                   ::grpc::CallbackServerContext* context, ::grpc::ByteBuffer* response) { return this->SendHistFid(context, response); }));
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+                   ::grpc::CallbackServerContext*
+    #else
+                   ::grpc::experimental::CallbackServerContext*
+    #endif
+                     context, ::grpc::ByteBuffer* response) { return this->SendHistFid(context, response); }));
     }
-    ~WithRawCallbackMethod_SendHistFid() override {
+    ~ExperimentalWithRawCallbackMethod_SendHistFid() override {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
@@ -5375,21 +6733,37 @@ class FedTree final {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
     virtual ::grpc::ServerReadReactor< ::grpc::ByteBuffer>* SendHistFid(
-      ::grpc::CallbackServerContext* /*context*/, ::grpc::ByteBuffer* /*response*/)  { return nullptr; }
+      ::grpc::CallbackServerContext* /*context*/, ::grpc::ByteBuffer* /*response*/)
+    #else
+    virtual ::grpc::experimental::ServerReadReactor< ::grpc::ByteBuffer>* SendHistFid(
+      ::grpc::experimental::CallbackServerContext* /*context*/, ::grpc::ByteBuffer* /*response*/)
+    #endif
+      { return nullptr; }
   };
   template <class BaseClass>
-  class WithRawCallbackMethod_TriggerAggregate : public BaseClass {
+  class ExperimentalWithRawCallbackMethod_TriggerAggregate : public BaseClass {
    private:
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
-    WithRawCallbackMethod_TriggerAggregate() {
-      ::grpc::Service::MarkMethodRawCallback(6,
+    ExperimentalWithRawCallbackMethod_TriggerAggregate() {
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+      ::grpc::Service::
+    #else
+      ::grpc::Service::experimental().
+    #endif
+        MarkMethodRawCallback(6,
           new ::grpc::internal::CallbackUnaryHandler< ::grpc::ByteBuffer, ::grpc::ByteBuffer>(
             [this](
-                   ::grpc::CallbackServerContext* context, const ::grpc::ByteBuffer* request, ::grpc::ByteBuffer* response) { return this->TriggerAggregate(context, request, response); }));
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+                   ::grpc::CallbackServerContext*
+    #else
+                   ::grpc::experimental::CallbackServerContext*
+    #endif
+                     context, const ::grpc::ByteBuffer* request, ::grpc::ByteBuffer* response) { return this->TriggerAggregate(context, request, response); }));
     }
-    ~WithRawCallbackMethod_TriggerAggregate() override {
+    ~ExperimentalWithRawCallbackMethod_TriggerAggregate() override {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
@@ -5397,21 +6771,37 @@ class FedTree final {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
     virtual ::grpc::ServerUnaryReactor* TriggerAggregate(
-      ::grpc::CallbackServerContext* /*context*/, const ::grpc::ByteBuffer* /*request*/, ::grpc::ByteBuffer* /*response*/)  { return nullptr; }
+      ::grpc::CallbackServerContext* /*context*/, const ::grpc::ByteBuffer* /*request*/, ::grpc::ByteBuffer* /*response*/)
+    #else
+    virtual ::grpc::experimental::ServerUnaryReactor* TriggerAggregate(
+      ::grpc::experimental::CallbackServerContext* /*context*/, const ::grpc::ByteBuffer* /*request*/, ::grpc::ByteBuffer* /*response*/)
+    #endif
+      { return nullptr; }
   };
   template <class BaseClass>
-  class WithRawCallbackMethod_GetBestInfo : public BaseClass {
+  class ExperimentalWithRawCallbackMethod_GetBestInfo : public BaseClass {
    private:
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
-    WithRawCallbackMethod_GetBestInfo() {
-      ::grpc::Service::MarkMethodRawCallback(7,
+    ExperimentalWithRawCallbackMethod_GetBestInfo() {
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+      ::grpc::Service::
+    #else
+      ::grpc::Service::experimental().
+    #endif
+        MarkMethodRawCallback(7,
           new ::grpc::internal::CallbackServerStreamingHandler< ::grpc::ByteBuffer, ::grpc::ByteBuffer>(
             [this](
-                   ::grpc::CallbackServerContext* context, const::grpc::ByteBuffer* request) { return this->GetBestInfo(context, request); }));
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+                   ::grpc::CallbackServerContext*
+    #else
+                   ::grpc::experimental::CallbackServerContext*
+    #endif
+                     context, const::grpc::ByteBuffer* request) { return this->GetBestInfo(context, request); }));
     }
-    ~WithRawCallbackMethod_GetBestInfo() override {
+    ~ExperimentalWithRawCallbackMethod_GetBestInfo() override {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
@@ -5419,21 +6809,37 @@ class FedTree final {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
     virtual ::grpc::ServerWriteReactor< ::grpc::ByteBuffer>* GetBestInfo(
-      ::grpc::CallbackServerContext* /*context*/, const ::grpc::ByteBuffer* /*request*/)  { return nullptr; }
+      ::grpc::CallbackServerContext* /*context*/, const ::grpc::ByteBuffer* /*request*/)
+    #else
+    virtual ::grpc::experimental::ServerWriteReactor< ::grpc::ByteBuffer>* GetBestInfo(
+      ::grpc::experimental::CallbackServerContext* /*context*/, const ::grpc::ByteBuffer* /*request*/)
+    #endif
+      { return nullptr; }
   };
   template <class BaseClass>
-  class WithRawCallbackMethod_SendNode : public BaseClass {
+  class ExperimentalWithRawCallbackMethod_SendNode : public BaseClass {
    private:
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
-    WithRawCallbackMethod_SendNode() {
-      ::grpc::Service::MarkMethodRawCallback(8,
+    ExperimentalWithRawCallbackMethod_SendNode() {
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+      ::grpc::Service::
+    #else
+      ::grpc::Service::experimental().
+    #endif
+        MarkMethodRawCallback(8,
           new ::grpc::internal::CallbackUnaryHandler< ::grpc::ByteBuffer, ::grpc::ByteBuffer>(
             [this](
-                   ::grpc::CallbackServerContext* context, const ::grpc::ByteBuffer* request, ::grpc::ByteBuffer* response) { return this->SendNode(context, request, response); }));
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+                   ::grpc::CallbackServerContext*
+    #else
+                   ::grpc::experimental::CallbackServerContext*
+    #endif
+                     context, const ::grpc::ByteBuffer* request, ::grpc::ByteBuffer* response) { return this->SendNode(context, request, response); }));
     }
-    ~WithRawCallbackMethod_SendNode() override {
+    ~ExperimentalWithRawCallbackMethod_SendNode() override {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
@@ -5441,21 +6847,37 @@ class FedTree final {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
     virtual ::grpc::ServerUnaryReactor* SendNode(
-      ::grpc::CallbackServerContext* /*context*/, const ::grpc::ByteBuffer* /*request*/, ::grpc::ByteBuffer* /*response*/)  { return nullptr; }
+      ::grpc::CallbackServerContext* /*context*/, const ::grpc::ByteBuffer* /*request*/, ::grpc::ByteBuffer* /*response*/)
+    #else
+    virtual ::grpc::experimental::ServerUnaryReactor* SendNode(
+      ::grpc::experimental::CallbackServerContext* /*context*/, const ::grpc::ByteBuffer* /*request*/, ::grpc::ByteBuffer* /*response*/)
+    #endif
+      { return nullptr; }
   };
   template <class BaseClass>
-  class WithRawCallbackMethod_SendIns2NodeID : public BaseClass {
+  class ExperimentalWithRawCallbackMethod_SendIns2NodeID : public BaseClass {
    private:
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
-    WithRawCallbackMethod_SendIns2NodeID() {
-      ::grpc::Service::MarkMethodRawCallback(9,
+    ExperimentalWithRawCallbackMethod_SendIns2NodeID() {
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+      ::grpc::Service::
+    #else
+      ::grpc::Service::experimental().
+    #endif
+        MarkMethodRawCallback(9,
           new ::grpc::internal::CallbackClientStreamingHandler< ::grpc::ByteBuffer, ::grpc::ByteBuffer>(
             [this](
-                   ::grpc::CallbackServerContext* context, ::grpc::ByteBuffer* response) { return this->SendIns2NodeID(context, response); }));
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+                   ::grpc::CallbackServerContext*
+    #else
+                   ::grpc::experimental::CallbackServerContext*
+    #endif
+                     context, ::grpc::ByteBuffer* response) { return this->SendIns2NodeID(context, response); }));
     }
-    ~WithRawCallbackMethod_SendIns2NodeID() override {
+    ~ExperimentalWithRawCallbackMethod_SendIns2NodeID() override {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
@@ -5463,21 +6885,37 @@ class FedTree final {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
     virtual ::grpc::ServerReadReactor< ::grpc::ByteBuffer>* SendIns2NodeID(
-      ::grpc::CallbackServerContext* /*context*/, ::grpc::ByteBuffer* /*response*/)  { return nullptr; }
+      ::grpc::CallbackServerContext* /*context*/, ::grpc::ByteBuffer* /*response*/)
+    #else
+    virtual ::grpc::experimental::ServerReadReactor< ::grpc::ByteBuffer>* SendIns2NodeID(
+      ::grpc::experimental::CallbackServerContext* /*context*/, ::grpc::ByteBuffer* /*response*/)
+    #endif
+      { return nullptr; }
   };
   template <class BaseClass>
-  class WithRawCallbackMethod_GetNodes : public BaseClass {
+  class ExperimentalWithRawCallbackMethod_GetNodes : public BaseClass {
    private:
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
-    WithRawCallbackMethod_GetNodes() {
-      ::grpc::Service::MarkMethodRawCallback(10,
+    ExperimentalWithRawCallbackMethod_GetNodes() {
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+      ::grpc::Service::
+    #else
+      ::grpc::Service::experimental().
+    #endif
+        MarkMethodRawCallback(10,
           new ::grpc::internal::CallbackServerStreamingHandler< ::grpc::ByteBuffer, ::grpc::ByteBuffer>(
             [this](
-                   ::grpc::CallbackServerContext* context, const::grpc::ByteBuffer* request) { return this->GetNodes(context, request); }));
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+                   ::grpc::CallbackServerContext*
+    #else
+                   ::grpc::experimental::CallbackServerContext*
+    #endif
+                     context, const::grpc::ByteBuffer* request) { return this->GetNodes(context, request); }));
     }
-    ~WithRawCallbackMethod_GetNodes() override {
+    ~ExperimentalWithRawCallbackMethod_GetNodes() override {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
@@ -5485,21 +6923,37 @@ class FedTree final {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
     virtual ::grpc::ServerWriteReactor< ::grpc::ByteBuffer>* GetNodes(
-      ::grpc::CallbackServerContext* /*context*/, const ::grpc::ByteBuffer* /*request*/)  { return nullptr; }
+      ::grpc::CallbackServerContext* /*context*/, const ::grpc::ByteBuffer* /*request*/)
+    #else
+    virtual ::grpc::experimental::ServerWriteReactor< ::grpc::ByteBuffer>* GetNodes(
+      ::grpc::experimental::CallbackServerContext* /*context*/, const ::grpc::ByteBuffer* /*request*/)
+    #endif
+      { return nullptr; }
   };
   template <class BaseClass>
-  class WithRawCallbackMethod_GetIns2NodeID : public BaseClass {
+  class ExperimentalWithRawCallbackMethod_GetIns2NodeID : public BaseClass {
    private:
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
-    WithRawCallbackMethod_GetIns2NodeID() {
-      ::grpc::Service::MarkMethodRawCallback(11,
+    ExperimentalWithRawCallbackMethod_GetIns2NodeID() {
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+      ::grpc::Service::
+    #else
+      ::grpc::Service::experimental().
+    #endif
+        MarkMethodRawCallback(11,
           new ::grpc::internal::CallbackServerStreamingHandler< ::grpc::ByteBuffer, ::grpc::ByteBuffer>(
             [this](
-                   ::grpc::CallbackServerContext* context, const::grpc::ByteBuffer* request) { return this->GetIns2NodeID(context, request); }));
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+                   ::grpc::CallbackServerContext*
+    #else
+                   ::grpc::experimental::CallbackServerContext*
+    #endif
+                     context, const::grpc::ByteBuffer* request) { return this->GetIns2NodeID(context, request); }));
     }
-    ~WithRawCallbackMethod_GetIns2NodeID() override {
+    ~ExperimentalWithRawCallbackMethod_GetIns2NodeID() override {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
@@ -5507,21 +6961,37 @@ class FedTree final {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
     virtual ::grpc::ServerWriteReactor< ::grpc::ByteBuffer>* GetIns2NodeID(
-      ::grpc::CallbackServerContext* /*context*/, const ::grpc::ByteBuffer* /*request*/)  { return nullptr; }
+      ::grpc::CallbackServerContext* /*context*/, const ::grpc::ByteBuffer* /*request*/)
+    #else
+    virtual ::grpc::experimental::ServerWriteReactor< ::grpc::ByteBuffer>* GetIns2NodeID(
+      ::grpc::experimental::CallbackServerContext* /*context*/, const ::grpc::ByteBuffer* /*request*/)
+    #endif
+      { return nullptr; }
   };
   template <class BaseClass>
-  class WithRawCallbackMethod_CheckIfContinue : public BaseClass {
+  class ExperimentalWithRawCallbackMethod_CheckIfContinue : public BaseClass {
    private:
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
-    WithRawCallbackMethod_CheckIfContinue() {
-      ::grpc::Service::MarkMethodRawCallback(12,
+    ExperimentalWithRawCallbackMethod_CheckIfContinue() {
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+      ::grpc::Service::
+    #else
+      ::grpc::Service::experimental().
+    #endif
+        MarkMethodRawCallback(12,
           new ::grpc::internal::CallbackUnaryHandler< ::grpc::ByteBuffer, ::grpc::ByteBuffer>(
             [this](
-                   ::grpc::CallbackServerContext* context, const ::grpc::ByteBuffer* request, ::grpc::ByteBuffer* response) { return this->CheckIfContinue(context, request, response); }));
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+                   ::grpc::CallbackServerContext*
+    #else
+                   ::grpc::experimental::CallbackServerContext*
+    #endif
+                     context, const ::grpc::ByteBuffer* request, ::grpc::ByteBuffer* response) { return this->CheckIfContinue(context, request, response); }));
     }
-    ~WithRawCallbackMethod_CheckIfContinue() override {
+    ~ExperimentalWithRawCallbackMethod_CheckIfContinue() override {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
@@ -5529,21 +6999,37 @@ class FedTree final {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
     virtual ::grpc::ServerUnaryReactor* CheckIfContinue(
-      ::grpc::CallbackServerContext* /*context*/, const ::grpc::ByteBuffer* /*request*/, ::grpc::ByteBuffer* /*response*/)  { return nullptr; }
+      ::grpc::CallbackServerContext* /*context*/, const ::grpc::ByteBuffer* /*request*/, ::grpc::ByteBuffer* /*response*/)
+    #else
+    virtual ::grpc::experimental::ServerUnaryReactor* CheckIfContinue(
+      ::grpc::experimental::CallbackServerContext* /*context*/, const ::grpc::ByteBuffer* /*request*/, ::grpc::ByteBuffer* /*response*/)
+    #endif
+      { return nullptr; }
   };
   template <class BaseClass>
-  class WithRawCallbackMethod_TriggerPrune : public BaseClass {
+  class ExperimentalWithRawCallbackMethod_TriggerPrune : public BaseClass {
    private:
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
-    WithRawCallbackMethod_TriggerPrune() {
-      ::grpc::Service::MarkMethodRawCallback(13,
+    ExperimentalWithRawCallbackMethod_TriggerPrune() {
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+      ::grpc::Service::
+    #else
+      ::grpc::Service::experimental().
+    #endif
+        MarkMethodRawCallback(13,
           new ::grpc::internal::CallbackUnaryHandler< ::grpc::ByteBuffer, ::grpc::ByteBuffer>(
             [this](
-                   ::grpc::CallbackServerContext* context, const ::grpc::ByteBuffer* request, ::grpc::ByteBuffer* response) { return this->TriggerPrune(context, request, response); }));
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+                   ::grpc::CallbackServerContext*
+    #else
+                   ::grpc::experimental::CallbackServerContext*
+    #endif
+                     context, const ::grpc::ByteBuffer* request, ::grpc::ByteBuffer* response) { return this->TriggerPrune(context, request, response); }));
     }
-    ~WithRawCallbackMethod_TriggerPrune() override {
+    ~ExperimentalWithRawCallbackMethod_TriggerPrune() override {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
@@ -5551,21 +7037,37 @@ class FedTree final {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
     virtual ::grpc::ServerUnaryReactor* TriggerPrune(
-      ::grpc::CallbackServerContext* /*context*/, const ::grpc::ByteBuffer* /*request*/, ::grpc::ByteBuffer* /*response*/)  { return nullptr; }
+      ::grpc::CallbackServerContext* /*context*/, const ::grpc::ByteBuffer* /*request*/, ::grpc::ByteBuffer* /*response*/)
+    #else
+    virtual ::grpc::experimental::ServerUnaryReactor* TriggerPrune(
+      ::grpc::experimental::CallbackServerContext* /*context*/, const ::grpc::ByteBuffer* /*request*/, ::grpc::ByteBuffer* /*response*/)
+    #endif
+      { return nullptr; }
   };
   template <class BaseClass>
-  class WithRawCallbackMethod_TriggerPrintScore : public BaseClass {
+  class ExperimentalWithRawCallbackMethod_TriggerPrintScore : public BaseClass {
    private:
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
-    WithRawCallbackMethod_TriggerPrintScore() {
-      ::grpc::Service::MarkMethodRawCallback(14,
+    ExperimentalWithRawCallbackMethod_TriggerPrintScore() {
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+      ::grpc::Service::
+    #else
+      ::grpc::Service::experimental().
+    #endif
+        MarkMethodRawCallback(14,
           new ::grpc::internal::CallbackUnaryHandler< ::grpc::ByteBuffer, ::grpc::ByteBuffer>(
             [this](
-                   ::grpc::CallbackServerContext* context, const ::grpc::ByteBuffer* request, ::grpc::ByteBuffer* response) { return this->TriggerPrintScore(context, request, response); }));
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+                   ::grpc::CallbackServerContext*
+    #else
+                   ::grpc::experimental::CallbackServerContext*
+    #endif
+                     context, const ::grpc::ByteBuffer* request, ::grpc::ByteBuffer* response) { return this->TriggerPrintScore(context, request, response); }));
     }
-    ~WithRawCallbackMethod_TriggerPrintScore() override {
+    ~ExperimentalWithRawCallbackMethod_TriggerPrintScore() override {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
@@ -5573,21 +7075,37 @@ class FedTree final {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
     virtual ::grpc::ServerUnaryReactor* TriggerPrintScore(
-      ::grpc::CallbackServerContext* /*context*/, const ::grpc::ByteBuffer* /*request*/, ::grpc::ByteBuffer* /*response*/)  { return nullptr; }
+      ::grpc::CallbackServerContext* /*context*/, const ::grpc::ByteBuffer* /*request*/, ::grpc::ByteBuffer* /*response*/)
+    #else
+    virtual ::grpc::experimental::ServerUnaryReactor* TriggerPrintScore(
+      ::grpc::experimental::CallbackServerContext* /*context*/, const ::grpc::ByteBuffer* /*request*/, ::grpc::ByteBuffer* /*response*/)
+    #endif
+      { return nullptr; }
   };
   template <class BaseClass>
-  class WithRawCallbackMethod_SendRange : public BaseClass {
+  class ExperimentalWithRawCallbackMethod_SendRange : public BaseClass {
    private:
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
-    WithRawCallbackMethod_SendRange() {
-      ::grpc::Service::MarkMethodRawCallback(15,
+    ExperimentalWithRawCallbackMethod_SendRange() {
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+      ::grpc::Service::
+    #else
+      ::grpc::Service::experimental().
+    #endif
+        MarkMethodRawCallback(15,
           new ::grpc::internal::CallbackClientStreamingHandler< ::grpc::ByteBuffer, ::grpc::ByteBuffer>(
             [this](
-                   ::grpc::CallbackServerContext* context, ::grpc::ByteBuffer* response) { return this->SendRange(context, response); }));
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+                   ::grpc::CallbackServerContext*
+    #else
+                   ::grpc::experimental::CallbackServerContext*
+    #endif
+                     context, ::grpc::ByteBuffer* response) { return this->SendRange(context, response); }));
     }
-    ~WithRawCallbackMethod_SendRange() override {
+    ~ExperimentalWithRawCallbackMethod_SendRange() override {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
@@ -5595,21 +7113,37 @@ class FedTree final {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
     virtual ::grpc::ServerReadReactor< ::grpc::ByteBuffer>* SendRange(
-      ::grpc::CallbackServerContext* /*context*/, ::grpc::ByteBuffer* /*response*/)  { return nullptr; }
+      ::grpc::CallbackServerContext* /*context*/, ::grpc::ByteBuffer* /*response*/)
+    #else
+    virtual ::grpc::experimental::ServerReadReactor< ::grpc::ByteBuffer>* SendRange(
+      ::grpc::experimental::CallbackServerContext* /*context*/, ::grpc::ByteBuffer* /*response*/)
+    #endif
+      { return nullptr; }
   };
   template <class BaseClass>
-  class WithRawCallbackMethod_TriggerCut : public BaseClass {
+  class ExperimentalWithRawCallbackMethod_TriggerCut : public BaseClass {
    private:
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
-    WithRawCallbackMethod_TriggerCut() {
-      ::grpc::Service::MarkMethodRawCallback(16,
+    ExperimentalWithRawCallbackMethod_TriggerCut() {
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+      ::grpc::Service::
+    #else
+      ::grpc::Service::experimental().
+    #endif
+        MarkMethodRawCallback(16,
           new ::grpc::internal::CallbackUnaryHandler< ::grpc::ByteBuffer, ::grpc::ByteBuffer>(
             [this](
-                   ::grpc::CallbackServerContext* context, const ::grpc::ByteBuffer* request, ::grpc::ByteBuffer* response) { return this->TriggerCut(context, request, response); }));
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+                   ::grpc::CallbackServerContext*
+    #else
+                   ::grpc::experimental::CallbackServerContext*
+    #endif
+                     context, const ::grpc::ByteBuffer* request, ::grpc::ByteBuffer* response) { return this->TriggerCut(context, request, response); }));
     }
-    ~WithRawCallbackMethod_TriggerCut() override {
+    ~ExperimentalWithRawCallbackMethod_TriggerCut() override {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
@@ -5617,21 +7151,37 @@ class FedTree final {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
     virtual ::grpc::ServerUnaryReactor* TriggerCut(
-      ::grpc::CallbackServerContext* /*context*/, const ::grpc::ByteBuffer* /*request*/, ::grpc::ByteBuffer* /*response*/)  { return nullptr; }
+      ::grpc::CallbackServerContext* /*context*/, const ::grpc::ByteBuffer* /*request*/, ::grpc::ByteBuffer* /*response*/)
+    #else
+    virtual ::grpc::experimental::ServerUnaryReactor* TriggerCut(
+      ::grpc::experimental::CallbackServerContext* /*context*/, const ::grpc::ByteBuffer* /*request*/, ::grpc::ByteBuffer* /*response*/)
+    #endif
+      { return nullptr; }
   };
   template <class BaseClass>
-  class WithRawCallbackMethod_GetRange : public BaseClass {
+  class ExperimentalWithRawCallbackMethod_GetRange : public BaseClass {
    private:
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
-    WithRawCallbackMethod_GetRange() {
-      ::grpc::Service::MarkMethodRawCallback(17,
+    ExperimentalWithRawCallbackMethod_GetRange() {
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+      ::grpc::Service::
+    #else
+      ::grpc::Service::experimental().
+    #endif
+        MarkMethodRawCallback(17,
           new ::grpc::internal::CallbackServerStreamingHandler< ::grpc::ByteBuffer, ::grpc::ByteBuffer>(
             [this](
-                   ::grpc::CallbackServerContext* context, const::grpc::ByteBuffer* request) { return this->GetRange(context, request); }));
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+                   ::grpc::CallbackServerContext*
+    #else
+                   ::grpc::experimental::CallbackServerContext*
+    #endif
+                     context, const::grpc::ByteBuffer* request) { return this->GetRange(context, request); }));
     }
-    ~WithRawCallbackMethod_GetRange() override {
+    ~ExperimentalWithRawCallbackMethod_GetRange() override {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
@@ -5639,21 +7189,37 @@ class FedTree final {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
     virtual ::grpc::ServerWriteReactor< ::grpc::ByteBuffer>* GetRange(
-      ::grpc::CallbackServerContext* /*context*/, const ::grpc::ByteBuffer* /*request*/)  { return nullptr; }
+      ::grpc::CallbackServerContext* /*context*/, const ::grpc::ByteBuffer* /*request*/)
+    #else
+    virtual ::grpc::experimental::ServerWriteReactor< ::grpc::ByteBuffer>* GetRange(
+      ::grpc::experimental::CallbackServerContext* /*context*/, const ::grpc::ByteBuffer* /*request*/)
+    #endif
+      { return nullptr; }
   };
   template <class BaseClass>
-  class WithRawCallbackMethod_SendGH : public BaseClass {
+  class ExperimentalWithRawCallbackMethod_SendGH : public BaseClass {
    private:
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
-    WithRawCallbackMethod_SendGH() {
-      ::grpc::Service::MarkMethodRawCallback(18,
+    ExperimentalWithRawCallbackMethod_SendGH() {
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+      ::grpc::Service::
+    #else
+      ::grpc::Service::experimental().
+    #endif
+        MarkMethodRawCallback(18,
           new ::grpc::internal::CallbackUnaryHandler< ::grpc::ByteBuffer, ::grpc::ByteBuffer>(
             [this](
-                   ::grpc::CallbackServerContext* context, const ::grpc::ByteBuffer* request, ::grpc::ByteBuffer* response) { return this->SendGH(context, request, response); }));
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+                   ::grpc::CallbackServerContext*
+    #else
+                   ::grpc::experimental::CallbackServerContext*
+    #endif
+                     context, const ::grpc::ByteBuffer* request, ::grpc::ByteBuffer* response) { return this->SendGH(context, request, response); }));
     }
-    ~WithRawCallbackMethod_SendGH() override {
+    ~ExperimentalWithRawCallbackMethod_SendGH() override {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
@@ -5661,21 +7227,37 @@ class FedTree final {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
     virtual ::grpc::ServerUnaryReactor* SendGH(
-      ::grpc::CallbackServerContext* /*context*/, const ::grpc::ByteBuffer* /*request*/, ::grpc::ByteBuffer* /*response*/)  { return nullptr; }
+      ::grpc::CallbackServerContext* /*context*/, const ::grpc::ByteBuffer* /*request*/, ::grpc::ByteBuffer* /*response*/)
+    #else
+    virtual ::grpc::experimental::ServerUnaryReactor* SendGH(
+      ::grpc::experimental::CallbackServerContext* /*context*/, const ::grpc::ByteBuffer* /*request*/, ::grpc::ByteBuffer* /*response*/)
+    #endif
+      { return nullptr; }
   };
   template <class BaseClass>
-  class WithRawCallbackMethod_SendDHPubKey : public BaseClass {
+  class ExperimentalWithRawCallbackMethod_SendDHPubKey : public BaseClass {
    private:
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
-    WithRawCallbackMethod_SendDHPubKey() {
-      ::grpc::Service::MarkMethodRawCallback(19,
+    ExperimentalWithRawCallbackMethod_SendDHPubKey() {
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+      ::grpc::Service::
+    #else
+      ::grpc::Service::experimental().
+    #endif
+        MarkMethodRawCallback(19,
           new ::grpc::internal::CallbackUnaryHandler< ::grpc::ByteBuffer, ::grpc::ByteBuffer>(
             [this](
-                   ::grpc::CallbackServerContext* context, const ::grpc::ByteBuffer* request, ::grpc::ByteBuffer* response) { return this->SendDHPubKey(context, request, response); }));
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+                   ::grpc::CallbackServerContext*
+    #else
+                   ::grpc::experimental::CallbackServerContext*
+    #endif
+                     context, const ::grpc::ByteBuffer* request, ::grpc::ByteBuffer* response) { return this->SendDHPubKey(context, request, response); }));
     }
-    ~WithRawCallbackMethod_SendDHPubKey() override {
+    ~ExperimentalWithRawCallbackMethod_SendDHPubKey() override {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
@@ -5683,21 +7265,37 @@ class FedTree final {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
     virtual ::grpc::ServerUnaryReactor* SendDHPubKey(
-      ::grpc::CallbackServerContext* /*context*/, const ::grpc::ByteBuffer* /*request*/, ::grpc::ByteBuffer* /*response*/)  { return nullptr; }
+      ::grpc::CallbackServerContext* /*context*/, const ::grpc::ByteBuffer* /*request*/, ::grpc::ByteBuffer* /*response*/)
+    #else
+    virtual ::grpc::experimental::ServerUnaryReactor* SendDHPubKey(
+      ::grpc::experimental::CallbackServerContext* /*context*/, const ::grpc::ByteBuffer* /*request*/, ::grpc::ByteBuffer* /*response*/)
+    #endif
+      { return nullptr; }
   };
   template <class BaseClass>
-  class WithRawCallbackMethod_GetDHPubKeys : public BaseClass {
+  class ExperimentalWithRawCallbackMethod_GetDHPubKeys : public BaseClass {
    private:
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
-    WithRawCallbackMethod_GetDHPubKeys() {
-      ::grpc::Service::MarkMethodRawCallback(20,
+    ExperimentalWithRawCallbackMethod_GetDHPubKeys() {
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+      ::grpc::Service::
+    #else
+      ::grpc::Service::experimental().
+    #endif
+        MarkMethodRawCallback(20,
           new ::grpc::internal::CallbackServerStreamingHandler< ::grpc::ByteBuffer, ::grpc::ByteBuffer>(
             [this](
-                   ::grpc::CallbackServerContext* context, const::grpc::ByteBuffer* request) { return this->GetDHPubKeys(context, request); }));
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+                   ::grpc::CallbackServerContext*
+    #else
+                   ::grpc::experimental::CallbackServerContext*
+    #endif
+                     context, const::grpc::ByteBuffer* request) { return this->GetDHPubKeys(context, request); }));
     }
-    ~WithRawCallbackMethod_GetDHPubKeys() override {
+    ~ExperimentalWithRawCallbackMethod_GetDHPubKeys() override {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
@@ -5705,21 +7303,37 @@ class FedTree final {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
     virtual ::grpc::ServerWriteReactor< ::grpc::ByteBuffer>* GetDHPubKeys(
-      ::grpc::CallbackServerContext* /*context*/, const ::grpc::ByteBuffer* /*request*/)  { return nullptr; }
+      ::grpc::CallbackServerContext* /*context*/, const ::grpc::ByteBuffer* /*request*/)
+    #else
+    virtual ::grpc::experimental::ServerWriteReactor< ::grpc::ByteBuffer>* GetDHPubKeys(
+      ::grpc::experimental::CallbackServerContext* /*context*/, const ::grpc::ByteBuffer* /*request*/)
+    #endif
+      { return nullptr; }
   };
   template <class BaseClass>
-  class WithRawCallbackMethod_SendNoises : public BaseClass {
+  class ExperimentalWithRawCallbackMethod_SendNoises : public BaseClass {
    private:
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
-    WithRawCallbackMethod_SendNoises() {
-      ::grpc::Service::MarkMethodRawCallback(21,
+    ExperimentalWithRawCallbackMethod_SendNoises() {
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+      ::grpc::Service::
+    #else
+      ::grpc::Service::experimental().
+    #endif
+        MarkMethodRawCallback(21,
           new ::grpc::internal::CallbackUnaryHandler< ::grpc::ByteBuffer, ::grpc::ByteBuffer>(
             [this](
-                   ::grpc::CallbackServerContext* context, const ::grpc::ByteBuffer* request, ::grpc::ByteBuffer* response) { return this->SendNoises(context, request, response); }));
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+                   ::grpc::CallbackServerContext*
+    #else
+                   ::grpc::experimental::CallbackServerContext*
+    #endif
+                     context, const ::grpc::ByteBuffer* request, ::grpc::ByteBuffer* response) { return this->SendNoises(context, request, response); }));
     }
-    ~WithRawCallbackMethod_SendNoises() override {
+    ~ExperimentalWithRawCallbackMethod_SendNoises() override {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
@@ -5727,21 +7341,37 @@ class FedTree final {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
     virtual ::grpc::ServerUnaryReactor* SendNoises(
-      ::grpc::CallbackServerContext* /*context*/, const ::grpc::ByteBuffer* /*request*/, ::grpc::ByteBuffer* /*response*/)  { return nullptr; }
+      ::grpc::CallbackServerContext* /*context*/, const ::grpc::ByteBuffer* /*request*/, ::grpc::ByteBuffer* /*response*/)
+    #else
+    virtual ::grpc::experimental::ServerUnaryReactor* SendNoises(
+      ::grpc::experimental::CallbackServerContext* /*context*/, const ::grpc::ByteBuffer* /*request*/, ::grpc::ByteBuffer* /*response*/)
+    #endif
+      { return nullptr; }
   };
   template <class BaseClass>
-  class WithRawCallbackMethod_GetNoises : public BaseClass {
+  class ExperimentalWithRawCallbackMethod_GetNoises : public BaseClass {
    private:
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
-    WithRawCallbackMethod_GetNoises() {
-      ::grpc::Service::MarkMethodRawCallback(22,
+    ExperimentalWithRawCallbackMethod_GetNoises() {
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+      ::grpc::Service::
+    #else
+      ::grpc::Service::experimental().
+    #endif
+        MarkMethodRawCallback(22,
           new ::grpc::internal::CallbackServerStreamingHandler< ::grpc::ByteBuffer, ::grpc::ByteBuffer>(
             [this](
-                   ::grpc::CallbackServerContext* context, const::grpc::ByteBuffer* request) { return this->GetNoises(context, request); }));
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+                   ::grpc::CallbackServerContext*
+    #else
+                   ::grpc::experimental::CallbackServerContext*
+    #endif
+                     context, const::grpc::ByteBuffer* request) { return this->GetNoises(context, request); }));
     }
-    ~WithRawCallbackMethod_GetNoises() override {
+    ~ExperimentalWithRawCallbackMethod_GetNoises() override {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
@@ -5749,21 +7379,37 @@ class FedTree final {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
     virtual ::grpc::ServerWriteReactor< ::grpc::ByteBuffer>* GetNoises(
-      ::grpc::CallbackServerContext* /*context*/, const ::grpc::ByteBuffer* /*request*/)  { return nullptr; }
+      ::grpc::CallbackServerContext* /*context*/, const ::grpc::ByteBuffer* /*request*/)
+    #else
+    virtual ::grpc::experimental::ServerWriteReactor< ::grpc::ByteBuffer>* GetNoises(
+      ::grpc::experimental::CallbackServerContext* /*context*/, const ::grpc::ByteBuffer* /*request*/)
+    #endif
+      { return nullptr; }
   };
   template <class BaseClass>
-  class WithRawCallbackMethod_SendCutPoints : public BaseClass {
+  class ExperimentalWithRawCallbackMethod_SendCutPoints : public BaseClass {
    private:
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
-    WithRawCallbackMethod_SendCutPoints() {
-      ::grpc::Service::MarkMethodRawCallback(23,
+    ExperimentalWithRawCallbackMethod_SendCutPoints() {
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+      ::grpc::Service::
+    #else
+      ::grpc::Service::experimental().
+    #endif
+        MarkMethodRawCallback(23,
           new ::grpc::internal::CallbackUnaryHandler< ::grpc::ByteBuffer, ::grpc::ByteBuffer>(
             [this](
-                   ::grpc::CallbackServerContext* context, const ::grpc::ByteBuffer* request, ::grpc::ByteBuffer* response) { return this->SendCutPoints(context, request, response); }));
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+                   ::grpc::CallbackServerContext*
+    #else
+                   ::grpc::experimental::CallbackServerContext*
+    #endif
+                     context, const ::grpc::ByteBuffer* request, ::grpc::ByteBuffer* response) { return this->SendCutPoints(context, request, response); }));
     }
-    ~WithRawCallbackMethod_SendCutPoints() override {
+    ~ExperimentalWithRawCallbackMethod_SendCutPoints() override {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
@@ -5771,21 +7417,37 @@ class FedTree final {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
     virtual ::grpc::ServerUnaryReactor* SendCutPoints(
-      ::grpc::CallbackServerContext* /*context*/, const ::grpc::ByteBuffer* /*request*/, ::grpc::ByteBuffer* /*response*/)  { return nullptr; }
+      ::grpc::CallbackServerContext* /*context*/, const ::grpc::ByteBuffer* /*request*/, ::grpc::ByteBuffer* /*response*/)
+    #else
+    virtual ::grpc::experimental::ServerUnaryReactor* SendCutPoints(
+      ::grpc::experimental::CallbackServerContext* /*context*/, const ::grpc::ByteBuffer* /*request*/, ::grpc::ByteBuffer* /*response*/)
+    #endif
+      { return nullptr; }
   };
   template <class BaseClass>
-  class WithRawCallbackMethod_GetCutPoints : public BaseClass {
+  class ExperimentalWithRawCallbackMethod_GetCutPoints : public BaseClass {
    private:
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
-    WithRawCallbackMethod_GetCutPoints() {
-      ::grpc::Service::MarkMethodRawCallback(24,
+    ExperimentalWithRawCallbackMethod_GetCutPoints() {
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+      ::grpc::Service::
+    #else
+      ::grpc::Service::experimental().
+    #endif
+        MarkMethodRawCallback(24,
           new ::grpc::internal::CallbackServerStreamingHandler< ::grpc::ByteBuffer, ::grpc::ByteBuffer>(
             [this](
-                   ::grpc::CallbackServerContext* context, const::grpc::ByteBuffer* request) { return this->GetCutPoints(context, request); }));
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+                   ::grpc::CallbackServerContext*
+    #else
+                   ::grpc::experimental::CallbackServerContext*
+    #endif
+                     context, const::grpc::ByteBuffer* request) { return this->GetCutPoints(context, request); }));
     }
-    ~WithRawCallbackMethod_GetCutPoints() override {
+    ~ExperimentalWithRawCallbackMethod_GetCutPoints() override {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
@@ -5793,21 +7455,37 @@ class FedTree final {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
     virtual ::grpc::ServerWriteReactor< ::grpc::ByteBuffer>* GetCutPoints(
-      ::grpc::CallbackServerContext* /*context*/, const ::grpc::ByteBuffer* /*request*/)  { return nullptr; }
+      ::grpc::CallbackServerContext* /*context*/, const ::grpc::ByteBuffer* /*request*/)
+    #else
+    virtual ::grpc::experimental::ServerWriteReactor< ::grpc::ByteBuffer>* GetCutPoints(
+      ::grpc::experimental::CallbackServerContext* /*context*/, const ::grpc::ByteBuffer* /*request*/)
+    #endif
+      { return nullptr; }
   };
   template <class BaseClass>
-  class WithRawCallbackMethod_TriggerBuildUsingGH : public BaseClass {
+  class ExperimentalWithRawCallbackMethod_TriggerBuildUsingGH : public BaseClass {
    private:
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
-    WithRawCallbackMethod_TriggerBuildUsingGH() {
-      ::grpc::Service::MarkMethodRawCallback(25,
+    ExperimentalWithRawCallbackMethod_TriggerBuildUsingGH() {
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+      ::grpc::Service::
+    #else
+      ::grpc::Service::experimental().
+    #endif
+        MarkMethodRawCallback(25,
           new ::grpc::internal::CallbackUnaryHandler< ::grpc::ByteBuffer, ::grpc::ByteBuffer>(
             [this](
-                   ::grpc::CallbackServerContext* context, const ::grpc::ByteBuffer* request, ::grpc::ByteBuffer* response) { return this->TriggerBuildUsingGH(context, request, response); }));
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+                   ::grpc::CallbackServerContext*
+    #else
+                   ::grpc::experimental::CallbackServerContext*
+    #endif
+                     context, const ::grpc::ByteBuffer* request, ::grpc::ByteBuffer* response) { return this->TriggerBuildUsingGH(context, request, response); }));
     }
-    ~WithRawCallbackMethod_TriggerBuildUsingGH() override {
+    ~ExperimentalWithRawCallbackMethod_TriggerBuildUsingGH() override {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
@@ -5815,21 +7493,37 @@ class FedTree final {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
     virtual ::grpc::ServerUnaryReactor* TriggerBuildUsingGH(
-      ::grpc::CallbackServerContext* /*context*/, const ::grpc::ByteBuffer* /*request*/, ::grpc::ByteBuffer* /*response*/)  { return nullptr; }
+      ::grpc::CallbackServerContext* /*context*/, const ::grpc::ByteBuffer* /*request*/, ::grpc::ByteBuffer* /*response*/)
+    #else
+    virtual ::grpc::experimental::ServerUnaryReactor* TriggerBuildUsingGH(
+      ::grpc::experimental::CallbackServerContext* /*context*/, const ::grpc::ByteBuffer* /*request*/, ::grpc::ByteBuffer* /*response*/)
+    #endif
+      { return nullptr; }
   };
   template <class BaseClass>
-  class WithRawCallbackMethod_TriggerCalcTree : public BaseClass {
+  class ExperimentalWithRawCallbackMethod_TriggerCalcTree : public BaseClass {
    private:
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
-    WithRawCallbackMethod_TriggerCalcTree() {
-      ::grpc::Service::MarkMethodRawCallback(26,
+    ExperimentalWithRawCallbackMethod_TriggerCalcTree() {
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+      ::grpc::Service::
+    #else
+      ::grpc::Service::experimental().
+    #endif
+        MarkMethodRawCallback(26,
           new ::grpc::internal::CallbackUnaryHandler< ::grpc::ByteBuffer, ::grpc::ByteBuffer>(
             [this](
-                   ::grpc::CallbackServerContext* context, const ::grpc::ByteBuffer* request, ::grpc::ByteBuffer* response) { return this->TriggerCalcTree(context, request, response); }));
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+                   ::grpc::CallbackServerContext*
+    #else
+                   ::grpc::experimental::CallbackServerContext*
+    #endif
+                     context, const ::grpc::ByteBuffer* request, ::grpc::ByteBuffer* response) { return this->TriggerCalcTree(context, request, response); }));
     }
-    ~WithRawCallbackMethod_TriggerCalcTree() override {
+    ~ExperimentalWithRawCallbackMethod_TriggerCalcTree() override {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
@@ -5837,21 +7531,37 @@ class FedTree final {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
     virtual ::grpc::ServerUnaryReactor* TriggerCalcTree(
-      ::grpc::CallbackServerContext* /*context*/, const ::grpc::ByteBuffer* /*request*/, ::grpc::ByteBuffer* /*response*/)  { return nullptr; }
+      ::grpc::CallbackServerContext* /*context*/, const ::grpc::ByteBuffer* /*request*/, ::grpc::ByteBuffer* /*response*/)
+    #else
+    virtual ::grpc::experimental::ServerUnaryReactor* TriggerCalcTree(
+      ::grpc::experimental::CallbackServerContext* /*context*/, const ::grpc::ByteBuffer* /*request*/, ::grpc::ByteBuffer* /*response*/)
+    #endif
+      { return nullptr; }
   };
   template <class BaseClass>
-  class WithRawCallbackMethod_GetRootNode : public BaseClass {
+  class ExperimentalWithRawCallbackMethod_GetRootNode : public BaseClass {
    private:
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
-    WithRawCallbackMethod_GetRootNode() {
-      ::grpc::Service::MarkMethodRawCallback(27,
+    ExperimentalWithRawCallbackMethod_GetRootNode() {
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+      ::grpc::Service::
+    #else
+      ::grpc::Service::experimental().
+    #endif
+        MarkMethodRawCallback(27,
           new ::grpc::internal::CallbackUnaryHandler< ::grpc::ByteBuffer, ::grpc::ByteBuffer>(
             [this](
-                   ::grpc::CallbackServerContext* context, const ::grpc::ByteBuffer* request, ::grpc::ByteBuffer* response) { return this->GetRootNode(context, request, response); }));
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+                   ::grpc::CallbackServerContext*
+    #else
+                   ::grpc::experimental::CallbackServerContext*
+    #endif
+                     context, const ::grpc::ByteBuffer* request, ::grpc::ByteBuffer* response) { return this->GetRootNode(context, request, response); }));
     }
-    ~WithRawCallbackMethod_GetRootNode() override {
+    ~ExperimentalWithRawCallbackMethod_GetRootNode() override {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
@@ -5859,21 +7569,37 @@ class FedTree final {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
     virtual ::grpc::ServerUnaryReactor* GetRootNode(
-      ::grpc::CallbackServerContext* /*context*/, const ::grpc::ByteBuffer* /*request*/, ::grpc::ByteBuffer* /*response*/)  { return nullptr; }
+      ::grpc::CallbackServerContext* /*context*/, const ::grpc::ByteBuffer* /*request*/, ::grpc::ByteBuffer* /*response*/)
+    #else
+    virtual ::grpc::experimental::ServerUnaryReactor* GetRootNode(
+      ::grpc::experimental::CallbackServerContext* /*context*/, const ::grpc::ByteBuffer* /*request*/, ::grpc::ByteBuffer* /*response*/)
+    #endif
+      { return nullptr; }
   };
   template <class BaseClass>
-  class WithRawCallbackMethod_GetSplitPoints : public BaseClass {
+  class ExperimentalWithRawCallbackMethod_GetSplitPoints : public BaseClass {
    private:
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
-    WithRawCallbackMethod_GetSplitPoints() {
-      ::grpc::Service::MarkMethodRawCallback(28,
+    ExperimentalWithRawCallbackMethod_GetSplitPoints() {
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+      ::grpc::Service::
+    #else
+      ::grpc::Service::experimental().
+    #endif
+        MarkMethodRawCallback(28,
           new ::grpc::internal::CallbackServerStreamingHandler< ::grpc::ByteBuffer, ::grpc::ByteBuffer>(
             [this](
-                   ::grpc::CallbackServerContext* context, const::grpc::ByteBuffer* request) { return this->GetSplitPoints(context, request); }));
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+                   ::grpc::CallbackServerContext*
+    #else
+                   ::grpc::experimental::CallbackServerContext*
+    #endif
+                     context, const::grpc::ByteBuffer* request) { return this->GetSplitPoints(context, request); }));
     }
-    ~WithRawCallbackMethod_GetSplitPoints() override {
+    ~ExperimentalWithRawCallbackMethod_GetSplitPoints() override {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
@@ -5881,21 +7607,37 @@ class FedTree final {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
     virtual ::grpc::ServerWriteReactor< ::grpc::ByteBuffer>* GetSplitPoints(
-      ::grpc::CallbackServerContext* /*context*/, const ::grpc::ByteBuffer* /*request*/)  { return nullptr; }
+      ::grpc::CallbackServerContext* /*context*/, const ::grpc::ByteBuffer* /*request*/)
+    #else
+    virtual ::grpc::experimental::ServerWriteReactor< ::grpc::ByteBuffer>* GetSplitPoints(
+      ::grpc::experimental::CallbackServerContext* /*context*/, const ::grpc::ByteBuffer* /*request*/)
+    #endif
+      { return nullptr; }
   };
   template <class BaseClass>
-  class WithRawCallbackMethod_HCheckIfContinue : public BaseClass {
+  class ExperimentalWithRawCallbackMethod_HCheckIfContinue : public BaseClass {
    private:
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
-    WithRawCallbackMethod_HCheckIfContinue() {
-      ::grpc::Service::MarkMethodRawCallback(29,
+    ExperimentalWithRawCallbackMethod_HCheckIfContinue() {
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+      ::grpc::Service::
+    #else
+      ::grpc::Service::experimental().
+    #endif
+        MarkMethodRawCallback(29,
           new ::grpc::internal::CallbackUnaryHandler< ::grpc::ByteBuffer, ::grpc::ByteBuffer>(
             [this](
-                   ::grpc::CallbackServerContext* context, const ::grpc::ByteBuffer* request, ::grpc::ByteBuffer* response) { return this->HCheckIfContinue(context, request, response); }));
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+                   ::grpc::CallbackServerContext*
+    #else
+                   ::grpc::experimental::CallbackServerContext*
+    #endif
+                     context, const ::grpc::ByteBuffer* request, ::grpc::ByteBuffer* response) { return this->HCheckIfContinue(context, request, response); }));
     }
-    ~WithRawCallbackMethod_HCheckIfContinue() override {
+    ~ExperimentalWithRawCallbackMethod_HCheckIfContinue() override {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
@@ -5903,21 +7645,37 @@ class FedTree final {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
     virtual ::grpc::ServerUnaryReactor* HCheckIfContinue(
-      ::grpc::CallbackServerContext* /*context*/, const ::grpc::ByteBuffer* /*request*/, ::grpc::ByteBuffer* /*response*/)  { return nullptr; }
+      ::grpc::CallbackServerContext* /*context*/, const ::grpc::ByteBuffer* /*request*/, ::grpc::ByteBuffer* /*response*/)
+    #else
+    virtual ::grpc::experimental::ServerUnaryReactor* HCheckIfContinue(
+      ::grpc::experimental::CallbackServerContext* /*context*/, const ::grpc::ByteBuffer* /*request*/, ::grpc::ByteBuffer* /*response*/)
+    #endif
+      { return nullptr; }
   };
   template <class BaseClass>
-  class WithRawCallbackMethod_ScoreReduce : public BaseClass {
+  class ExperimentalWithRawCallbackMethod_ScoreReduce : public BaseClass {
    private:
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
-    WithRawCallbackMethod_ScoreReduce() {
-      ::grpc::Service::MarkMethodRawCallback(30,
+    ExperimentalWithRawCallbackMethod_ScoreReduce() {
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+      ::grpc::Service::
+    #else
+      ::grpc::Service::experimental().
+    #endif
+        MarkMethodRawCallback(30,
           new ::grpc::internal::CallbackUnaryHandler< ::grpc::ByteBuffer, ::grpc::ByteBuffer>(
             [this](
-                   ::grpc::CallbackServerContext* context, const ::grpc::ByteBuffer* request, ::grpc::ByteBuffer* response) { return this->ScoreReduce(context, request, response); }));
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+                   ::grpc::CallbackServerContext*
+    #else
+                   ::grpc::experimental::CallbackServerContext*
+    #endif
+                     context, const ::grpc::ByteBuffer* request, ::grpc::ByteBuffer* response) { return this->ScoreReduce(context, request, response); }));
     }
-    ~WithRawCallbackMethod_ScoreReduce() override {
+    ~ExperimentalWithRawCallbackMethod_ScoreReduce() override {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
@@ -5925,21 +7683,37 @@ class FedTree final {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
     virtual ::grpc::ServerUnaryReactor* ScoreReduce(
-      ::grpc::CallbackServerContext* /*context*/, const ::grpc::ByteBuffer* /*request*/, ::grpc::ByteBuffer* /*response*/)  { return nullptr; }
+      ::grpc::CallbackServerContext* /*context*/, const ::grpc::ByteBuffer* /*request*/, ::grpc::ByteBuffer* /*response*/)
+    #else
+    virtual ::grpc::experimental::ServerUnaryReactor* ScoreReduce(
+      ::grpc::experimental::CallbackServerContext* /*context*/, const ::grpc::ByteBuffer* /*request*/, ::grpc::ByteBuffer* /*response*/)
+    #endif
+      { return nullptr; }
   };
   template <class BaseClass>
-  class WithRawCallbackMethod_TriggerHomoInit : public BaseClass {
+  class ExperimentalWithRawCallbackMethod_TriggerHomoInit : public BaseClass {
    private:
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
-    WithRawCallbackMethod_TriggerHomoInit() {
-      ::grpc::Service::MarkMethodRawCallback(31,
+    ExperimentalWithRawCallbackMethod_TriggerHomoInit() {
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+      ::grpc::Service::
+    #else
+      ::grpc::Service::experimental().
+    #endif
+        MarkMethodRawCallback(31,
           new ::grpc::internal::CallbackUnaryHandler< ::grpc::ByteBuffer, ::grpc::ByteBuffer>(
             [this](
-                   ::grpc::CallbackServerContext* context, const ::grpc::ByteBuffer* request, ::grpc::ByteBuffer* response) { return this->TriggerHomoInit(context, request, response); }));
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+                   ::grpc::CallbackServerContext*
+    #else
+                   ::grpc::experimental::CallbackServerContext*
+    #endif
+                     context, const ::grpc::ByteBuffer* request, ::grpc::ByteBuffer* response) { return this->TriggerHomoInit(context, request, response); }));
     }
-    ~WithRawCallbackMethod_TriggerHomoInit() override {
+    ~ExperimentalWithRawCallbackMethod_TriggerHomoInit() override {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
@@ -5947,21 +7721,37 @@ class FedTree final {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
     virtual ::grpc::ServerUnaryReactor* TriggerHomoInit(
-      ::grpc::CallbackServerContext* /*context*/, const ::grpc::ByteBuffer* /*request*/, ::grpc::ByteBuffer* /*response*/)  { return nullptr; }
+      ::grpc::CallbackServerContext* /*context*/, const ::grpc::ByteBuffer* /*request*/, ::grpc::ByteBuffer* /*response*/)
+    #else
+    virtual ::grpc::experimental::ServerUnaryReactor* TriggerHomoInit(
+      ::grpc::experimental::CallbackServerContext* /*context*/, const ::grpc::ByteBuffer* /*request*/, ::grpc::ByteBuffer* /*response*/)
+    #endif
+      { return nullptr; }
   };
   template <class BaseClass>
-  class WithRawCallbackMethod_TriggerSAInit : public BaseClass {
+  class ExperimentalWithRawCallbackMethod_TriggerSAInit : public BaseClass {
    private:
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
-    WithRawCallbackMethod_TriggerSAInit() {
-      ::grpc::Service::MarkMethodRawCallback(32,
+    ExperimentalWithRawCallbackMethod_TriggerSAInit() {
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+      ::grpc::Service::
+    #else
+      ::grpc::Service::experimental().
+    #endif
+        MarkMethodRawCallback(32,
           new ::grpc::internal::CallbackUnaryHandler< ::grpc::ByteBuffer, ::grpc::ByteBuffer>(
             [this](
-                   ::grpc::CallbackServerContext* context, const ::grpc::ByteBuffer* request, ::grpc::ByteBuffer* response) { return this->TriggerSAInit(context, request, response); }));
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+                   ::grpc::CallbackServerContext*
+    #else
+                   ::grpc::experimental::CallbackServerContext*
+    #endif
+                     context, const ::grpc::ByteBuffer* request, ::grpc::ByteBuffer* response) { return this->TriggerSAInit(context, request, response); }));
     }
-    ~WithRawCallbackMethod_TriggerSAInit() override {
+    ~ExperimentalWithRawCallbackMethod_TriggerSAInit() override {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
@@ -5969,21 +7759,37 @@ class FedTree final {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
     virtual ::grpc::ServerUnaryReactor* TriggerSAInit(
-      ::grpc::CallbackServerContext* /*context*/, const ::grpc::ByteBuffer* /*request*/, ::grpc::ByteBuffer* /*response*/)  { return nullptr; }
+      ::grpc::CallbackServerContext* /*context*/, const ::grpc::ByteBuffer* /*request*/, ::grpc::ByteBuffer* /*response*/)
+    #else
+    virtual ::grpc::experimental::ServerUnaryReactor* TriggerSAInit(
+      ::grpc::experimental::CallbackServerContext* /*context*/, const ::grpc::ByteBuffer* /*request*/, ::grpc::ByteBuffer* /*response*/)
+    #endif
+      { return nullptr; }
   };
   template <class BaseClass>
-  class WithRawCallbackMethod_GetPaillier : public BaseClass {
+  class ExperimentalWithRawCallbackMethod_GetPaillier : public BaseClass {
    private:
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
-    WithRawCallbackMethod_GetPaillier() {
-      ::grpc::Service::MarkMethodRawCallback(33,
+    ExperimentalWithRawCallbackMethod_GetPaillier() {
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+      ::grpc::Service::
+    #else
+      ::grpc::Service::experimental().
+    #endif
+        MarkMethodRawCallback(33,
           new ::grpc::internal::CallbackUnaryHandler< ::grpc::ByteBuffer, ::grpc::ByteBuffer>(
             [this](
-                   ::grpc::CallbackServerContext* context, const ::grpc::ByteBuffer* request, ::grpc::ByteBuffer* response) { return this->GetPaillier(context, request, response); }));
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+                   ::grpc::CallbackServerContext*
+    #else
+                   ::grpc::experimental::CallbackServerContext*
+    #endif
+                     context, const ::grpc::ByteBuffer* request, ::grpc::ByteBuffer* response) { return this->GetPaillier(context, request, response); }));
     }
-    ~WithRawCallbackMethod_GetPaillier() override {
+    ~ExperimentalWithRawCallbackMethod_GetPaillier() override {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
@@ -5991,21 +7797,37 @@ class FedTree final {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
     virtual ::grpc::ServerUnaryReactor* GetPaillier(
-      ::grpc::CallbackServerContext* /*context*/, const ::grpc::ByteBuffer* /*request*/, ::grpc::ByteBuffer* /*response*/)  { return nullptr; }
+      ::grpc::CallbackServerContext* /*context*/, const ::grpc::ByteBuffer* /*request*/, ::grpc::ByteBuffer* /*response*/)
+    #else
+    virtual ::grpc::experimental::ServerUnaryReactor* GetPaillier(
+      ::grpc::experimental::CallbackServerContext* /*context*/, const ::grpc::ByteBuffer* /*request*/, ::grpc::ByteBuffer* /*response*/)
+    #endif
+      { return nullptr; }
   };
   template <class BaseClass>
-  class WithRawCallbackMethod_SendHistogramsEnc : public BaseClass {
+  class ExperimentalWithRawCallbackMethod_SendHistogramsEnc : public BaseClass {
    private:
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
-    WithRawCallbackMethod_SendHistogramsEnc() {
-      ::grpc::Service::MarkMethodRawCallback(34,
+    ExperimentalWithRawCallbackMethod_SendHistogramsEnc() {
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+      ::grpc::Service::
+    #else
+      ::grpc::Service::experimental().
+    #endif
+        MarkMethodRawCallback(34,
           new ::grpc::internal::CallbackClientStreamingHandler< ::grpc::ByteBuffer, ::grpc::ByteBuffer>(
             [this](
-                   ::grpc::CallbackServerContext* context, ::grpc::ByteBuffer* response) { return this->SendHistogramsEnc(context, response); }));
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+                   ::grpc::CallbackServerContext*
+    #else
+                   ::grpc::experimental::CallbackServerContext*
+    #endif
+                     context, ::grpc::ByteBuffer* response) { return this->SendHistogramsEnc(context, response); }));
     }
-    ~WithRawCallbackMethod_SendHistogramsEnc() override {
+    ~ExperimentalWithRawCallbackMethod_SendHistogramsEnc() override {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
@@ -6013,21 +7835,37 @@ class FedTree final {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
     virtual ::grpc::ServerReadReactor< ::grpc::ByteBuffer>* SendHistogramsEnc(
-      ::grpc::CallbackServerContext* /*context*/, ::grpc::ByteBuffer* /*response*/)  { return nullptr; }
+      ::grpc::CallbackServerContext* /*context*/, ::grpc::ByteBuffer* /*response*/)
+    #else
+    virtual ::grpc::experimental::ServerReadReactor< ::grpc::ByteBuffer>* SendHistogramsEnc(
+      ::grpc::experimental::CallbackServerContext* /*context*/, ::grpc::ByteBuffer* /*response*/)
+    #endif
+      { return nullptr; }
   };
   template <class BaseClass>
-  class WithRawCallbackMethod_SendBatchedHistograms : public BaseClass {
+  class ExperimentalWithRawCallbackMethod_SendBatchedHistograms : public BaseClass {
    private:
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
-    WithRawCallbackMethod_SendBatchedHistograms() {
-      ::grpc::Service::MarkMethodRawCallback(35,
+    ExperimentalWithRawCallbackMethod_SendBatchedHistograms() {
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+      ::grpc::Service::
+    #else
+      ::grpc::Service::experimental().
+    #endif
+        MarkMethodRawCallback(35,
           new ::grpc::internal::CallbackUnaryHandler< ::grpc::ByteBuffer, ::grpc::ByteBuffer>(
             [this](
-                   ::grpc::CallbackServerContext* context, const ::grpc::ByteBuffer* request, ::grpc::ByteBuffer* response) { return this->SendBatchedHistograms(context, request, response); }));
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+                   ::grpc::CallbackServerContext*
+    #else
+                   ::grpc::experimental::CallbackServerContext*
+    #endif
+                     context, const ::grpc::ByteBuffer* request, ::grpc::ByteBuffer* response) { return this->SendBatchedHistograms(context, request, response); }));
     }
-    ~WithRawCallbackMethod_SendBatchedHistograms() override {
+    ~ExperimentalWithRawCallbackMethod_SendBatchedHistograms() override {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
@@ -6035,21 +7873,37 @@ class FedTree final {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
     virtual ::grpc::ServerUnaryReactor* SendBatchedHistograms(
-      ::grpc::CallbackServerContext* /*context*/, const ::grpc::ByteBuffer* /*request*/, ::grpc::ByteBuffer* /*response*/)  { return nullptr; }
+      ::grpc::CallbackServerContext* /*context*/, const ::grpc::ByteBuffer* /*request*/, ::grpc::ByteBuffer* /*response*/)
+    #else
+    virtual ::grpc::experimental::ServerUnaryReactor* SendBatchedHistograms(
+      ::grpc::experimental::CallbackServerContext* /*context*/, const ::grpc::ByteBuffer* /*request*/, ::grpc::ByteBuffer* /*response*/)
+    #endif
+      { return nullptr; }
   };
   template <class BaseClass>
-  class WithRawCallbackMethod_SendHistogramBatches : public BaseClass {
+  class ExperimentalWithRawCallbackMethod_SendHistogramBatches : public BaseClass {
    private:
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
-    WithRawCallbackMethod_SendHistogramBatches() {
-      ::grpc::Service::MarkMethodRawCallback(36,
+    ExperimentalWithRawCallbackMethod_SendHistogramBatches() {
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+      ::grpc::Service::
+    #else
+      ::grpc::Service::experimental().
+    #endif
+        MarkMethodRawCallback(36,
           new ::grpc::internal::CallbackClientStreamingHandler< ::grpc::ByteBuffer, ::grpc::ByteBuffer>(
             [this](
-                   ::grpc::CallbackServerContext* context, ::grpc::ByteBuffer* response) { return this->SendHistogramBatches(context, response); }));
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+                   ::grpc::CallbackServerContext*
+    #else
+                   ::grpc::experimental::CallbackServerContext*
+    #endif
+                     context, ::grpc::ByteBuffer* response) { return this->SendHistogramBatches(context, response); }));
     }
-    ~WithRawCallbackMethod_SendHistogramBatches() override {
+    ~ExperimentalWithRawCallbackMethod_SendHistogramBatches() override {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
@@ -6057,21 +7911,37 @@ class FedTree final {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
     virtual ::grpc::ServerReadReactor< ::grpc::ByteBuffer>* SendHistogramBatches(
-      ::grpc::CallbackServerContext* /*context*/, ::grpc::ByteBuffer* /*response*/)  { return nullptr; }
+      ::grpc::CallbackServerContext* /*context*/, ::grpc::ByteBuffer* /*response*/)
+    #else
+    virtual ::grpc::experimental::ServerReadReactor< ::grpc::ByteBuffer>* SendHistogramBatches(
+      ::grpc::experimental::CallbackServerContext* /*context*/, ::grpc::ByteBuffer* /*response*/)
+    #endif
+      { return nullptr; }
   };
   template <class BaseClass>
-  class WithRawCallbackMethod_SendHistFidBatches : public BaseClass {
+  class ExperimentalWithRawCallbackMethod_SendHistFidBatches : public BaseClass {
    private:
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
-    WithRawCallbackMethod_SendHistFidBatches() {
-      ::grpc::Service::MarkMethodRawCallback(37,
+    ExperimentalWithRawCallbackMethod_SendHistFidBatches() {
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+      ::grpc::Service::
+    #else
+      ::grpc::Service::experimental().
+    #endif
+        MarkMethodRawCallback(37,
           new ::grpc::internal::CallbackClientStreamingHandler< ::grpc::ByteBuffer, ::grpc::ByteBuffer>(
             [this](
-                   ::grpc::CallbackServerContext* context, ::grpc::ByteBuffer* response) { return this->SendHistFidBatches(context, response); }));
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+                   ::grpc::CallbackServerContext*
+    #else
+                   ::grpc::experimental::CallbackServerContext*
+    #endif
+                     context, ::grpc::ByteBuffer* response) { return this->SendHistFidBatches(context, response); }));
     }
-    ~WithRawCallbackMethod_SendHistFidBatches() override {
+    ~ExperimentalWithRawCallbackMethod_SendHistFidBatches() override {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
@@ -6079,21 +7949,37 @@ class FedTree final {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
     virtual ::grpc::ServerReadReactor< ::grpc::ByteBuffer>* SendHistFidBatches(
-      ::grpc::CallbackServerContext* /*context*/, ::grpc::ByteBuffer* /*response*/)  { return nullptr; }
+      ::grpc::CallbackServerContext* /*context*/, ::grpc::ByteBuffer* /*response*/)
+    #else
+    virtual ::grpc::experimental::ServerReadReactor< ::grpc::ByteBuffer>* SendHistFidBatches(
+      ::grpc::experimental::CallbackServerContext* /*context*/, ::grpc::ByteBuffer* /*response*/)
+    #endif
+      { return nullptr; }
   };
   template <class BaseClass>
-  class WithRawCallbackMethod_GetIns2NodeIDBatches : public BaseClass {
+  class ExperimentalWithRawCallbackMethod_GetIns2NodeIDBatches : public BaseClass {
    private:
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
-    WithRawCallbackMethod_GetIns2NodeIDBatches() {
-      ::grpc::Service::MarkMethodRawCallback(38,
+    ExperimentalWithRawCallbackMethod_GetIns2NodeIDBatches() {
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+      ::grpc::Service::
+    #else
+      ::grpc::Service::experimental().
+    #endif
+        MarkMethodRawCallback(38,
           new ::grpc::internal::CallbackServerStreamingHandler< ::grpc::ByteBuffer, ::grpc::ByteBuffer>(
             [this](
-                   ::grpc::CallbackServerContext* context, const::grpc::ByteBuffer* request) { return this->GetIns2NodeIDBatches(context, request); }));
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+                   ::grpc::CallbackServerContext*
+    #else
+                   ::grpc::experimental::CallbackServerContext*
+    #endif
+                     context, const::grpc::ByteBuffer* request) { return this->GetIns2NodeIDBatches(context, request); }));
     }
-    ~WithRawCallbackMethod_GetIns2NodeIDBatches() override {
+    ~ExperimentalWithRawCallbackMethod_GetIns2NodeIDBatches() override {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
@@ -6101,21 +7987,37 @@ class FedTree final {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
     virtual ::grpc::ServerWriteReactor< ::grpc::ByteBuffer>* GetIns2NodeIDBatches(
-      ::grpc::CallbackServerContext* /*context*/, const ::grpc::ByteBuffer* /*request*/)  { return nullptr; }
+      ::grpc::CallbackServerContext* /*context*/, const ::grpc::ByteBuffer* /*request*/)
+    #else
+    virtual ::grpc::experimental::ServerWriteReactor< ::grpc::ByteBuffer>* GetIns2NodeIDBatches(
+      ::grpc::experimental::CallbackServerContext* /*context*/, const ::grpc::ByteBuffer* /*request*/)
+    #endif
+      { return nullptr; }
   };
   template <class BaseClass>
-  class WithRawCallbackMethod_SendIns2NodeIDBatches : public BaseClass {
+  class ExperimentalWithRawCallbackMethod_SendIns2NodeIDBatches : public BaseClass {
    private:
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
-    WithRawCallbackMethod_SendIns2NodeIDBatches() {
-      ::grpc::Service::MarkMethodRawCallback(39,
+    ExperimentalWithRawCallbackMethod_SendIns2NodeIDBatches() {
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+      ::grpc::Service::
+    #else
+      ::grpc::Service::experimental().
+    #endif
+        MarkMethodRawCallback(39,
           new ::grpc::internal::CallbackClientStreamingHandler< ::grpc::ByteBuffer, ::grpc::ByteBuffer>(
             [this](
-                   ::grpc::CallbackServerContext* context, ::grpc::ByteBuffer* response) { return this->SendIns2NodeIDBatches(context, response); }));
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+                   ::grpc::CallbackServerContext*
+    #else
+                   ::grpc::experimental::CallbackServerContext*
+    #endif
+                     context, ::grpc::ByteBuffer* response) { return this->SendIns2NodeIDBatches(context, response); }));
     }
-    ~WithRawCallbackMethod_SendIns2NodeIDBatches() override {
+    ~ExperimentalWithRawCallbackMethod_SendIns2NodeIDBatches() override {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
@@ -6123,21 +8025,37 @@ class FedTree final {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
     virtual ::grpc::ServerReadReactor< ::grpc::ByteBuffer>* SendIns2NodeIDBatches(
-      ::grpc::CallbackServerContext* /*context*/, ::grpc::ByteBuffer* /*response*/)  { return nullptr; }
+      ::grpc::CallbackServerContext* /*context*/, ::grpc::ByteBuffer* /*response*/)
+    #else
+    virtual ::grpc::experimental::ServerReadReactor< ::grpc::ByteBuffer>* SendIns2NodeIDBatches(
+      ::grpc::experimental::CallbackServerContext* /*context*/, ::grpc::ByteBuffer* /*response*/)
+    #endif
+      { return nullptr; }
   };
   template <class BaseClass>
-  class WithRawCallbackMethod_GetGradientBatches : public BaseClass {
+  class ExperimentalWithRawCallbackMethod_GetGradientBatches : public BaseClass {
    private:
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
-    WithRawCallbackMethod_GetGradientBatches() {
-      ::grpc::Service::MarkMethodRawCallback(40,
+    ExperimentalWithRawCallbackMethod_GetGradientBatches() {
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+      ::grpc::Service::
+    #else
+      ::grpc::Service::experimental().
+    #endif
+        MarkMethodRawCallback(40,
           new ::grpc::internal::CallbackServerStreamingHandler< ::grpc::ByteBuffer, ::grpc::ByteBuffer>(
             [this](
-                   ::grpc::CallbackServerContext* context, const::grpc::ByteBuffer* request) { return this->GetGradientBatches(context, request); }));
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+                   ::grpc::CallbackServerContext*
+    #else
+                   ::grpc::experimental::CallbackServerContext*
+    #endif
+                     context, const::grpc::ByteBuffer* request) { return this->GetGradientBatches(context, request); }));
     }
-    ~WithRawCallbackMethod_GetGradientBatches() override {
+    ~ExperimentalWithRawCallbackMethod_GetGradientBatches() override {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
@@ -6145,21 +8063,37 @@ class FedTree final {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
     virtual ::grpc::ServerWriteReactor< ::grpc::ByteBuffer>* GetGradientBatches(
-      ::grpc::CallbackServerContext* /*context*/, const ::grpc::ByteBuffer* /*request*/)  { return nullptr; }
+      ::grpc::CallbackServerContext* /*context*/, const ::grpc::ByteBuffer* /*request*/)
+    #else
+    virtual ::grpc::experimental::ServerWriteReactor< ::grpc::ByteBuffer>* GetGradientBatches(
+      ::grpc::experimental::CallbackServerContext* /*context*/, const ::grpc::ByteBuffer* /*request*/)
+    #endif
+      { return nullptr; }
   };
   template <class BaseClass>
-  class WithRawCallbackMethod_GetGradientBatchesEnc : public BaseClass {
+  class ExperimentalWithRawCallbackMethod_GetGradientBatchesEnc : public BaseClass {
    private:
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
-    WithRawCallbackMethod_GetGradientBatchesEnc() {
-      ::grpc::Service::MarkMethodRawCallback(41,
+    ExperimentalWithRawCallbackMethod_GetGradientBatchesEnc() {
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+      ::grpc::Service::
+    #else
+      ::grpc::Service::experimental().
+    #endif
+        MarkMethodRawCallback(41,
           new ::grpc::internal::CallbackServerStreamingHandler< ::grpc::ByteBuffer, ::grpc::ByteBuffer>(
             [this](
-                   ::grpc::CallbackServerContext* context, const::grpc::ByteBuffer* request) { return this->GetGradientBatchesEnc(context, request); }));
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+                   ::grpc::CallbackServerContext*
+    #else
+                   ::grpc::experimental::CallbackServerContext*
+    #endif
+                     context, const::grpc::ByteBuffer* request) { return this->GetGradientBatchesEnc(context, request); }));
     }
-    ~WithRawCallbackMethod_GetGradientBatchesEnc() override {
+    ~ExperimentalWithRawCallbackMethod_GetGradientBatchesEnc() override {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
@@ -6167,21 +8101,37 @@ class FedTree final {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
     virtual ::grpc::ServerWriteReactor< ::grpc::ByteBuffer>* GetGradientBatchesEnc(
-      ::grpc::CallbackServerContext* /*context*/, const ::grpc::ByteBuffer* /*request*/)  { return nullptr; }
+      ::grpc::CallbackServerContext* /*context*/, const ::grpc::ByteBuffer* /*request*/)
+    #else
+    virtual ::grpc::experimental::ServerWriteReactor< ::grpc::ByteBuffer>* GetGradientBatchesEnc(
+      ::grpc::experimental::CallbackServerContext* /*context*/, const ::grpc::ByteBuffer* /*request*/)
+    #endif
+      { return nullptr; }
   };
   template <class BaseClass>
-  class WithRawCallbackMethod_SendNodeEnc : public BaseClass {
+  class ExperimentalWithRawCallbackMethod_SendNodeEnc : public BaseClass {
    private:
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
-    WithRawCallbackMethod_SendNodeEnc() {
-      ::grpc::Service::MarkMethodRawCallback(42,
+    ExperimentalWithRawCallbackMethod_SendNodeEnc() {
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+      ::grpc::Service::
+    #else
+      ::grpc::Service::experimental().
+    #endif
+        MarkMethodRawCallback(42,
           new ::grpc::internal::CallbackUnaryHandler< ::grpc::ByteBuffer, ::grpc::ByteBuffer>(
             [this](
-                   ::grpc::CallbackServerContext* context, const ::grpc::ByteBuffer* request, ::grpc::ByteBuffer* response) { return this->SendNodeEnc(context, request, response); }));
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+                   ::grpc::CallbackServerContext*
+    #else
+                   ::grpc::experimental::CallbackServerContext*
+    #endif
+                     context, const ::grpc::ByteBuffer* request, ::grpc::ByteBuffer* response) { return this->SendNodeEnc(context, request, response); }));
     }
-    ~WithRawCallbackMethod_SendNodeEnc() override {
+    ~ExperimentalWithRawCallbackMethod_SendNodeEnc() override {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
@@ -6189,21 +8139,37 @@ class FedTree final {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
     virtual ::grpc::ServerUnaryReactor* SendNodeEnc(
-      ::grpc::CallbackServerContext* /*context*/, const ::grpc::ByteBuffer* /*request*/, ::grpc::ByteBuffer* /*response*/)  { return nullptr; }
+      ::grpc::CallbackServerContext* /*context*/, const ::grpc::ByteBuffer* /*request*/, ::grpc::ByteBuffer* /*response*/)
+    #else
+    virtual ::grpc::experimental::ServerUnaryReactor* SendNodeEnc(
+      ::grpc::experimental::CallbackServerContext* /*context*/, const ::grpc::ByteBuffer* /*request*/, ::grpc::ByteBuffer* /*response*/)
+    #endif
+      { return nullptr; }
   };
   template <class BaseClass>
-  class WithRawCallbackMethod_SendNodes : public BaseClass {
+  class ExperimentalWithRawCallbackMethod_SendNodes : public BaseClass {
    private:
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
-    WithRawCallbackMethod_SendNodes() {
-      ::grpc::Service::MarkMethodRawCallback(43,
+    ExperimentalWithRawCallbackMethod_SendNodes() {
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+      ::grpc::Service::
+    #else
+      ::grpc::Service::experimental().
+    #endif
+        MarkMethodRawCallback(43,
           new ::grpc::internal::CallbackUnaryHandler< ::grpc::ByteBuffer, ::grpc::ByteBuffer>(
             [this](
-                   ::grpc::CallbackServerContext* context, const ::grpc::ByteBuffer* request, ::grpc::ByteBuffer* response) { return this->SendNodes(context, request, response); }));
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+                   ::grpc::CallbackServerContext*
+    #else
+                   ::grpc::experimental::CallbackServerContext*
+    #endif
+                     context, const ::grpc::ByteBuffer* request, ::grpc::ByteBuffer* response) { return this->SendNodes(context, request, response); }));
     }
-    ~WithRawCallbackMethod_SendNodes() override {
+    ~ExperimentalWithRawCallbackMethod_SendNodes() override {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
@@ -6211,21 +8177,37 @@ class FedTree final {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
     virtual ::grpc::ServerUnaryReactor* SendNodes(
-      ::grpc::CallbackServerContext* /*context*/, const ::grpc::ByteBuffer* /*request*/, ::grpc::ByteBuffer* /*response*/)  { return nullptr; }
+      ::grpc::CallbackServerContext* /*context*/, const ::grpc::ByteBuffer* /*request*/, ::grpc::ByteBuffer* /*response*/)
+    #else
+    virtual ::grpc::experimental::ServerUnaryReactor* SendNodes(
+      ::grpc::experimental::CallbackServerContext* /*context*/, const ::grpc::ByteBuffer* /*request*/, ::grpc::ByteBuffer* /*response*/)
+    #endif
+      { return nullptr; }
   };
   template <class BaseClass>
-  class WithRawCallbackMethod_SendNodesEnc : public BaseClass {
+  class ExperimentalWithRawCallbackMethod_SendNodesEnc : public BaseClass {
    private:
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
-    WithRawCallbackMethod_SendNodesEnc() {
-      ::grpc::Service::MarkMethodRawCallback(44,
+    ExperimentalWithRawCallbackMethod_SendNodesEnc() {
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+      ::grpc::Service::
+    #else
+      ::grpc::Service::experimental().
+    #endif
+        MarkMethodRawCallback(44,
           new ::grpc::internal::CallbackUnaryHandler< ::grpc::ByteBuffer, ::grpc::ByteBuffer>(
             [this](
-                   ::grpc::CallbackServerContext* context, const ::grpc::ByteBuffer* request, ::grpc::ByteBuffer* response) { return this->SendNodesEnc(context, request, response); }));
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+                   ::grpc::CallbackServerContext*
+    #else
+                   ::grpc::experimental::CallbackServerContext*
+    #endif
+                     context, const ::grpc::ByteBuffer* request, ::grpc::ByteBuffer* response) { return this->SendNodesEnc(context, request, response); }));
     }
-    ~WithRawCallbackMethod_SendNodesEnc() override {
+    ~ExperimentalWithRawCallbackMethod_SendNodesEnc() override {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
@@ -6233,21 +8215,37 @@ class FedTree final {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
     virtual ::grpc::ServerUnaryReactor* SendNodesEnc(
-      ::grpc::CallbackServerContext* /*context*/, const ::grpc::ByteBuffer* /*request*/, ::grpc::ByteBuffer* /*response*/)  { return nullptr; }
+      ::grpc::CallbackServerContext* /*context*/, const ::grpc::ByteBuffer* /*request*/, ::grpc::ByteBuffer* /*response*/)
+    #else
+    virtual ::grpc::experimental::ServerUnaryReactor* SendNodesEnc(
+      ::grpc::experimental::CallbackServerContext* /*context*/, const ::grpc::ByteBuffer* /*request*/, ::grpc::ByteBuffer* /*response*/)
+    #endif
+      { return nullptr; }
   };
   template <class BaseClass>
-  class WithRawCallbackMethod_SendHistogramBatchesEnc : public BaseClass {
+  class ExperimentalWithRawCallbackMethod_SendHistogramBatchesEnc : public BaseClass {
    private:
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
-    WithRawCallbackMethod_SendHistogramBatchesEnc() {
-      ::grpc::Service::MarkMethodRawCallback(45,
+    ExperimentalWithRawCallbackMethod_SendHistogramBatchesEnc() {
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+      ::grpc::Service::
+    #else
+      ::grpc::Service::experimental().
+    #endif
+        MarkMethodRawCallback(45,
           new ::grpc::internal::CallbackClientStreamingHandler< ::grpc::ByteBuffer, ::grpc::ByteBuffer>(
             [this](
-                   ::grpc::CallbackServerContext* context, ::grpc::ByteBuffer* response) { return this->SendHistogramBatchesEnc(context, response); }));
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+                   ::grpc::CallbackServerContext*
+    #else
+                   ::grpc::experimental::CallbackServerContext*
+    #endif
+                     context, ::grpc::ByteBuffer* response) { return this->SendHistogramBatchesEnc(context, response); }));
     }
-    ~WithRawCallbackMethod_SendHistogramBatchesEnc() override {
+    ~ExperimentalWithRawCallbackMethod_SendHistogramBatchesEnc() override {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
@@ -6255,21 +8253,37 @@ class FedTree final {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
     virtual ::grpc::ServerReadReactor< ::grpc::ByteBuffer>* SendHistogramBatchesEnc(
-      ::grpc::CallbackServerContext* /*context*/, ::grpc::ByteBuffer* /*response*/)  { return nullptr; }
+      ::grpc::CallbackServerContext* /*context*/, ::grpc::ByteBuffer* /*response*/)
+    #else
+    virtual ::grpc::experimental::ServerReadReactor< ::grpc::ByteBuffer>* SendHistogramBatchesEnc(
+      ::grpc::experimental::CallbackServerContext* /*context*/, ::grpc::ByteBuffer* /*response*/)
+    #endif
+      { return nullptr; }
   };
   template <class BaseClass>
-  class WithRawCallbackMethod_StopServer : public BaseClass {
+  class ExperimentalWithRawCallbackMethod_StopServer : public BaseClass {
    private:
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
-    WithRawCallbackMethod_StopServer() {
-      ::grpc::Service::MarkMethodRawCallback(46,
+    ExperimentalWithRawCallbackMethod_StopServer() {
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+      ::grpc::Service::
+    #else
+      ::grpc::Service::experimental().
+    #endif
+        MarkMethodRawCallback(46,
           new ::grpc::internal::CallbackUnaryHandler< ::grpc::ByteBuffer, ::grpc::ByteBuffer>(
             [this](
-                   ::grpc::CallbackServerContext* context, const ::grpc::ByteBuffer* request, ::grpc::ByteBuffer* response) { return this->StopServer(context, request, response); }));
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+                   ::grpc::CallbackServerContext*
+    #else
+                   ::grpc::experimental::CallbackServerContext*
+    #endif
+                     context, const ::grpc::ByteBuffer* request, ::grpc::ByteBuffer* response) { return this->StopServer(context, request, response); }));
     }
-    ~WithRawCallbackMethod_StopServer() override {
+    ~ExperimentalWithRawCallbackMethod_StopServer() override {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
@@ -6277,21 +8291,37 @@ class FedTree final {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
     virtual ::grpc::ServerUnaryReactor* StopServer(
-      ::grpc::CallbackServerContext* /*context*/, const ::grpc::ByteBuffer* /*request*/, ::grpc::ByteBuffer* /*response*/)  { return nullptr; }
+      ::grpc::CallbackServerContext* /*context*/, const ::grpc::ByteBuffer* /*request*/, ::grpc::ByteBuffer* /*response*/)
+    #else
+    virtual ::grpc::experimental::ServerUnaryReactor* StopServer(
+      ::grpc::experimental::CallbackServerContext* /*context*/, const ::grpc::ByteBuffer* /*request*/, ::grpc::ByteBuffer* /*response*/)
+    #endif
+      { return nullptr; }
   };
   template <class BaseClass>
-  class WithRawCallbackMethod_BeginBarrier : public BaseClass {
+  class ExperimentalWithRawCallbackMethod_BeginBarrier : public BaseClass {
    private:
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
-    WithRawCallbackMethod_BeginBarrier() {
-      ::grpc::Service::MarkMethodRawCallback(47,
+    ExperimentalWithRawCallbackMethod_BeginBarrier() {
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+      ::grpc::Service::
+    #else
+      ::grpc::Service::experimental().
+    #endif
+        MarkMethodRawCallback(47,
           new ::grpc::internal::CallbackUnaryHandler< ::grpc::ByteBuffer, ::grpc::ByteBuffer>(
             [this](
-                   ::grpc::CallbackServerContext* context, const ::grpc::ByteBuffer* request, ::grpc::ByteBuffer* response) { return this->BeginBarrier(context, request, response); }));
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+                   ::grpc::CallbackServerContext*
+    #else
+                   ::grpc::experimental::CallbackServerContext*
+    #endif
+                     context, const ::grpc::ByteBuffer* request, ::grpc::ByteBuffer* response) { return this->BeginBarrier(context, request, response); }));
     }
-    ~WithRawCallbackMethod_BeginBarrier() override {
+    ~ExperimentalWithRawCallbackMethod_BeginBarrier() override {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
@@ -6299,8 +8329,14 @@ class FedTree final {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
     virtual ::grpc::ServerUnaryReactor* BeginBarrier(
-      ::grpc::CallbackServerContext* /*context*/, const ::grpc::ByteBuffer* /*request*/, ::grpc::ByteBuffer* /*response*/)  { return nullptr; }
+      ::grpc::CallbackServerContext* /*context*/, const ::grpc::ByteBuffer* /*request*/, ::grpc::ByteBuffer* /*response*/)
+    #else
+    virtual ::grpc::experimental::ServerUnaryReactor* BeginBarrier(
+      ::grpc::experimental::CallbackServerContext* /*context*/, const ::grpc::ByteBuffer* /*request*/, ::grpc::ByteBuffer* /*response*/)
+    #endif
+      { return nullptr; }
   };
   template <class BaseClass>
   class WithStreamedUnaryMethod_TriggerUpdateGradients : public BaseClass {

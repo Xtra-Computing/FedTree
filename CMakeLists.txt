@@ -47,38 +47,38 @@ endif ()
 
 
 # Require the users to install gRPC in prior.
-if(DISTRIBUTED)
-	set(protobuf_MODULE_COMPATIBLE TRUE)
-	find_package(Protobuf CONFIG REQUIRED)
-	include_directories(${PROTOBUF_INCLUDE_DIRS})
-    message(STATUS "Using protobuf ${Protobuf_VERSION}")
-    set(_PROTOBUF_LIBPROTOBUF protobuf::libprotobuf)
-    set(_REFLECTION gRPC::grpc++_reflection)
-    if(CMAKE_CROSSCOMPILING)
-        find_program(_PROTOBUF_PROTOC protoc)
-    else()
-        set(_PROTOBUF_PROTOC $<TARGET_FILE:protobuf::protoc>)
-    endif()
-    find_package(gRPC CONFIG REQUIRED)
-	set(_GRPC_GRPCPP gRPC::grpc++)
+#if(DISTRIBUTED)
+#    set(protobuf_MODULE_COMPATIBLE TRUE)
+#    find_package(Protobuf CONFIG REQUIRED)
+#    include_directories(${PROTOBUF_INCLUDE_DIRS})
+#    message(STATUS "Using protobuf ${Protobuf_VERSION}")
+#    set(_PROTOBUF_LIBPROTOBUF protobuf::libprotobuf)
+#    set(_REFLECTION gRPC::grpc++_reflection)
+#    if(CMAKE_CROSSCOMPILING)
+#        find_program(_PROTOBUF_PROTOC protoc)
+#    else()
+#        set(_PROTOBUF_PROTOC $<TARGET_FILE:protobuf::protoc>)
+#    endif()
+#    find_package(gRPC CONFIG REQUIRED)
+#    set(_GRPC_GRPCPP gRPC::grpc++)
+#
+#    if(CMAKE_CROSSCOMPILING)
+#        find_program(_GRPC_CPP_PLUGIN_EXECUTABLE grpc_cpp_plugin)
+#    else()
+#        set(_GRPC_CPP_PLUGIN_EXECUTABLE $<TARGET_FILE:gRPC::grpc_cpp_plugin>)
+#    endif()
+#endif()
 
-    if(CMAKE_CROSSCOMPILING)
-        find_program(_GRPC_CPP_PLUGIN_EXECUTABLE grpc_cpp_plugin)
-    else()
-        set(_GRPC_CPP_PLUGIN_EXECUTABLE $<TARGET_FILE:gRPC::grpc_cpp_plugin>)
-    endif()
-endif()
-
-#if (DISTRIBUTED)
-#    include(FetchContent)
-#    FetchContent_Declare(
-#            gRPC
-#            GIT_REPOSITORY https://github.com/grpc/grpc
-#            GIT_TAG        v1.35.0  # e.g v1.28.0
-#    )
-#    set(FETCHCONTENT_QUIET OFF)
-#    FetchContent_MakeAvailable(gRPC)
-#endif ()
+if (DISTRIBUTED)
+    include(FetchContent)
+    FetchContent_Declare(
+            gRPC
+            GIT_REPOSITORY https://github.com/grpc/grpc
+            GIT_TAG        v1.35.0
+    )
+    set(FETCHCONTENT_QUIET OFF)
+    FetchContent_MakeAvailable(gRPC)
+endif ()
 
 if (CMAKE_VERSION VERSION_LESS "3.1")
     add_compile_options("-std=c++11")
