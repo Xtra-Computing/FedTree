@@ -47,20 +47,26 @@ endif ()
 
 
 # Require the users to install gRPC in prior.
-#if(DISTRIBUTED)
-#    find_package(gRPC CONFIG REQUIRED)
-#endif()
+if(DISTRIBUTED)
+	set(protobuf_MODULE_COMPATIBLE TRUE)
+	find_package(Protobuf CONFIG REQUIRED)
+	include_directories(${PROTOBUF_INCLUDE_DIRS})
+    message(STATUS "Using protobuf ${Protobuf_VERSION}")
 
-if (DISTRIBUTED)
-    include(FetchContent)
-    FetchContent_Declare(
-            gRPC
-            GIT_REPOSITORY https://github.com/grpc/grpc
-            GIT_TAG        v1.35.0  # e.g v1.28.0
-    )
-    set(FETCHCONTENT_QUIET OFF)
-    FetchContent_MakeAvailable(gRPC)
-endif ()
+    find_package(gRPC CONFIG REQUIRED)
+	set(_GRPC_GRPCPP gRPC::grpc++)
+endif()
+
+#if (DISTRIBUTED)
+#    include(FetchContent)
+#    FetchContent_Declare(
+#            gRPC
+#            GIT_REPOSITORY https://github.com/grpc/grpc
+#            GIT_TAG        v1.35.0  # e.g v1.28.0
+#    )
+#    set(FETCHCONTENT_QUIET OFF)
+#    FetchContent_MakeAvailable(gRPC)
+#endif ()
 
 if (CMAKE_VERSION VERSION_LESS "3.1")
     add_compile_options("-std=c++11")

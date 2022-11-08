@@ -18,6 +18,7 @@ You can refer to our primary documentation [here](https://fedtree.readthedocs.io
 * [CMake](https://cmake.org/) 3.15 or above
 * [GMP](https://gmplib.org/)
 * [NTL](https://libntl.org/)
+* [gRPC](https://grpc.io/docs/languages/cpp/quickstart/)
 
 You can follow the following commands to install NTL library.
 
