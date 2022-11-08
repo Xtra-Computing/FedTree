@@ -723,7 +723,7 @@ grpc::Status DistributedServer::SendGH(grpc::ServerContext* context, const fedtr
     auto pid_itr = metadata.find("pid");
     int pid = std::stoi(pid_itr->second.data());
     party_gh_received[pid] += 1;
-    party_ghs[pid] = {request->g(), request->h()};
+    party_ghs[pid] = {(float_type)request->g(), (float_type)request->h()};
     LOG(DEBUG) << "Receive gh from " << pid;
 
     std::chrono::high_resolution_clock timer;

@@ -563,7 +563,7 @@ void DistributedParty::GetRangeAndSet(int n_bins) {
     fedtree::GHPair range;
     vector<vector<float_type>> feature_range;
     while(reader->Read(&range)) {
-        feature_range.push_back({range.g(), range.h()});
+        feature_range.push_back({(float_type)range.g(), (float_type)range.h()});
     }
     grpc::Status status = reader->Finish();
     auto t_end = timer.now();
