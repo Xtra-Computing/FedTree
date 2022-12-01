@@ -414,28 +414,31 @@ void DataSet::load_from_csv(string file_name, FLParam &param) {
     vector<string> words;
     string word;
     has_label = 1;
+    bool has_id = 1;
     while(getline(iss, word, ',')){
         words.push_back(word);
     }
-    if(words[0] != "id"){
+    if(words[0] != "id" && words[0] != "Class"){
         std::cout<<"unsupported csv format"<<std::endl;
         exit(1);
     }
-    if(words[1]!="y") {
+    if(words[0] == "Class"){
+	    n_features_ = words.size() - 1;
+    	has_id = 0;
+    }
+    else if(words[1]!="y") {
         n_features_ = words.size() - 1;
         has_label = 0;
     }
     else
         n_features_ = words.size() - 2;
 
-
-
     int buffer_size = 4 << 20;
     char *buffer = (char *)malloc(buffer_size);
     const int nthread = omp_get_max_threads();
 
     auto find_last_line = [](char *ptr, const char *begin) {
-        while(ptr != begin && *ptr != '\n' && *ptr != '\r' && *ptr != '\0') --ptr;
+        while(ptr != begin && *ptr != '\n' && *ptr != '\0') --ptr;
         return ptr;
     };
 
@@ -479,21 +482,23 @@ void DataSet::load_from_csv(string file_name, FLParam &param) {
             // to the end of the block
             while(line_begin != block_end) {
                 line_end = line_begin + 1;
-                while(line_end != block_end && *line_end != '\n' && *line_end != '\r' && *line_end != '\0') ++line_end;
+                while(line_end != block_end && *line_end != '\n' && *line_end != '\0') ++line_end;
                 const char *p = line_begin;
                 const char *q = NULL;
                 row_len_[tid].push_back(0);
-
+		
                 float_type id;
                 float_type temp_;
-                std::ptrdiff_t advanced = ignore_comment_and_blank(p, line_end);
-                p += advanced;
-                int r = parse_pair<float_type, float_type>(p, line_end, &q, id, temp_);
-                if (r < 1) {
-                    line_begin = line_end;
-                    continue;
+                if(has_id){
+                    std::ptrdiff_t advanced = ignore_comment_and_blank(p, line_end);
+                    p += advanced;
+                    int r = parse_pair<float_type, float_type>(p, line_end, &q, id, temp_);
+                    if (r < 1) {
+                        line_begin = line_end;
+                        continue;
+                    }
+                    p = q;
                 }
-                p = q;
                 if(has_label) {
                     float_type label;
                     std::ptrdiff_t advanced = ignore_comment_and_blank(p, line_end);
@@ -867,59 +872,16 @@ void DataSet::load_csc_from_file(string file_name, FLParam &param, const int nfe
     LOG(INFO) << "#features: " << n_features_;
 }
 
-
-//void DataSet::csr_to_csc() {
-//    has_csc = true;
-//    const int nnz = csr_row_ptr[n_instances()];
-//
-//    //compute number of non-zero entries per column of A
-//    std::fill(csc_col_ptr.begin(), csc_col_ptr.begin() + n_features(), 0);
-//
-//    for (int n = 0; n < nnz; n++) {
-//        csc_col_ptr[csr_col_idx[n]]++;
-//    }
-//
-//    //cumsum the nnz per column to get csc_col_ptr[]
-//    for (int col = 0, cumsum = 0; col < n_features(); col++) {
-//        int temp = csc_col_ptr[col];
-//        csc_col_ptr[col] = cumsum;
-//        cumsum += temp;
-//    }
-//    csc_col_ptr[n_features()] = nnz;
-//
-//    for (int row = 0; row < n_features(); row++) {
-//        for (int jj = csr_row_ptr[row]; jj < csr_row_ptr[row + 1]; jj++) {
-//            int col = csr_col_idx[jj];
-//            int dest = csc_col_ptr[col];
-//
-//            csc_row_idx[dest] = row;
-//            csc_val[dest] = csr_val[jj];
-//
-//            csc_col_ptr[col]++;
-//        }
-//    }
-//
-//    for (int col = 0, last = 0; col <= n_features(); col++) {
-//        int temp = csc_col_ptr[col];
-//        csc_col_ptr[col] = last;
-//        last = temp;
-//    }
-//}
-
 void DataSet::csr_to_csc(){
     //cpu transpose
     int n_column = this->n_features();
     int n_row = this->n_instances();
     int nnz = this->csr_val.size();
-//    LOG(INFO) << n_column << "," << n_row << "," << nnz;
-
 
     csc_val.resize(nnz);
     csc_row_idx.resize(nnz);
     csc_col_ptr.resize(n_column+1);
 
-//    LOG(INFO) << string_format("#non-zeros = %ld, density = %.2f%%", nnz,
-//                               (float) nnz / n_column / n_row * 100);
     for (int i = 0; i <= n_column; ++i) {
         csc_col_ptr[i] = 0;
     }
@@ -960,16 +922,11 @@ void DataSet::csc_to_csr() {
     int n_column = this->n_features();
     int n_row = this->n_instances();
     int nnz = this->csc_val.size();
-//    LOG(INFO) << n_column << "," << n_row << "," << nnz;
-
 
     csr_val.resize(nnz);
     csr_col_idx.resize(nnz);
     csr_row_ptr.resize(n_row + 1);
 
-
-//    LOG(INFO) << string_format("#non-zeros = %ld, density = %.2f%%", nnz,
-//                               (float) nnz / n_column / n_row * 100);
     for (int i = 0; i <= n_row; ++i) {
         csr_row_ptr[i] = 0;
     }
@@ -998,8 +955,6 @@ void DataSet::csc_to_csr() {
         csr_row_ptr[i] = last;
         last = next_last;
     }
-
-//    has_csr = true;
 }
 
 
