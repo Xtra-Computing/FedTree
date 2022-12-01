@@ -91,7 +91,6 @@ void Booster::update_gradients() {
 
 void Booster::boost(vector<vector<Tree>> &boosted_model) {
     TIMED_FUNC(timerObj);
-//    std::unique_lock<std::mutex> lock(mtx);
     //update gradients
     obj->get_gradient(y, fbuilder->get_y_predict(), gradients);
 
@@ -111,10 +110,8 @@ void Booster::boost(vector<vector<Tree>> &boosted_model) {
 
 void Booster::boost_without_prediction(vector<vector<Tree>> &boosted_model) {
     TIMED_FUNC(timerObj);
-//    std::unique_lock<std::mutex> lock(mtx);
     //update gradients
     obj->get_gradient(y, fbuilder->get_y_predict(), gradients);
-    //LOG(INFO)<<"gradients after updated:"<<gradients;
 
 //    if (param.bagging) rowSampler.do_bagging(gradients);
     PERFORMANCE_CHECKPOINT(timerObj);

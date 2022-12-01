@@ -72,7 +72,7 @@ extern "C" {
         gbdt_param.num_class = num_class[0];
         gbdt_param.tree_method = "hist";
         gbdt_param.n_device = n_device;
-        gbdt_param.tree_per_rounds = 1;
+        gbdt_param.tree_per_round = 1;
         gbdt_param.max_num_bin = max_num_bin;
         gbdt_param.rt_eps = 1e-6;
         gbdt_param.metric = "default";
@@ -141,7 +141,7 @@ extern "C" {
                 }
             }
             if(param.num_class > 2)
-                param.tree_per_rounds = param.num_class;
+                param.tree_per_round = param.num_class;
         }
         else if(param.objective.find("reg:") != std::string::npos){
             param.num_class = 1;
@@ -362,6 +362,143 @@ extern "C" {
         if(model){
             delete []model;
         }
+    }
+
+
+    void centralize_train_a_subtree (float variance, float privacy_budget, int depth, int n_trees, float min_child_weight,
+                                     float lambda, float gamma, float column_sampling_rate, int verbose, int bagging,
+                                     int n_parallel_trees, float learning_rate, char *objective, int* num_class,
+                                     int n_device, int max_num_bin, int seed, float ins_bagging_fraction,
+                                     int reorder_label, float constant_h,
+                                     int row_size, float *val, int *row_ptr, int *col_ptr, float *label,
+                                     char *tree_method, Tree *&model, int *tree_per_iter, float *group_label,
+                                     int *group, int num_group=0) {
+
+        LOG(INFO) << "Start training";
+
+        // Initialize model params
+
+        GBDTParam gbdt_param;
+        gbdt_param.depth = depth;
+        gbdt_param.n_trees = n_trees;
+        gbdt_param.min_child_weight = min_child_weight;
+        gbdt_param.lambda = lambda;
+        gbdt_param.gamma = gamma;
+        gbdt_param.column_sampling_rate = column_sampling_rate;
+        gbdt_param.verbose = verbose;
+        gbdt_param.bagging = bagging == 1? true : false;
+        gbdt_param.n_parallel_trees = n_parallel_trees;
+        gbdt_param.learning_rate = learning_rate;
+        gbdt_param.objective = objective;
+        gbdt_param.num_class = num_class[0];
+        gbdt_param.tree_method = "hist";
+        gbdt_param.n_device = n_device;
+        gbdt_param.tree_per_round = 1;
+        gbdt_param.max_num_bin = max_num_bin;
+        gbdt_param.rt_eps = 1e-6;
+        gbdt_param.metric = "default";
+        gbdt_param.reorder_label = reorder_label;
+        gbdt_param.constant_h = constant_h;
+
+        set_logger(verbose);
+        el::Loggers::reconfigureAllLoggers(el::ConfigurationType::PerformanceTracking, "false");
+
+        LOG(INFO) << "Load Sparse Data to Training Set";
+        DataSet dataset;
+        dataset.load_from_sparse(row_size, val, row_ptr, col_ptr, label, group, num_group, gbdt_param);
+        num_class[0] = gbdt_param.num_class;
+
+        /*
+        fl_param.gbdt_param = gbdt_param;
+
+
+        GBDTParam &param = fl_param.gbdt_param;
+        //correct the number of classes
+        if (param.objective.find("multi:") != std::string::npos || param.objective.find("binary:") != std::string::npos || param.metric == "error") {
+            int num_class;
+            if(fl_param.partition) {
+                num_class = dataset.label.size();
+                if ((param.num_class == 1) && (param.num_class != num_class)) {
+                    LOG(INFO) << "updating number of classes from " << param.num_class << " to " << num_class;
+                    param.num_class = num_class;
+                }
+            }
+            if(param.num_class > 2)
+                param.tree_per_round = param.num_class;
+        }
+        else if(param.objective.find("reg:") != std::string::npos){
+            param.num_class = 1;
+        }
+        vector<Party> parties(n_parties);
+        vector<int> n_instances_per_party(n_parties);
+        Server server;
+        if(fl_param.mode != "centralized") {
+            LOG(INFO) << "initialize parties";
+            for (int i = 0; i < n_parties; i++) {
+                if(fl_param.mode == "vertical")
+                    parties[i].vertical_init(i, subsets[i], fl_param);
+                else if(fl_param.mode == "horizontal" || fl_param.mode == "ensemble")
+                    parties[i].init(i, subsets[i], fl_param);
+                n_instances_per_party[i] = subsets[i].n_instances();
+            }
+            LOG(INFO) << "initialize server";
+            if (fl_param.mode == "vertical") {
+                if(fl_param.partition)
+                    server.vertical_init(fl_param, dataset.n_instances(), n_instances_per_party, dataset.y, dataset.label);
+                else
+                    server.vertical_init(fl_param, subsets[0].n_instances(), n_instances_per_party, subsets[0].y, subsets[0].label);
+            } else if (fl_param.mode == "horizontal" || fl_param.mode == "ensemble") {
+                server.horizontal_init(fl_param);
+            }
+        }
+
+//        // Initialize server
+//        LOG(INFO) << "initialize server";
+//        Server server;
+//        if (fl_param.mode == "vertical") {
+//            server.vertical_init(fl_param, dataset.n_instances(), n_instances_per_party, dataset.y, dataset.label);
+//        }else if (fl_param.mode == "horizontal") {
+//            server.horizontal_init(fl_param);
+//        }
+
+        LOG(INFO) << "Run the trainer";
+        // Run different training methods based on mode
+        FLtrainer trainer;
+        if (param.tree_method == "auto")
+            param.tree_method = "hist";
+        else if (param.tree_method != "hist"){
+            LOG(INFO)<<"FedTree only supports histogram-based training yet";
+            exit(1);
+        }
+        if(fl_param.mode == "hybrid") {
+            trainer.hybrid_fl_trainer(parties, server, fl_param);
+        } else if(fl_param.mode == "ensemble") {
+            trainer.ensemble_trainer(parties, server, fl_param);
+        }else if(fl_param.mode == "solo") {
+            trainer.solo_trainer(parties, fl_param);
+        }else if(fl_param.mode == "centralized") {
+            GBDT gbdt;
+            gbdt.train(fl_param.gbdt_param, dataset);
+        }else if (fl_param.mode == "vertical") {
+            trainer.vertical_fl_trainer(parties, server, fl_param);
+        }else if (fl_param.mode == "horizontal") {
+            trainer.horizontal_fl_trainer(parties, server, fl_param);
+        }
+
+        // Return boosted model
+        vector<vector<Tree>> boosted_model = server.global_trees.trees;
+        *tree_per_iter = (int)(boosted_model[0].size());
+        model = new Tree[n_trees * (*tree_per_iter)];
+        for(int i = 0; i < n_trees; i++) {
+            for(int j = 0; j < *tree_per_iter; j++){
+                model[i * (*tree_per_iter) + j] = boosted_model[i][j];
+            }
+        }
+        for (int i = 0; i < dataset.label.size(); ++i) {
+            group_label[i] = dataset.label[i];
+        }
+        */
+
     }
 
 }

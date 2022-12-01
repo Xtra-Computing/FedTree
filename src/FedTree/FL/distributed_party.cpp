@@ -1380,7 +1380,7 @@ void distributed_vertical_train(DistributedParty& party, FLParam &fl_param) {
 //    party.SendDatasetInfo(party.booster.fbuilder->cut.cut_points_val.size(), party.dataset.n_features());
     for (int round = 0; round < param.n_trees; round++) {
         LOG(INFO) << "training round " << round << " start";
-        vector<Tree> trees(param.tree_per_rounds);
+        vector<Tree> trees(param.tree_per_round);
         if (party.pid == 0)
             party.TriggerUpdateGradients();
         if (fl_param.privacy_tech == "he" && !party.has_label) {
@@ -1392,7 +1392,7 @@ void distributed_vertical_train(DistributedParty& party, FLParam &fl_param) {
             else
                 party.GetGradientBatches();
         }
-        for (int t = 0; t < param.tree_per_rounds; t++) {
+        for (int t = 0; t < param.tree_per_round; t++) {
             Tree &tree = trees[t];
             party.booster.fbuilder->build_init(party.booster.gradients, t);
             if (party.pid == 0)
@@ -1552,7 +1552,7 @@ void distributed_horizontal_train(DistributedParty& party, FLParam &fl_param) {
     }
     for (int i = 0; i < fl_param.gbdt_param.n_trees; i++) {
         LOG(INFO) << "Training round " << i << " start";
-        vector<Tree> trees(fl_param.gbdt_param.tree_per_rounds);
+        vector<Tree> trees(fl_param.gbdt_param.tree_per_round);
         party.booster.update_gradients();
         if (fl_param.privacy_tech == "dp") {
             // TODO
@@ -1564,7 +1564,7 @@ void distributed_horizontal_train(DistributedParty& party, FLParam &fl_param) {
         GHPair party_gh = thrust::reduce(thrust::host, party.booster.gradients.host_data(), party.booster.gradients.host_end());
         // send party_gh to server
         party.SendGH(party_gh);
-        for (int k = 0; k < fl_param.gbdt_param.tree_per_rounds; k++) {
+        for (int k = 0; k < fl_param.gbdt_param.tree_per_round; k++) {
             party.booster.fbuilder->build_init(party.booster.gradients, k);
             if (party.pid == 0) {
                 party.TriggerBuildUsingGH(k);

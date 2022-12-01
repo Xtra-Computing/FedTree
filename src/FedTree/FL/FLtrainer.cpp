@@ -200,9 +200,13 @@ void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FL
 
     for (int i = 0; i < params.gbdt_param.n_trees; i++) {
         LOG(INFO) << "Training round " << i << " start";
+        int n_tree_this_round;
+        if(params.gbdt_param.bagging)
+            n_tree_this_round = params.gbdt_param.n_parallel_trees;
+        else
+            n_tree_this_round = params.gbdt_param.tree_per_round;
         vector<Tree> trees_this_round;
-        trees_this_round.resize(params.gbdt_param.tree_per_rounds);
-//        vector<Tree> trees(params.gbdt_param.tree_per_rounds);
+        trees_this_round.resize(n_tree_this_round);
         // each party sample the data to train a tree in each round
         if(params.ins_bagging_fraction < 1.0){
             if(i % int(1/params.ins_bagging_fraction) == 0){
@@ -236,7 +240,7 @@ void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FL
             sum_gh = sum_gh + party_gh;
         }
         // for each tree per round
-        for (int k = 0; k < params.gbdt_param.tree_per_rounds; k++) {
+        for (int k = 0; k < n_tree_this_round; k++) {
 //            Tree &tree = trees[k];
             // each party initialize ins2node_id, gradients, etc.
             // ask parties to send gradient and aggregate by server
@@ -504,9 +508,13 @@ void FLtrainer::vertical_fl_trainer(vector<Party> &parties, Server &server, FLPa
     // for each boosting round
 
     for (int round = 0; round < params.gbdt_param.n_trees; round++) {
-//        LOG(INFO) << "Training round " << round << " start";
-
-        vector<Tree> trees(params.gbdt_param.tree_per_rounds);
+        LOG(INFO) << "Training round " << round << " start";
+        int n_tree_this_round;
+        if(params.gbdt_param.bagging)
+            n_tree_this_round = params.gbdt_param.n_parallel_trees;
+        else
+            n_tree_this_round = params.gbdt_param.tree_per_round;
+        vector<Tree> trees(n_tree_this_round);
 
         if(params.ins_bagging_fraction < 1.0){
             if(round % (int(1/params.ins_bagging_fraction)) == 0) {
@@ -566,7 +574,7 @@ void FLtrainer::vertical_fl_trainer(vector<Party> &parties, Server &server, FLPa
             server.booster.gradients.copy_from(temp_gradients);
         }
         // for each tree in a round
-        for (int t = 0; t < params.gbdt_param.tree_per_rounds; t++) {
+        for (int t = 0; t < n_tree_this_round; t++) {
             Tree &tree = trees[t];
 
             // server and each party initialize ins2node_id, gradients, etc.

@@ -62,7 +62,7 @@ int main(int argc, char **argv) {
             model_param.num_class = num_class;
         }
         if(model_param.num_class > 2)
-            model_param.tree_per_rounds = model_param.num_class;
+            model_param.tree_per_round = model_param.num_class;
     }
     else if(model_param.objective.find("reg:") != std::string::npos){
         model_param.num_class = 1;

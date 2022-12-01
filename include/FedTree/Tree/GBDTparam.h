@@ -29,7 +29,7 @@ struct GBDTParam {
     float learning_rate;
     std::string objective;
     int num_class;
-    int tree_per_rounds; // #tree of each round, depends on #class
+    int tree_per_round; // #tree of each round, depends on #class
     int max_num_bin; // for histogram
     float constant_h; // fix h to a constant for DP
     int n_device;

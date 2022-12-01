@@ -71,7 +71,7 @@ int main(int argc, char **argv) {
 //            param.num_class = num_class;
 //        }
 //        if(param.num_class > 2)
-//            param.tree_per_rounds = param.num_class;
+//            param.tree_per_round = param.num_class;
 //    }
 //    else if(param.objective.find("reg:") != std::string::npos){
 //        param.num_class = 1;

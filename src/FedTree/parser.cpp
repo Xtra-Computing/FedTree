@@ -68,7 +68,7 @@ void Parser::parse_param(FLParam &fl_param, char *file_path) {
     gbdt_param->num_class = 1;
     gbdt_param->path = "../dataset/test_dataset.txt";
     gbdt_param->tree_method = "hist";
-    gbdt_param->tree_per_rounds = 1; // # tree of each round, depends on # class
+    gbdt_param->tree_per_round = 1; // # tree of each round, depends on # class
     gbdt_param->metric = "default";
     gbdt_param->constant_h = 0.0;
     gbdt_param->reorder_label = false; // whether reorder label or not

@@ -95,38 +95,19 @@ int main(int argc, char** argv){
     int n_test_dataset = model_param.test_paths.size();
     vector<DataSet> test_dataset(n_test_dataset);
     if (use_global_test_set) {
-        if(model_param.reorder_label && fl_param.partition) {
-            for(int i = 0; i < n_test_dataset; i++)
+        if (model_param.reorder_label && fl_param.partition) {
+            for (int i = 0; i < n_test_dataset; i++)
                 test_dataset[i].label_map = dataset.label_map;
         }
-        for(int i = 0; i < n_test_dataset; i++)
+        for (int i = 0; i < n_test_dataset; i++)
             test_dataset[i].load_from_file(model_param.test_paths[i], fl_param);
-        if(model_param.reorder_label && fl_param.partition) {
-            for(int i = 0; i < n_test_dataset; i++) {
+        if (model_param.reorder_label && fl_param.partition) {
+            for (int i = 0; i < n_test_dataset; i++) {
                 test_dataset[i].label = dataset.label;
                 fl_param.gbdt_param.num_class = test_dataset[i].label.size();
             }
         }
     }
-
-    /*
-    if(!fl_param.partition && use_global_test_set && fl_param.mode == "vertical"){
-        int n;
-        for(int i = 0; i < test_dataset.size(); i++)
-            n += test_dataset[i].n_features();
-        int stride = n / fl_param.n_parties;
-        for (int p = 0; p < fl_param.n_parties - 1; p++) {
-            batch_idxs[p] = vector<int>();
-            for (int id = 0; id < stride; id++) {
-                batch_idxs[p].push_back(id + p * stride);
-            }
-        }
-        batch_idxs[fl_param.n_parties - 1] = vector<int>();
-        for (int id = 0; id < n - (fl_param.n_parties - 1) * stride; id++) {
-            batch_idxs[fl_param.n_parties - 1].push_back((fl_param.n_parties - 1) * stride + id);
-        }
-    }
-     */
 
     GBDTParam &param = fl_param.gbdt_param;
     //correct the number of classes
@@ -140,7 +121,7 @@ int main(int argc, char** argv){
             }
         }
         if(param.num_class > 2)
-            param.tree_per_rounds = param.num_class;
+            param.tree_per_round = param.num_class;
     }
     else if(param.objective.find("reg:") != std::string::npos){
         param.num_class = 1;
@@ -197,11 +178,6 @@ int main(int argc, char** argv){
             score = server.global_trees.predict_score(fl_param.gbdt_param, test_dataset[0]);
             scores.push_back(score);
         }
-        //else
-        //    for(int i = 0; i < n_parties; i++) {
-        //        score = server.global_trees.predict_score(fl_param.gbdt_param, test_subsets[i]);
-        //        scores.push_back(score);
-        //    }
     }
     else if(fl_param.mode == "solo"){
         trainer.solo_trainer(parties, fl_param);
@@ -227,12 +203,6 @@ int main(int argc, char** argv){
             score = gbdt.predict_score(fl_param.gbdt_param, test_dataset[0]);
             scores.push_back(score);
         }
-        //else {
-        //    for(int i = 0; i < n_parties; i++) {
-        //        score = gbdt.predict_score(fl_param.gbdt_param, test_subsets[i]);
-        //        scores.push_back(score);
-        //    }
-        //}
     } else if (fl_param.mode == "vertical") {
         trainer.vertical_fl_trainer(parties, server, fl_param);
         float_type score;
