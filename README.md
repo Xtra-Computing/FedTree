@@ -61,7 +61,7 @@ git submodule update
 ```bash
 # under the directory of FedTree
 mkdir build && cd build 
-cmake ..
+cmake .. -DDISTRIBUTED=OFF
 make -j
 ```
 
