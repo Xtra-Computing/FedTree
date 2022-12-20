@@ -18,7 +18,7 @@ You can refer to our primary documentation [here](https://fedtree.readthedocs.io
 * [CMake](https://cmake.org/) 3.15 or above
 * [GMP](https://gmplib.org/)
 * [NTL](https://libntl.org/)
-* [gRPC](https://grpc.io/docs/languages/cpp/quickstart/) 1.50.0
+* [gRPC](https://grpc.io/docs/languages/cpp/quickstart/) 1.50.0 (required for distributed version)
 
 You can follow the following commands to install NTL library.
 
@@ -61,7 +61,7 @@ git submodule update
 ```bash
 # under the directory of FedTree
 mkdir build && cd build 
-cmake ..
+cmake .. -DDISTRIBUTED=OFF
 make -j
 ```
 
