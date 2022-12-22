@@ -31,7 +31,7 @@ void Parser::parse_param(FLParam &fl_param, char *file_path) {
     fl_param.n_parties = 2;
     fl_param.mode = "horizontal";
     fl_param.partition_mode = fl_param.mode;
-    fl_param.privacy_tech = "he";
+    fl_param.privacy_tech = "none";
     fl_param.partition= false;
     fl_param.alpha = 100;
     fl_param.n_hori = -1;
