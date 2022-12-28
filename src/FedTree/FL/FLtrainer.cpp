@@ -201,10 +201,7 @@ void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FL
     for (int i = 0; i < params.gbdt_param.n_trees; i++) {
         LOG(INFO) << "Training round " << i << " start";
         int n_tree_this_round;
-        if(params.gbdt_param.bagging)
-            n_tree_this_round = params.gbdt_param.n_parallel_trees;
-        else
-            n_tree_this_round = params.gbdt_param.tree_per_round;
+        n_tree_this_round = params.gbdt_param.tree_per_round;
         vector<Tree> trees_this_round;
         trees_this_round.resize(n_tree_this_round);
         // each party sample the data to train a tree in each round
@@ -510,10 +507,7 @@ void FLtrainer::vertical_fl_trainer(vector<Party> &parties, Server &server, FLPa
     for (int round = 0; round < params.gbdt_param.n_trees; round++) {
         LOG(INFO) << "Training round " << round << " start";
         int n_tree_this_round;
-        if(params.gbdt_param.bagging)
-            n_tree_this_round = params.gbdt_param.n_parallel_trees;
-        else
-            n_tree_this_round = params.gbdt_param.tree_per_round;
+        n_tree_this_round = params.gbdt_param.tree_per_round;
         vector<Tree> trees(n_tree_this_round);
 
         if(params.ins_bagging_fraction < 1.0){
