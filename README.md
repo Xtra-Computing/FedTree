@@ -96,7 +96,7 @@ make -j
 
 
 # Distributed Setting
-For each machine that participates in FL, it needs to build the library first.
+For each machine that participates in FL, it needs to build the library first. When building the library, passing `-DDISTRIBUTED=ON` option to cmake.
 ```bash
 mkdir build && cd build
 cmake .. -DDISTRIBUTED=ON
