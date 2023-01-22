@@ -39,12 +39,48 @@ void GBDT::train(GBDTParam &param, DataSet &dataset) {
 //    float_type score = predict_score(param, dataset);
 //    LOG(INFO) << score;
 
+    auto stop = timer.now();
+    std::chrono::duration<float> training_time = stop - start;
+    LOG(INFO) << "training time = " << training_time.count();
+    return;
+}
+
+void GBDT::train_a_subtree(GBDTParam &param, DataSet &dataset, int n_layer, int *id_list, int *nins_list, float *gradient_g_list, float *gradient_h_list, int *n_node, float *input_gradient_g, float *input_gradient_h) {
+    if (param.tree_method == "auto")
+        param.tree_method = "hist";
+    else if (param.tree_method != "hist") {
+        std::cout << "FedTree only supports histogram-based training yet";
+        exit(1);
+    }
+
+    if (param.objective.find("multi:") != std::string::npos || param.objective.find("binary:") != std::string::npos) {
+        int num_class = dataset.label.size();
+        if (param.num_class != num_class) {
+            LOG(INFO) << "updating number of classes from " << param.num_class << " to " << num_class;
+            param.num_class = num_class;
+        }
+        if (param.num_class > 2)
+            param.tree_per_round = param.num_class;
+    } else if (param.objective.find("reg:") != std::string::npos) {
+        param.num_class = 1;
+    }
+
+    Booster booster;
+    booster.init(dataset, param);
+    std::chrono::high_resolution_clock timer;
+    auto start = timer.now();
+    std::cout<<"start boost a subtree"<<std::endl;
+    booster.boost_a_subtree(trees, n_layer, id_list, nins_list, gradient_g_list, gradient_h_list, n_node, input_gradient_g, input_gradient_h);
+    //booster.boost(trees);
+//    float_type score = predict_score(param, dataset);
+//    LOG(INFO) << score;
 
     auto stop = timer.now();
     std::chrono::duration<float> training_time = stop - start;
     LOG(INFO) << "training time = " << training_time.count();
     return;
 }
+
 
 vector<float_type> GBDT::predict(const GBDTParam &model_param, const DataSet &dataSet) {
     SyncArray<float_type> y_predict;
@@ -159,7 +195,7 @@ void GBDT::predict_raw(const GBDTParam &model_param, const DataSet &dataSet, Syn
     int total_num_node = num_iter * num_class * num_node;
     //TODO: reduce the output size for binary classification
     y_predict.resize(n_instances * num_class);
-
+    std::cout<<"num_class in predict_raw:"<<num_class<<std::endl;
     SyncArray<Tree::TreeNode> model(total_num_node);
     auto model_data = model.host_data();
     int tree_cnt = 0;

@@ -20,6 +20,8 @@ public:
 
     void train(GBDTParam &param, DataSet &dataset);
 
+    void train_a_subtree(GBDTParam &param, DataSet &dataset, int n_layer, int *id_list, int *nins_list, float *gradient_g_list, float *gradient_h_list, int *n_node, float *input_gradient_g, float *input_gradient_h);
+
     vector<float_type> predict(const GBDTParam &model_param, const DataSet &dataSet);
 
     vector<float_type> predict(const GBDTParam &model_param, const vector<DataSet> &dataSet);

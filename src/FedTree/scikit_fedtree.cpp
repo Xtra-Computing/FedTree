@@ -10,8 +10,6 @@
 #include "FedTree/parser.h"
 
 
-
-
 extern "C" {
 
     void set_logger(int verbose) {
@@ -372,14 +370,15 @@ extern "C" {
                                      int reorder_label, float constant_h,
                                      int row_size, float *val, int *row_ptr, int *col_ptr, float *label,
                                      char *tree_method, Tree *&model, int *tree_per_iter, float *group_label,
-                                     int *group, int num_group=0) {
+                                     int *group, int num_group, int n_layer, int *insid_list, int *n_ins_list,
+                                     float *gradient_g_list, float *gradient_h_list, int *n_node, float *input_gradient_g, float *input_gradient_h) {
 
         LOG(INFO) << "Start training";
 
         // Initialize model params
 
         GBDTParam gbdt_param;
-        gbdt_param.depth = depth;
+        gbdt_param.depth = n_layer;
         gbdt_param.n_trees = n_trees;
         gbdt_param.min_child_weight = min_child_weight;
         gbdt_param.lambda = lambda;
@@ -408,48 +407,17 @@ extern "C" {
         dataset.load_from_sparse(row_size, val, row_ptr, col_ptr, label, group, num_group, gbdt_param);
         num_class[0] = gbdt_param.num_class;
 
-        /*
+        FLParam fl_param;
         fl_param.gbdt_param = gbdt_param;
-
 
         GBDTParam &param = fl_param.gbdt_param;
         //correct the number of classes
         if (param.objective.find("multi:") != std::string::npos || param.objective.find("binary:") != std::string::npos || param.metric == "error") {
-            int num_class;
-            if(fl_param.partition) {
-                num_class = dataset.label.size();
-                if ((param.num_class == 1) && (param.num_class != num_class)) {
-                    LOG(INFO) << "updating number of classes from " << param.num_class << " to " << num_class;
-                    param.num_class = num_class;
-                }
-            }
             if(param.num_class > 2)
                 param.tree_per_round = param.num_class;
         }
         else if(param.objective.find("reg:") != std::string::npos){
             param.num_class = 1;
-        }
-        vector<Party> parties(n_parties);
-        vector<int> n_instances_per_party(n_parties);
-        Server server;
-        if(fl_param.mode != "centralized") {
-            LOG(INFO) << "initialize parties";
-            for (int i = 0; i < n_parties; i++) {
-                if(fl_param.mode == "vertical")
-                    parties[i].vertical_init(i, subsets[i], fl_param);
-                else if(fl_param.mode == "horizontal" || fl_param.mode == "ensemble")
-                    parties[i].init(i, subsets[i], fl_param);
-                n_instances_per_party[i] = subsets[i].n_instances();
-            }
-            LOG(INFO) << "initialize server";
-            if (fl_param.mode == "vertical") {
-                if(fl_param.partition)
-                    server.vertical_init(fl_param, dataset.n_instances(), n_instances_per_party, dataset.y, dataset.label);
-                else
-                    server.vertical_init(fl_param, subsets[0].n_instances(), n_instances_per_party, subsets[0].y, subsets[0].label);
-            } else if (fl_param.mode == "horizontal" || fl_param.mode == "ensemble") {
-                server.horizontal_init(fl_param);
-            }
         }
 
 //        // Initialize server
@@ -461,44 +429,78 @@ extern "C" {
 //            server.horizontal_init(fl_param);
 //        }
 
-        LOG(INFO) << "Run the trainer";
         // Run different training methods based on mode
-        FLtrainer trainer;
+
         if (param.tree_method == "auto")
             param.tree_method = "hist";
         else if (param.tree_method != "hist"){
             LOG(INFO)<<"FedTree only supports histogram-based training yet";
             exit(1);
         }
-        if(fl_param.mode == "hybrid") {
-            trainer.hybrid_fl_trainer(parties, server, fl_param);
-        } else if(fl_param.mode == "ensemble") {
-            trainer.ensemble_trainer(parties, server, fl_param);
-        }else if(fl_param.mode == "solo") {
-            trainer.solo_trainer(parties, fl_param);
-        }else if(fl_param.mode == "centralized") {
-            GBDT gbdt;
-            gbdt.train(fl_param.gbdt_param, dataset);
-        }else if (fl_param.mode == "vertical") {
-            trainer.vertical_fl_trainer(parties, server, fl_param);
-        }else if (fl_param.mode == "horizontal") {
-            trainer.horizontal_fl_trainer(parties, server, fl_param);
-        }
+
+        GBDT gbdt;
+        std::cout<<"before train a subtree"<<std::endl;
+
+        gbdt.train_a_subtree(fl_param.gbdt_param, dataset, n_layer, insid_list, n_ins_list, gradient_g_list, gradient_h_list, n_node, input_gradient_g, input_gradient_h);
+        std::cout<<"gbdt trees:"<<gbdt.trees.size()<<std::endl;
+
+        vector<vector<Tree>> boosted_model = gbdt.trees;
+
+        std::cout<<"boossted_model size:"<<boosted_model[0].size()<<std::endl;
+        std::cout<<"n_trees:"<<n_trees<<std::endl;
 
         // Return boosted model
-        vector<vector<Tree>> boosted_model = server.global_trees.trees;
+//        vector<vector<Tree>> boosted_model = server.global_trees.trees;
         *tree_per_iter = (int)(boosted_model[0].size());
+        n_trees = 1;
         model = new Tree[n_trees * (*tree_per_iter)];
+
         for(int i = 0; i < n_trees; i++) {
             for(int j = 0; j < *tree_per_iter; j++){
                 model[i * (*tree_per_iter) + j] = boosted_model[i][j];
             }
         }
+
         for (int i = 0; i < dataset.label.size(); ++i) {
             group_label[i] = dataset.label[i];
         }
-        */
+        LOG(INFO)<<"finish scikit centralize train a subtree";
+    }
 
+    void update_a_layer_with_flag(int *flag_val, int *id_list, int *nins_list, float *gradient_g, float *gradient_h,
+                                  int n_node, float lambda, float *leaf_val){
+        //todo: encrypted g and h
+        vector<int> n_ins_accu(n_node+1);
+        n_ins_accu[0] = 0;
+        for(int i = 1; i <= n_node; i++){
+            n_ins_accu[i] = n_ins_accu[i-1];
+            n_ins_accu[i] += nins_list[i-1];
+
+        }
+
+        for(int i = 0; i < n_node; i++){
+            int n_ins = nins_list[i];
+            float left_g = 0;
+            float left_h = 0;
+            float right_g = 0;
+            float right_h = 0;
+            int n_left = 0;
+            int n_right = 0;
+            for(int j = n_ins_accu[i]; j < n_ins_accu[i+1]; j++){
+                if(flag_val[id_list[j]] != 0){
+                    left_g += gradient_g[j];
+                    left_h += gradient_h[j];
+                    n_left++;
+                }
+                else{
+                    right_g += gradient_g[j];
+                    right_h += gradient_h[j];
+                    n_right++;
+                }
+            }
+            leaf_val[i*2] = -left_g / (left_h + lambda);
+            leaf_val[i*2+1] = -right_h / (right_h + lambda);
+        }
     }
 
 }

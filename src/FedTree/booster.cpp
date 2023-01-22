@@ -108,6 +108,68 @@ void Booster::boost(vector<vector<Tree>> &boosted_model) {
     LOG(INFO) << metric->get_name() << " = " << metric->get_score(fbuilder->get_y_predict());
 }
 
+
+void Booster::boost_a_subtree(vector<vector<Tree>> &boosted_model, int n_layer, int *id_list, int *nins_list, float *gradient_g_list, float *gradient_h_list, int *n_node, float *input_gradient_g, float *input_gradient_h) {
+    TIMED_FUNC(timerObj);
+    auto gradients_ptr = gradients.host_data();
+    for(int i = 0; i < gradients.size(); i++){
+        gradients_ptr[i].g = input_gradient_g[i];
+        gradients_ptr[i].h = input_gradient_h[i];
+    }
+    // // update gradients
+    // LOG(INFO)<<"input gradient 0"<<gradients_ptr[0];
+    // obj->get_gradient(y, fbuilder->get_y_predict(), gradients);
+    // LOG(INFO)<<"gradients 0:"<<gradients_ptr[0];
+    // for(int i = 0; i < gradients.size(); i++){
+    //     if((gradients_ptr[i].g != input_gradient_g[i]) || (gradients_ptr[i].h != input_gradient_h[i])){
+    //         LOG(INFO)<<"gradient not equal:"<<i;
+    //     }
+    //     gradients_ptr[i].g = input_gradient_g[i];
+    //     gradients_ptr[i].h = input_gradient_h[i];
+    // }
+//    if (param.bagging) rowSampler.do_bagging(gradients);
+    PERFORMANCE_CHECKPOINT(timerObj);
+    //build new model/approximate function
+    boosted_model.push_back(fbuilder->build_a_subtree_approximate(gradients, n_layer));
+    auto ins2node_id = fbuilder->ins2node_id.host_data();
+    Tree &tree = boosted_model[0][0];
+    auto tree_node = tree.nodes.host_data();
+    vector<int> leaf_list;
+    std::map<int, int> leaf_idx_map;
+    for(int i = 0; i < tree.nodes.size(); i++){
+        if(tree_node[i].is_leaf && tree_node[i].is_valid){
+            leaf_idx_map[tree_node[i].final_id] = leaf_list.size();
+            nins_list[leaf_list.size()] = tree_node[i].n_instances;
+            leaf_list.push_back(tree_node[i].final_id);
+        }
+    }
+    *n_node = leaf_list.size();
+    vector<vector<int>> id_list_2d(leaf_list.size());
+    for(int i = 0; i < y.size(); i++){
+        id_list_2d[leaf_idx_map[ins2node_id[i]]].push_back(i);
+    }
+    auto gradients_data = gradients.host_data();
+    int idx = 0;
+    for(int i = 0; i < id_list_2d.size(); i++){
+        for(int j = 0; j < id_list_2d[i].size(); j++){
+            id_list[idx] = id_list_2d[i][j];
+            gradient_g_list[idx] = gradients_data[id_list_2d[i][j]].g;
+            gradient_h_list[idx] = gradients_data[id_list_2d[i][j]].h;
+            idx++;
+        }
+    }
+
+    PERFORMANCE_CHECKPOINT(timerObj);
+    //show metric on training set
+    std::ofstream myfile;
+    myfile.open ("data.txt", std::ios_base::app);
+    myfile << metric->get_score(fbuilder->get_y_predict()) << "\n";
+    myfile.close();
+    LOG(INFO) << metric->get_name() << " = " << metric->get_score(fbuilder->get_y_predict());
+    std::cout<<"after boost a subtree"<<std::endl;
+}
+
+
 void Booster::boost_without_prediction(vector<vector<Tree>> &boosted_model) {
     TIMED_FUNC(timerObj);
     //update gradients
