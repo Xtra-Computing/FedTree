@@ -195,7 +195,6 @@ void GBDT::predict_raw(const GBDTParam &model_param, const DataSet &dataSet, Syn
 
     int total_num_node = num_iter * num_class * num_node;
     y_predict.resize(n_instances * num_class);
-    std::cout<<"num_class in predict_raw:"<<num_class<<std::endl;
     SyncArray<Tree::TreeNode> model(total_num_node);
     auto model_data = model.host_data();
     int tree_cnt = 0;
