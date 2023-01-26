@@ -371,7 +371,7 @@ extern "C" {
                                      int row_size, float *val, int *row_ptr, int *col_ptr, float *label,
                                      char *tree_method, Tree *&model, int *tree_per_iter, float *group_label,
                                      int *group, int num_group, int n_layer, int *insid_list, int *n_ins_list,
-                                     float *gradient_g_list, float *gradient_h_list, int *n_node, float *input_gradient_g, float *input_gradient_h) {
+                                     float *gradient_g_list, float *gradient_h_list, int *n_node, int *nodeid_list, float *input_gradient_g, float *input_gradient_h) {
 
         LOG(INFO) << "Start training";
 
@@ -441,7 +441,7 @@ extern "C" {
         GBDT gbdt;
         std::cout<<"before train a subtree"<<std::endl;
 
-        gbdt.train_a_subtree(fl_param.gbdt_param, dataset, n_layer, insid_list, n_ins_list, gradient_g_list, gradient_h_list, n_node, input_gradient_g, input_gradient_h);
+        gbdt.train_a_subtree(fl_param.gbdt_param, dataset, n_layer, insid_list, n_ins_list, gradient_g_list, gradient_h_list, n_node, nodeid_list, input_gradient_g, input_gradient_h);
         std::cout<<"gbdt trees:"<<gbdt.trees.size()<<std::endl;
 
         vector<vector<Tree>> boosted_model = gbdt.trees;
@@ -501,6 +501,54 @@ extern "C" {
             leaf_val[i*2] = -left_g / (left_h + lambda);
             leaf_val[i*2+1] = -right_h / (right_h + lambda);
         }
+    }
+
+    void predict_leaf(int row_size, float *val, int *row_ptr, int *col_ptr, float *y_pred, Tree *&model,
+             int n_trees, int trees_per_iter, char *objective, int num_class, float learning_rate, float *group_label,
+             int *group, int *ins2leaf, int num_group=0, int verbose=1, int bagging=0) {
+        //load model
+        GBDTParam model_param;
+        model_param.objective = objective;
+        model_param.learning_rate = learning_rate;
+        model_param.num_class = num_class;
+        model_param.bagging = bagging;
+        DataSet test_dataset;
+        test_dataset.load_from_sparse(row_size, val, row_ptr, col_ptr, NULL, group, num_group, model_param);
+        set_logger(verbose);
+        if(group_label != NULL) {
+            test_dataset.label.clear();
+            for (int i = 0; i < num_class; ++i) {
+                test_dataset.label.emplace_back(group_label[i]);
+            }
+        }
+        else{
+            for (int i = 0; i < num_class; ++i) {
+                test_dataset.label.emplace_back(i);
+            }
+        }
+        // predict
+        SyncArray<float_type> y_predict;
+        vector<vector<Tree>> boosted_model_in_mem;
+        for(int i = 0; i < n_trees; i++){
+            boosted_model_in_mem.push_back(vector<Tree>());
+            CHECK_NE(model, NULL) << "model is null!";
+            for(int j = 0; j < trees_per_iter; j++) {
+                boosted_model_in_mem[i].push_back(model[i * trees_per_iter + j]);
+            }
+        }
+        GBDT gbdt_tree(boosted_model_in_mem);
+        gbdt_tree.predict_leaf(model_param, test_dataset, y_predict, ins2leaf);
+
+        // //convert the aggregated values to labels, probabilities or ranking scores.
+        // std::unique_ptr<ObjectiveFunction> obj;
+        // obj.reset(ObjectiveFunction::create(model_param.objective));
+        // obj->configure(model_param, test_dataset);
+        // obj->predict_transform(y_predict);
+        // vector<float_type> y_pred_vec(y_predict.size());
+        // memcpy(y_pred_vec.data(), y_predict.host_data(), sizeof(float_type) * y_predict.size());
+        // for(int i = 0; i < y_pred_vec.size(); i++) {
+        //     y_pred[i] = y_pred_vec[i];
+        // }//float_type may be double/float, so convert to float for both cases.
     }
 
 }

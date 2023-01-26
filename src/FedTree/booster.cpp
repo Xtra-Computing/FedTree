@@ -109,7 +109,8 @@ void Booster::boost(vector<vector<Tree>> &boosted_model) {
 }
 
 
-void Booster::boost_a_subtree(vector<vector<Tree>> &boosted_model, int n_layer, int *id_list, int *nins_list, float *gradient_g_list, float *gradient_h_list, int *n_node, float *input_gradient_g, float *input_gradient_h) {
+void Booster::boost_a_subtree(vector<vector<Tree>> &boosted_model, int n_layer, int *id_list, int *nins_list, 
+                                float *gradient_g_list, float *gradient_h_list, int *n_node, int *nodeid_list, float *input_gradient_g, float *input_gradient_h) {
     TIMED_FUNC(timerObj);
     auto gradients_ptr = gradients.host_data();
     for(int i = 0; i < gradients.size(); i++){
@@ -141,6 +142,7 @@ void Booster::boost_a_subtree(vector<vector<Tree>> &boosted_model, int n_layer, 
             leaf_idx_map[tree_node[i].final_id] = leaf_list.size();
             nins_list[leaf_list.size()] = tree_node[i].n_instances;
             leaf_list.push_back(tree_node[i].final_id);
+            nodeid_list[leaf_list.size()-1] = tree_node[i].final_id;
         }
     }
     *n_node = leaf_list.size();

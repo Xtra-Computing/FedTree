@@ -3,20 +3,23 @@ import setuptools
 from shutil import copyfile
 from sys import platform
 
-dirname = path.dirname(path.abspath(__file__))
+# dirname = path.dirname(path.abspath(__file__))
 
-if platform == "linux" or platform == "linux2":
-    lib_path = path.abspath(path.join(dirname, '../build/lib/libFedTree.so'))
-elif platform == "win32":
-    lib_path = path.abspath(path.join(dirname, '../build/bin/Debug/libFedTree.dll'))
-elif platform == "darwin":
-    lib_path = path.abspath(path.join(dirname, '../build/lib/libFedTree.dylib'))
-else:
-    print("OS not supported!")
-    exit()
+# if platform == "linux" or platform == "linux2":
+#     lib_path = path.abspath(path.join(dirname, '../build/lib/libFedTree.so'))
+# elif platform == "win32":
+#     lib_path = path.abspath(path.join(dirname, '../build/bin/Debug/libFedTree.dll'))
+# elif platform == "darwin":
+#     lib_path = path.abspath(path.join(dirname, '../build/lib/libFedTree.dylib'))
+# else:
+#     print("OS not supported!")
+#     exit()
 
-if not path.exists(path.join(dirname, "fedtree", path.basename(lib_path))):
-    copyfile(lib_path, path.join(dirname, "fedtree", path.basename(lib_path)))
+# if not path.exists(path.join(dirname, "fedtree", path.basename(lib_path))):
+#     copyfile(lib_path, path.join(dirname, "fedtree", path.basename(lib_path)))
+
+lib_path = "./fedtree/libFedTree.so"
+
 
 setuptools.setup(name="fedtree",
                  version="1.0.4",
