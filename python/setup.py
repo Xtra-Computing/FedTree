@@ -18,8 +18,11 @@ else:
 if not path.exists(path.join(dirname, "fedtree", path.basename(lib_path))):
     copyfile(lib_path, path.join(dirname, "fedtree", path.basename(lib_path)))
 
+# lib_path = "./fedtree/libFedTree.so"
+
+
 setuptools.setup(name="fedtree",
-                 version="1.0.4",
+                 version="1.0.5",
                  packages=["fedtree"],
                  package_dir={"python": "fedtree"},
                  description="A federated learning library for trees",

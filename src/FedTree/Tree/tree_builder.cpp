@@ -13,7 +13,6 @@
 void TreeBuilder::init(DataSet &dataSet, const GBDTParam &param) {
     FunctionBuilder::init(dataSet, param);
 
-
     if (!dataSet.has_csc and dataSet.csr_row_ptr.size() > 1)
         dataSet.csr_to_csc();
     this->sorted_dataset = dataSet;
@@ -29,7 +28,6 @@ void TreeBuilder::init(DataSet &dataSet, const GBDTParam &param) {
 
 void TreeBuilder::init_nosortdataset(DataSet &dataSet, const GBDTParam &param) {
     FunctionBuilder::init(dataSet, param);
-
 
     if (!dataSet.has_csc and dataSet.csr_row_ptr.size() > 1)
         dataSet.csr_to_csc();
@@ -100,6 +98,51 @@ vector<Tree> TreeBuilder::build_approximate(const SyncArray<GHPair> &gradients, 
         this->trees.prune_self(param.gamma);
         if (update_y_predict)
             predict_in_training(k);
+        tree.nodes.resize(this->trees.nodes.size());
+        tree.nodes.copy_from(this->trees.nodes);
+    }
+    return trees;
+}
+
+vector<Tree> TreeBuilder::build_a_subtree_approximate(const SyncArray<GHPair> &gradients, int n_layer) {
+    vector<Tree> trees(param.tree_per_round);
+    TIMED_FUNC(timerObj);
+    //Todo: add column sampling
+
+    for (int k = 0; k < param.tree_per_round; ++k) {
+        std::cout<<"1"<<std::endl;
+        Tree &tree = trees[k];
+
+        this->ins2node_id.resize(n_instances);
+        this->gradients.set_host_data(const_cast<GHPair *>(gradients.host_data() + k * n_instances));
+        this->trees.init_CPU(this->gradients, param);
+//        std::cout<<"1.1"<<std::endl;
+        for (int level = 0; level < n_layer; ++level) {
+            find_split(level);
+//            std::cout<<"1.2"<<std::endl;
+            {
+                TIMED_SCOPE(timerObj, "apply sp");
+                update_tree();
+//                std::cout<<"1.3"<<std::endl;
+                update_ins2node_id();
+//                std::cout<<"1.4"<<std::endl;
+                {
+                    LOG(TRACE) << "gathering ins2node id";
+                    //get final result of the reset instance id to node id
+                    if (!has_split) {
+                        // LOG(INFO) << "no splittable nodes, stop";
+                        break;
+                    }
+                }
+            }
+        }
+//        std::cout<<"2"<<std::endl;
+        // prune will change tree node id, which is not consistent with ins2node_id
+        // this->trees.prune_self(param.gamma);
+
+//        std::cout<<"3"<<std::endl;
+//        if (update_y_predict)
+//            predict_in_training(k);
         tree.nodes.resize(this->trees.nodes.size());
         tree.nodes.copy_from(this->trees.nodes);
     }

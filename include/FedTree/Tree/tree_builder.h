@@ -23,6 +23,8 @@ public:
 
     vector<Tree> build_approximate(const SyncArray<GHPair> &gradients, bool update_y_predict = true) override;
 
+    vector<Tree> build_a_subtree_approximate(const SyncArray<GHPair> &gradients, int n_layer) override;
+
     void build_tree_by_predefined_structure(const SyncArray<GHPair> &gradients, vector<Tree> &trees);
 
     void build_init(const GHPair sum_gh, int k) override;

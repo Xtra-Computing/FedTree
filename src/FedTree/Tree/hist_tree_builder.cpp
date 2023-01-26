@@ -21,7 +21,6 @@
 #include <algorithm>
 #include <random>
 
-
 using namespace thrust;
 
 void HistTreeBuilder::init(DataSet &dataset, const GBDTParam &param) {
@@ -45,6 +44,7 @@ SyncArray<GHPair> HistTreeBuilder::get_gradients() {
 }
 
 void HistTreeBuilder::set_gradients(SyncArray<GHPair> &gh) {
+
 }
 
 
@@ -144,6 +144,7 @@ void HistTreeBuilder::find_split(int level) {
     int n_column = sorted_dataset.n_features();
     int n_partition = n_column * n_nodes_in_level;
     int n_bins = cut.cut_points_val.size();
+    //std::cout<<"n_bins:"<<n_bins<<std::endl;
     int n_max_nodes = 2 << param.depth;
     int n_max_splits = n_max_nodes * n_bins;
 
@@ -169,13 +170,13 @@ void HistTreeBuilder::find_split(int level) {
     SyncArray<GHPair> hist(n_max_splits);
     SyncArray<float_type> gain(n_max_splits);
     compute_histogram_in_a_level(level, n_max_splits, n_bins, n_nodes_in_level, hist_fid_data, missing_gh, hist);
-    // LOG(INFO) << "hist:"<<"\n"<<hist;
+    LOG(DEBUG) << "hist:"<<hist;
     compute_gain_in_a_level(gain, n_nodes_in_level, n_bins, hist_fid_data, missing_gh, hist);
     SyncArray<int_float> best_idx_gain(n_nodes_in_level);
     get_best_gain_in_a_level(gain, best_idx_gain, n_nodes_in_level, n_bins);
-    // LOG(INFO) << "best_idx_gain:"<<"\n"<< best_idx_gain;
+    LOG(DEBUG) << "best_idx_gain:"<<best_idx_gain;
     get_split_points(best_idx_gain, n_nodes_in_level, hist_fid_data, missing_gh, hist);
-    // LOG(INFO) << "sp:"<<"\n"<<this->sp;
+    LOG(DEBUG) << "sp:"<<this->sp;
 }
 
 
@@ -918,13 +919,13 @@ void HistTreeBuilder::update_ins2node_id() {
                 if (to_left) {
                     //goes to left child
                     nid_data[iid] = node.lch_index;
-//                    #pragma omp atomic
-//                    nodes_data[node.lch_index].n_instances += 1;
+                    #pragma omp atomic
+                    nodes_data[node.lch_index].n_instances += 1;
                 } else {
                     //right child
                     nid_data[iid] = node.rch_index;
-//                    #pragma omp atomic
-//                    nodes_data[node.rch_index].n_instances += 1;
+                    #pragma omp atomic
+                    nodes_data[node.rch_index].n_instances += 1;
                 }
             }
         }

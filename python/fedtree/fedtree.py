@@ -96,6 +96,7 @@ class FLModel(fedtreeBase):
             self.model = None
         sparse = sp.issparse(X)
         if sparse is False:
+            # potential bug: csr_matrix ignores all zero values in X
             X = sp.csr_matrix(X)
         X, y = check_X_y(X, y, dtype=np.float64, order='C', accept_sparse='csr')
 
@@ -182,6 +183,52 @@ class FLModel(fedtreeBase):
         predict_label = [self.predict_label_ptr[index] for index in range(0, X.shape[0])]
         self.predict_label = np.asarray(predict_label)
         return self.predict_label
+    
+    def predict_leaf(self, X, groups=None):
+        if self.model is None:
+            print("Please train the model first or load model from file!")
+            raise ValueError
+        sparse = sp.isspmatrix(X)
+        if sparse is False:
+            X = sp.csr_matrix(X)
+        X.data = np.asarray(X.data, dtype=np.float32, order='C')
+        X.sort_indices()
+        data = X.data.ctypes.data_as(POINTER(c_float))
+        indices = X.indices.ctypes.data_as(POINTER(c_int32))
+        indptr = X.indptr.ctypes.data_as(POINTER(c_int32))
+        if(self.objective != 'multi:softprob'):
+            self.predict_label_ptr = (c_float * X.shape[0])()
+        else:
+            temp_size = X.shape[0] * self.num_class
+            self.predict_label_ptr = (c_float * temp_size)()
+        if self.group_label is not None:
+            group_label = (c_float * len(self.group_label))()
+            group_label[:] = self.group_label
+        else:
+            group_label = None
+        in_groups, num_groups = self._construct_groups(groups)
+        ins2leaf_c = (c_int32 * (X.shape[0] * self.n_trees))()
+        fedtree.predict_leaf(
+            X.shape[0],
+            data,
+            indptr,
+            indices,
+            self.predict_label_ptr,
+            byref(self.model),
+            self.n_trees,
+            self.tree_per_iter,
+            self.objective.encode('utf-8'),
+            self.num_class,
+            c_float(self.learning_rate),
+            group_label,
+            in_groups, 
+            ins2leaf_c, 
+            num_groups, self.verbose, self.bagging,
+        )
+        self.ins2leaf = np.array([ins2leaf_c[i] for i in range(X.shape[0] * self.n_trees)])
+        # predict_label = [self.predict_label_ptr[index] for index in range(0, X.shape[0])]
+        # self.predict_label = np.asarray(predict_label)
+        return self.ins2leaf
 
     def predict_proba(self, X, groups=None):
         if self.model is None:
@@ -233,7 +280,6 @@ class FLModel(fedtreeBase):
             predict_raw = np.asarray([self.predict_raw[index] for index in range(0, X.shape[0] * self.num_class)])
             self.predict_proba = predict_raw.reshape(X.shape[0], self.num_class)
         return self.predict_proba
-
 
 
     def save_model(self, model_path):
@@ -349,6 +395,75 @@ class FLModel(fedtreeBase):
             print("mean train RMSE:%.6f+%.6f" %(statistics.mean(train_score_list), statistics.stdev(train_score_list)))
             print("mean test RMSE:%.6f+%.6f" %(statistics.mean(test_score_list), statistics.stdev(test_score_list)))
         return self.eval_res
+
+    def centralize_train_a_subtree(self, X, y, n_layer, input_gradient_g = None, input_gradient_h = None, groups=None):
+        n_ins = len(X)
+        if self.model is not None:
+            fedtree.model_free(byref(self.model))
+            self.model = None
+        sparse = sp.issparse(X)
+        if sparse is False:
+            # potential bug: csr_matrix ignores all zero values in X
+            X = sp.csr_matrix(X)
+        X, y = check_X_y(X, y, dtype=np.float64, order='C', accept_sparse='csr')
+
+        X.data = np.asarray(X.data, dtype=np.float32, order='C')
+        X.sort_indices()
+        data = X.data.ctypes.data_as(POINTER(c_float))
+        indices = X.indices.ctypes.data_as(POINTER(c_int32))
+        indptr = X.indptr.ctypes.data_as(POINTER(c_int32))
+        y = np.asarray(y, dtype=np.float32, order='C')
+        label = y.ctypes.data_as(POINTER(c_float))
+        in_groups, num_groups = self._construct_groups(groups)
+        group_label = (c_float * len(set(y)))()
+        n_class = (c_int * 1)()
+        n_class[0] = self.num_class
+        tree_per_iter_ptr = (c_int * 1)()
+        self.model = (c_long * 1)()
+        n_max_node = pow(2, n_layer)
+        # needs to represent instance ID as int
+        insid_list = (c_int * n_ins)()
+        n_ins_list = (c_int * n_max_node)()
+        gradient_g_list = (c_float * n_ins)()
+        gradient_h_list = (c_float * n_ins)()
+        n_node = (c_int * 1)()
+        nodeid_list = (c_int * n_max_node)()
+        input_gradient_g = np.asarray(input_gradient_g, dtype=np.float32, order='C')
+        input_g = input_gradient_g.ctypes.data_as(POINTER(c_float))
+        input_gradient_h = np.asarray(input_gradient_h, dtype=np.float32, order='C')
+        input_h = input_gradient_h.ctypes.data_as(POINTER(c_float))
+        fedtree.centralize_train_a_subtree(c_float(self.variance), c_float(self.privacy_budget),
+                    self.max_depth, self.n_trees, c_float(self.min_child_weight), c_float(self.lambda_ft), c_float(self.gamma), c_float(self.column_sampling_rate),
+                    self.verbose, self.bagging, self.n_parallel_trees, c_float(self.learning_rate), self.objective.encode('utf-8'), n_class, self.n_device, self.max_num_bin,
+                    self.seed, c_float(self.ins_bagging_fraction), self.reorder_label, c_float(self.constant_h),
+                    X.shape[0], data, indptr, indices, label, self.tree_method, byref(self.model), tree_per_iter_ptr, group_label,
+                    in_groups, num_groups, n_layer, insid_list, n_ins_list, gradient_g_list, gradient_h_list, n_node, nodeid_list, input_g, input_h)
+        self.num_class = n_class[0]
+        self.tree_per_iter = tree_per_iter_ptr[0]
+        self.group_label = [group_label[idx] for idx in range(len(set(y)))]
+
+        self.insid_list = [insid_list[i] for i in range(n_ins)]
+        self.n_ins_list = [n_ins_list[i] for i in range(n_node[0])]
+        self.gradient_g_list = [gradient_g_list[i] for i in range(n_ins)]
+        self.gradient_h_list = [gradient_h_list[i] for i in range(n_ins)]
+        self.n_node = n_node[0]
+        self.nodeid_list = [nodeid_list[i] for i in range(n_node[0])]
+        if self.model is None:
+            print("The model returned is empty!")
+            exit()
+
+        return self
+
+    def update_a_layer_cpp(self, X, ins, nins, gradient_g, gradient_h, n_node, lamb):
+        c_x = np.asarray(X, dtype=np.int32).data.ctypes.data_as(POINTER(c_int32))
+        c_ins = np.asarray(ins, dtype=np.int32).data.ctypes.data_as(POINTER(c_int32))
+        c_nins = np.asarray(nins, dtype=np.int32).data.ctypes.data_as(POINTER(c_int32))
+        c_gradient_g = np.asarray(gradient_g, dtype=np.float32).data.ctypes.data_as(POINTER(c_float))
+        c_gradient_h = np.asarray(gradient_h, dtype=np.float32).data.ctypes.data_as(POINTER(c_float))
+        leaf_val = (c_float * (n_node*2))()
+        fedtree.update_a_layer_with_flag(c_x, c_ins, c_nins, c_gradient_g, c_gradient_h, n_node, leaf_val)
+        self.leaf_val = [leaf_val[i] for i in range(len(n_node*2))]
+        
 
 class FLClassifier(FLModel, fedtreeClassifierBase):
     _impl = 'classifier'

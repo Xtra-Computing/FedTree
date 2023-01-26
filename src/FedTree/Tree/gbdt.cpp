@@ -39,12 +39,49 @@ void GBDT::train(GBDTParam &param, DataSet &dataset) {
 //    float_type score = predict_score(param, dataset);
 //    LOG(INFO) << score;
 
+    auto stop = timer.now();
+    std::chrono::duration<float> training_time = stop - start;
+    LOG(INFO) << "training time = " << training_time.count();
+    return;
+}
+
+void GBDT::train_a_subtree(GBDTParam &param, DataSet &dataset, int n_layer, int *id_list, int *nins_list, float *gradient_g_list, 
+                            float *gradient_h_list, int *n_node, int *node_id_list, float *input_gradient_g, float *input_gradient_h) {
+    if (param.tree_method == "auto")
+        param.tree_method = "hist";
+    else if (param.tree_method != "hist") {
+        std::cout << "FedTree only supports histogram-based training yet";
+        exit(1);
+    }
+
+    if (param.objective.find("multi:") != std::string::npos || param.objective.find("binary:") != std::string::npos) {
+        int num_class = dataset.label.size();
+        if (param.num_class != num_class) {
+            LOG(INFO) << "updating number of classes from " << param.num_class << " to " << num_class;
+            param.num_class = num_class;
+        }
+        if (param.num_class > 2)
+            param.tree_per_round = param.num_class;
+    } else if (param.objective.find("reg:") != std::string::npos) {
+        param.num_class = 1;
+    }
+
+    Booster booster;
+    booster.init(dataset, param);
+    std::chrono::high_resolution_clock timer;
+    auto start = timer.now();
+    std::cout<<"start boost a subtree"<<std::endl;
+    booster.boost_a_subtree(trees, n_layer, id_list, nins_list, gradient_g_list, gradient_h_list, n_node, node_id_list, input_gradient_g, input_gradient_h);
+    //booster.boost(trees);
+//    float_type score = predict_score(param, dataset);
+//    LOG(INFO) << score;
 
     auto stop = timer.now();
     std::chrono::duration<float> training_time = stop - start;
     LOG(INFO) << "training time = " << training_time.count();
     return;
 }
+
 
 vector<float_type> GBDT::predict(const GBDTParam &model_param, const DataSet &dataSet) {
     SyncArray<float_type> y_predict;
@@ -157,9 +194,7 @@ void GBDT::predict_raw(const GBDTParam &model_param, const DataSet &dataSet, Syn
     int num_node = trees[0][0].nodes.size();
 
     int total_num_node = num_iter * num_class * num_node;
-    //TODO: reduce the output size for binary classification
     y_predict.resize(n_instances * num_class);
-
     SyncArray<Tree::TreeNode> model(total_num_node);
     auto model_data = model.host_data();
     int tree_cnt = 0;
@@ -460,6 +495,97 @@ void GBDT::predict_raw_vertical(const GBDTParam &model_param, const vector<DataS
                     sum /= num_iter;
             }
             predict_data_class[iid] += sum;
+        }//end all tree prediction
+    }
+}
+
+void GBDT::predict_leaf(const GBDTParam &model_param, const DataSet &dataSet, SyncArray<float_type> &y_predict, int *ins2leaf) {
+    TIMED_SCOPE(timerObj, "predict");
+    int n_instances = dataSet.n_instances();
+//    int n_features = dataSet.n_features();
+
+    //the whole model to an array
+    int num_iter = trees.size();
+    int num_class = trees.front().size();
+    int num_node = trees[0][0].nodes.size();
+
+    int total_num_node = num_iter * num_class * num_node;
+    // y_predict.resize(n_instances * num_class);
+    std::cout<<"num_class in predict_raw:"<<num_class<<std::endl;
+    SyncArray<Tree::TreeNode> model(total_num_node);
+    auto model_data = model.host_data();
+    int tree_cnt = 0;
+    for (auto &vtree:trees) {
+        for (auto &t:vtree) {
+            memcpy(model_data + num_node * tree_cnt, t.nodes.host_data(), sizeof(Tree::TreeNode) * num_node);
+            tree_cnt++;
+        }
+    }
+
+    PERFORMANCE_CHECKPOINT_WITH_ID(timerObj, "init trees");
+
+    //do prediction
+    auto model_host_data = model.host_data();
+    // auto predict_data = y_predict.host_data();
+    auto csr_col_idx_data = dataSet.csr_col_idx.data();
+    auto csr_val_data = dataSet.csr_val.data();
+    auto csr_row_ptr_data = dataSet.csr_row_ptr.data();
+    auto lr = model_param.learning_rate;
+    PERFORMANCE_CHECKPOINT_WITH_ID(timerObj, "copy data");
+
+#pragma omp parallel for
+    for (int iid = 0; iid < n_instances; iid++) {
+        auto get_next_child = [&](Tree::TreeNode node, float_type feaValue) {
+            //return feaValue < node.split_value ? node.lch_index : node.rch_index;
+            return (feaValue - node.split_value) >= -1e-6 ? node.rch_index : node.lch_index;
+        };
+        auto get_val = [&](const int *row_idx, const float_type *row_val, int row_len, int idx,
+                           bool *is_missing) -> float_type {
+            //binary search to get feature value
+            const int *left = row_idx;
+            const int *right = row_idx + row_len;
+
+            while (left != right) {
+                const int *mid = left + (right - left) / 2;
+                if (*mid == idx) {
+                    *is_missing = false;
+                    return row_val[mid - row_idx];
+                }
+                if (*mid > idx)
+                    right = mid;
+                else left = mid + 1;
+            }
+            *is_missing = true;
+            return 0;
+        };
+        const int *col_idx = csr_col_idx_data + csr_row_ptr_data[iid];
+        const float_type *row_val = csr_val_data + csr_row_ptr_data[iid];
+        int row_len = csr_row_ptr_data[iid + 1] - csr_row_ptr_data[iid];
+        for (int t = 0; t < num_class; t++) {
+            // auto predict_data_class = predict_data + t * n_instances;
+            // float_type sum = 0;
+            for (int iter = 0; iter < num_iter; iter++) {
+                const Tree::TreeNode *node_data = model_host_data + iter * num_class * num_node + t * num_node;
+                Tree::TreeNode curNode = node_data[0];
+                int cur_nid = 0; //node id
+                while (!curNode.is_leaf) {
+                    int fid = curNode.split_feature_id;
+                    bool is_missing;
+                    float_type fval = get_val(col_idx, row_val, row_len, fid, &is_missing);
+                    if (!is_missing)
+                        cur_nid = get_next_child(curNode, fval);
+                    else if (curNode.default_right)
+                        cur_nid = curNode.rch_index;
+                    else
+                        cur_nid = curNode.lch_index;
+
+                    curNode = node_data[cur_nid];
+                }
+                ins2leaf[iter * n_instances + iid] = cur_nid;
+                // sum += lr * curNode.base_weight;
+            }
+            // if (model_param.bagging)
+                // sum /= num_iter;
         }//end all tree prediction
     }
 }
