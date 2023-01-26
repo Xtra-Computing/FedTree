@@ -20,7 +20,6 @@
 #include <iterator>
 #include <algorithm>
 #include <random>
-#define THRUST_HOST_SYSTEM THRUST_HOST_SYSTEM_OMP
 
 using namespace thrust;
 
@@ -694,7 +693,7 @@ void HistTreeBuilder::compute_histogram_in_a_level(int level, int n_max_splits, 
 
     this->build_n_hist++;
     if (n_column > 1){
-        inclusive_scan_by_key(thrust::omp::par, hist_fid, hist_fid + n_split,
+        inclusive_scan_by_key(thrust::host, hist_fid, hist_fid + n_split,
                               hist.host_data(), hist.host_data());
     }
     else{
