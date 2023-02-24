@@ -144,4 +144,6 @@ Please cite our paper if you use FedTree in your work.
 }
 ```
 
+# Call for contributions
+Our goal is to make FedTree stronger and we're glad if you can contribute to FedTree. If you'd like to contribute to FedTree in-depth and are familiar with C++, kindly send your CV to liqinbin1998@gmail.com.
 
