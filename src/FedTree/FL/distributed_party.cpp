@@ -707,7 +707,7 @@ void DistributedParty::GetNoises() {
     comm_size += san.ByteSizeLong() * 1e-6;
     LOG(DEBUG)<<"communication Noises end";
     if (status.ok()) {
-        LOG(INFO) << "GetNoises from server";
+        LOG(DEBUG) << "GetNoises from server";
     }
     else {
         LOG(ERROR) << "GetNoises rpc failed";
