@@ -29,7 +29,7 @@ You can follow the following commands to install NTL library.
         wget https://libntl.org/ntl-11.4.4.tar.gz
         tar -xvf ntl-11.4.4.tar.gz
         cd ntl-11.4.4/src
-        ./configure
+        ./configure SHARED=on
         make
         make check
         sudo make install
@@ -44,6 +44,7 @@ Run the following commands:
     .. code::
 
         git clone https://github.com/Xtra-Computing/FedTree
+        cd FedTree
         git submodule init
         git submodule update
 
