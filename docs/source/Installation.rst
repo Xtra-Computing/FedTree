@@ -21,20 +21,35 @@ Prerequisites
 * `CMake <https://cmake.org/>`_ 3.15 or above
 * `GMP <https://gmplib.org/>`_ library
 * `NTL <https://libntl.org/>`_ library
+* `gRPC <https://grpc.io/docs/languages/cpp/quickstart/>`_ 1.50.0 (required for distributed version)
 
 You can follow the following commands to install NTL library.
 
     .. code::
 
-        wget https://libntl.org/ntl-11.4.4.tar.gz
-        tar -xvf ntl-11.4.4.tar.gz
-        cd ntl-11.4.4/src
+        wget https://libntl.org/ntl-11.5.1.tar.gz
+        tar -xvf ntl-11.5.1.tar.gz
+        cd ntl-11.5.1/src
         ./configure SHARED=on
         make
         make check
         sudo make install
 
 If you install the NTL library at another location, please pass the location to the `NTL_PATH` when building the library (e.g., `cmake .. -DNTL_PATH="PATH_TO_NTL"`).
+
+For gRPC, please remember to add the local bin folder to your path variable after installation, e.g.,
+
+    .. code::
+        
+        export PATH="$gRPC_INSTALL_DIR/bin:$PATH"
+
+If your gRPC version is not 1.50.0, you need to go to `src/FedTree/grpc` directory and run
+
+    .. code::
+
+        protoc -I ./ --grpc_out=. --plugin=protoc-gen-grpc=`which grpc_cpp_plugin` ./fedtree.proto
+        protoc -I ./ --cpp_out=. ./fedtree.proto
+
 
 Clone Install submodules
 ~~~~~~~~~~~~~~~~~~~~~~~~
@@ -48,8 +63,8 @@ Run the following commands:
         git submodule init
         git submodule update
 
-Build on Linux
-~~~~~~~~~~~~~~
+Build on Linux (Recommended)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Run the following commands:
 
     .. code::

@@ -56,7 +56,7 @@ git submodule update
 ```
 # Standalone Simulation
 
-## Build on Linux
+## Build on Linux (Recommended)
 
 ```bash
 # under the directory of FedTree
