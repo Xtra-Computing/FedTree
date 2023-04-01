@@ -1160,7 +1160,7 @@ grpc::Status DistributedServer::ScoreReduce(grpc::ServerContext* context, const 
 grpc::Status DistributedServer::TriggerHomoInit(grpc::ServerContext *context, const fedtree::PID *request,
                                                 fedtree::Ready *response) {
 //    LOG(INFO) << "computation HomoInit start";
-    homo_init();
+    homo_init(param.key_length);
     homo_init_success = true;
 //    LOG(INFO) << "computation HomoInit end";
     return grpc::Status::OK;

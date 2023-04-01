@@ -46,6 +46,8 @@ Parameters for Federated Setting
     - ``server``: the server proposes candidate split points according to the range of each feature in horizontal FedTree.
     - ``party``: the parties propose possible split points. Then, the server merge them and sample at most num_max_bin candidate split points in horizontal FedTree.
 
+* ``key_length`` [default=512, type=int]
+    - Number of bits of the key used in encryption.
 Parameters for GBDTs
 --------------------
 
