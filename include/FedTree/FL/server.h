@@ -55,14 +55,14 @@ public:
         party.paillier = paillier;
     }
 
-    void homo_init() {
+    void homo_init(int keylength) {
 #ifdef USE_CUDA
         paillier.keygen();
 //        pailler_gmp = Pailler(1024);
 //        paillier = Paillier(paillier_gmp);
 //        paillier.keygen();
 #else
-        paillier.keygen(512);
+        paillier.keygen(keylength);
 #endif
     }
 

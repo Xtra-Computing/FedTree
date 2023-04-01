@@ -40,7 +40,7 @@ NTL::ZZ lcm(const NTL::ZZ &x, const NTL::ZZ &y) {
     return lcm;
 }
 
-void GenPrimePair(NTL::ZZ &p, NTL::ZZ &q, long keyLength) {
+void GenPrimePair(NTL::ZZ &p, NTL::ZZ &q, int keyLength) {
     /* Prime pair generation function. Generates a prime pair in same bit length.
      *
      * Parameters
@@ -63,7 +63,7 @@ void GenPrimePair(NTL::ZZ &p, NTL::ZZ &q, long keyLength) {
 
 Paillier::Paillier() = default;
 
-void Paillier::keygen(long keyLength) {
+void Paillier::keygen(int keyLength) {
     /* Paillier parameters generation function. Generates paillier parameters from scrach.
      *
      * Parameters

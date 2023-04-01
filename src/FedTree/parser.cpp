@@ -47,6 +47,7 @@ void Parser::parse_param(FLParam &fl_param, char *file_path) {
     fl_param.seed = 42;
     fl_param.n_features = -1;
     fl_param.joint_prediction = true;
+    fl_param.key_length = 512;
 
     GBDTParam *gbdt_param = &fl_param.gbdt_param;
 
@@ -117,6 +118,8 @@ void Parser::parse_param(FLParam &fl_param, char *file_path) {
                 fl_param.n_features = atoi(val);
             else if ((str_name.compare("joint_prediction") == 0))
                 fl_param.joint_prediction = atoi(val);
+            else if ((str_name.compare("key_length") == 0))
+                fl_param.key_length = atoi(val);
             // GBDT params
             else if ((str_name.compare("max_depth") == 0) || (str_name.compare("depth") == 0))
                 gbdt_param->depth = atoi(val);

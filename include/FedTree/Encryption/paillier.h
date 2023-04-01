@@ -15,7 +15,7 @@ public:
 //        this->random = source.random;
         return *this;
     }
-    void keygen(long keyLength);
+    void keygen(int keyLength);
 
     NTL::ZZ encrypt(const NTL::ZZ &message) const;
 
@@ -27,7 +27,7 @@ public:
 
     NTL::ZZ modulus;
     NTL::ZZ generator;
-    long keyLength;
+    int keyLength;
 
 //private:
     NTL::ZZ p, q;

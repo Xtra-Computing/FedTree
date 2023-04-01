@@ -26,7 +26,7 @@ void FLtrainer::horizontal_fl_trainer(vector<Party> &parties, Server &server, FL
     if (params.privacy_tech == "he") {
         LOG(INFO) << "Start HE Init";
         // server generate public key and private key
-        server.homo_init();
+        server.homo_init(params.key_length);
         // server distribute public key to rest of parties
         for (int i = 0; i < n_parties; i++) {
             parties[i].paillier = server.paillier;
@@ -553,7 +553,7 @@ void FLtrainer::vertical_fl_trainer(vector<Party> &parties, Server &server, FLPa
             auto t1 = timer.now();
             temp_gradients.resize(server.booster.gradients.size());
             temp_gradients.copy_from(server.booster.gradients);
-            server.homo_init();
+            server.homo_init(params.key_length);
             server.encrypt_gh_pairs(server.booster.gradients);
             auto t2 = timer.now();
             std::chrono::duration<float> t3 = t2 - t1;
