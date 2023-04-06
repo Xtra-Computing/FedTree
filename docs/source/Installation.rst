@@ -43,6 +43,8 @@ For gRPC, please remember to add the local bin folder to your path variable afte
         
         export PATH="$gRPC_INSTALL_DIR/bin:$PATH"
 
+We suggest you install gPRC 1.50.0, i.e., using `-b v1.50.0` when cloning gRPC repo.
+
 If your gRPC version is not 1.50.0, you need to go to `src/FedTree/grpc` directory and run
 
     .. code::
