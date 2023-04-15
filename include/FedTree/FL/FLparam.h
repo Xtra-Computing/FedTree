@@ -33,6 +33,7 @@ public:
     bool partial_model; // For vertical FL. If set to true, each party gets a partial tree with the split nodes using the local features. Otherwise, each party gets a full tree with all features.
     GBDTParam gbdt_param; // parameters for the gbdt training
     int key_length; // number of bits of the key used for encryption
+    string pred_output; // file path to save the prediction file
 };
 
 

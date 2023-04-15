@@ -48,6 +48,10 @@ Parameters for Federated Setting
 
 * ``key_length`` [default=512, type=int]
     - Number of bits of the key used in encryption.
+
+* ``pred_output`` [default=``predictions.txt``, type=string]
+    - The file to save the predicted labels when using FedTree-predict
+
 Parameters for GBDTs
 --------------------
 
