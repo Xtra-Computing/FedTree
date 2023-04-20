@@ -106,7 +106,7 @@ Building Options
 ~~~~~~~~~~~~~~~~
 There are the following building options passing with cmake.
 
-* ``USE_CUDA`` [default = ``OFF``]: Whether using GPU to accelerate homomorphic encryption or not.
+* ``USE_CUDA`` [default = ``OFF``]: Whether using GPU to accelerate homomorphic encryption or not. It is available only when setting ``DISTRIBUTED`` to ``OFF``.
 
 * ``DISTRIBUTED`` [default = ``ON``]: Whether building distributed version of FedTree or not.
 
