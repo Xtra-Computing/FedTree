@@ -51,29 +51,35 @@ float_type BinaryClassMetric::get_score(const SyncArray<float_type> &y_p) const 
     return 1 - acc;
     */
     //compute AUC
-    int n = y.size();
-    int pos = 0;
-    vector<pair<float_type, int>> pl;
+    int n = y_p.size();
     auto y_data = y.host_data();
     auto yp_data = y_p.host_data();
-    for (int i = 0; i < n; i++) {
-        pos += y_data[i];
-        pl.emplace_back(yp_data[i], y_data[i]);
+    std::vector<std::pair<double, int>> prediction_labels(n);
+    for (int i = 0; i < n; ++i) {
+        prediction_labels[i] = std::make_pair(yp_data[i], y_data[i]);
     }
-    sort(pl.begin(), pl.end());
-    double pos_sum = 0;
-    for (int left = 0, right = 0; right < n; left = right) {
-        float_type sum = 0, cnt = 0;
-        while (right < n && pl[right].first == pl[left].first) {
-            cnt += pl[right++].second;
-            sum += right + 1;
+    std::sort(prediction_labels.begin(), prediction_labels.end(),
+              [](const std::pair<double, int>& a, const std::pair<double, int>& b) {
+                  return a.first > b.first;
+              });
+
+    double auc = 0.0;
+    int pos_count = 0;
+    int neg_count = 0;
+    for (int i = 0; i < n; ++i) {
+        if (prediction_labels[i].second == 1) {
+            ++pos_count;
+        } else {
+            auc += pos_count;
+            ++neg_count;
         }
-        pos_sum += sum * cnt / (right - left);
     }
-    if (pos == 0)
-	return 1.0;
-    else
-    	return min((pos_sum - (pos * (pos + 1) / 2)) / (pos * (n - pos)), 1.0);
+    if (pos_count == 0 || neg_count == 0) {
+        std::cerr << "Warning: Only one class present in the data." << std::endl;
+        return -1;
+    }
+    auc /= (pos_count * neg_count);
+    return auc;
 }
 /*
 float_type BinaryClassMetric::get_auc(const SyncArray<float_type>& y_p) {
