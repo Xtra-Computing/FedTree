@@ -45,8 +45,8 @@ void GBDT::train(GBDTParam &param, DataSet &dataset) {
     return;
 }
 
-void GBDT::train_a_subtree(GBDTParam &param, DataSet &dataset, int n_layer, int *id_list, int *nins_list, float *gradient_g_list, 
-                            float *gradient_h_list, int *n_node, int *node_id_list, float *input_gradient_g, float *input_gradient_h) {
+void GBDT::train_a_subtree(GBDTParam &param, DataSet &dataset, int n_layer, int *id_list, int *nins_list, float_type *gradient_g_list, 
+                            float_type *gradient_h_list, int *n_node, int *node_id_list, float_type *input_gradient_g, float_type *input_gradient_h) {
     if (param.tree_method == "auto")
         param.tree_method = "hist";
     else if (param.tree_method != "hist") {

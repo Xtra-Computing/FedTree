@@ -110,7 +110,8 @@ void Booster::boost(vector<vector<Tree>> &boosted_model) {
 
 
 void Booster::boost_a_subtree(vector<vector<Tree>> &boosted_model, int n_layer, int *id_list, int *nins_list, 
-                                float *gradient_g_list, float *gradient_h_list, int *n_node, int *nodeid_list, float *input_gradient_g, float *input_gradient_h) {
+                                float_type *gradient_g_list, float_type *gradient_h_list, int *n_node, int *nodeid_list, 
+                                float_type *input_gradient_g, float_type *input_gradient_h) {
     TIMED_FUNC(timerObj);
     auto gradients_ptr = gradients.host_data();
     for(int i = 0; i < gradients.size(); i++){

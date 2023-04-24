@@ -8,7 +8,7 @@
 #include "FedTree/objective/objective_function.h"
 
 // Loading from sparse data copied from ThunderGBM
-void DataSet::load_from_sparse(int n_instances, float *csr_val, int *csr_row_ptr, int *csr_col_idx, float *y,
+void DataSet::load_from_sparse(int n_instances, float_type *csr_val, int *csr_row_ptr, int *csr_col_idx, float_type *y,
                                int *group, int num_group, GBDTParam &param) {
     n_features_ = 0;
     this->y.clear();
@@ -23,15 +23,15 @@ void DataSet::load_from_sparse(int n_instances, float *csr_val, int *csr_row_ptr
     this->csr_row_ptr.resize(n_instances + 1);
     this->csr_col_idx.resize(nnz);
 
-    CHECK_EQ(sizeof(float_type), sizeof(float));
+    // CHECK_EQ(sizeof(float_type), sizeof(float));
     if(y != NULL) {
-        memcpy(this->y.data(), y, sizeof(float) * n_instances);
+        memcpy(this->y.data(), y, sizeof(float_type) * n_instances);
         has_label = true;
     }
     else{
         has_label = false;
     }
-    memcpy(this->csr_val.data(), csr_val, sizeof(float) * nnz);
+    memcpy(this->csr_val.data(), csr_val, sizeof(float_type) * nnz);
     memcpy(this->csr_col_idx.data(), csr_col_idx, sizeof(int) * nnz);
     memcpy(this->csr_row_ptr.data(), csr_row_ptr, sizeof(int) * (n_instances + 1));
     for (int i = 0; i < nnz; ++i) {

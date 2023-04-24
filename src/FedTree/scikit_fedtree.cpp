@@ -30,9 +30,9 @@ extern "C" {
               int verbose, int bagging, int n_parallel_trees, float learning_rate, char *objective, int* num_class,
               int n_device, int max_num_bin, int seed, float ins_bagging_fraction, int reorder_label, float constant_h,
               // DataSet info
-              int row_size, float *val, int *row_ptr, int *col_ptr, float *label,
+              int row_size, float_type *val, int *row_ptr, int *col_ptr, float_type *label,
               // Tree info
-              char *tree_method, Tree *&model, int *tree_per_iter, float *group_label,
+              char *tree_method, Tree *&model, int *tree_per_iter, float_type *group_label,
               int *group, int num_group=0
               ) {
         LOG(INFO) << "Start training";
@@ -179,6 +179,7 @@ extern "C" {
         LOG(INFO) << "Run the trainer";
         // Run different training methods based on mode
         FLtrainer trainer;
+        vector<vector<Tree>> boosted_model;
         if (param.tree_method == "auto")
             param.tree_method = "hist";
         else if (param.tree_method != "hist"){
@@ -194,14 +195,15 @@ extern "C" {
         }else if(fl_param.mode == "centralized") {
             GBDT gbdt;
             gbdt.train(fl_param.gbdt_param, dataset);
+            boosted_model = gbdt.trees;
         }else if (fl_param.mode == "vertical") {
             trainer.vertical_fl_trainer(parties, server, fl_param);
         }else if (fl_param.mode == "horizontal") {
             trainer.horizontal_fl_trainer(parties, server, fl_param);
         }
-
         // Return boosted model
-        vector<vector<Tree>> boosted_model = server.global_trees.trees;
+        if(fl_param.mode != "centralized")
+            boosted_model = server.global_trees.trees;
         *tree_per_iter = (int)(boosted_model[0].size());
         model = new Tree[n_trees * (*tree_per_iter)];
         for(int i = 0; i < n_trees; i++) {
@@ -214,7 +216,7 @@ extern "C" {
         }
     }
 
-    void predict(int row_size, float *val, int *row_ptr, int *col_ptr, float *y_pred, Tree *&model,
+    void predict(int row_size, float_type *val, int *row_ptr, int *col_ptr, float_type *y_pred, Tree *&model,
              int n_trees, int trees_per_iter, char *objective, int num_class, float learning_rate, float *group_label,
              int *group, int num_group=0, int verbose=1, int bagging=0) {
         //load model
@@ -261,8 +263,8 @@ extern "C" {
         }//float_type may be double/float, so convert to float for both cases.
     }
 
-    void predict_proba(int row_size, float *val, int *row_ptr, int *col_ptr, float *y_pred, Tree *&model,
-                 int n_trees, int trees_per_iter, char *objective, int num_class, float learning_rate, float *group_label,
+    void predict_proba(int row_size, float_type *val, int *row_ptr, int *col_ptr, float_type *y_pred, Tree *&model,
+                 int n_trees, int trees_per_iter, char *objective, int num_class, float learning_rate, float_type *group_label,
                  int *group, int num_group=0, int verbose=1, int bagging=0) {
         //load model
         GBDTParam model_param;
@@ -315,7 +317,7 @@ extern "C" {
     }
 
     void save_model(char *model_path, char *objective, float learning_rate, int num_class, int n_trees,
-              int trees_per_iter, Tree *&model, float *group_label){
+              int trees_per_iter, Tree *&model, float_type *group_label){
 
         GBDTParam model_param;
         model_param.objective = objective;
@@ -368,10 +370,10 @@ extern "C" {
                                      int n_parallel_trees, float learning_rate, char *objective, int* num_class,
                                      int n_device, int max_num_bin, int seed, float ins_bagging_fraction,
                                      int reorder_label, float constant_h,
-                                     int row_size, float *val, int *row_ptr, int *col_ptr, float *label,
-                                     char *tree_method, Tree *&model, int *tree_per_iter, float *group_label,
+                                     int row_size, float_type *val, int *row_ptr, int *col_ptr, float_type *label,
+                                     char *tree_method, Tree *&model, int *tree_per_iter, float_type *group_label,
                                      int *group, int num_group, int n_layer, int *insid_list, int *n_ins_list,
-                                     float *gradient_g_list, float *gradient_h_list, int *n_node, int *nodeid_list, float *input_gradient_g, float *input_gradient_h) {
+                                     float_type *gradient_g_list, float_type *gradient_h_list, int *n_node, int *nodeid_list, float_type *input_gradient_g, float_type *input_gradient_h) {
 
         LOG(INFO) << "Start training";
 
@@ -467,8 +469,8 @@ extern "C" {
         LOG(INFO)<<"finish scikit centralize train a subtree";
     }
 
-    void update_a_layer_with_flag(int *flag_val, int *id_list, int *nins_list, float *gradient_g, float *gradient_h,
-                                  int n_node, float lambda, float *leaf_val){
+    void update_a_layer_with_flag(int *flag_val, int *id_list, int *nins_list, float_type *gradient_g, float_type *gradient_h,
+                                  int n_node, float lambda, float_type *leaf_val){
         //todo: encrypted g and h
         vector<int> n_ins_accu(n_node+1);
         n_ins_accu[0] = 0;
@@ -480,10 +482,10 @@ extern "C" {
 
         for(int i = 0; i < n_node; i++){
             int n_ins = nins_list[i];
-            float left_g = 0;
-            float left_h = 0;
-            float right_g = 0;
-            float right_h = 0;
+            float_type left_g = 0;
+            float_type left_h = 0;
+            float_type right_g = 0;
+            float_type right_h = 0;
             int n_left = 0;
             int n_right = 0;
             for(int j = n_ins_accu[i]; j < n_ins_accu[i+1]; j++){
@@ -498,13 +500,13 @@ extern "C" {
                     n_right++;
                 }
             }
-            leaf_val[i*2] = -left_g / (left_h + lambda);
-            leaf_val[i*2+1] = -right_h / (right_h + lambda);
+            leaf_val[i*2] = -left_g / (left_h + (float_type) lambda);
+            leaf_val[i*2+1] = -right_h / (right_h + (float_type) lambda);
         }
     }
 
-    void predict_leaf(int row_size, float *val, int *row_ptr, int *col_ptr, float *y_pred, Tree *&model,
-             int n_trees, int trees_per_iter, char *objective, int num_class, float learning_rate, float *group_label,
+    void predict_leaf(int row_size, float_type *val, int *row_ptr, int *col_ptr, float_type *y_pred, Tree *&model,
+             int n_trees, int trees_per_iter, char *objective, int num_class, float learning_rate, float_type *group_label,
              int *group, int *ins2leaf, int num_group=0, int verbose=1, int bagging=0) {
         //load model
         GBDTParam model_param;

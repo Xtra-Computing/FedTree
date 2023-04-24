@@ -51,7 +51,7 @@ class FLModel(fedtreeBase):
     def __init__(self, n_parties, partition, alpha, n_hori, n_verti, mode, partition_mode, privacy_tech, propose_split,
                  merge_histogram, variance, privacy_budget, max_depth, n_trees, min_child_weight, lambda_ft, gamma,
                  column_sampling_rate, verbose, n_parallel_trees, learning_rate, objective, num_class, n_device, max_num_bin,
-                 seed, ins_bagging_fraction, reorder_label, bagging, constant_h, tree_method):
+                 seed, ins_bagging_fraction, reorder_label, bagging, constant_h, tree_method, use_double):
         # Federated Learning related variables
         self.n_parties = n_parties
         self.partition = partition
@@ -89,6 +89,8 @@ class FLModel(fedtreeBase):
         self.bagging = bagging
         self.reorder_label = reorder_label
         self.constant_h = constant_h
+        self.use_double = use_double
+        self.float_type = c_double if use_double else c_float
 
     def fit(self, X, y, groups=None):
         if self.model is not None:
@@ -115,15 +117,21 @@ class FLModel(fedtreeBase):
         return in_groups, num_groups
 
     def _sparse_fit(self, X, y, groups=None):
-        X.data = np.asarray(X.data, dtype=np.float32, order='C')
+        if self.use_double:
+            X.data = np.asarray(X.data, dtype=np.float64, order='C')
+        else:
+            X.data = np.asarray(X.data, dtype=np.float32, order='C')
         X.sort_indices()
-        data = X.data.ctypes.data_as(POINTER(c_float))
+        data = X.data.ctypes.data_as(POINTER(self.float_type))
         indices = X.indices.ctypes.data_as(POINTER(c_int32))
         indptr = X.indptr.ctypes.data_as(POINTER(c_int32))
-        y = np.asarray(y, dtype=np.float32, order='C')
-        label = y.ctypes.data_as(POINTER(c_float))
+        if self.use_double:
+            y = np.asarray(y, dtype=np.float64, order='C')
+        else:
+            y = np.asarray(y, dtype=np.float32, order='C')
+        label = y.ctypes.data_as(POINTER(self.float_type))
         in_groups, num_groups = self._construct_groups(groups)
-        group_label = (c_float * len(set(y)))()
+        group_label = (self.float_type * len(set(y)))()
         n_class = (c_int * 1)()
         n_class[0] = self.num_class
         tree_per_iter_ptr = (c_int * 1)()
@@ -149,16 +157,19 @@ class FLModel(fedtreeBase):
         sparse = sp.isspmatrix(X)
         if sparse is False:
             X = sp.csr_matrix(X)
-        X.data = np.asarray(X.data, dtype=np.float32, order='C')
+        if self.use_double:
+            X.data = np.asarray(X.data, dtype=np.float64, order='C')
+        else:
+            X.data = np.asarray(X.data, dtype=np.float32, order='C')
         X.sort_indices()
-        data = X.data.ctypes.data_as(POINTER(c_float))
+        data = X.data.ctypes.data_as(POINTER(self.float_type))
         indices = X.indices.ctypes.data_as(POINTER(c_int32))
         indptr = X.indptr.ctypes.data_as(POINTER(c_int32))
         if(self.objective != 'multi:softprob'):
-            self.predict_label_ptr = (c_float * X.shape[0])()
+            self.predict_label_ptr = (self.float_type * X.shape[0])()
         else:
             temp_size = X.shape[0] * self.num_class
-            self.predict_label_ptr = (c_float * temp_size)()
+            self.predict_label_ptr = (self.float_type * temp_size)()
         if self.group_label is not None:
             group_label = (c_float * len(self.group_label))()
             group_label[:] = self.group_label
@@ -191,18 +202,21 @@ class FLModel(fedtreeBase):
         sparse = sp.isspmatrix(X)
         if sparse is False:
             X = sp.csr_matrix(X)
-        X.data = np.asarray(X.data, dtype=np.float32, order='C')
+        if self.use_double:
+            X.data = np.asarray(X.data, dtype=np.float64, order='C')
+        else:
+            X.data = np.asarray(X.data, dtype=np.float32, order='C')
         X.sort_indices()
-        data = X.data.ctypes.data_as(POINTER(c_float))
+        data = X.data.ctypes.data_as(POINTER(self.float_type))
         indices = X.indices.ctypes.data_as(POINTER(c_int32))
         indptr = X.indptr.ctypes.data_as(POINTER(c_int32))
         if(self.objective != 'multi:softprob'):
-            self.predict_label_ptr = (c_float * X.shape[0])()
+            self.predict_label_ptr = (self.float_type * X.shape[0])()
         else:
             temp_size = X.shape[0] * self.num_class
-            self.predict_label_ptr = (c_float * temp_size)()
+            self.predict_label_ptr = (self.float_type * temp_size)()
         if self.group_label is not None:
-            group_label = (c_float * len(self.group_label))()
+            group_label = (self.float_type * len(self.group_label))()
             group_label[:] = self.group_label
         else:
             group_label = None
@@ -226,8 +240,6 @@ class FLModel(fedtreeBase):
             num_groups, self.verbose, self.bagging,
         )
         self.ins2leaf = np.array([ins2leaf_c[i] for i in range(X.shape[0] * self.n_trees)])
-        # predict_label = [self.predict_label_ptr[index] for index in range(0, X.shape[0])]
-        # self.predict_label = np.asarray(predict_label)
         return self.ins2leaf
 
     def predict_proba(self, X, groups=None):
@@ -240,18 +252,23 @@ class FLModel(fedtreeBase):
         sparse = sp.isspmatrix(X)
         if sparse is False:
             X = sp.csr_matrix(X)
-        X.data = np.asarray(X.data, dtype=np.float32, order='C')
+        if self.use_double:
+            X.data = np.asarray(X.data, dtype=np.float64, order='C')
+        else:
+            X.data = np.asarray(X.data, dtype=np.float32, order='C')
         X.sort_indices()
-        data = X.data.ctypes.data_as(POINTER(c_float))
+        data = X.data.ctypes.data_as(POINTER(self.float_type))
         indices = X.indices.ctypes.data_as(POINTER(c_int32))
         indptr = X.indptr.ctypes.data_as(POINTER(c_int32))
         if("multi" not in self.objective):
-            self.predict_raw = (c_float * X.shape[0])()
+            # if self.use_double:
+            #     self.predict_raw = (c_double * X.shape[0])()
+            self.predict_raw = (self.float_type * X.shape[0])()
         else:
             temp_size = X.shape[0] * self.num_class
-            self.predict_raw = (c_float * temp_size)()
+            self.predict_raw = (self.float_type * temp_size)()
         if self.group_label is not None:
-            group_label = (c_float * len(self.group_label))()
+            group_label = (self.float_type * len(self.group_label))()
             group_label[:] = self.group_label
         else:
             group_label = None
@@ -287,7 +304,7 @@ class FLModel(fedtreeBase):
             print("Please train the model first or load model from file!")
             raise ValueError
         if self.group_label is not None:
-            group_label = (c_float * len(self.group_label))()
+            group_label = (self.float_type * len(self.group_label))()
             group_label[:] = self.group_label
         fedtree.save_model(
             model_path.encode('utf-8'),
@@ -343,8 +360,14 @@ class FLModel(fedtreeBase):
         sparse = sp.isspmatrix(X)
         if sparse is False:
             X = sp.csr_matrix(X)
-        X, y = check_X_y(X, y, dtype=np.float64, order='C', accept_sparse='csr')
-        y = np.asarray(y, dtype=np.float32, order='C')
+        if self.use_double:
+            X, y = check_X_y(X, y, dtype=np.float64, order='C', accept_sparse='csr')
+        else:
+            X, y = check_X_y(X, y, dtype=np.float32, order='C', accept_sparse='csr')
+        if self.use_double:
+            y = np.asarray(y, dtype=np.float64, order='C')
+        else:
+            y = np.asarray(y, dtype=np.float32, order='C')
         n_instances = X.shape[0]
         if folds is not None:
             #use specified validation set
@@ -405,17 +428,26 @@ class FLModel(fedtreeBase):
         if sparse is False:
             # potential bug: csr_matrix ignores all zero values in X
             X = sp.csr_matrix(X)
-        X, y = check_X_y(X, y, dtype=np.float64, order='C', accept_sparse='csr')
-
-        X.data = np.asarray(X.data, dtype=np.float32, order='C')
+        if self.use_double:
+            X, y = check_X_y(X, y, dtype=np.float64, order='C', accept_sparse='csr')
+        else:
+            X, y = check_X_y(X, y, dtype=np.float32, order='C', accept_sparse='csr')
+        
+        if self.use_double:
+            X.data = np.asarray(X.data, dtype=np.float64, order='C')
+        else:
+            X.data = np.asarray(X.data, dtype=np.float32, order='C')
         X.sort_indices()
-        data = X.data.ctypes.data_as(POINTER(c_float))
+        data = X.data.ctypes.data_as(POINTER(self.float_type))
         indices = X.indices.ctypes.data_as(POINTER(c_int32))
         indptr = X.indptr.ctypes.data_as(POINTER(c_int32))
-        y = np.asarray(y, dtype=np.float32, order='C')
-        label = y.ctypes.data_as(POINTER(c_float))
+        if self.use_double:
+            y = np.asarray(y, dtype=np.float64, order='C')
+        else:
+            y = np.asarray(y, dtype=np.float32, order='C')
+        label = y.ctypes.data_as(POINTER(self.float_type))
         in_groups, num_groups = self._construct_groups(groups)
-        group_label = (c_float * len(set(y)))()
+        group_label = (self.float_type * len(set(y)))()
         n_class = (c_int * 1)()
         n_class[0] = self.num_class
         tree_per_iter_ptr = (c_int * 1)()
@@ -424,14 +456,18 @@ class FLModel(fedtreeBase):
         # needs to represent instance ID as int
         insid_list = (c_int * n_ins)()
         n_ins_list = (c_int * n_max_node)()
-        gradient_g_list = (c_float * n_ins)()
-        gradient_h_list = (c_float * n_ins)()
+        gradient_g_list = (self.float_type * n_ins)()
+        gradient_h_list = (self.float_type * n_ins)()
         n_node = (c_int * 1)()
         nodeid_list = (c_int * n_max_node)()
-        input_gradient_g = np.asarray(input_gradient_g, dtype=np.float32, order='C')
-        input_g = input_gradient_g.ctypes.data_as(POINTER(c_float))
-        input_gradient_h = np.asarray(input_gradient_h, dtype=np.float32, order='C')
-        input_h = input_gradient_h.ctypes.data_as(POINTER(c_float))
+        if self.use_double:
+            input_gradient_g = np.asarray(input_gradient_g, dtype=np.float64, order='C')
+            input_gradient_h = np.asarray(input_gradient_h, dtype=np.float64, order='C')
+        else:
+            input_gradient_g = np.asarray(input_gradient_g, dtype=np.float32, order='C')
+            input_gradient_h = np.asarray(input_gradient_h, dtype=np.float32, order='C')
+        input_g = input_gradient_g.ctypes.data_as(POINTER(self.float_type))
+        input_h = input_gradient_h.ctypes.data_as(POINTER(self.float_type))
         fedtree.centralize_train_a_subtree(c_float(self.variance), c_float(self.privacy_budget),
                     self.max_depth, self.n_trees, c_float(self.min_child_weight), c_float(self.lambda_ft), c_float(self.gamma), c_float(self.column_sampling_rate),
                     self.verbose, self.bagging, self.n_parallel_trees, c_float(self.learning_rate), self.objective.encode('utf-8'), n_class, self.n_device, self.max_num_bin,
@@ -458,9 +494,13 @@ class FLModel(fedtreeBase):
         c_x = np.asarray(X, dtype=np.int32).data.ctypes.data_as(POINTER(c_int32))
         c_ins = np.asarray(ins, dtype=np.int32).data.ctypes.data_as(POINTER(c_int32))
         c_nins = np.asarray(nins, dtype=np.int32).data.ctypes.data_as(POINTER(c_int32))
-        c_gradient_g = np.asarray(gradient_g, dtype=np.float32).data.ctypes.data_as(POINTER(c_float))
-        c_gradient_h = np.asarray(gradient_h, dtype=np.float32).data.ctypes.data_as(POINTER(c_float))
-        leaf_val = (c_float * (n_node*2))()
+        if self.use_double:
+            c_gradient_g = np.asarray(gradient_g, dtype=np.float64).data.ctypes.data_as(POINTER(c_double))
+            c_gradient_h = np.asarray(gradient_h, dtype=np.float64).data.ctypes.data_as(POINTER(c_double))
+        else:
+            c_gradient_g = np.asarray(gradient_g, dtype=np.float32).data.ctypes.data_as(POINTER(c_float))
+            c_gradient_h = np.asarray(gradient_h, dtype=np.float32).data.ctypes.data_as(POINTER(c_float))
+        leaf_val = (self.float_type * (n_node*2))()
         fedtree.update_a_layer_with_flag(c_x, c_ins, c_nins, c_gradient_g, c_gradient_h, n_node, leaf_val)
         self.leaf_val = [leaf_val[i] for i in range(len(n_node*2))]
         
@@ -473,7 +513,7 @@ class FLClassifier(FLModel, fedtreeClassifierBase):
                  variance=200, privacy_budget=10, max_depth=6, n_trees=40, min_child_weight=1, lambda_ft=1,
                  gamma=1, column_sampling_rate=1, verbose=1, n_parallel_trees=1, learning_rate=1, objective="binary:logistic",
                  num_class=1, n_device=1, max_num_bin=255, seed=36, ins_bagging_fraction=1.0, reorder_label=0, bagging = 0,
-                 constant_h = 0.0, tree_method="auto"):
+                 constant_h = 0.0, tree_method="auto", use_double=0):
         super().__init__(n_parties=n_parties, partition=partition, alpha=alpha, n_hori=n_hori, n_verti=n_verti,
                          mode=mode, partition_mode=partition_mode, privacy_tech=privacy_tech, propose_split=propose_split,
                          merge_histogram=merge_histogram, variance=variance, privacy_budget=privacy_budget, max_depth=max_depth,
@@ -481,7 +521,7 @@ class FLClassifier(FLModel, fedtreeClassifierBase):
                          column_sampling_rate=column_sampling_rate, verbose=verbose, n_parallel_trees=n_parallel_trees,
                          learning_rate=learning_rate, objective=objective, num_class=num_class, n_device=n_device,
                          max_num_bin=max_num_bin, seed=seed, ins_bagging_fraction=ins_bagging_fraction,
-                         reorder_label=reorder_label, bagging=bagging, constant_h=constant_h, tree_method=tree_method)
+                         reorder_label=reorder_label, bagging=bagging, constant_h=constant_h, tree_method=tree_method, use_double=use_double)
 
 class FLRegressor(FLModel, fedtreeRegressorBase):
     _impl = 'regressor'
@@ -490,7 +530,7 @@ class FLRegressor(FLModel, fedtreeRegressorBase):
                  variance=200, privacy_budget=10, max_depth=6, n_trees=40, min_child_weight=1, lambda_ft=1,
                  gamma=1, column_sampling_rate=1, verbose=1, n_parallel_trees=1, learning_rate=1, objective="reg:linear",
                  num_class=1, n_device=1, max_num_bin=255, seed=36, ins_bagging_fraction=1.0, reorder_label=0, bagging = 0,
-                 constant_h = 0.0, tree_method="auto"):
+                 constant_h = 0.0, tree_method="auto", use_double=0):
         super().__init__(n_parties=n_parties, partition=partition, alpha=alpha, n_hori=n_hori, n_verti=n_verti,
                          mode=mode, partition_mode=partition_mode, privacy_tech=privacy_tech, propose_split=propose_split,
                          merge_histogram=merge_histogram, variance=variance, privacy_budget=privacy_budget, max_depth=max_depth,
@@ -498,4 +538,4 @@ class FLRegressor(FLModel, fedtreeRegressorBase):
                          column_sampling_rate=column_sampling_rate, verbose=verbose, n_parallel_trees=n_parallel_trees,
                          learning_rate=learning_rate, objective=objective, num_class=num_class, n_device=n_device,
                          max_num_bin=max_num_bin, seed=seed, ins_bagging_fraction=ins_bagging_fraction,
-                         reorder_label=reorder_label, bagging=bagging, constant_h=constant_h, tree_method=tree_method)
+                         reorder_label=reorder_label, bagging=bagging, constant_h=constant_h, tree_method=tree_method, use_double=use_double)

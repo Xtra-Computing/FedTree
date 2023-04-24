@@ -43,8 +43,8 @@ public:
 
     void boost(vector<vector<Tree>> &boosted_model);
 
-    void boost_a_subtree(vector<vector<Tree>> &trees, int n_layer, int *id_list, int *nins_list, float *gradient_g_list, 
-                        float *gradient_h_list, int *n_node, int *nodeid_list, float *input_gradient_g, float *input_gradient_h);
+    void boost_a_subtree(vector<vector<Tree>> &trees, int n_layer, int *id_list, int *nins_list, float_type *gradient_g_list, 
+                        float_type *gradient_h_list, int *n_node, int *nodeid_list, float_type *input_gradient_g, float_type *input_gradient_h);
 
     void boost_without_prediction(vector<vector<Tree>> &boosted_model);
 
