@@ -138,11 +138,11 @@ FedTree is built based on [ThunderGBM](https://github.com/Xtra-Computing/thunder
 # Citation
 Please cite our paper if you use FedTree in your work.
 ```
-@misc{fedtree,
-  title = {FedTree: A Fast, Effective, and Secure Tree-based Federated Learning System},
-  author={Li, Qinbin and Cai, Yanzheng and Han, Yuxuan and Yung, Ching Man and Fu, Tianyuan and He, Bingsheng},
-  howpublished = {\url{https://github.com/Xtra-Computing/FedTree/blob/main/FedTree_draft_paper.pdf}},
-  year={2022}
+@inproceedings{fedtree,
+  title={FedTree: A Federated Learning System For Trees},
+  author={Li, Qinbin and Wu, Zhaomin and Cai, Yanzheng and Han, Yuxuan and Yung, Ching Man and Fu, Tianyuan and He, Bingsheng}
+  booktitle={Proceedings of Machine Learning and Systems},
+  year={2023}
 }
 ```
 
