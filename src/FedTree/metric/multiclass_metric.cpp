@@ -64,8 +64,8 @@ float_type BinaryClassMetric::get_score(const SyncArray<float_type> &y_p) const 
               });
 
     double auc = 0.0;
-    int pos_count = 0;
-    int neg_count = 0;
+    long pos_count = 0;
+    long neg_count = 0;
     for (int i = 0; i < n; ++i) {
         if (prediction_labels[i].second == 1) {
             ++pos_count;
