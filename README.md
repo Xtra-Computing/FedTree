@@ -140,7 +140,7 @@ Please cite our paper if you use FedTree in your work.
 ```
 @inproceedings{fedtree,
   title={FedTree: A Federated Learning System For Trees},
-  author={Li, Qinbin and Wu, Zhaomin and Cai, Yanzheng and Han, Yuxuan and Yung, Ching Man and Fu, Tianyuan and He, Bingsheng}
+  author={Li, Qinbin and Wu, Zhaomin and Cai, Yanzheng and Han, Yuxuan and Yung, Ching Man and Fu, Tianyuan and He, Bingsheng},
   booktitle={Proceedings of Machine Learning and Systems},
   year={2023}
 }
