@@ -89,7 +89,7 @@ Parameters for GBDTs
     - ``rank:pairwise`` and ``rank:ndcg`` are for ranking problems.
 
 * ``num_class`` [default=1, type=int]
-    - Set the number of classes in the multi-class classification. This option is not compulsory.
+    - Set the number of classes in the multi-class classification.
 
 * ``min_child_weight`` [default=1, type=float]
 
