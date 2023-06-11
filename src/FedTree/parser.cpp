@@ -78,7 +78,7 @@ void Parser::parse_param(FLParam &fl_param, char *file_path) {
 
     //parsing parameter values from configuration file or command line
     auto parse_value = [&](const char *name_val) {
-        char name[256], val[2048];
+        char name[256] = {0}, val[2048] = {0};
         if (sscanf(name_val, "%[^=]=%s", name, val) == 2) {
             string str_name(name);
             // FL params
