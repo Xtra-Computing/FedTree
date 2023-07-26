@@ -1,6 +1,6 @@
 ## Install Python Package
 
-We provide a scikit-learn wrapper interface. Before you use the Python interface, you must [install](https://fedtree.readthedocs.io/en/latest/Installation.html) FedTree first. 
+We provide a scikit-learn wrapper interface. Before you use the Python interface, you must [install](https://fedtree.readthedocs.io/en/latest/Installation.html) FedTree first. Build with `DISTRIBUTED=ON` to enable the distributed version of the interface.
 Then, you can run the following command to install the Python package from source.
 ```bash
 python setup.py install
@@ -8,7 +8,7 @@ python setup.py install
 
 ## Class
 
-We provide two classes, ```FLClassifier``` and ```FLRegressor```, where the first is for classification task and the second is for regression task.
+We provide two classes, ```FLClassifier``` and ```FLRegressor``` (```DistributedFLClassifier``` and ```DistributedFLRegressor``` for the distributed settings), where the first is for classification task and the second is for regression task. 
 
 ### Parameters
 Please refer to [here](https://fedtree.readthedocs.io/en/latest/Parameters.html) for the list of parameters.
@@ -44,3 +44,6 @@ print("rmse:", rmse)
 ```
 
 Under ```examples``` directory, you can find three examples on how to use FedTree with Python.
+
+Under distributed settings (```DistributedFLClassifier``` and ```DistributedFLRegressor```),
+`fit` starts a server/party routine for collaborative trainings, and returns after the training is done.

@@ -14,8 +14,10 @@
 #include "FedTree/FL/server.h"
 #include "FedTree/FL/comm_helper.h"
 
+#include <condition_variable>
 #include <iostream>
 #include <memory>
+#include <mutex>
 #include <string>
 
 #ifdef BAZEL_BUILD
@@ -178,7 +180,11 @@ public:
     // for profiling
     vector<double> party_wait_times;
 
-private:
+    // Block current thread until all parties have called StopServer -- a
+    // proper time to shutdown the grpc server.
+    void block_until_shutdown();
+
+  private:
     // mutex
     std::mutex mutex;
     // for stop
@@ -231,7 +237,10 @@ private:
     int sp_cnt = 0;
     int vote_cnt = 0;
 
-
+    // Shutdown-related stuff.
+    std::mutex shutdown_lock;
+    std::condition_variable shutdown_cv;
+    bool shutdown_ready = false;
 };
 
 #endif //FEDTREE_DISTRIBUTED_SERVER_H
