@@ -21,7 +21,6 @@ else:
 
 if not path.isfile(lib_path):  # DISTRIBUTED=OFF
     distributed = False
-    # rename
     lib_path = lib_path.replace("_DIST_SCIKIT", "")
     if not path.isfile(lib_path):
         print("Library not found at {}, please build it first".format(lib_path))
@@ -29,6 +28,7 @@ if not path.isfile(lib_path):  # DISTRIBUTED=OFF
 else:  # DISTRIBUTED=ON
     distributed = True
 
+# rename to libFedTree.xx
 lib_dst_path = path.join(dirname, "fedtree", path.basename(
     lib_path).replace("_DIST_SCIKIT", ""))
 
