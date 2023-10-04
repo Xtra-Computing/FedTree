@@ -1358,6 +1358,7 @@ void DistributedParty::StopServer(float tot_time) {
 void DistributedParty::BeginBarrier() {
     fedtree::PID id;
     grpc::ClientContext context;
+    context.set_wait_for_ready(true);
     fedtree::Ready resp;
     id.set_id(pid);
     grpc::Status status = stub_->BeginBarrier(&context, id, &resp);
