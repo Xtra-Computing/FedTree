@@ -3,11 +3,12 @@
 //
 
 #include "FedTree/FL/distributed_server.h"
+#include "FedTree/DP/differential_privacy.h"
 #include "FedTree/FL/partition.h"
 #include "FedTree/parser.h"
-#include "FedTree/DP/differential_privacy.h"
-#include <sstream>
 #include <cmath>
+#include <mutex>
+#include <sstream>
 
 grpc::Status DistributedServer::TriggerUpdateGradients(::grpc::ServerContext *context, const ::fedtree::PID *request,
                                                        ::fedtree::Ready *response) {
@@ -1504,6 +1505,11 @@ grpc::Status DistributedServer::StopServer(grpc::ServerContext *context, const f
         LOG(INFO) << "avg real comm time: " << sum2/param.n_parties << "s";
         LOG(INFO) << "real comm time stddev: " << sqrt(sum4/param.n_parties) << "s";
         LOG(INFO) << "avg enc_dec time: " <<(sum5 / param.n_parties + dec_time + enc_time)<< "s";
+
+        // Notify any thread waiting for the shutdown signal.
+        std::unique_lock<std::mutex> guard(shutdown_lock);
+        shutdown_ready = true;
+        shutdown_cv.notify_all();
     }
     return grpc::Status::OK;
 }
@@ -1528,4 +1534,9 @@ grpc::Status DistributedServer::BeginBarrier(grpc::ServerContext *context, const
                 std::chrono::milliseconds(delay_distribution(generator)));
     }
     return grpc::Status::OK;
+}
+
+void DistributedServer::block_until_shutdown() {
+    std::unique_lock<std::mutex> guard(this->shutdown_lock);
+    this->shutdown_cv.wait(guard, [this] { return this->shutdown_ready; });
 }

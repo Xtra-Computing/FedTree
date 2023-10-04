@@ -19,7 +19,9 @@ public:
 
     virtual string get_name() const = 0;
 
-protected:
+    virtual ~Metric() = default;
+
+  protected:
     SyncArray<float_type> y;
 };
 

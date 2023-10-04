@@ -22,3 +22,5 @@ dataset/mnist.scale
 python/FedTree/libFedTree.dylib
 python/FedTree/libFedTree.so
 python/FedTree/libFedTree.dll
+
+fedtree.model
