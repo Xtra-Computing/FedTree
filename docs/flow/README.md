@@ -11,6 +11,20 @@ Documentação hierárquica e incremental do FedTree.
 - [04-horizontal-training.md](./04-horizontal-training.md)
 - [05-vertical-training.md](./05-vertical-training.md)
 - [06-network.md](./06-network.md)
+- [07-cpn-hierarchy.md](./07-cpn-hierarchy.md)
+- [08-data-flow-types.md](./08-data-flow-types.md)
+- [09-cpn-formal-skeleton.md](./09-cpn-formal-skeleton.md)
+- [10-cpn-mapping-table.md](./10-cpn-mapping-table.md)
+- [11-p0-flow.md](./11-p0-flow.md)
+- [12-p1-flow.md](./12-p1-flow.md)
+- [13-p2-flow.md](./13-p2-flow.md)
+- [14-p3-flow.md](./14-p3-flow.md)
+- [15-p4-flow.md](./15-p4-flow.md)
+- [16-p5-flow.md](./16-p5-flow.md)
+- [17-p6-flow.md](./17-p6-flow.md)
+- [18-p7-flow.md](./18-p7-flow.md)
+- [19-p8-flow.md](./19-p8-flow.md)
+- [20-p9-flow.md](./20-p9-flow.md)
 
 ## Regras
 
