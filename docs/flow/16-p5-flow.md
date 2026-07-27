@@ -21,6 +21,7 @@ flowchart LR
     P_privacy_bootstrap_done((P_privacy_bootstrap_done))
     T_load_partition[T_load_partition]
     P_dataset_loaded((P_dataset_loaded))
+    T_determine_partition_spec[T_determine_partition_spec]
     T_use_as_is[T_use_as_is]
     T_partition_horizontal[T_partition_horizontal]
     T_partition_vertical[T_partition_vertical]
@@ -34,7 +35,7 @@ flowchart LR
     P_data_ready((P_data_ready))
 
     P_privacy_bootstrap_done --> T_load_partition --> P_dataset_loaded
-    P_dataset_loaded --> P_partition_spec_ready
+    P_dataset_loaded --> T_determine_partition_spec --> P_partition_spec_ready
 
     P_partition_spec_ready -->|partition = false| T_use_as_is --> P_as_is_ready
     P_partition_spec_ready -->|partition_mode = horizontal| T_partition_horizontal --> P_partitioned_horizontal
@@ -52,6 +53,7 @@ flowchart LR
 - `P_privacy_bootstrap_done`: entrada da pagina, herdada de `P4`.
 - `T_load_partition`: carrega o conjunto de dados para a fase de particionamento.
 - `P_dataset_loaded`: dados carregados e prontos para a organizacao local.
+- `T_determine_partition_spec`: decide se o fluxo segue sem particionamento ou por modo horizontal, vertical ou híbrido.
 - `P_partition_spec_ready`: ponto de decisao da particao, sem losango no desenho.
 - `T_use_as_is`: caminho sem particionamento, quando os dados ja estao prontos.
 - `T_partition_horizontal`: separa amostras entre as parties.

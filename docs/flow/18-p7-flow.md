@@ -11,14 +11,16 @@ Fluxograma dedicado da pagina `P7 - Treino Vertical`. Esta pagina expande a tran
 
 ## Interface
 
-- `IN: P_data_ready`
-- `OUT: P_model_saved`
+- `IN: P_mode_selected`
+- `OUT: P_training_active`
 
 ## Fluxograma
 
 ```mermaid
 flowchart LR
-    P_data_ready((P_data_ready))
+    P_mode_selected((P_mode_selected))
+    T_start_training_vertical[T_start_training_vertical]
+    P_training_active((P_training_active))
     T_update_gradients[T_update_gradients]
     P_gradients_ready((P_gradients_ready))
     T_set_local_gradients[T_set_local_gradients]
@@ -37,9 +39,10 @@ flowchart LR
     T_wait_bestinfo[T_wait_bestinfo]
     P_tree_updated((P_tree_updated))
     T_prune_and_score[T_prune_and_score]
-    P_model_saved((P_model_saved))
+    P_training_active((P_training_active))
 
-    P_data_ready --> T_update_gradients --> P_gradients_ready
+    P_mode_selected --> T_start_training_vertical --> P_training_active
+    P_training_active --> T_update_gradients --> P_gradients_ready
     P_gradients_ready -->|has_label = true| T_set_local_gradients --> P_vertical_ready
     P_gradients_ready -->|has_label = false| T_get_gradient_batches --> P_batches_ready
     P_batches_ready -->|privacy_tech = HE| T_get_encrypted_gradients --> P_vertical_ready
@@ -51,12 +54,14 @@ flowchart LR
     P_sync_ready -->|PID = 0| T_aggregate_and_choose_best --> P_tree_updated
     P_sync_ready -->|PID != 0| T_wait_bestinfo --> P_tree_updated
     P_tree_updated -->|continuar dividindo = sim| T_compute_histograms
-    P_tree_updated -->|continuar dividindo = não| T_prune_and_score --> P_model_saved
+    P_tree_updated -->|continuar dividindo = não| T_prune_and_score --> P_training_active
 ```
 
 ## Mapeamento Para CPN Tools
 
-- `P_data_ready`: entrada da pagina, herdada de `P5`.
+- `P_mode_selected`: entrada da pagina, herdada de `P0`.
+- `T_start_training_vertical`: abre o ramo vertical depois da selecao de modo.
+- `P_training_active`: estado intermediario que marca o treinamento vertical em execucao.
 - `T_update_gradients`: atualiza os gradients locais do treino vertical.
 - `P_gradients_ready`: gradients preparados para definir o próximo ramo.
 - `T_set_local_gradients`: usa label local quando a party possui supervisao.
@@ -75,11 +80,12 @@ flowchart LR
 - `T_wait_bestinfo`: ramo das demais parties que aguardam o corte escolhido.
 - `P_tree_updated`: arvore atualizada com o melhor split conhecido.
 - `T_prune_and_score`: poda a arvore e finaliza o ciclo.
-- `P_model_saved`: saida da pagina, com o modelo pronto para o encerramento.
+- `P_training_active`: saida da pagina, com o treino vertical ativo para continuidade do fluxo.
 
 ## Observacao De Modelagem
 
 Esta pagina detalha o ramo vertical porque ele concentra a maior variacao de comportamento entre parties.
+O estado final da pagina e `P_training_active`, que representa o treino vertical em andamento para continuidade do protocolo.
 Se o desenho precisar ser refinado depois, o bloco de agregacao pode ganhar uma subpagina sem alterar a interface externa.
 
 </details>

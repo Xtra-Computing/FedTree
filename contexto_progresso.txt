@@ -1,53 +1,67 @@
 Contexto Atual - Modelagem CPN do FedTree
 
-Data: 2026-07-17
+Data: 2026-07-20
 
 Objetivo em andamento:
 - Organizar o fluxo do FedTree para modelagem em CPN Tools com foco em engenharia reversa do protocolo.
-- Prioridade atual: comunicação cliente-servidor, criação das parties, barreira inicial, bootstrap de privacidade, preparação para treino e tipagem dos tokens.
+- Prioridade atual: manter a hierarquia `P0 -> P9` coerente, com cada subpágina ligada a uma unica transicao pai.
+- Prioridade complementar: manter os fluxos internos alinhados com o codigo e com a leitura conceitual do treinamento horizontal e vertical.
 
 Arquivos principais em uso:
 - diretrizes.md
-- docs/flow/06-network.md
 - docs/flow/07-cpn-hierarchy.md
 - docs/flow/08-data-flow-types.md
 - docs/flow/09-cpn-formal-skeleton.md
 - docs/flow/10-cpn-mapping-table.md
+- docs/flow/11-p0-flow.md
+- docs/flow/12-p1-flow.md
+- docs/flow/13-p2-flow.md
+- docs/flow/14-p3-flow.md
+- docs/flow/15-p4-flow.md
+- docs/flow/16-p5-flow.md
+- docs/flow/17-p6-flow.md
+- docs/flow/18-p7-flow.md
+- docs/flow/19-p8-flow.md
+- docs/flow/20-p9-flow.md
+- docs/flow/21-visao-completa.md
 
 Estado atual do trabalho:
-- O arquivo docs/flow/07-cpn-hierarchy.md foi consolidado como base da hierarquia CPN.
-- A visualização foi reorganizada para ficar vertical e por página, com blocos separados em <details>.
-- A seção "Fluxo Por Página" já está ajustada para mostrar fluxos internos por página, com IN e OUT como interface formal.
-- Foi adicionada a regra explícita de interface CPN para tratar IN/OUT como port places.
-- O encerramento foi separado entre fechamento da sessão RPC e encerramento global do protocolo.
-- Foi criado docs/flow/08-data-flow-types.md para descrever tipos conceituais e fluxo dos dados.
-- Foi criado docs/flow/09-cpn-formal-skeleton.md com esqueleto formal para CPN Tools.
-- Foi criado docs/flow/10-cpn-mapping-table.md com a tabela direta de mapeamento lugar/tipo/entrada/saída/página.
+- O arquivo `docs/flow/07-cpn-hierarchy.md` foi consolidado como base da hierarquia CPN.
+- A visualizacao foi reorganizada para ficar vertical e por pagina, com blocos separados em `<details>`.
+- A secao "Fluxo Por Pagina" usa `IN` e `OUT` como interface formal.
+- A regra explicita de interface CPN foi mantida para tratar `IN/OUT` como port places.
+- O encerramento foi separado entre salvamento do modelo, encerramento da sessao RPC e finalizacao global.
+- O esqueleto formal em `docs/flow/09-cpn-formal-skeleton.md` foi alinhado com as transicoes especificas do treino e do encerramento.
+- A tabela `docs/flow/10-cpn-mapping-table.md` foi ajustada para refletir a cadeia de encerramento em tres passos.
+- A documentacao consolidada em `docs/flow/21-visao-completa.md` foi criada para explicar o funcionamento geral do FedTree em portugues.
+- O arquivo `docs/flow/16-p5-flow.md` foi corrigido para manter a sequencia correta `lugar -> transicao -> lugar`.
+- Os fluxos `docs/flow/17-p6-flow.md` e `docs/flow/18-p7-flow.md` foram alinhados para nascerem de `P_mode_selected`, abrirem pelas transicoes `T_start_training_horizontal` e `T_start_training_vertical`, e fecharem em `P_training_active`.
 
 O que já foi consolidado:
-- P0 - Fluxo Geral: visão macro da execução.
-- P1 - Criação das Parties: inclui bifurcação por partition ativado e partition_mode.
-- P2 - Comunicação Cliente-Servidor: inclui handshake, bootstrap por privacy_tech, barreira e fechamento de sessão.
-- P3 - Barreiras e Prontidão: contém laço de espera até a liberação.
-- P4 - Bootstrap de Privacidade: bifurca por privacy_tech.
-- P5 - Partição e Carregamento: bifurca por partition e partition_mode.
-- P6 - Treino Horizontal: contém update de gradients, propose_split, loops de nível e decisão de continuidade.
-- P7 - Treino Vertical: contém ramo has_label, HE/normal, loops e agregação.
-- P8 - Modo Ensemble ou Solo: bifurca entre ensemble e solo.
-- P9 - Encerramento: salva modelo, encerra sessão e finaliza protocolo.
-- Tipos conceituais já definidos para controle, dados, privacidade, treino e encerramento.
-- Esqueleto formal inicial já pronto para transpor para CPN Tools.
-- Tabela de mapeamento dos lugares e transições já organizada.
+- `P0 - Fluxo Geral`: visão macro da execução, com tres transicoes de treino distintas.
+- `P1 - Criação das Parties`: trilha linear com contexto, logs, leitura de parametros, carga de dados, particionamento local e inicializacao.
+- `P2 - Comunicação Cliente-Servidor`: handshake inicial com `T_connect_server`, `T_send_pid` e `T_receive_ready`.
+- `P3 - Barreiras e Prontidão`: aguarda a barreira inicial e entrega `P_privacy_ready`.
+- `P4 - Bootstrap de Privacidade`: prepara `HE`, `SA`, `DP` ou `none`.
+- `P5 - Partição e Carregamento`: carrega os dados, decide a forma de particionamento e libera `P_data_ready`.
+- `P6 - Treino Horizontal`: inicia em `P_mode_selected`, detalha gradients, cut points, histogramas, split e prune, e termina em `P_training_active`.
+- `P7 - Treino Vertical`: inicia em `P_mode_selected`, detalha gradients, batches, FID, agregacao e atualizacao de nos, e termina em `P_training_active`.
+- `P8 - Modo Ensemble ou Solo`: bifurca entre ensemble e solo.
+- `P9 - Encerramento`: salva o modelo, encerra a sessao e finaliza o protocolo.
+- `P_training_active`: estado final dos fluxos de treino horizontal e vertical para continuidade do protocolo.
+- Tipos conceituais definidos para controle, dados, privacidade, treino e encerramento.
+- Páginas dedicadas criadas para `P0` a `P9`.
 
 Decisões de visualização:
 - Manter o fluxo macro mais vertical.
 - Usar um bloco por página em "Fluxo Por Página".
-- Incluir IN/OUT por página para facilitar a leitura hierárquica.
-- Tratar IN/OUT como interface formal de páginas substitutas.
-- Evitar uma linha global excessivamente linear, pois ela não representa bem o comportamento real do protocolo.
+- Incluir `IN/OUT` por página para facilitar a leitura hierárquica.
+- Tratar `IN/OUT` como interface formal de páginas substitutas.
+- Evitar uma linha global excessivamente linear, pois ela nao representa bem o comportamento real do protocolo.
 - Explorar mais o ramo vertical do que o horizontal para evitar crescimento excessivo do texto.
+- Adicionar explicacoes de contexto conceitual, como diferenca entre horizontal e vertical e significado de gradiente/hessiano, na documentacao consolidada.
 
 Próximos passos sugeridos:
-- Refinar os lugares e guardas para aproximar o texto do desenho final em CPN Tools.
-- Detalhar subpáginas de P1 e P2 se for necessário reduzir ambiguidade operacional.
-- Converter a tabela de mapeamento em uma lista final por página, pronta para desenho.
+- Revisar se `P4` deve continuar linear ou ganhar algum detalhe adicional.
+- Expandir `P8` caso o modo ensemble ou solo precise de mais fidelidade.
+- Validar se o mapeamento de `P6` e `P7` precisa de subetapas mais finas no CPN Tools.
